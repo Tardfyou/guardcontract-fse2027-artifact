@@ -1,0 +1,176 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "return handler(request) at app.py:103 \u2014 the sole forwarding of the wrapped tool call, after which the tool body (and its external HTTP effect) executes.",
+        "contract_id": "ecological-contract:57c61a858739b623c024915a92e44040",
+        "declared_mechanism": "The human_approval(request, handler) middleware defined at app.py:88-103 and registered through middleware=[human_approval] in create_agent (app.py:110-123). It reads request.tool_call['name'], prompts the console user via input(...), returns ToolMessage(content='Tool execution denied by user.', tool_call_id=request.tool_call['id']) on any non-'yes' answer, and forwards to handler(request) only after a 'yes' confirmation. Note: unlike agent.py, app.py imports wrap_tool_call (app.py:14) but does not apply it as a decorator to human_approval.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 103,
+            "line_start": 88,
+            "path": "app.py",
+            "role": "guard_registration",
+            "source_sha256": "ddd41318ba095493a538a025c8666adc1cc9e1f34e3caa8d995a62c2eeed45eb"
+          },
+          {
+            "line_end": 123,
+            "line_start": 110,
+            "path": "app.py",
+            "role": "guard_registration",
+            "source_sha256": "ddd41318ba095493a538a025c8666adc1cc9e1f34e3caa8d995a62c2eeed45eb"
+          },
+          {
+            "line_end": 123,
+            "line_start": 110,
+            "path": "app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ddd41318ba095493a538a025c8666adc1cc9e1f34e3caa8d995a62c2eeed45eb"
+          },
+          {
+            "line_end": 101,
+            "line_start": 91,
+            "path": "app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ddd41318ba095493a538a025c8666adc1cc9e1f34e3caa8d995a62c2eeed45eb"
+          },
+          {
+            "line_end": 33,
+            "line_start": 22,
+            "path": "app.py",
+            "role": "protected_operation",
+            "source_sha256": "ddd41318ba095493a538a025c8666adc1cc9e1f34e3caa8d995a62c2eeed45eb"
+          },
+          {
+            "line_end": 59,
+            "line_start": 51,
+            "path": "app.py",
+            "role": "protected_operation",
+            "source_sha256": "ddd41318ba095493a538a025c8666adc1cc9e1f34e3caa8d995a62c2eeed45eb"
+          },
+          {
+            "line_end": 103,
+            "line_start": 103,
+            "path": "app.py",
+            "role": "commit_point",
+            "source_sha256": "ddd41318ba095493a538a025c8666adc1cc9e1f34e3caa8d995a62c2eeed45eb"
+          }
+        ],
+        "forbidden_condition": "A dispatched tool call (get_weather or get_news) reaches handler(request) \u2014 i.e., its external HTTP effect is committed \u2014 when confirm.lower() != 'yes', or before any confirmation has been obtained via the input() approval prompt.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "app.py imports wrap_tool_call (app.py:14) but defines human_approval as a bare (request, handler) function without applying the decorator (app.py:88-103); whether create_agent's middleware list accepts and auto-wraps such a bare callable as a tool-call middleware is not established by the supplied source.",
+          "Whether tool-call middleware in this langchain version intercepts every tool-execution path (retries, parallel tool calls, error branches) cannot be verified from the supplied source; framework internals are not included.",
+          "Whether pipeline.invoke (app.py:176) is the only runtime path that can dispatch these tools is supported only within the supplied view; the repository enumeration is not complete.",
+          "Whether the interactive input(...) prompt is reachable in all deployment contexts (e.g., non-TTY execution) is a runtime property not decidable from source."
+        ],
+        "protected_operation": "Execution of the registered agent tools get_weather (requests.get to the OpenWeather API, app.py:33) and get_news (tavily_client.search, app.py:55-59) when dispatched by the create_agent agent instance.",
+        "protected_resource": "External HTTP endpoints invoked by the agent tools: the OpenWeather weather API URL constructed at app.py:28-31 and fetched at app.py:33, and the Tavily search API invoked at app.py:55-59.",
+        "protection_obligation": "Every agent tool execution in the app.py agent \u2014 get_weather's OpenWeather HTTP GET and get_news's Tavily search \u2014 must be explicitly approved by a human via the human_approval middleware passed in middleware=[human_approval] to create_agent, which returns a denial ToolMessage ('Tool execution denied by user.') unless the user confirms 'yes', and only then commits the call through handler(request).",
+        "scope_limits": [
+          "Covers only the agent instance built in app.py (create_agent at lines 110-123); the @wrap_tool_call-decorated human_approval in agent.py is a distinct registration covered by its own contract.",
+          "The approval oracle is a console input(...) prompt; no identity, role, or policy-based authorization is declared.",
+          "The middleware gates tool-call dispatch only; direct LLM responses that do not invoke tools are not gated.",
+          "Validation of tool arguments (e.g., the city value interpolated into the OpenWeather URL at app.py:28-31) is outside this obligation.",
+          "On denial the guard returns a ToolMessage to the model; this contract does not constrain how the model, the RunnableLambda pipeline (app.py:156-160), or the main loop consumes the denial."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "return handler(request) at agent.py:90 \u2014 the sole forwarding of the wrapped tool call, after which the tool body (and its external HTTP effect) executes.",
+        "contract_id": "ecological-contract:82ac1661fd009ba2c84a7bd9eedcfbde",
+        "declared_mechanism": "The @wrap_tool_call-decorated human_approval(request, handler) middleware (agent.py:78-90), registered through middleware=[human_approval] in create_agent (agent.py:92-97). It reads request.tool_call['name'], prompts the console user via input(...), returns ToolMessage(content='Tool call denied by user.', tool_call_id=request.tool_call['id']) on any non-'yes' answer, and forwards to handler(request) only after a 'yes' confirmation.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 90,
+            "line_start": 78,
+            "path": "agent.py",
+            "role": "guard_registration",
+            "source_sha256": "cfbef608ed2e74747e2eb34a17bb705af4cc83ab6bb944abf5320503e25a3dab"
+          },
+          {
+            "line_end": 97,
+            "line_start": 92,
+            "path": "agent.py",
+            "role": "guard_registration",
+            "source_sha256": "cfbef608ed2e74747e2eb34a17bb705af4cc83ab6bb944abf5320503e25a3dab"
+          },
+          {
+            "line_end": 97,
+            "line_start": 92,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "cfbef608ed2e74747e2eb34a17bb705af4cc83ab6bb944abf5320503e25a3dab"
+          },
+          {
+            "line_end": 88,
+            "line_start": 81,
+            "path": "agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cfbef608ed2e74747e2eb34a17bb705af4cc83ab6bb944abf5320503e25a3dab"
+          },
+          {
+            "line_end": 26,
+            "line_start": 19,
+            "path": "agent.py",
+            "role": "protected_operation",
+            "source_sha256": "cfbef608ed2e74747e2eb34a17bb705af4cc83ab6bb944abf5320503e25a3dab"
+          },
+          {
+            "line_end": 52,
+            "line_start": 44,
+            "path": "agent.py",
+            "role": "protected_operation",
+            "source_sha256": "cfbef608ed2e74747e2eb34a17bb705af4cc83ab6bb944abf5320503e25a3dab"
+          },
+          {
+            "line_end": 90,
+            "line_start": 90,
+            "path": "agent.py",
+            "role": "commit_point",
+            "source_sha256": "cfbef608ed2e74747e2eb34a17bb705af4cc83ab6bb944abf5320503e25a3dab"
+          }
+        ],
+        "forbidden_condition": "A dispatched tool call (get_weather or get_news) reaches handler(request) \u2014 i.e., its external HTTP effect is committed \u2014 when confirm.lower() != 'yes', or before any confirmation has been obtained via the input() approval prompt.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether wrap_tool_call middleware in this langchain version intercepts every tool-execution path (retries, parallel tool calls, error branches) cannot be verified from the supplied source; framework internals are not included.",
+          "Whether agent.invoke in the REPL loop (agent.py:105-107) is the only runtime path that can dispatch these tools is supported only within the supplied view; the repository enumeration is not complete.",
+          "Whether the interactive input(...) prompt is reachable in all deployment contexts (e.g., non-TTY execution) is a runtime property not decidable from source."
+        ],
+        "protected_operation": "Execution of the registered agent tools get_weather (requests.get to the OpenWeather API, agent.py:26) and get_news (tavily_client.search, agent.py:48-52) when dispatched by the create_agent agent instance.",
+        "protected_resource": "External HTTP endpoints invoked by the agent tools: the OpenWeather weather API URL constructed at agent.py:24 and fetched at agent.py:26, and the Tavily search API invoked at agent.py:48-52.",
+        "protection_obligation": "No agent tool call in the agent.py agent may execute without explicit human approval: the human_approval middleware registered via middleware=[human_approval] in create_agent must gate every tool execution \u2014 the external OpenWeather HTTP request in get_weather and the Tavily search in get_news \u2014 so that the commit point handler(request) is reached only after the user confirms 'yes'; otherwise a denial ToolMessage ('Tool call denied by user.') is returned and the tool never executes.",
+        "scope_limits": [
+          "Covers only the agent instance built in agent.py (create_agent at lines 92-97); the separate human_approval definition in app.py is a distinct registration covered by its own contract.",
+          "The approval oracle is a console input(...) prompt; no identity, role, or policy-based authorization is declared.",
+          "The middleware gates tool-call dispatch only; direct LLM responses that do not invoke tools are not gated.",
+          "Validation of tool arguments (e.g., the city value interpolated into the OpenWeather URL at agent.py:24) is outside this obligation.",
+          "On denial the guard returns a ToolMessage to the model; this contract does not constrain how the model or application consumes the denial."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Framework source for langchain.agents.middleware.wrap_tool_call and create_agent is not supplied; whether tool-call middleware intercepts all tool-execution paths cannot be verified from the supplied views.",
+      "app.py defines human_approval without the wrap_tool_call decorator (decorator only imported at app.py:14); whether a bare (request, handler) callable is a valid middleware registration for create_agent is not supported by supplied source.",
+      "Third-party client sources (TavilyClient, requests) are not supplied; classification of tavily_client.search as a network/API effect is inferred from call-site usage, not from library source.",
+      "No behavioral or runtime labels are available in the stated scope; approval outcomes and violation prevalence cannot be estimated.",
+      "Repository enumeration is not complete; other files could dispatch the same tools or build additional agents without this guard, but such paths are outside the supplied views."
+    ],
+    "repository": "ekendra-yadav/Agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a2fccd756b5cb37e1a235ac32f3a92f0"
+  },
+  "request_sha256": "3d1e947e91da4cf20c828dbc93d3e0b1e9f61fd2b4779617bccb35b2d1c30596",
+  "response_sha256": "63837c88ac4f5b8a7b034bb94b00a9f94a444d963f16ad8a851fc3b429d86b9d",
+  "state": "completed",
+  "tokens": 11979,
+  "unit": "v24-screen:a2fccd756b5cb37e1a235ac32f3a92f0"
+}

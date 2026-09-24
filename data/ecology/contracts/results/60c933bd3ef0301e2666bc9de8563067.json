@@ -1,0 +1,311 @@
+{
+  "attempt": 2,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "bot/telegram_bot.py:68 \u2014 `response = await process_vehicle_image(image_bytes, chat_id)` is the first agent/external effect commit; the guard's early return (lines 59-61) precedes Telegram file retrieval (lines 63-65) and this call.",
+        "contract_id": "ecological-contract:09d96120509f4713f7ff98e7dbb76ab0",
+        "declared_mechanism": "Allow-list guard _is_allowed(chat_id, thread_id) (bot/telegram_bot.py:12-17) comparing update.effective_chat.id against settings.TELEGRAM_ALLOWED_CHAT_IDS and update.message.message_thread_id against settings.TELEGRAM_ALLOWED_THREAD_IDS (each membership test applied only when the configured list is non-empty; a None thread_id fails a non-empty thread list), enforced as a warning-logged early return at the top of _handle_photo (lines 59-61) before any effect; the handler is wired into update dispatch via app.add_handler(MessageHandler(filters.PHOTO, _handle_photo)) at line 98.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 17,
+            "line_start": 12,
+            "path": "bot/telegram_bot.py",
+            "role": "guard_registration",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 11,
+            "line_start": 10,
+            "path": "app/core/config.py",
+            "role": "guard_registration",
+            "source_sha256": "015717290c0dbc248368345fbc043a30080824d6cf3696778c50c61c705c9379"
+          },
+          {
+            "line_end": 61,
+            "line_start": 59,
+            "path": "bot/telegram_bot.py",
+            "role": "forbidden_condition",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 98,
+            "line_start": 98,
+            "path": "bot/telegram_bot.py",
+            "role": "guard_registration",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 7,
+            "line_start": 7,
+            "path": "bot/telegram_bot.py",
+            "role": "protected_operation",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 65,
+            "line_start": 63,
+            "path": "bot/telegram_bot.py",
+            "role": "protected_operation",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 68,
+            "line_start": 68,
+            "path": "bot/telegram_bot.py",
+            "role": "commit_point",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          }
+        ],
+        "forbidden_condition": "An update whose chat_id is absent from a non-empty TELEGRAM_ALLOWED_CHAT_IDS, or whose message_thread_id is absent from a non-empty TELEGRAM_ALLOWED_THREAD_IDS, proceeding past the _is_allowed check at bot/telegram_bot.py:59-61 into photo retrieval and the process_vehicle_image invocation (guard failing open, being bypassed, or removed).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Body of app.agent.ocr_agent.process_vehicle_image is not supplied; reviewer-asserted backend member-data searches / MCP queries cannot be confirmed from the supplied lines.",
+          "No tool registration, decorator, agent lifecycle hook, or agent-runtime dispatch is visible binding the handler's call to an agent mediation path; mediation category cannot be established from module naming or config metadata alone.",
+          "Whether build_telegram_app (lines 91-101) is actually started (polling/webhook) in deployment is not shown."
+        ],
+        "protected_operation": "Invocation of process_vehicle_image(image_bytes, chat_id) for an incoming photo update, feeding update-supplied image bytes into the ALPR agent pipeline entry imported from app.agent.ocr_agent.",
+        "protected_resource": "app.agent.ocr_agent.process_vehicle_image (ALPR agent image-processing entry point) as reached from the registered _handle_photo callback.",
+        "protection_obligation": "Photo updates arriving through the registered Telegram handler _handle_photo from chat/thread IDs outside TELEGRAM_ALLOWED_CHAT_IDS / TELEGRAM_ALLOWED_THREAD_IDS must be rejected at handler entry, before the ALPR agent pipeline is invoked, so agent image processing is reachable only from authorized chats/threads.",
+        "scope_limits": [
+          "Guard is fail-open: if TELEGRAM_ALLOWED_CHAT_IDS or TELEGRAM_ALLOWED_THREAD_IDS is empty/unset (config.py:10-11 default ''), the corresponding membership check is skipped entirely (bot/telegram_bot.py:13-16).",
+          "Authorization is by chat_id/thread_id only; no per-user identity check exists.",
+          "The same early return also precedes the Telegram file fetch (lines 63-65, an HTTP-stratum read not separately contracted) and the response/error replies (lines 69, 72, covered by a separate communication-stratum contract).",
+          "Downstream behavior of process_vehicle_image (MCP/backend queries, member personal-data access) lies outside the supplied source view and is not asserted here."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "bot/telegram_bot.py:50-52 \u2014 the reply_text emission to the requesting chat.",
+        "contract_id": "ecological-contract:929b61e8e121a0374c8e87d68013988a",
+        "declared_mechanism": "Allow-list guard _is_allowed(chat_id, thread_id) (bot/telegram_bot.py:12-17) enforced as a silent early return at lines 48-49 in _cmd_start, which is wired into dispatch via app.add_handler(CommandHandler(\"start\", _cmd_start)) at line 97.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 17,
+            "line_start": 12,
+            "path": "bot/telegram_bot.py",
+            "role": "guard_registration",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 49,
+            "line_start": 48,
+            "path": "bot/telegram_bot.py",
+            "role": "forbidden_condition",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 97,
+            "line_start": 97,
+            "path": "bot/telegram_bot.py",
+            "role": "guard_registration",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 52,
+            "line_start": 50,
+            "path": "bot/telegram_bot.py",
+            "role": "protected_operation",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 52,
+            "line_start": 50,
+            "path": "bot/telegram_bot.py",
+            "role": "commit_point",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          }
+        ],
+        "forbidden_condition": "A /start update whose chat_id/thread_id fails _is_allowed proceeding past the early return at bot/telegram_bot.py:48-49 to the reply_text emission at lines 50-52.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No agent artifact is involved in the gated reply; retention of this contract under agent-mediated scope may require adjudication since the source shows no agent binding for this handler's effect."
+        ],
+        "protected_operation": "update.message.reply_text(...) startup acknowledgment emission in _cmd_start (lines 50-52).",
+        "protected_resource": "Outbound Telegram reply channel for the requesting chat/thread as used by _cmd_start.",
+        "protection_obligation": "/start commands arriving through the registered CommandHandler _cmd_start from chat/thread IDs outside the allow-lists must be rejected before any reply is emitted, so the capability-announcement reply is sent only to authorized chats/threads.",
+        "scope_limits": [
+          "The gated reply is a static informational string (lines 50-52) and does not itself invoke the agent pipeline or return agent output; only the communication effect is at stake.",
+          "Guard is fail-open when allow-list config lists are empty (lines 13-16)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "bot/telegram_bot.py:69 (photo path reply carrying the agent response) and bot/telegram_bot.py:85 (text path reply carrying the agent response); the error-path replies at lines 72 and 88 are additionally gated by the same early returns.",
+        "contract_id": "ecological-contract:b6464bb28b9367d7ba5fab175e26f2c1",
+        "declared_mechanism": "The same _is_allowed allow-list early return at the top of each handler (lines 59-61 photo; 79-81 text), configured from TELEGRAM_ALLOWED_CHAT_IDS / TELEGRAM_ALLOWED_THREAD_IDS (config.py:10-11), executed before all reply_text emissions; handlers registered at bot/telegram_bot.py:98-99.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 17,
+            "line_start": 12,
+            "path": "bot/telegram_bot.py",
+            "role": "guard_registration",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 61,
+            "line_start": 59,
+            "path": "bot/telegram_bot.py",
+            "role": "forbidden_condition",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 81,
+            "line_start": 79,
+            "path": "bot/telegram_bot.py",
+            "role": "forbidden_condition",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 99,
+            "line_start": 98,
+            "path": "bot/telegram_bot.py",
+            "role": "guard_registration",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 69,
+            "line_start": 68,
+            "path": "bot/telegram_bot.py",
+            "role": "protected_operation",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 85,
+            "line_start": 84,
+            "path": "bot/telegram_bot.py",
+            "role": "protected_operation",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 69,
+            "line_start": 69,
+            "path": "bot/telegram_bot.py",
+            "role": "commit_point",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 85,
+            "line_start": 85,
+            "path": "bot/telegram_bot.py",
+            "role": "commit_point",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          }
+        ],
+        "forbidden_condition": "An update from a chat_id/thread_id failing _is_allowed proceeding past the handler-entry early returns (bot/telegram_bot.py:59-61, 79-81) to any reply_text emission in _handle_photo or _handle_text, including the error-path replies at lines 72 and 88.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Sensitivity of the delivered response content (reviewer-asserted personal data) is unverifiable without app/agent/ocr_agent.py.",
+          "Runtime reachability of the _error_handler reply path for unauthorized chats is unknown."
+        ],
+        "protected_operation": "update.message.reply_text(response, ...) delivery of the agent pipeline's result to the requesting chat/thread (photo path line 69; text path line 85), plus the same-guarded error-path replies (lines 72, 88).",
+        "protected_resource": "Outbound Telegram message channel for the requesting chat/thread (update.message.reply_text) as used to deliver ALPR agent pipeline results in _handle_photo and _handle_text.",
+        "protection_obligation": "Outbound delivery of the ALPR agent pipeline's response via update.message.reply_text in _handle_photo and _handle_text must be reachable only for chat/threads passing the allow-list guard, so agent output (including error-path acknowledgments) is sent only to authorized chats/threads.",
+        "scope_limits": [
+          "The registered error handler _error_handler (lines 35-42, wired at line 100) emits reply_text without applying _is_allowed; whether that is a reachable unauthorized-reply path depends on runtime error occurrence not shown in the supplied source.",
+          "Characterization of the reply content as 'personal data' depends on the return values of process_vehicle_image / process_text_message, which are not supplied.",
+          "Guard is fail-open when allow-list config lists are empty (lines 13-16)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "bot/telegram_bot.py:84 \u2014 `response = await process_text_message(update.message.text, chat_id)` is the first agent/external effect commit; the guard's early return (lines 79-81) precedes it.",
+        "contract_id": "ecological-contract:c3d052df41251654e675532037b98349",
+        "declared_mechanism": "Allow-list guard _is_allowed(chat_id, thread_id) (bot/telegram_bot.py:12-17) comparing update.effective_chat.id against settings.TELEGRAM_ALLOWED_CHAT_IDS and update.message.message_thread_id against settings.TELEGRAM_ALLOWED_THREAD_IDS (each membership test applied only when the configured list is non-empty; a None thread_id fails a non-empty thread list), enforced as a warning-logged early return at the top of _handle_text (lines 79-81) before any effect; the handler is wired into update dispatch via app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_text)) at line 99.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 17,
+            "line_start": 12,
+            "path": "bot/telegram_bot.py",
+            "role": "guard_registration",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 11,
+            "line_start": 10,
+            "path": "app/core/config.py",
+            "role": "guard_registration",
+            "source_sha256": "015717290c0dbc248368345fbc043a30080824d6cf3696778c50c61c705c9379"
+          },
+          {
+            "line_end": 81,
+            "line_start": 79,
+            "path": "bot/telegram_bot.py",
+            "role": "forbidden_condition",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 99,
+            "line_start": 99,
+            "path": "bot/telegram_bot.py",
+            "role": "guard_registration",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 7,
+            "line_start": 7,
+            "path": "bot/telegram_bot.py",
+            "role": "protected_operation",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          },
+          {
+            "line_end": 84,
+            "line_start": 84,
+            "path": "bot/telegram_bot.py",
+            "role": "commit_point",
+            "source_sha256": "70542b10df266a0360ccf480a65719da720f64fcaac58e11ad1d02c69363df53"
+          }
+        ],
+        "forbidden_condition": "An update whose chat_id is absent from a non-empty TELEGRAM_ALLOWED_CHAT_IDS, or whose message_thread_id is absent from a non-empty TELEGRAM_ALLOWED_THREAD_IDS, proceeding past the _is_allowed check at bot/telegram_bot.py:79-81 into the process_text_message invocation (guard failing open, being bypassed, or removed).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Body of app.agent.ocr_agent.process_text_message is not supplied; reviewer-asserted backend member-data searches cannot be confirmed from the supplied lines.",
+          "No tool registration, decorator, agent lifecycle hook, or agent-runtime dispatch is visible binding the handler's call to an agent mediation path.",
+          "Whether build_telegram_app (lines 91-101) is started in deployment is not shown."
+        ],
+        "protected_operation": "Invocation of process_text_message(update.message.text, chat_id) for an incoming non-command text update, feeding update-supplied text into the ALPR agent pipeline entry imported from app.agent.ocr_agent.",
+        "protected_resource": "app.agent.ocr_agent.process_text_message (ALPR agent text-processing entry point) as reached from the registered _handle_text callback.",
+        "protection_obligation": "Text updates arriving through the registered Telegram handler _handle_text from chat/thread IDs outside TELEGRAM_ALLOWED_CHAT_IDS / TELEGRAM_ALLOWED_THREAD_IDS must be rejected at handler entry, before the ALPR agent pipeline is invoked, so agent text processing is reachable only from authorized chats/threads.",
+        "scope_limits": [
+          "Guard is fail-open: empty/unset allow-list config values skip the corresponding membership check (bot/telegram_bot.py:13-16; config.py:10-11 default '').",
+          "Authorization is by chat_id/thread_id only; no per-user identity check exists.",
+          "The same early return also precedes the response/error replies (lines 85, 88, covered by a separate communication-stratum contract).",
+          "Downstream behavior of process_text_message is outside the supplied source view and is not asserted here."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "app/agent/ocr_agent.py is not among the supplied views; the internal behavior of process_vehicle_image and process_text_message (reviewer-asserted MCP/backend member-data queries, personal-data content, agent tool registration, LLM mediation) is unverified, so agent_mediation is recorded as not_established rather than inferred from module naming or config metadata.",
+      "No supplied source shows build_telegram_app() being started (run_polling/webhook), so operativeness of the registered guards in production is unconfirmed.",
+      "Deployment values of TELEGRAM_ALLOWED_CHAT_IDS / TELEGRAM_ALLOWED_THREAD_IDS are unknown; empty lists disable the gate entirely (fail-open, bot/telegram_bot.py:13-16).",
+      "The registered error handler _error_handler (bot/telegram_bot.py:35-42, wired at line 100) replies without an _is_allowed check; runtime reachability of that path for unauthorized chats is unknown.",
+      "Reviewer claims that the protected commit points trigger 'backend member-data searches' exposing member personal data are not verifiable from the supplied line-numbered source."
+    ],
+    "repository": "SokhengDin/eroxii-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:60c933bd3ef0301e2666bc9de8563067"
+  },
+  "request_sha256": "78626aa9fd19b6de974b24fffee2a204cfd70ea53dfad019c4dfee3f855c8f42",
+  "response_sha256": "8f8fb404e7cf439e10ce928b44a47db3de9adef7a870c886ae73d9cab6375103",
+  "state": "completed",
+  "tokens": 24355,
+  "unit": "v24-screen:60c933bd3ef0301e2666bc9de8563067"
+}

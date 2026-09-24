@@ -1,0 +1,180 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Return of GuardrailFunctionOutput from public_input_gate with tripwire_triggered=true (input_guardrail.py lines 48-51), which per the module's stated semantics halts the run before the main agent executes ('the main agent never sees filtered traffic and pays zero tokens for it', lines 8-10).",
+        "contract_id": "ecological-contract:355f5f786eb9250e65bb0a3cb5e323bf",
+        "declared_mechanism": "OpenAI Agents SDK input guardrail: the @input_guardrail-decorated async public_input_gate(ctx, agent, msg) runs the gpt-4o-mini screener Agent on the inbound message, parses the structured Verdict (is_offtopic, is_jailbreak, is_abuse, reason), and returns GuardrailFunctionOutput(output_info=v, tripwire_triggered=v.is_offtopic or v.is_jailbreak or v.is_abuse); the guard is attached to the main agent via input_guardrails=[public_input_gate].",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 10,
+            "line_start": 8,
+            "path": "skills/faion/knowledge/ai-agents/cheap-guardrail-tripwire/templates/input_guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e1239add58432ace008fdfa49949242b772e671d0cce059540e52e640c5fc4e1"
+          },
+          {
+            "line_end": 29,
+            "line_start": 25,
+            "path": "skills/faion/knowledge/ai-agents/cheap-guardrail-tripwire/templates/input_guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e1239add58432ace008fdfa49949242b772e671d0cce059540e52e640c5fc4e1"
+          },
+          {
+            "line_end": 41,
+            "line_start": 32,
+            "path": "skills/faion/knowledge/ai-agents/cheap-guardrail-tripwire/templates/input_guardrail.py",
+            "role": "guard_registration",
+            "source_sha256": "e1239add58432ace008fdfa49949242b772e671d0cce059540e52e640c5fc4e1"
+          },
+          {
+            "line_end": 51,
+            "line_start": 44,
+            "path": "skills/faion/knowledge/ai-agents/cheap-guardrail-tripwire/templates/input_guardrail.py",
+            "role": "guard_registration",
+            "source_sha256": "e1239add58432ace008fdfa49949242b772e671d0cce059540e52e640c5fc4e1"
+          },
+          {
+            "line_end": 51,
+            "line_start": 48,
+            "path": "skills/faion/knowledge/ai-agents/cheap-guardrail-tripwire/templates/input_guardrail.py",
+            "role": "commit_point",
+            "source_sha256": "e1239add58432ace008fdfa49949242b772e671d0cce059540e52e640c5fc4e1"
+          },
+          {
+            "line_end": 45,
+            "line_start": 44,
+            "path": "skills/faion/knowledge/ai-agents/cheap-guardrail-tripwire/templates/input_guardrail.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e1239add58432ace008fdfa49949242b772e671d0cce059540e52e640c5fc4e1"
+          },
+          {
+            "line_end": 61,
+            "line_start": 54,
+            "path": "skills/faion/knowledge/ai-agents/cheap-guardrail-tripwire/templates/input_guardrail.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e1239add58432ace008fdfa49949242b772e671d0cce059540e52e640c5fc4e1"
+          },
+          {
+            "line_end": 61,
+            "line_start": 54,
+            "path": "skills/faion/knowledge/ai-agents/cheap-guardrail-tripwire/templates/input_guardrail.py",
+            "role": "protected_operation",
+            "source_sha256": "e1239add58432ace008fdfa49949242b772e671d0cce059540e52e640c5fc4e1"
+          }
+        ],
+        "forbidden_condition": "Offtopic, jailbreak ('ignore previous instructions' style), or abusive user input reaching the premium main agent's processing unfiltered \u2014 i.e., public_input_gate completing with tripwire_triggered=false for such input, or the guard being absent from the main agent's input_guardrails so that filtered-out traffic reaches the main agent's model call.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which concrete deployed premium agent instance(s) attach public_input_gate via input_guardrails (only commented template usage at input_guardrail.py lines 54-61 is supplied).",
+          "Confirmation that tripwire_triggered=true aborts the main agent's Runner.run before its model call in the pinned SDK version; the module docstring asserts this (lines 8-10) and the referenced docs URL is redacted (line 12).",
+          "Operational definition of the 'product domain' bounding is_offtopic and any confidence threshold applied to the Verdict before tripping."
+        ],
+        "protected_operation": "The premium main agent's processing of public user traffic: main = Agent(name='support', model='gpt-5', ..., input_guardrails=[public_input_gate], tools=[...]) executed via Runner.run, gated by the input guardrail ahead of the main agent's model invocation.",
+        "protected_resource": "The premium-model main agent ('support' / gpt-5 per template usage) and its token budget exposed to public traffic.",
+        "protection_obligation": "Public user input destined for the premium main agent must first pass the registered input guardrail public_input_gate before the main agent's run executes; the guard must set tripwire_triggered=true when the screener Verdict marks the message offtopic, a jailbreak/instruction-override attempt, or abusive, halting the run so the premium main agent never processes unfiltered public traffic and pays zero tokens for it. (Merges both reviewer opinions' guardrail wording; phase-1 and phase-2 statements describe the same obligation.)",
+        "scope_limits": [
+          "Both files are template shards under skills/faion/knowledge/ai-agents/; the main-agent attachment exists only as commented usage (input_guardrail.py lines 54-61), not as executable production wiring in this shard.",
+          "Classification is LLM-based (gpt-4o-mini screener); category definitions and thresholds are prompt-defined, not deterministic.",
+          "Covers inbound traffic only: the screener's own calls, the main agent's per-turn tool effects, and output-side filtering (no output guardrail) are not guarded here.",
+          "effect_stratum 'http' reflects the premium model API request the gate prevents; the SDK abstracts the network call and no lower-level network code is shown.",
+          "Repository enumeration is incomplete; a live attachment may exist in an unsupplied view."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The capped Runner.run call raising/absorbing MaxTurnsExceeded (recovery_handler.py line 34) and the handler's graceful return of the recovery summary (lines 36-43, return at line 43).",
+        "contract_id": "ecological-contract:e5b6340cdff23a4129d90312cb5c48cf",
+        "declared_mechanism": "try/except wrapper run_with_recovery(agent, user_msg, max_turns=8) that passes the cap into Runner.run, catches agents.exceptions.MaxTurnsExceeded, and on overflow runs recovery_agent over e.run_data.to_input_list() (the agent-generated partial trajectory) with max_turns=1, returning a graceful 'I got stuck after N turns' reply while preserving trace data (e.run_data) for ops.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 12,
+            "line_start": 7,
+            "path": "skills/faion/knowledge/ai-agents/max-turns-circuit-breaker/templates/recovery_handler.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0bd32eacdbc9dfbe1637a6ff7d47a68e18bd311f94504cada8caaa3c5a83141d"
+          },
+          {
+            "line_end": 28,
+            "line_start": 19,
+            "path": "skills/faion/knowledge/ai-agents/max-turns-circuit-breaker/templates/recovery_handler.py",
+            "role": "guard_registration",
+            "source_sha256": "0bd32eacdbc9dfbe1637a6ff7d47a68e18bd311f94504cada8caaa3c5a83141d"
+          },
+          {
+            "line_end": 36,
+            "line_start": 31,
+            "path": "skills/faion/knowledge/ai-agents/max-turns-circuit-breaker/templates/recovery_handler.py",
+            "role": "guard_registration",
+            "source_sha256": "0bd32eacdbc9dfbe1637a6ff7d47a68e18bd311f94504cada8caaa3c5a83141d"
+          },
+          {
+            "line_end": 35,
+            "line_start": 33,
+            "path": "skills/faion/knowledge/ai-agents/max-turns-circuit-breaker/templates/recovery_handler.py",
+            "role": "protected_operation",
+            "source_sha256": "0bd32eacdbc9dfbe1637a6ff7d47a68e18bd311f94504cada8caaa3c5a83141d"
+          },
+          {
+            "line_end": 43,
+            "line_start": 36,
+            "path": "skills/faion/knowledge/ai-agents/max-turns-circuit-breaker/templates/recovery_handler.py",
+            "role": "commit_point",
+            "source_sha256": "0bd32eacdbc9dfbe1637a6ff7d47a68e18bd311f94504cada8caaa3c5a83141d"
+          },
+          {
+            "line_end": 34,
+            "line_start": 34,
+            "path": "skills/faion/knowledge/ai-agents/max-turns-circuit-breaker/templates/recovery_handler.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0bd32eacdbc9dfbe1637a6ff7d47a68e18bd311f94504cada8caaa3c5a83141d"
+          },
+          {
+            "line_end": 41,
+            "line_start": 38,
+            "path": "skills/faion/knowledge/ai-agents/max-turns-circuit-breaker/templates/recovery_handler.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0bd32eacdbc9dfbe1637a6ff7d47a68e18bd311f94504cada8caaa3c5a83141d"
+          }
+        ],
+        "forbidden_condition": "An agent run executing without a turn cap, or whose MaxTurnsExceeded overflow is not handled, so the caller/user receives an unhandled failure (500) instead of a graceful summary reply.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which production call sites invoke run_with_recovery, with which Agent instance, and with which effective max_turns value.",
+          "Whether this circuit breaker is required for the same premium main agent guarded by public_input_gate, or for other agent runs.",
+          "Whether recovery replies are delivered through any specific channel (delivery mechanism not shown in the shard)."
+        ],
+        "protected_operation": "Execution of the agent run loop via res = await Runner.run(agent, user_msg, max_turns=max_turns), and, on overflow, the hand-off of the partial trajectory to recovery_agent to produce the user-facing summary.",
+        "protected_resource": "The agent turn budget / run loop (max_turns, default 8) and the user-facing reply path; the recovery agent ('Recovery', gpt-4.1-mini, temperature 0.0) itself confined to max_turns=1.",
+        "protection_obligation": "Agent runs executed through the recovery handler must be capped by an explicit max_turns value (default 8) passed to Runner.run, and a MaxTurnsExceeded overflow must be converted into a graceful one-sentence recovery summary \u2014 produced by the cheap recovery_agent under a max_turns=1 cap \u2014 instead of propagating to the caller/user as an unhandled error ('a 500'). (Distinct obligation raised only in the second reviewer opinion; kept as a separate contract because its guard, forbidden condition, and commit point differ from the input guardrail.)",
+        "scope_limits": [
+          "run_with_recovery is a template helper; no caller or production entry point is shown in the shard, so its deployment binding is unverified.",
+          "The cap bounds turns only, not tokens, latency, or cost; the recovery run itself is capped at max_turns=1 and is instructed to summarize without inventing a final answer.",
+          "Per-turn tool effects of the capped run are unspecified in this template; effect_stratum 'http' reflects the model API round-trips the run loop issues via the agents SDK.",
+          "The max_turns value is caller-supplied; the shard does not establish which cap value production uses."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No executable attachment of public_input_gate to any concrete premium agent exists in the supplied shard; the main-agent wiring (input_guardrail.py lines 54-61) is commented template usage only.",
+      "No production call site for run_with_recovery is supplied; the guarded Agent instance and the effective max_turns value in deployment are unknown.",
+      "The pinned agents-SDK version / official documentation reference is redacted (input_guardrail.py line 12), so exact tripwire abort semantics rest on the module docstring rather than a verifiable SDK reference.",
+      "Whether the repository contains other live agent entry points binding these templates is unverifiable because repository enumeration is not complete and behavior labels are unavailable."
+    ],
+    "repository": "faionfaion/faion-network",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:08ebde280016e03bcb4685daaf0d1190"
+  },
+  "request_sha256": "ddc0dd65e7f739345798a8515b55a8eeace0d2e46745ee4be7cf4f70f207992a",
+  "response_sha256": "5494a85fa96d63737709ff118777ece4643aa15debe5c9c9e7565f8751104e54",
+  "state": "completed",
+  "tokens": 17848,
+  "unit": "v24-screen:08ebde280016e03bcb4685daaf0d1190"
+}

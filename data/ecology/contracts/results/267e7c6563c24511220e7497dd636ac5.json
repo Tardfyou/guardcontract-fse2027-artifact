@@ -1,0 +1,208 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "INSERT INTO paper_events (kind='open', result.reserved_risk_brl) and UPDATE paper_trades SET status='open' at lines 226-231, inside the transaction opened at line 138.",
+        "contract_id": "ecological-contract:67ad3c883c5ee7875ef1068ec0292a14",
+        "declared_mechanism": "lock_owner() executes 'SELECT pg_advisory_xact_lock(hashtext($1))' keyed by owner (lines 69-71); it is acquired inside the observe handler's single Postgres transaction (pool.acquire() + conn.transaction(), lines 138-139) before the aggregate read of open trades (lines 195-204), the budget comparison and reject (lines 205-207), and the INSERT/UPDATE writes (lines 226-231), so the lock spans check and commit.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 71,
+            "line_start": 69,
+            "path": "backend/app/api/paper_trades.py",
+            "role": "guard_registration",
+            "source_sha256": "bdba9acdb30179b992104e20ea7b866404c028a3fa3cc2f67454e6f06935b311"
+          },
+          {
+            "line_end": 139,
+            "line_start": 138,
+            "path": "backend/app/api/paper_trades.py",
+            "role": "guard_registration",
+            "source_sha256": "bdba9acdb30179b992104e20ea7b866404c028a3fa3cc2f67454e6f06935b311"
+          },
+          {
+            "line_end": 207,
+            "line_start": 194,
+            "path": "backend/app/api/paper_trades.py",
+            "role": "forbidden_condition",
+            "source_sha256": "bdba9acdb30179b992104e20ea7b866404c028a3fa3cc2f67454e6f06935b311"
+          },
+          {
+            "line_end": 133,
+            "line_start": 131,
+            "path": "backend/app/api/paper_trades.py",
+            "role": "protected_operation",
+            "source_sha256": "bdba9acdb30179b992104e20ea7b866404c028a3fa3cc2f67454e6f06935b311"
+          },
+          {
+            "line_end": 231,
+            "line_start": 226,
+            "path": "backend/app/api/paper_trades.py",
+            "role": "commit_point",
+            "source_sha256": "bdba9acdb30179b992104e20ea7b866404c028a3fa3cc2f67454e6f06935b311"
+          }
+        ],
+        "forbidden_condition": "An 'open' observation committing when the owner's aggregate reserved risk (sum of open trades' reserved_risk_brl plus the new trade's risk) would exceed the computed budget \u2014 including the race where a concurrent 'open' for the same owner is mid-flight while the aggregate is being read.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source registers observe/track as an agent tool, wires an agent lifecycle hook, or shows agent-generated data flowing into the Observation payload; agent mediation is unresolved.",
+          "app.core.security.get_current_user is not supplied; the owner identity used as the advisory-lock key is unverified."
+        ],
+        "protected_operation": "POST /{trade_id}/events (observe handler) with action='open': the aggregate risk-budget check followed by persistence of the open event and status transition to 'open'.",
+        "protected_resource": "The owner's aggregate open-risk budget recorded across paper_trades (status='open') and paper_events (kind='open', result.reserved_risk_brl) in Postgres.",
+        "protection_obligation": "Opening a paper trade (observe with action='open') must hold the owner's Postgres advisory transaction lock (pg_advisory_xact_lock(hashtext(owner))) for the whole transaction, so the aggregate open-risk read-then-write (open_risk + reserved risk <= capital \u00d7 total_risk_pct/100 \u2212 existing_risk_brl) cannot race a concurrent 'open' for the same owner before the paper_events INSERT and paper_trades status UPDATE commit. (Merges duplicate reviewer wordings from the first- and second-phase opinions on paper_trades.py.)",
+        "scope_limits": [
+          "Applies to action='open' transitions in observe; the track endpoint (line 89) and flatten_open_trades (line 250) take the same owner lock, but the supplied opinions name no distinct forbidden condition for those paths.",
+          "Per-owner serialization only: the advisory lock deliberately does not serialize unrelated owners against each other (module docstring, lines 5-9).",
+          "Paper-only scope: module docstring 'Never sends broker orders' (line 1) and result fields mode='paper_only' / eligible_for_live_trading=False (line 157); no broker-order effect is guarded by this contract.",
+          "Budget inputs (capital, total_risk_pct, existing_risk_brl) come from the stored plan context (lines 104, 205); validation of those plan values is not covered by this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Cache and timestamp writes at lines 55-59 (cache entry store at line 56, timestamp set at line 59), all inside the locked critical section.",
+        "contract_id": "ecological-contract:69d1605605651d9b9884d4c626ce106a",
+        "declared_mechanism": "The same asyncio.Lock: _SCREEN_LOCK created at lines 18-20 and held across the entire check-then-refresh via 'async with _SCREEN_LOCK:' at line 32.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 20,
+            "line_start": 18,
+            "path": "backend/app/api/ai_screener.py",
+            "role": "guard_registration",
+            "source_sha256": "536d1e572608aad2d135b1e0a245e2e9cc6059049c82155976bf556af030e086"
+          },
+          {
+            "line_end": 32,
+            "line_start": 32,
+            "path": "backend/app/api/ai_screener.py",
+            "role": "guard_registration",
+            "source_sha256": "536d1e572608aad2d135b1e0a245e2e9cc6059049c82155976bf556af030e086"
+          },
+          {
+            "line_end": 19,
+            "line_start": 18,
+            "path": "backend/app/api/ai_screener.py",
+            "role": "forbidden_condition",
+            "source_sha256": "536d1e572608aad2d135b1e0a245e2e9cc6059049c82155976bf556af030e086"
+          },
+          {
+            "line_end": 35,
+            "line_start": 34,
+            "path": "backend/app/api/ai_screener.py",
+            "role": "protected_operation",
+            "source_sha256": "536d1e572608aad2d135b1e0a245e2e9cc6059049c82155976bf556af030e086"
+          },
+          {
+            "line_end": 59,
+            "line_start": 55,
+            "path": "backend/app/api/ai_screener.py",
+            "role": "commit_point",
+            "source_sha256": "536d1e572608aad2d135b1e0a245e2e9cc6059049c82155976bf556af030e086"
+          }
+        ],
+        "forbidden_condition": "Two interleaved check-then-refresh passes concurrently writing _SCREENER_CACHE and _LAST_SCREEN_TIME for the same stale-cache window \u2014 the duplicate-refresh path the lock registration comment names.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the backend serves /top-picks from a single process or multiple workers without shared module state is not supplied.",
+          "Agent mediation unresolved: no tool registration, lifecycle hook, or agent-generated-input dataflow for this endpoint appears in the supplied source."
+        ],
+        "protected_operation": "Reading _LAST_SCREEN_TIME staleness (line 35) and updating _SCREENER_CACHE (line 56) and _LAST_SCREEN_TIME (line 59) inside GET /top-picks.",
+        "protected_resource": "Module-level _SCREENER_CACHE dict and _LAST_SCREEN_TIME timestamp (lines 16-17).",
+        "protection_obligation": "The screener's check-then-refresh of the shared module cache must be serialized by _SCREEN_LOCK so only one refresh pass reads the staleness marker and mutates _SCREENER_CACHE / _LAST_SCREEN_TIME per staleness window (same guard as the batch-dedup obligation, split out for its distinct state-stratum commit point).",
+        "scope_limits": [
+          "Cache is in-process module state; no persistence, eviction beyond the 3600-second staleness check, or cross-process coordination is declared in the supplied source.",
+          "Same per-process limit as the batch-dedup contract: no cross-worker mutual exclusion is declared.",
+          "Cached-result serving (lines 35-37) reads the same globals under the lock; no separate serving-side guard is declared."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "'await asyncio.gather(*tasks, return_exceptions=True)' at line 47, where the batch's external AI-provider requests fire.",
+        "contract_id": "ecological-contract:b82b98d8606dc80f952d92deaddfc47d",
+        "declared_mechanism": "Module-level asyncio.Lock _SCREEN_LOCK with an explicit registration comment (lines 18-20), acquired with 'async with _SCREEN_LOCK:' (line 32) around the staleness check (lines 34-37), batch construction and 'await asyncio.gather' (lines 44-47), and the cache/timestamp updates (lines 55-59).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 20,
+            "line_start": 18,
+            "path": "backend/app/api/ai_screener.py",
+            "role": "guard_registration",
+            "source_sha256": "536d1e572608aad2d135b1e0a245e2e9cc6059049c82155976bf556af030e086"
+          },
+          {
+            "line_end": 32,
+            "line_start": 32,
+            "path": "backend/app/api/ai_screener.py",
+            "role": "guard_registration",
+            "source_sha256": "536d1e572608aad2d135b1e0a245e2e9cc6059049c82155976bf556af030e086"
+          },
+          {
+            "line_end": 43,
+            "line_start": 34,
+            "path": "backend/app/api/ai_screener.py",
+            "role": "forbidden_condition",
+            "source_sha256": "536d1e572608aad2d135b1e0a245e2e9cc6059049c82155976bf556af030e086"
+          },
+          {
+            "line_end": 24,
+            "line_start": 22,
+            "path": "backend/app/api/ai_screener.py",
+            "role": "protected_operation",
+            "source_sha256": "536d1e572608aad2d135b1e0a245e2e9cc6059049c82155976bf556af030e086"
+          },
+          {
+            "line_end": 47,
+            "line_start": 46,
+            "path": "backend/app/api/ai_screener.py",
+            "role": "commit_point",
+            "source_sha256": "536d1e572608aad2d135b1e0a245e2e9cc6059049c82155976bf556af030e086"
+          }
+        ],
+        "forbidden_condition": "Two requests passing the staleness check concurrently while the cache is stale, each kicking off its own ~108-call AI batch (up to 18 tickers hit against 6 different AI providers) at the same time.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds /top-picks to an agent tool, agent lifecycle hook, or agent-generated input; agent mediation is unresolved.",
+          "app.api.ai_report._full_analysis is not supplied; the characterization of the batch as external AI-provider calls rests on in-source comments (lines 41-43)."
+        ],
+        "protected_operation": "GET /top-picks executing the cache-staleness check and the conditional parallel _full_analysis screening batch.",
+        "protected_resource": "Outbound AI-provider API capacity consumed by the batched _full_analysis calls launched at lines 46-47 (batch size bounded by max_tickers clamped to 1..18 at line 30).",
+        "protection_obligation": "The stale-cache check-then-refresh in GET /top-picks must run under mutual exclusion via the module-level asyncio lock (_SCREEN_LOCK) so that at most one multi-ticker AI screening batch runs at a time; a second request arriving while the cache is stale and a refresh is in flight must not launch a duplicate batch.",
+        "scope_limits": [
+          "Mutual exclusion is per-process module state; no cross-worker or cross-replica lock is declared in the supplied source.",
+          "Router-level get_current_user (line 13) and @limiter.limit('2/hour') (line 23) are ordinary web authentication and rate limiting, outside DEC scope and not compiled as contracts.",
+          "This contract guards only the duplicate batch launch; correctness of individual _full_analysis results (exceptions swallowed at lines 50-53) is not guarded."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source binds any compiled operation (paper-trade open/observe, /top-picks screening) to an agent tool registration, agent lifecycle hook, or agent-generated input reaching the guarded effect; agent_mediation is not_established on all contracts and no agent_entry_binding evidence exists.",
+      "The reviewer obligations on research/service.py (constant-time bearer-token 401 gate registered app-wide at lines 23-29, and owner-scoped retrieval at lines 141-148) are ordinary web authentication/authorization with no supplied agent binding; they are excluded from contracts as out of scope per DEC scope rules.",
+      "app.core.security.get_current_user is not supplied; the identity resolution behind the owner parameter used as the advisory-lock key and router dependency is unverified.",
+      "backend/app.api.ai_report._full_analysis and quantmind.flows.paper_flow internals are not supplied; the external effects inside the screening batch and the /papers extraction flow are characterized only by in-source comments.",
+      "Deployment topology (single process vs multiple workers) is not supplied; cross-process coverage of _SCREEN_LOCK and the module cache is unverified.",
+      "lock_owner() is also taken in the track handler (line 89) and flatten_open_trades (line 250) of paper_trades.py; the supplied opinions name no distinct forbidden condition or invariant for those paths, so no separate contracts were compiled for them."
+    ],
+    "repository": "leanderdulac/Atom-Finance",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:267e7c6563c24511220e7497dd636ac5"
+  },
+  "request_sha256": "871811c1d56f70701bdcf56efd546a1ddf3b676c9b44a1ec8b75d4f9ad2a3212",
+  "response_sha256": "ac06ef1c8ffaaa2c73ef60d92d611088b2c928522139ec097808e523d655b6b7",
+  "state": "completed",
+  "tokens": 24330,
+  "unit": "v24-screen:267e7c6563c24511220e7497dd636ac5"
+}

@@ -1,0 +1,99 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Start of the agent run at `Runner.run_streamed(triage_agent, message)` in `run_interview_agent_stream` (backend/agent_router.py:31): the registered input guardrail must evaluate the incoming message before the model run consumes it, and a tripped guardrail (`tripwire_triggered=True`) must stop the run before any model request carrying the injected input.",
+        "contract_id": "ecological-contract:90c6f309dd5324279e153e5fb39af2aa",
+        "declared_mechanism": "`injection_guardrail`: an `@input_guardrail`-decorated async guardrail (backend/resume_agents.py:53-63) that normalizes the run input via `_normalize_input` (lines 48-51), scans it with `inspect_user_text` against the `DANGER_TERMS` list (lines 27-46), and returns `GuardrailFunctionOutput(output_info=check, tripwire_triggered=check.blocked)`; attached to the production `triage_agent` constructor via `input_guardrails=[injection_guardrail]` (backend/resume_agents.py:191).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 63,
+            "line_start": 53,
+            "path": "backend/resume_agents.py",
+            "role": "guard_registration",
+            "source_sha256": "e7f8fc978899bee0699e4fd682336caaf74a9a37a9d495daf8341366dc966c18"
+          },
+          {
+            "line_end": 46,
+            "line_start": 27,
+            "path": "backend/resume_agents.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e7f8fc978899bee0699e4fd682336caaf74a9a37a9d495daf8341366dc966c18"
+          },
+          {
+            "line_end": 192,
+            "line_start": 178,
+            "path": "backend/resume_agents.py",
+            "role": "guard_registration",
+            "source_sha256": "e7f8fc978899bee0699e4fd682336caaf74a9a37a9d495daf8341366dc966c18"
+          },
+          {
+            "line_end": 31,
+            "line_start": 27,
+            "path": "backend/agent_router.py",
+            "role": "protected_operation",
+            "source_sha256": "450e2e9a53de8b552af90b5102af8f8ed1883b20b465bc413f037a819478f366"
+          },
+          {
+            "line_end": 31,
+            "line_start": 31,
+            "path": "backend/agent_router.py",
+            "role": "commit_point",
+            "source_sha256": "450e2e9a53de8b552af90b5102af8f8ed1883b20b465bc413f037a819478f366"
+          },
+          {
+            "line_end": 78,
+            "line_start": 72,
+            "path": "backend/agent_router.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "450e2e9a53de8b552af90b5102af8f8ed1883b20b465bc413f037a819478f366"
+          },
+          {
+            "line_end": 31,
+            "line_start": 29,
+            "path": "backend/agent_router.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "450e2e9a53de8b552af90b5102af8f8ed1883b20b465bc413f037a819478f366"
+          }
+        ],
+        "forbidden_condition": "A user message containing a DANGER_TERMS prompt-injection phrase (matched case-insensitively by `inspect_user_text`) being processed by `triage_agent`'s LLM run because `injection_guardrail` did not execute at run start or returned `tripwire_triggered=False` (`check.blocked` false).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the installed `agents` SDK executes input guardrails before the first model request during `run_streamed` and aborts the streamed run when `tripwire_triggered=True`; this framework behavior is not shown in the supplied source (only imports at backend/resume_agents.py:1-6 and backend/agent_router.py:11).",
+          "Whether a tripped guardrail surfaces as an exception that `run_interview_agent_stream`'s except block (backend/agent_router.py:47-49) converts into an SSE error event without any partial model deltas being streamed.",
+          "Whether handoff targets inherit input guardrails from triage_agent when control transfers mid-run, or subsequent turns run unguarded.",
+          "Whether `_normalize_input`'s list branch (' '.join(str(item) ...) over TResponseInputItem items, backend/resume_agents.py:48-51) preserves message content faithfully enough for the substring check on non-string run inputs.",
+          "Whether any other entry point or deployment path invokes triage_agent without the registered guardrail."
+        ],
+        "protected_operation": "The `triage_agent` run initiated by `Runner.run_streamed(agent, message)` inside `run_interview_agent_stream`, reached from the POST /agents/stream endpoint that passes `request.message` into the stream runner.",
+        "protected_resource": "`triage_agent`'s model (LLM) run/stream (System_Triage_Agent with handoffs to the four specialist agents) consuming the user-submitted message from POST /agents/stream.",
+        "protection_obligation": "The input guardrail `injection_guardrail`, registered on `triage_agent` via `input_guardrails=[injection_guardrail]`, must block prompt-injection-style user inputs (e.g., 'ignore previous instructions', 'reveal system prompt', '\uc2dc\uc2a4\ud15c \ud504\ub86c\ud504\ud2b8 \ubcf4\uc5ec\uc918') \u2014 i.e., return `tripwire_triggered=True` in its `GuardrailFunctionOutput` \u2014 so that such input never reaches the `triage_agent` LLM run initiated by POST /agents/stream through `Runner.run_streamed`. (Merged from the first-phase and second-phase reviewer wordings, which describe the same obligation at the same commit point.)",
+        "scope_limits": [
+          "Limited to the supplied source views; repository enumeration is incomplete and behavior labels are unavailable, so no runtime-behavior or prevalence claims are asserted.",
+          "The declared mechanism is a literal, lowercased substring match against the eight DANGER_TERMS entries; paraphrased, translated, encoded, or otherwise obfuscated prompt injections outside those exact strings are not covered by the declared mechanism.",
+          "Coverage is limited to triage_agent runs initiated by POST /agents/stream as shown; both mode values ('single' and 'multi') map to triage_agent (backend/agent_router.py:29), so no additional agent path arises from this endpoint.",
+          "The handoff target specialists (resume_editor_agent, question_agent, evaluation_agent, feedback_agent) carry no input_guardrails registration in supplied source (backend/resume_agents.py:119-172), so post-handoff model turns are out of scope of this contract.",
+          "Ordinary endpoint mechanics (Pydantic field validation, SSE formatting, exception-to-SSE error forwarding) are generic application behavior outside the protection contract."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Framework semantics of the agents SDK's input guardrails \u2014 execution timing relative to the model call and the effect of tripwire_triggered=True on Runner.run_streamed \u2014 are not present in the supplied source (only `from agents import ...` statements, backend/resume_agents.py:1-6 and backend/agent_router.py:11).",
+      "Guardrail registration (or inheritance behavior) for the handoff target specialist agents is absent from the supplied source (backend/resume_agents.py:119-172), so post-handoff protection status is unknown.",
+      "Runtime/streaming behavior of guardrails on run_streamed (e.g., whether output is buffered until guardrails pass) is unavailable; behavior labels are not provided per the unit scope."
+    ],
+    "repository": "vsuminv/interview-app",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a07226b87a8d217c9787f9a3bf4308a8"
+  },
+  "request_sha256": "c5839090857a21be9e16fe7f741c3cc88f98cbd05d8087036ac7f1873d12f0bb",
+  "response_sha256": "6ae7a1406b7c9bbce16b0c7d33a9ec17c7f7e5ad24c2c29acbc5fb87147c5ed1",
+  "state": "completed",
+  "tokens": 15436,
+  "unit": "v24-screen:a07226b87a8d217c9787f9a3bf4308a8"
+}

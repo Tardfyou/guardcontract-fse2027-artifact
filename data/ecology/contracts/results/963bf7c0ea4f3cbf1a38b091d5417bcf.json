@@ -1,0 +1,246 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "backend/core_services/handlers.py lines 770-772 (client = MultiServerMCPClient(client_config); discovered_tools = await client.get_tools()) in handle_add_mcp_server, and lines 943-945 (same construction and get_tools call) in handle_refresh_mcp_tools \u2014 the outbound HTTP connection to the configured MCP server URL.",
+        "contract_id": "ecological-contract:3e8b2fdf498628d570fec8b44ad7f72d",
+        "declared_mechanism": "validate_mcp_url(url) defined in backend/core_services/utils.py (lines 17-72) is invoked inside try/except immediately before client_config is built and the client connects: handlers.py lines 718-722 in handle_add_mcp_server ('SSRF guard: validate the user-supplied URL before we ever connect') and lines 899-905 in handle_refresh_mcp_tools ('re-validate the URL before reconnecting (closes the DNS-rebinding window...)'); a raised ValueError short-circuits with error_envelope(\"validation_error\", str(url_err)) before any connection is attempted.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 72,
+            "line_start": 17,
+            "path": "backend/core_services/utils.py",
+            "role": "guard_registration",
+            "source_sha256": "dcaa27092d450cbeebe66feb586b3f626c67b48ca6b3910272d4291be4ef7be3"
+          },
+          {
+            "line_end": 72,
+            "line_start": 30,
+            "path": "backend/core_services/utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dcaa27092d450cbeebe66feb586b3f626c67b48ca6b3910272d4291be4ef7be3"
+          },
+          {
+            "line_end": 722,
+            "line_start": 717,
+            "path": "backend/core_services/handlers.py",
+            "role": "guard_registration",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          },
+          {
+            "line_end": 768,
+            "line_start": 749,
+            "path": "backend/core_services/handlers.py",
+            "role": "protected_operation",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          },
+          {
+            "line_end": 772,
+            "line_start": 770,
+            "path": "backend/core_services/handlers.py",
+            "role": "commit_point",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          },
+          {
+            "line_end": 905,
+            "line_start": 899,
+            "path": "backend/core_services/handlers.py",
+            "role": "guard_registration",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          },
+          {
+            "line_end": 911,
+            "line_start": 906,
+            "path": "backend/core_services/handlers.py",
+            "role": "protected_operation",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          },
+          {
+            "line_end": 945,
+            "line_start": 943,
+            "path": "backend/core_services/handlers.py",
+            "role": "commit_point",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          }
+        ],
+        "forbidden_condition": "Reaching the MultiServerMCPClient connection/get_tools() commit point with a user-supplied (add path) or stored (refresh path) MCP server URL that is non-HTTPS, embeds credentials, targets a blocked internal hostname, resolves to loopback/private/link-local/reserved/multicast/unspecified IP addresses (including IPv4-mapped forms), or fails to resolve \u2014 i.e., any unvalidated outbound MCP connection that could reach internal network or cloud metadata services.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Route/controller registration that exposes handle_add_mcp_server and handle_refresh_mcp_tools (no app wiring file supplied), needed to confirm the request path and any agent-dispatched entry.",
+          "Whether any agent runtime or tool dispatch invokes these handlers or consumes the stored MCP server configs as agent tools or lifecycle steps \u2014 no concrete binding is present in the supplied views.",
+          "Whether agent-generated input can supply or modify the MCP server URL before the guard runs (e.g., via an LLM-driven configuration flow) \u2014 not established from supplied source."
+        ],
+        "protected_operation": "Outbound MCP server connection and tool discovery performed via MultiServerMCPClient(client_config) construction and client.get_tools() inside handle_add_mcp_server (pre-save connection test before the server config is persisted) and handle_refresh_mcp_tools (re-discovery before config sync).",
+        "protected_resource": "Outbound network egress from the core_services backend toward user-supplied MCP server URLs, and the internal network/metadata endpoints that egress could otherwise reach via SSRF.",
+        "protection_obligation": "User-supplied MCP server URLs used for outbound connections in RequestHandlers.handle_add_mcp_server and RequestHandlers.handle_refresh_mcp_tools must pass validate_mcp_url (HTTPS-only scheme, no embedded credentials, rejection of blocked hostnames localhost/metadata.google.internal and *.localhost/*.internal/*.local suffixes, and DNS resolution rejecting loopback/private/link-local/reserved/multicast/unspecified addresses including cloud metadata endpoints such as 169.254.169.254) immediately before each MultiServerMCPClient connection and get_tools() tool-discovery call, with the request rejected as a validation_error envelope when the guard raises ValueError.",
+        "scope_limits": [
+          "Guard applies only to the streamable_http transport branch of the two handlers; stdio transport is guarded separately by the command allowlist compiled as its own contract (process stratum).",
+          "In handle_refresh_mcp_tools the validated URL is read from stored per-user tool config (server.get(\"url\") obtained via tool_config_service.get_config), so the guard also covers tampered or stale stored config, not only direct request input.",
+          "validate_mcp_url is a self-contained module-local duplicate of sparky's _validate_mcp_url; this contract covers only the core_services module and its handler call sites.",
+          "The guard resolves DNS at call time but does not pin IPs; its docstring requires calling it immediately before each connection attempt so the resolve-then-validate window stays small, and the underlying transport re-resolves DNS at connect time.",
+          "Agent mediation is unresolved: the handlers are JWT-authenticated HTTP API operations and no supplied source shows a decorator, tool registration, dispatch, or lifecycle hook binding them to agent tool invocation; per study rules agent mediation is not inferred from the repository's agent-centric topic.",
+          "langchain_mcp_adapters.MultiServerMCPClient internals are not in the supplied source; the exact socket-open point inside the library is asserted only from the handler call site."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "backend/core_services/handlers.py lines 770-772 in handle_add_mcp_server and lines 943-945 in handle_refresh_mcp_tools, where MultiServerMCPClient(client_config) is constructed with the stdio command/args and client.get_tools() initiates the server process launch; the actual subprocess spawn occurs inside langchain_mcp_adapters, which is not in the supplied source.",
+        "contract_id": "ecological-contract:536a796d419aacd851174a5853d4bb68",
+        "declared_mechanism": "Inline allowlist validation present at both call sites: handlers.py lines 729-747 (add path: _ALLOWED_STDIO_COMMANDS/_DANGEROUS_ARGS with os.path.basename normalization, comment 'Validate stdio command against allowlist to prevent arbitrary command execution', returning error_envelope(\"validation_error\", ...)) and handlers.py lines 912-930 (refresh path: identical check with comment 'Validate command against allowlist before execution').",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 747,
+            "line_start": 729,
+            "path": "backend/core_services/handlers.py",
+            "role": "guard_registration",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          },
+          {
+            "line_end": 768,
+            "line_start": 761,
+            "path": "backend/core_services/handlers.py",
+            "role": "protected_operation",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          },
+          {
+            "line_end": 772,
+            "line_start": 770,
+            "path": "backend/core_services/handlers.py",
+            "role": "commit_point",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          },
+          {
+            "line_end": 930,
+            "line_start": 912,
+            "path": "backend/core_services/handlers.py",
+            "role": "guard_registration",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          },
+          {
+            "line_end": 937,
+            "line_start": 931,
+            "path": "backend/core_services/handlers.py",
+            "role": "protected_operation",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          },
+          {
+            "line_end": 945,
+            "line_start": 943,
+            "path": "backend/core_services/handlers.py",
+            "role": "commit_point",
+            "source_sha256": "d2250d552e53391cb32a1cbd334a9a485ed19a47a4c4a6b0accb9c666350a7ec"
+          }
+        ],
+        "forbidden_condition": "Launching an MCP stdio server whose command basename is not in the allowlist (arbitrary binary/command execution), or whose args include inline code-execution flags such as -c/--eval/-e/--exec/--import (inline code injection into the spawned interpreter), reaching the MultiServerMCPClient stdio connection unvalidated.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Library source for langchain_mcp_adapters.MultiServerMCPClient stdio transport to pinpoint the exact process-creation effect and confirm no command formulation bypasses the basename check.",
+          "Entry-point wiring for the handlers (route registration or agent dispatch) to determine whether the guarded process launch is ever agent-mediated.",
+          "Whether stored stdio server configs can be modified by any path that skips these allowlist checks before a later launch."
+        ],
+        "protected_operation": "Connection to a stdio-transport MCP server, where MultiServerMCPClient is constructed with {transport: stdio, command: server.get(\"command\"), args: server.get(\"args\", [])} and get_tools() triggers the server process launch, in both the add and refresh handler paths.",
+        "protected_resource": "The OS process/shell execution environment of the core_services backend host (prevention of arbitrary or inline-code command execution via user-configured stdio MCP servers).",
+        "protection_obligation": "For stdio-transport MCP servers configured through handle_add_mcp_server or handle_refresh_mcp_tools, the user-supplied command basename must be in the allowlist {python, python3, uvx, npx, node} and the supplied args must contain none of the inline-execution flags {-c, --eval, -e, --exec, --import}, enforced before the stdio client_config is used to connect via MultiServerMCPClient, with violations rejected as a validation_error envelope before launch.",
+        "scope_limits": [
+          "Check applies only to the stdio transport branch; the streamable_http branch is covered by the URL SSRF guard contracts.",
+          "The command is normalized with os.path.basename before the allowlist comparison, so path-prefixed invocations that reduce to an allowed basename pass; the guard does not separately constrain the resolved path.",
+          "The allowlist and dangerous-args set are duplicated inline in each handler rather than shared with the URL validator utility.",
+          "The subprocess spawn point inside langchain_mcp_adapters.MultiServerMCPClient is not in the supplied source; the commit point is asserted at the handler-level connection call.",
+          "Agent mediation is unresolved: no supplied source binds these handlers or the spawned MCP server processes to agent tool dispatch or lifecycle hooks."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "backend/sparky/tool_config_service.py lines 618-635: the httpx.AsyncClient context (timeout=30.0) and the awaited client.post(tools_url, =request_payload, ...) at line 628 that transmits the outbound tools/list request.",
+        "contract_id": "ecological-contract:5e6d5e8e1a00c0bbc46998029a686bd9",
+        "declared_mechanism": "_validate_mcp_url(url) defined at backend/sparky/tool_config_service.py lines 835-897 is called as the first operational statement of _fetch_mcp_tools_http (line 612, preceded by the comment 'Validate URL to prevent SSRF attacks') before httpx.AsyncClient is constructed and client.post is issued; the function raises ValueError for every forbidden URL form.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 897,
+            "line_start": 835,
+            "path": "backend/sparky/tool_config_service.py",
+            "role": "guard_registration",
+            "source_sha256": "e77aad74b3da539e19039e017b0d1e67301a518191a750daa924babdf09c94a6"
+          },
+          {
+            "line_end": 897,
+            "line_start": 850,
+            "path": "backend/sparky/tool_config_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e77aad74b3da539e19039e017b0d1e67301a518191a750daa924babdf09c94a6"
+          },
+          {
+            "line_end": 594,
+            "line_start": 547,
+            "path": "backend/sparky/tool_config_service.py",
+            "role": "protected_operation",
+            "source_sha256": "e77aad74b3da539e19039e017b0d1e67301a518191a750daa924babdf09c94a6"
+          },
+          {
+            "line_end": 612,
+            "line_start": 611,
+            "path": "backend/sparky/tool_config_service.py",
+            "role": "guard_registration",
+            "source_sha256": "e77aad74b3da539e19039e017b0d1e67301a518191a750daa924babdf09c94a6"
+          },
+          {
+            "line_end": 635,
+            "line_start": 618,
+            "path": "backend/sparky/tool_config_service.py",
+            "role": "commit_point",
+            "source_sha256": "e77aad74b3da539e19039e017b0d1e67301a518191a750daa924babdf09c94a6"
+          }
+        ],
+        "forbidden_condition": "Issuing the httpx JSON-RPC tools/list POST (or any connection in _fetch_mcp_tools_http) to a server URL that is non-HTTPS, contains embedded credentials, targets a blocked internal hostname, or resolves to any non-public address (loopback, private, link-local, reserved, multicast, unspecified, including ::ffff:-mapped IPv4 such as cloud metadata endpoints) \u2014 i.e., an SSRF-bound tool-discovery request that bypassed the validator.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Concrete caller(s) of ToolConfigService.load_mcp_tools / _fetch_mcp_tools_http (e.g., MCPLifecycleManager startup or session-reconciliation code) \u2014 not supplied; required to establish any agent lifecycle binding for the guarded effect.",
+          "Dataflow proving where server_config (name/url/transport) is produced and whether agent-generated input can reach it.",
+          "Whether the sparky runtime is the agent host whose tool inventory this discovery feeds, and whether the discovery step constitutes an agent lifecycle hook."
+        ],
+        "protected_operation": "MCP tool discovery over HTTP: load_mcp_tools(server_config) delegating to _fetch_mcp_tools_http(server_url, server_name), which posts a JSON-RPC 2.0 tools/list request to the user-supplied MCP server URL via httpx.AsyncClient.",
+        "protected_resource": "Outbound network egress from the sparky backend toward the user-supplied MCP server URL, and the internal network/metadata endpoints that egress could otherwise reach via SSRF.",
+        "protection_obligation": "Outbound MCP tool-listing requests issued by ToolConfigService._fetch_mcp_tools_http (reached via load_mcp_tools) to a user-supplied server URL must pass _validate_mcp_url \u2014 enforcing HTTPS-only scheme, rejecting embedded credentials, blocking internal hostnames (localhost, metadata.google.internal, *.localhost/*.internal/*.local), and resolving DNS to reject loopback/private/link-local/reserved/multicast/unspecified addresses including IPv4-mapped forms and cloud metadata endpoints \u2014 immediately before the httpx POST, raising ValueError on failure.",
+        "scope_limits": [
+          "load_mcp_tools supports only the streamable_http transport and raises ValueError for any other transport, so this guard covers HTTP tool discovery only.",
+          "_validate_mcp_url is a sparky-local duplicate, distinct from core_services' validate_mcp_url; this contract covers only the sparky module's call site.",
+          "The function's docstring states no IP pinning is performed (it would break TLS SNI/certificate validation because the transport re-resolves DNS); the mitigation is re-validation at every call site immediately before connecting.",
+          "The caller of load_mcp_tools is not present in the supplied source; docstrings reference MCPLifecycleManager performing tool discovery 'during startup and session reconciliation', but that wiring is not supplied and agent mediation is not inferred from module metadata.",
+          "Whether the server_config URLs flowing into load_mcp_tools originate from user API-stored config, agent-generated input, or both is not shown in the supplied source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No application/route registration files (e.g., FastAPI app wiring) are supplied for either backend, so the entry points invoking RequestHandlers.handle_add_mcp_server, RequestHandlers.handle_refresh_mcp_tools, and ToolConfigService.load_mcp_tools are unknown; agent mediation for all three contracts is therefore not_established rather than bound, and no agent_entry_binding evidence role is cited.",
+      "MCPLifecycleManager, referenced in sparky tool_config_service.py docstrings as the component performing tool discovery 'during startup and session reconciliation', is not included in the supplied source; its wiring to load_mcp_tools/_fetch_mcp_tools_http cannot be verified.",
+      "The langchain_mcp_adapters.MultiServerMCPClient library is not supplied, so the exact outbound-connection and subprocess-spawn effect points inside the library are inferred only from the handler call sites.",
+      "backend/core_services' own tool_config_service module (imported by handlers.py at line 23) is not supplied; only backend/sparky/tool_config_service.py is provided, so the deployment relationship between the duplicated validators (validate_mcp_url vs _validate_mcp_url) and between the two packages is evidenced at source level but not operationally.",
+      "No runtime behavior labels or prevalence data are available for the guarded paths, per the stated study scope.",
+      "It is unknown whether any agent-generated input (LLM or tool output) can influence the MCP server URL, command, or args fields before the guards run; the supplied source shows only JWT-authenticated user API input (user_id extracted from token; server dict from the request)."
+    ],
+    "repository": "aws-samples/sample-ai-assistant-on-agentcore",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:963bf7c0ea4f3cbf1a38b091d5417bcf"
+  },
+  "request_sha256": "7bac94663538eb1bb98b0d188f743b984c7a7f1f2071830663860a3aa79850af",
+  "response_sha256": "a8c974fd234d2a009163ac2d5b7911c2a6840cd42f0defe6a79d1663d2aaf39f",
+  "state": "completed",
+  "tokens": 66777,
+  "unit": "v24-screen:963bf7c0ea4f3cbf1a38b091d5417bcf"
+}

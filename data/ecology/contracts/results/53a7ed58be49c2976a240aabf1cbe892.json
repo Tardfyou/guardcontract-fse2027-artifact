@@ -1,0 +1,183 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The middleware's pre-execution interrupt on each record_movement tool call: the graph pauses with paused state persisted by the checkpointer ('an interrupt has to persist the paused state somewhere or there is nothing to resume into', graph.py:134-136) and the tool must not execute until the CLI resumes it with the human decision (cli.py:95-104); if execution proceeds, the write commits through the POST /movements request in InventoryClient.record_movement (client.py:205-210), the terminal supplied code point of the movement write.",
+        "contract_id": "ecological-contract:7caaa1f06c63f942d1c61f6170ee7638",
+        "declared_mechanism": "HumanInTheLoopMiddleware constructed in build_middleware with a per-tool InterruptOnConfig(allowed_decisions=['approve','edit','reject'], description=_describe_write) for every name in GUARDED_TOOLS={'record_movement'}, attached via create_agent(model, tools, middleware=build_middleware(require_approval), checkpointer=InMemorySaver()); the CLI detects '__interrupt__' in the astream and resumes with Command(resume=_ask_human(...)), where _ask_human is the operator approval gate returning one decision per action request.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 34,
+            "line_start": 32,
+            "path": "phase5-mcp-agent/agent/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "2cc3e65c78db74e4aa7be21d5803a24bdc0e6d8f8faa5dbf115d96335b62c39d"
+          },
+          {
+            "line_end": 107,
+            "line_start": 89,
+            "path": "phase5-mcp-agent/agent/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "2cc3e65c78db74e4aa7be21d5803a24bdc0e6d8f8faa5dbf115d96335b62c39d"
+          },
+          {
+            "line_end": 138,
+            "line_start": 117,
+            "path": "phase5-mcp-agent/agent/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2cc3e65c78db74e4aa7be21d5803a24bdc0e6d8f8faa5dbf115d96335b62c39d"
+          },
+          {
+            "line_end": 54,
+            "line_start": 42,
+            "path": "phase5-mcp-agent/agent/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2cc3e65c78db74e4aa7be21d5803a24bdc0e6d8f8faa5dbf115d96335b62c39d"
+          },
+          {
+            "line_end": 68,
+            "line_start": 57,
+            "path": "phase5-mcp-agent/agent/graph.py",
+            "role": "protected_operation",
+            "source_sha256": "2cc3e65c78db74e4aa7be21d5803a24bdc0e6d8f8faa5dbf115d96335b62c39d"
+          },
+          {
+            "line_end": 136,
+            "line_start": 134,
+            "path": "phase5-mcp-agent/agent/graph.py",
+            "role": "commit_point",
+            "source_sha256": "2cc3e65c78db74e4aa7be21d5803a24bdc0e6d8f8faa5dbf115d96335b62c39d"
+          },
+          {
+            "line_end": 84,
+            "line_start": 66,
+            "path": "phase5-mcp-agent/agent/cli.py",
+            "role": "guard_registration",
+            "source_sha256": "28b4eea80d4a16db8f4e1e24bb9b45b37aefcbd673cf3897bc81dca37e8cca88"
+          },
+          {
+            "line_end": 104,
+            "line_start": 87,
+            "path": "phase5-mcp-agent/agent/cli.py",
+            "role": "commit_point",
+            "source_sha256": "28b4eea80d4a16db8f4e1e24bb9b45b37aefcbd673cf3897bc81dca37e8cca88"
+          },
+          {
+            "line_end": 210,
+            "line_start": 181,
+            "path": "phase5-mcp-agent/inventory_mcp/client.py",
+            "role": "protected_operation",
+            "source_sha256": "31105d9c9b15b073f7f0ee5d7194f25529a20f943e008ec043b3dfa18f39844b"
+          }
+        ],
+        "forbidden_condition": "The record_movement tool call executing (and thereby committing the inventory movement write) without a human approve/edit/reject decision resolving the middleware interrupt \u2014 i.e., the world-changing write running unattended through agent tool dispatch.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The MCP-server tool implementation for record_movement (which would bind the guarded agent tool to InventoryClient.record_movement and the POST /movements write) is not in the supplied sources; the linkage rests on the tool name in GUARDED_TOOLS matching InventoryClient.record_movement and the client docstring 'The HTTP client the MCP tools call' (client.py:1-7).",
+          "The downstream persistence path for POST /movements (REST facade -> database) and the 'publishes a domain event' behavior described in _describe_write (graph.py:67) are not in supplied source.",
+          "Framework semantics of langchain HumanInTheLoopMiddleware/InterruptOnConfig (exact pause/resume guarantees) are not supplied; only their registration and the CLI resume wiring are evidenced."
+        ],
+        "protected_operation": "Pre-execution interception and human resolution of the agent's record_movement tool call, whose execution the source describes as 'WRITE to the inventory database ... records a real stock movement and publishes a domain event' and as a write that should occur only when clearly asked for.",
+        "protected_resource": "The 'record_movement' MCP tool listed in GUARDED_TOOLS \u2014 the guarded write path to the inventory platform, materialized in supplied code as the POST /movements request in InventoryClient.record_movement.",
+        "protection_obligation": "Any agent-invoked execution of the 'record_movement' tool (the guarded write to the inventory database issued via POST /movements) must first be interrupted by HumanInTheLoopMiddleware and resolved by a human approve/edit/reject decision before the tool executes. This merges the approval clauses of both reviewers' first- and second-phase wording.",
+        "scope_limits": [
+          "Gating applies only when require_approval is True: build_middleware skips HumanInTheLoopMiddleware otherwise (graph.py:89-107), build_agent defaults require_approval=True (graph.py:122), and the CLI run() path uses that default (cli.py:88).",
+          "Only tools named in GUARDED_TOOLS={'record_movement'} are gated; reads run unattended by design (graph.py:32-33).",
+          "InterruptOnConfig allows approve/edit/reject (graph.py:98-100), but the supplied CLI resolver emits only approve or reject; no edit path is implemented in _ask_human (cli.py:76-83).",
+          "Interrupt persistence uses InMemorySaver, i.e., in-memory per-process checkpoint state (graph.py:28, 134-136).",
+          "The claim that record_movement is the sole write path is supported by the supplied views ('# The write', client.py:181-183) but the unit scope states repository enumeration is not complete, so exclusivity cannot be verified.",
+          "ToolCallLimitMiddleware (run_limit=15, exit_behavior='continue', graph.py:36-40, 91-93) is a gateway rate-budget control and is not part of this approval obligation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Emission of the POST /movements request with the Idempotency-Key header (client.py:205-210) \u2014 the last supplied code point before persistence at which duplicate attempts become collapsible ('replayed: true ... the stock moves once', client.py:52-53).",
+        "contract_id": "ecological-contract:7d838eb1201c2aa69805cc86e281f1b2",
+        "declared_mechanism": "movement_idempotency_key(session_id, sku, warehouse_code, movement_type, quantity) deriving a deterministic uuid5 key seeded from the intent under the fixed IDEMPOTENCY_NAMESPACE, sent as the 'Idempotency-Key' header on the POST in InventoryClient.record_movement.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 7,
+            "line_start": 1,
+            "path": "phase5-mcp-agent/inventory_mcp/client.py",
+            "role": "forbidden_condition",
+            "source_sha256": "31105d9c9b15b073f7f0ee5d7194f25529a20f943e008ec043b3dfa18f39844b"
+          },
+          {
+            "line_end": 22,
+            "line_start": 20,
+            "path": "phase5-mcp-agent/inventory_mcp/client.py",
+            "role": "guard_registration",
+            "source_sha256": "31105d9c9b15b073f7f0ee5d7194f25529a20f943e008ec043b3dfa18f39844b"
+          },
+          {
+            "line_end": 59,
+            "line_start": 41,
+            "path": "phase5-mcp-agent/inventory_mcp/client.py",
+            "role": "guard_registration",
+            "source_sha256": "31105d9c9b15b073f7f0ee5d7194f25529a20f943e008ec043b3dfa18f39844b"
+          },
+          {
+            "line_end": 210,
+            "line_start": 183,
+            "path": "phase5-mcp-agent/inventory_mcp/client.py",
+            "role": "protected_operation",
+            "source_sha256": "31105d9c9b15b073f7f0ee5d7194f25529a20f943e008ec043b3dfa18f39844b"
+          },
+          {
+            "line_end": 210,
+            "line_start": 205,
+            "path": "phase5-mcp-agent/inventory_mcp/client.py",
+            "role": "commit_point",
+            "source_sha256": "31105d9c9b15b073f7f0ee5d7194f25529a20f943e008ec043b3dfa18f39844b"
+          },
+          {
+            "line_end": 54,
+            "line_start": 42,
+            "path": "phase5-mcp-agent/agent/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2cc3e65c78db74e4aa7be21d5803a24bdc0e6d8f8faa5dbf115d96335b62c39d"
+          }
+        ],
+        "forbidden_condition": "A duplicate movement write that is not collapsed: a write issued without the derived stable key (e.g., a random per-attempt key), such that 'every retry [is] a NEW movement and silently double-count[s] stock', or the model calling the same write twice for the same physical event.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The code that calls movement_idempotency_key and passes the key into InventoryClient.record_movement (presumably the MCP server's record_movement tool, deriving session_id from agent tool-call context) is not in supplied source, so the agent-generated-input dataflow into this guard is not established.",
+          "Whether any non-agent code path issues the same POST /movements write without this mechanism cannot be determined from the supplied views."
+        ],
+        "protected_operation": "The write performed by InventoryClient.record_movement: the POST {rest_root}/movements request, labeled '# The write' in the client.",
+        "protected_resource": "The inventory movements resource (stock records in the inventory database) reached via settings.rest_root + '/movements' through the gateway.",
+        "protection_obligation": "The inventory movement write (the POST /movements request issued by InventoryClient.record_movement) must carry an intent-derived Idempotency-Key so that repeated attempts at the same logical movement within a session collapse into one recorded movement instead of double-counting stock. This merges the idempotency clauses of both reviewers' wording.",
+        "scope_limits": [
+          "The key seed covers session_id, sku, warehouse_code, movement_type and quantity only (client.py:58); reference_type and notes are excluded from the seed.",
+          "session_id is deliberately in the hash so recording the same movement in a later session is treated as a legitimate business event, not a retry (client.py:55-56).",
+          "Collapse depends on the server honoring Idempotency-Key replay semantics ('replayed: true'); that behavior is asserted only in the client docstring and no server-side code is supplied.",
+          "Cross-process key stability depends on the fixed IDEMPOTENCY_NAMESPACE, whose value is redacted in the supplied source (client.py:20-22).",
+          "Settings values (rest_root, timeout_seconds, api_key_header, api_key) come from inventory_mcp.config, which is not supplied."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The MCP server tool-definition source (the module launched by 'python -m inventory_mcp' per graph.py:78-85) is not supplied; it would show registration of the record_movement tool and the concrete dataflow from agent tool arguments to movement_idempotency_key and InventoryClient.record_movement.",
+      "The REST facade and database persistence implementation for POST /movements is not supplied; the terminal commit of the guarded movement write and the server-side Idempotency-Key replay behavior ('replayed: true') cannot be confirmed from supplied views.",
+      "inventory_mcp/config.py (settings.rest_root, events_url, api_key_header, timeout_seconds) is not supplied, so the concrete endpoint target of the write is only partially evidenced.",
+      "Behavior/runtime labels are unavailable per the unit scope, so whether require_approval is ever disabled in deployment and whether record_movement is truly the repository's sole write path cannot be verified beyond the supplied views."
+    ],
+    "repository": "jdoan5/Integration-and-API-Platform",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:53a7ed58be49c2976a240aabf1cbe892"
+  },
+  "request_sha256": "814fd96baf5917c44f7e799c2ba77332b041baac0b64af7d8d2d148ea6c093a1",
+  "response_sha256": "e614bf2480c58185c56ceb22af5fee408d7bc717b7ff8d2cb26d7aa55d0c2b2f",
+  "state": "completed",
+  "tokens": 29016,
+  "unit": "v24-screen:53a7ed58be49c2976a240aabf1cbe892"
+}

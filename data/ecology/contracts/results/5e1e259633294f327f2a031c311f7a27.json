@@ -1,0 +1,120 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "SUBMITTED_WORK_ORDERS.append(work_order) in actions.py (line 55), where the work-order record with status 'SUBMITTED' is committed to the store and a generated work_order_id is returned.",
+        "contract_id": "ecological-contract:7405f02ca9974c79e87faacb8bcbb8d3",
+        "declared_mechanism": "require_human_approval (guardrails.py) registered as before_tool_callback=require_human_approval on the action_agent LlmAgent: for tool.name == 'submit_work_order' with args lacking approved=True, it does not run the tool and instead returns an AWAITING_HUMAN_APPROVAL payload with a preview and instruction to obtain the user's 'approve'/'reject' reply and re-issue the call with approved=true; complemented by a defense-in-depth in-body check in submit_work_order that returns {'status': 'REJECTED'} when approved is falsy, before any state mutation.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 39,
+            "path": "shopfloor_sentinel/sub_agents/action_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "507307d6c90c8b1b437dbffbcfdd8241ad4239a35da7194175d4c07d9fc03ace"
+          },
+          {
+            "line_end": 48,
+            "line_start": 48,
+            "path": "shopfloor_sentinel/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fa1bc6e99584efb09441bf4ed928971f26ce47acb910ea2114ad5229a373e4d2"
+          },
+          {
+            "line_end": 41,
+            "line_start": 40,
+            "path": "shopfloor_sentinel/sub_agents/action_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "507307d6c90c8b1b437dbffbcfdd8241ad4239a35da7194175d4c07d9fc03ace"
+          },
+          {
+            "line_end": 107,
+            "line_start": 98,
+            "path": "shopfloor_sentinel/security/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "49459ff1993226567c52d742dd1897e723764eca71e3119f44ebea7fb74f1430"
+          },
+          {
+            "line_end": 126,
+            "line_start": 108,
+            "path": "shopfloor_sentinel/security/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "49459ff1993226567c52d742dd1897e723764eca71e3119f44ebea7fb74f1430"
+          },
+          {
+            "line_end": 7,
+            "line_start": 1,
+            "path": "shopfloor_sentinel/actions.py",
+            "role": "protected_operation",
+            "source_sha256": "811d06005bc6c8d67322f81d54291d9d50bd34ab7c5c784b59cd02e0fd8ccc1c"
+          },
+          {
+            "line_end": 29,
+            "line_start": 18,
+            "path": "shopfloor_sentinel/actions.py",
+            "role": "protected_operation",
+            "source_sha256": "811d06005bc6c8d67322f81d54291d9d50bd34ab7c5c784b59cd02e0fd8ccc1c"
+          },
+          {
+            "line_end": 42,
+            "line_start": 40,
+            "path": "shopfloor_sentinel/actions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "811d06005bc6c8d67322f81d54291d9d50bd34ab7c5c784b59cd02e0fd8ccc1c"
+          },
+          {
+            "line_end": 56,
+            "line_start": 47,
+            "path": "shopfloor_sentinel/actions.py",
+            "role": "commit_point",
+            "source_sha256": "811d06005bc6c8d67322f81d54291d9d50bd34ab7c5c784b59cd02e0fd8ccc1c"
+          },
+          {
+            "line_end": 95,
+            "line_start": 94,
+            "path": "shopfloor_sentinel/security/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "49459ff1993226567c52d742dd1897e723764eca71e3119f44ebea7fb74f1430"
+          }
+        ],
+        "forbidden_condition": "submit_work_order being invoked (via action_agent tool dispatch or any other path) without the approved argument set truthy, i.e., without explicit human approval, such that execution would proceed toward the commit point; detected both at the tool boundary (guardrails.py checks tool.name == 'submit_work_order' and args.get('approved', False)) and inside the tool body (actions.py `if not approved`).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether SUBMITTED_WORK_ORDERS is ever exported, synced, or re-used by other modules as a record of real submission to a CMMS (no such code in supplied views).",
+          "Whether any non-agent code path calls submit_work_order directly, which would skip the before_tool_callback while still exercising the in-body check.",
+          "Whether the ADK framework guarantees before_tool_callback execution on the LLM-driven agent-transfer path from root_agent to action_agent (transfer wiring beyond the sub_agents registration is not shown).",
+          "Whether the approval flow (user reply 'approve' parsed by the model, which then re-issues the call with approved=true) is evaluated or enforced anywhere beyond the agent instruction text in action_agent.py."
+        ],
+        "protected_operation": "Invocation of the submit_work_order tool that drafts and records a maintenance work order (machine_id, problem, recommended_action, priority) marked status 'SUBMITTED' \u2014 described in source as submission to the CMMS (simulated).",
+        "protected_resource": "SUBMITTED_WORK_ORDERS, the in-process work-order store / simulated CMMS record list declared in security/guardrails.py, to which the submitted work-order dict is appended.",
+        "protection_obligation": "The side-effecting tool submit_work_order (simulated CMMS work-order submission) must not execute \u2014 and no work order may be recorded as submitted \u2014 without explicit human approval. Enforcement is layered: the require_human_approval guard registered as before_tool_callback on action_agent short-circuits unapproved calls (returning AWAITING_HUMAN_APPROVAL instead of running the tool), and a defense-in-depth refusal inside the tool body returns REJECTED before the commit-point append to SUBMITTED_WORK_ORDERS.",
+        "scope_limits": [
+          "Source labels the CMMS submission as simulated (actions.py line 25); the only committed effect visible in supplied source is the in-process append to SUBMITTED_WORK_ORDERS \u2014 no network, database, file, or process effect is shown, so the stratum is application state.",
+          "The before_tool_callback gate is registered only on action_agent; a call to submit_work_order dispatched outside action_agent's tool dispatch would bypass require_human_approval (the in-body approved check would still apply).",
+          "Approval is represented solely by the truthiness of the approved argument and a conversational 'approve' reply; supplied source does not bind approval to an authenticated human identity or out-of-band approval channel.",
+          "The before_model_callback input_guardrail on the root agent (agent.py line 50; guardrails.py lines 59-87) is a complementary input policy filter (blocklist/refusal) and is not treated here as the approval enforcement for this commit point.",
+          "Only supplied line-numbered views are used; repository enumeration is incomplete and runtime behavior labels are unavailable, so this is a source-supported hypothesis, not a verified runtime guarantee."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied source shows an actual CMMS integration (network/API call, database write, or file write); the 'submission to the CMMS' characterization rests on docstrings describing a simulation, and the only observable committed effect is the in-memory append to SUBMITTED_WORK_ORDERS.",
+      "No behavior labels, tests, or evaluation configs are supplied confirming that require_human_approval actually intercepts tool calls at runtime.",
+      "No supplied source shows whether any code outside action_agent invokes submit_work_order, or whether SUBMITTED_WORK_ORDERS is read/exported elsewhere, leaving callback-bypass and downstream-use questions unresolved.",
+      "No supplied source binds the human 'approve' conversational reply to an authenticated identity or auditable approval record beyond the agent instruction text."
+    ],
+    "repository": "mmoneka11/ShopFloor_Sentinel",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:5e1e259633294f327f2a031c311f7a27"
+  },
+  "request_sha256": "f73aeb9f86130d855886ee592a8de87f0f0ff15926324526dc80dc3051bc4d5b",
+  "response_sha256": "5de6a46a78ed2f7142935e9de5f3f444287190acabdbcf9098af1f49dc3ce559",
+  "state": "completed",
+  "tokens": 12673,
+  "unit": "v24-screen:5e1e259633294f327f2a031c311f7a27"
+}

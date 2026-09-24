@@ -1,0 +1,206 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "execute_write in src/db.py lines 22-26 (_conn.execute followed by _conn.commit), reached from the auto-refund write at src/tools/account_tools.py lines 63-66 and the refund-request write at lines 70-73.",
+        "contract_id": "ecological-contract:8105429f0bd22f557e9728234156dd50",
+        "declared_mechanism": "HumanInTheLoopMiddleware with interrupt_on {'request_refund': True} registered in the middleware list of create_agent (src/agent.py lines 60-65), plus SubAgent interrupt_on {'request_refund': True} on the 'refund-agent' subagent wired into create_deep_agent (src/deep_agent.py lines 81-82 and 94-97).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 66,
+            "line_start": 58,
+            "path": "src/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "0eb02ac8c700b6985617bcb7beca17cae8a131d06bad6ae042f0569475db491e"
+          },
+          {
+            "line_end": 83,
+            "line_start": 68,
+            "path": "src/deep_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "f68a32d97fc3b62b2b6c50c28bcb62ca327614ce4f060c7dde3cbbaa83421091"
+          },
+          {
+            "line_end": 74,
+            "line_start": 38,
+            "path": "src/tools/account_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "d7246d758870b2c2112d7cd7aa3c73ae62d6f54695a5a7766c00f83fbb526654"
+          },
+          {
+            "line_end": 73,
+            "line_start": 63,
+            "path": "src/tools/account_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d7246d758870b2c2112d7cd7aa3c73ae62d6f54695a5a7766c00f83fbb526654"
+          },
+          {
+            "line_end": 26,
+            "line_start": 22,
+            "path": "src/db.py",
+            "role": "commit_point",
+            "source_sha256": "96c344232db762a785b0554b034148d2a586ed4b541fc0733d3d837305de2477"
+          },
+          {
+            "line_end": 66,
+            "line_start": 63,
+            "path": "src/tools/account_tools.py",
+            "role": "commit_point",
+            "source_sha256": "d7246d758870b2c2112d7cd7aa3c73ae62d6f54695a5a7766c00f83fbb526654"
+          },
+          {
+            "line_end": 73,
+            "line_start": 70,
+            "path": "src/tools/account_tools.py",
+            "role": "commit_point",
+            "source_sha256": "d7246d758870b2c2112d7cd7aa3c73ae62d6f54695a5a7766c00f83fbb526654"
+          },
+          {
+            "line_end": 39,
+            "line_start": 38,
+            "path": "src/tools/account_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d7246d758870b2c2112d7cd7aa3c73ae62d6f54695a5a7766c00f83fbb526654"
+          },
+          {
+            "line_end": 54,
+            "line_start": 45,
+            "path": "src/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0eb02ac8c700b6985617bcb7beca17cae8a131d06bad6ae042f0569475db491e"
+          },
+          {
+            "line_end": 97,
+            "line_start": 94,
+            "path": "src/deep_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f68a32d97fc3b62b2b6c50c28bcb62ca327614ce4f060c7dde3cbbaa83421091"
+          }
+        ],
+        "forbidden_condition": "request_refund being executed by the agent without a prior human-approval interrupt/resume decision, committing either the auto-refund write 'UPDATE Invoice SET Status = 'refunded' ...' (src/tools/account_tools.py lines 63-66) or the admin-review write 'UPDATE Invoice SET Status = 'refund_requested' ...' (lines 70-73) through execute_write's unconditional _conn.commit().",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The HumanInTheLoopMiddleware and deepagents SubAgent implementations are not supplied; confirm that interrupt_on interrupts before the tool function executes so approval strictly precedes the _conn.commit() at src/db.py lines 24-25.",
+          "Confirm whether the approval gate is intended to cover invocation as a whole or should distinguish the auto-refund branch (Status='refunded') from the admin-review branch (Status='refund_requested'); source declares a single tool-level interrupt flag.",
+          "Confirm that no unguarded caller invokes request_refund outside these two builds (repository enumeration is incomplete)."
+        ],
+        "protected_operation": "Agent tool invocation of request_refund, including both of its Invoice-mutating branches (auto-refund and refund-request queueing).",
+        "protected_resource": "Invoice rows (InvoiceId scoped to runtime.context.customer_id) in the in-memory Chinook SQLite database held in src/db.py _conn, including the Status, RefundAmount, RefundRequestDate, and RefundReason columns added at src/db.py lines 10-13.",
+        "protection_obligation": "Agent invocation of the write tool request_refund must be interrupted for human approval before the tool runs, so that no Invoice mutation is committed via execute_write without a prior human approval decision. Guard is declared both as HumanInTheLoopMiddleware interrupt_on in the flat agent build (src/agent.py) and as SubAgent interrupt_on on the refund-agent in the deep agent build (src/deep_agent.py). (Merges the duplicate reviewer wordings of the HITL-before-commit obligation for this tool.)",
+        "scope_limits": [
+          "Covers only the two supplied agent builds: the flat create_agent middleware registration (src/agent.py) and the refund-agent SubAgent registration (src/deep_agent.py); any other invocation path for request_refund is outside the supplied views.",
+          "AUTO_REFUND_THRESHOLD (env-configurable, default 5.00) selects which write branch runs, but the declared gate is at tool-invocation granularity and precedes both branches; branch-level approval distinctions are not declared in source.",
+          "Ownership and already-refunded/duplicate checks inside the tool (src/tools/account_tools.py lines 45-59) are separate validations, not part of the approval gate."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "execute_write in src/db.py lines 22-26: _conn.execute(query, params) followed by _conn.commit(), reached from the execute_write call inside update_customer_info at src/tools/account_tools.py lines 31-34.",
+        "contract_id": "ecological-contract:de25af29b32894160a9ab90b6a2c1784",
+        "declared_mechanism": "HumanInTheLoopMiddleware with interrupt_on {'update_customer_info': True} registered in the middleware list of create_agent (src/agent.py lines 60-65), plus SubAgent interrupt_on {'update_customer_info': True} on the 'account-agent' subagent wired into create_deep_agent (src/deep_agent.py lines 64-65 and 94-97).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 66,
+            "line_start": 58,
+            "path": "src/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "0eb02ac8c700b6985617bcb7beca17cae8a131d06bad6ae042f0569475db491e"
+          },
+          {
+            "line_end": 66,
+            "line_start": 51,
+            "path": "src/deep_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "f68a32d97fc3b62b2b6c50c28bcb62ca327614ce4f060c7dde3cbbaa83421091"
+          },
+          {
+            "line_end": 35,
+            "line_start": 17,
+            "path": "src/tools/account_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "d7246d758870b2c2112d7cd7aa3c73ae62d6f54695a5a7766c00f83fbb526654"
+          },
+          {
+            "line_end": 34,
+            "line_start": 31,
+            "path": "src/tools/account_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d7246d758870b2c2112d7cd7aa3c73ae62d6f54695a5a7766c00f83fbb526654"
+          },
+          {
+            "line_end": 26,
+            "line_start": 22,
+            "path": "src/db.py",
+            "role": "commit_point",
+            "source_sha256": "96c344232db762a785b0554b034148d2a586ed4b541fc0733d3d837305de2477"
+          },
+          {
+            "line_end": 34,
+            "line_start": 31,
+            "path": "src/tools/account_tools.py",
+            "role": "commit_point",
+            "source_sha256": "d7246d758870b2c2112d7cd7aa3c73ae62d6f54695a5a7766c00f83fbb526654"
+          },
+          {
+            "line_end": 18,
+            "line_start": 17,
+            "path": "src/tools/account_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d7246d758870b2c2112d7cd7aa3c73ae62d6f54695a5a7766c00f83fbb526654"
+          },
+          {
+            "line_end": 54,
+            "line_start": 45,
+            "path": "src/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0eb02ac8c700b6985617bcb7beca17cae8a131d06bad6ae042f0569475db491e"
+          },
+          {
+            "line_end": 97,
+            "line_start": 94,
+            "path": "src/deep_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f68a32d97fc3b62b2b6c50c28bcb62ca327614ce4f060c7dde3cbbaa83421091"
+          }
+        ],
+        "forbidden_condition": "update_customer_info being executed by the agent without a prior human-approval interrupt/resume decision, letting its 'UPDATE Customer SET {field} = ? WHERE CustomerId = ?' write reach execute_write's unconditional _conn.commit().",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The HumanInTheLoopMiddleware and deepagents SubAgent implementations are not supplied; confirm that interrupt_on interrupts before the tool function executes so approval strictly precedes the _conn.commit() at src/db.py lines 24-25.",
+          "Confirm which build_agent() output is operative for a given run (src/agent.py flat agent vs src/deep_agent.py deep agent), since the guard is registered differently in each.",
+          "Confirm that no unguarded caller invokes update_customer_info outside these two builds (repository enumeration is incomplete)."
+        ],
+        "protected_operation": "Agent tool invocation of update_customer_info, including the field-update write it performs for the context customer.",
+        "protected_resource": "The Customer row identified by runtime.context.customer_id in the in-memory Chinook SQLite database held in src/db.py _conn.",
+        "protection_obligation": "Agent invocation of the write tool update_customer_info must be interrupted for human approval before the tool runs, so that no UPDATE on the Customer table is committed via execute_write without a prior human approval decision. Guard is declared both as HumanInTheLoopMiddleware interrupt_on in the flat agent build (src/agent.py) and as SubAgent interrupt_on on the account-agent in the deep agent build (src/deep_agent.py). (Merges the duplicate reviewer wordings of the HITL-before-commit obligation for this tool.)",
+        "scope_limits": [
+          "Covers only the two supplied agent builds: the flat create_agent middleware registration (src/agent.py) and the account-agent SubAgent registration (src/deep_agent.py); any other invocation path for update_customer_info is outside the supplied views.",
+          "The gate is keyed by tool name at invocation granularity; it does not constrain which value is written, and the ALLOWED_FIELDS allowlist (src/tools/account_tools.py lines 23-24) is a separate in-tool validation, not part of the approval gate.",
+          "Human approval capture and resume semantics are not shown in the supplied views and are not covered by this contract."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied view shows which build_agent() (src/agent.py flat agent vs src/deep_agent.py deep agent) is deployed at runtime; both guard the same write tools via different registrations (middleware interrupt_on vs SubAgent interrupt_on).",
+      "The HumanInTheLoopMiddleware and deepagents SubAgent implementations are not in the supplied views, so the ordering of the interrupt relative to tool execution and the _conn.commit() commit point cannot be verified from source.",
+      "No supplied view shows how a human approval/denial decision is captured or how the interrupted run resumes (no serving entrypoint, resume API, or CLI is included in the supplied views).",
+      "The @before_agent content_filter guardrail (src/guardrails.py lines 74-92), mentioned in reviewer rationale, blocks flagged human messages before the agent turn; supplied views do not bind it to a specific external-effect commit point, so no separate effect contract is compiled for it.",
+      "Repository enumeration is incomplete per the stated scope, so additional modules that might call execute_write or the write tools directly (bypassing the guarded agents) cannot be ruled out from the supplied views."
+    ],
+    "repository": "annjawn/langchain-music-store",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b0fc8e87bff06ed11c12e7e36d7657c0"
+  },
+  "request_sha256": "838cf868838044933afc9b13266dbaaa20c735cbe7b5b64404c7f6a443cb9c7d",
+  "response_sha256": "da02aad52b451b2137b3492ed0de9fc5a326d0d52abf2d9cb4d68e654675dc55",
+  "state": "completed",
+  "tokens": 26451,
+  "unit": "v24-screen:b0fc8e87bff06ed11c12e7e36d7657c0"
+}

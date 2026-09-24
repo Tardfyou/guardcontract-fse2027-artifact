@@ -1,0 +1,171 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "answer = await agent.aexecute(message, history) at services/chat_service.py:80 \u2014 the agent dispatch that the L0 gate precedes; on L0 rejection the method returns at services/chat_service.py:64 and this commit point is never reached.",
+        "contract_id": "ecological-contract:922f385d212779ed23c11827acd7c2d1",
+        "declared_mechanism": "GuardService.check_question_scope (L0 pre-check), obtained via the get_guard_service() lru_cache singleton and run through asyncio.to_thread at the top of process_message before any history access or agent creation; an Ollama-LLM scope-classifier chain (_scope_chain) with YES/NO label parsing that returns False for out-of-domain questions; guard_service.refusal_text is returned on rejection.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 64,
+            "line_start": 60,
+            "path": "services/chat_service.py",
+            "role": "guard_registration",
+            "source_sha256": "219793e1372909afb66fb8deb4f3f1b78cfb43e31e06bec08cc6b7be4e9fce6a"
+          },
+          {
+            "line_end": 19,
+            "line_start": 17,
+            "path": "services/guard_service.py",
+            "role": "guard_registration",
+            "source_sha256": "c899d380ce729b573f19fb310d416a20766e25c9d05d4bca884d3b47cbbdb9ec"
+          },
+          {
+            "line_end": 39,
+            "line_start": 34,
+            "path": "services/guard_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c899d380ce729b573f19fb310d416a20766e25c9d05d4bca884d3b47cbbdb9ec"
+          },
+          {
+            "line_end": 81,
+            "line_start": 75,
+            "path": "services/chat_service.py",
+            "role": "protected_operation",
+            "source_sha256": "219793e1372909afb66fb8deb4f3f1b78cfb43e31e06bec08cc6b7be4e9fce6a"
+          },
+          {
+            "line_end": 80,
+            "line_start": 80,
+            "path": "services/chat_service.py",
+            "role": "commit_point",
+            "source_sha256": "219793e1372909afb66fb8deb4f3f1b78cfb43e31e06bec08cc6b7be4e9fce6a"
+          },
+          {
+            "line_end": 20,
+            "line_start": 17,
+            "path": "services/chat_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "219793e1372909afb66fb8deb4f3f1b78cfb43e31e06bec08cc6b7be4e9fce6a"
+          },
+          {
+            "line_end": 80,
+            "line_start": 75,
+            "path": "services/chat_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "219793e1372909afb66fb8deb4f3f1b78cfb43e31e06bec08cc6b7be4e9fce6a"
+          }
+        ],
+        "forbidden_condition": "Dispatching a user question classified out-of-scope (scope label not IN per GuardService.check_question_scope) to the agent; the declared semantics are direct refusal with no agent call, no conversation creation, and no persistence.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether agent.aexecute commits further external effects (LLM network calls, agent tool dispatch) inside ReactAgent \u2014 agent/react_agent.py is not among the supplied sources.",
+          "Exact refusal text content loaded via utils.prompt_loader.load_refusal_template (services/guard_service.py:29) \u2014 the loader module is not supplied."
+        ],
+        "protected_operation": "Agent invocation: ReactAgent instantiation via _get_react_agent() and the dispatch of the L0-gated user message (with refusal-filtered, turn-limited history) through agent.aexecute(message, history).",
+        "protected_resource": "The ReAct agent execution loop (ReactAgent) and its downstream processing of the user question.",
+        "protection_obligation": "Out-of-scope (non-clothing-domain) user questions must not reach the agent: ChatService.process_message must run GuardService.check_question_scope (L0) before any agent invocation and, on rejection, return the refusal text without constructing or executing the agent (merges both reviewer phases, which state the same obligation).",
+        "scope_limits": [
+          "Covers only the agent-dispatch effect; on L0 rejection the early return also preempts history read, conversation creation, and repository writes, but the database commit point is contracted separately in the L3/persistence contract.",
+          "Declared fail-open semantics are part of the mechanism, not separately assessed: empty/blank queries pass (services/guard_service.py:40-41), classifier exceptions pass (services/guard_service.py:43-47), and unparseable scope labels default to IN (services/guard_service.py:53-62).",
+          "The refusal returned at services/chat_service.py:64 becomes the caller's response, but no HTTP route source invoking process_message is supplied, so response-side effects are not contracted here.",
+          "agent/react_agent.py is not supplied; the invocation is contracted as an invocation-only effect without asserting internal LLM or tool behavior."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "await session.commit() inside db/session.get_db (db/session.py:9), which commits the writes issued by create_conversation (services/chat_service.py:94-97) and add_messages (services/chat_service.py:100-103); any exception triggers rollback (db/session.py:10-12).",
+        "contract_id": "ecological-contract:e72a60183c9496c374c9dba42985da19",
+        "declared_mechanism": "GuardService.check (L3 output post-processing) from the get_guard_service() singleton, invoked as asyncio.to_thread(guard_service.check, message, answer) at services/chat_service.py:86 after agent execution and before any repository write; an Ollama-LLM compliance-classifier chain that returns (False, refusal_template) for label OUT; conversation creation is deliberately deferred until after the L3 pass so rejected pairs leave no empty conversation.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 88,
+            "line_start": 85,
+            "path": "services/chat_service.py",
+            "role": "guard_registration",
+            "source_sha256": "219793e1372909afb66fb8deb4f3f1b78cfb43e31e06bec08cc6b7be4e9fce6a"
+          },
+          {
+            "line_end": 70,
+            "line_start": 64,
+            "path": "services/guard_service.py",
+            "role": "guard_registration",
+            "source_sha256": "c899d380ce729b573f19fb310d416a20766e25c9d05d4bca884d3b47cbbdb9ec"
+          },
+          {
+            "line_end": 85,
+            "line_start": 83,
+            "path": "services/guard_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c899d380ce729b573f19fb310d416a20766e25c9d05d4bca884d3b47cbbdb9ec"
+          },
+          {
+            "line_end": 103,
+            "line_start": 92,
+            "path": "services/chat_service.py",
+            "role": "protected_operation",
+            "source_sha256": "219793e1372909afb66fb8deb4f3f1b78cfb43e31e06bec08cc6b7be4e9fce6a"
+          },
+          {
+            "line_end": 12,
+            "line_start": 5,
+            "path": "db/session.py",
+            "role": "commit_point",
+            "source_sha256": "2557cc371eb6649de3cee5457982aa5d47edff896f6a6419586951e91c829979"
+          },
+          {
+            "line_end": 80,
+            "line_start": 80,
+            "path": "services/chat_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "219793e1372909afb66fb8deb4f3f1b78cfb43e31e06bec08cc6b7be4e9fce6a"
+          },
+          {
+            "line_end": 103,
+            "line_start": 100,
+            "path": "services/chat_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "219793e1372909afb66fb8deb4f3f1b78cfb43e31e06bec08cc6b7be4e9fce6a"
+          }
+        ],
+        "forbidden_condition": "Committing a conversation/message pair whose agent answer is classified out-of-scope (label OUT per GuardService.check); on rejection the refusal template replaces the answer and create_conversation/add_messages are skipped, so no conversation or message rows reach the commit.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "API/router source that constructs ChatService with get_db and drives the request lifecycle \u2014 needed to bind session.commit() to a specific endpoint commit.",
+          "ConversationRepository implementation (db/conversation_repo.py) \u2014 exact persisted schema and write behavior unverified.",
+          "Whether any other code path can create conversations or add messages without passing the L3 gate cannot be established from the supplied views."
+        ],
+        "protected_operation": "Persistence of the conversation and messages: ConversationRepository.create_conversation (user_id 'anonymous', title derived from the message) and ConversationRepository.add_messages(HumanMessage(content=message), AIMessage(content=answer)) on the injected AsyncSession.",
+        "protected_resource": "Conversation and message rows in the database behind ConversationRepository (session injected via ChatService.__init__).",
+        "protection_obligation": "Out-of-scope (non-clothing-domain) questions and agent answers must not be persisted to the database: ChatService.process_message must run GuardService.check (L3) on the agent answer before create_conversation/add_messages and, on rejection, return the refusal template with all repository writes skipped; the writes are committed later by db/session.get_db (merges both reviewer phases, which state the same obligation).",
+        "scope_limits": [
+          "The L3 gate rejects only label OUT; IN and REFUSE pass, and by declared fail-open semantics empty answers, classifier exceptions, and unparseable labels also pass (services/guard_service.py:71-72, 74-78, 92-153); adequacy is not assessed.",
+          "L0 rejection (services/chat_service.py:63-64) independently preempts persistence upstream; the L3 gate is cited as the final pre-commit control on the persistence path.",
+          "db/conversation_repo.py is not supplied; the repository's exact statements, tables, and write semantics are inferred only from the AsyncSession wiring and method names.",
+          "The HTTP route reportedly invoking process_message (reviewer-mentioned POST /api/chat/) is not in the supplied sources; response-side refusal delivery is not contracted here."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No API/router source is supplied; the binding of ChatService.process_message to POST /api/chat/ (asserted in reviewer opinion) and any HTTP request/response effect or commit point cannot be cited from the supplied lines.",
+      "agent/react_agent.py is not supplied; internal effects of agent execution (LLM network calls, agent tool dispatch) are not contractible beyond the invocation itself.",
+      "db/conversation_repo.py is not supplied; repository write internals and persisted schema are unverified.",
+      "utils/prompt_loader (load_guard_prompts, load_refusal_template, load_scope_check_prompt) is not supplied; guard prompt and refusal text contents are unverified."
+    ],
+    "repository": "Lin-code-code/knowledge_qa",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b56826bb58263189df734f9de6807708"
+  },
+  "request_sha256": "a42d606dfc685719a9e908c28c0556b83632e871f36692185e0fde52f5528c08",
+  "response_sha256": "ffc15364cf146f703818bb7e51d85518fe015ac8671987ca2cd148e6906abef4",
+  "state": "completed",
+  "tokens": 23286,
+  "unit": "v24-screen:b56826bb58263189df734f9de6807708"
+}

@@ -1,0 +1,425 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "asyncio.create_task(self._run_bridge(...)) plus the _bridges/_tasks/_held_resources registrations at lifecycle_service.py 531-537, reached only after the check at 450-462 has passed.",
+        "contract_id": "ecological-contract:2f523443f9b63fce5a1f32de393b41ad",
+        "declared_mechanism": "Start-time check in start(): wanted = adapter_cls.exclusive_resource(...) is compared against self._held_resources, raising ValueError naming the incumbent when held by another bridge id; the resource is recorded into _held_resources only after the task is created; _register_lock serialises the registration path that calls start; entries are removed on stop and on task crash.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 92,
+            "line_start": 87,
+            "path": "core/switch_core/bridges/collaboration/lifecycle_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b8216592858ce7711267ac9ef0d55811ab92ab9ed064609db56a1ad5dceab593"
+          },
+          {
+            "line_end": 364,
+            "line_start": 354,
+            "path": "core/switch_core/bridges/collaboration/teams/adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "6101535da48cc5bca92c75b83eedaf89e43a0e3f9f295cc0e7324c98d890fccd"
+          },
+          {
+            "line_end": 462,
+            "line_start": 450,
+            "path": "core/switch_core/bridges/collaboration/lifecycle_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b8216592858ce7711267ac9ef0d55811ab92ab9ed064609db56a1ad5dceab593"
+          },
+          {
+            "line_end": 448,
+            "line_start": 428,
+            "path": "core/switch_core/bridges/collaboration/lifecycle_service.py",
+            "role": "protected_operation",
+            "source_sha256": "b8216592858ce7711267ac9ef0d55811ab92ab9ed064609db56a1ad5dceab593"
+          },
+          {
+            "line_end": 537,
+            "line_start": 531,
+            "path": "core/switch_core/bridges/collaboration/lifecycle_service.py",
+            "role": "commit_point",
+            "source_sha256": "b8216592858ce7711267ac9ef0d55811ab92ab9ed064609db56a1ad5dceab593"
+          }
+        ],
+        "forbidden_condition": "Creating the bridge run task (asyncio.create_task(self._run_bridge(...))) for a bridge whose exclusive_resource equals a resource recorded in _held_resources under a different bridge id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source ties bridge start to agent tool dispatch or agent lifecycle hooks; agent mediation is unestablished."
+        ],
+        "protected_operation": "Collaboration bridge start (CollaborationBridgeLifecycleService.start), which builds the adapter and launches its long-lived run task.",
+        "protected_resource": "The host's exclusive adapter resources held live at runtime (_held_resources), concretely the Teams inbound listener TCP port declared by TeamsAdapter.exclusive_resource.",
+        "protection_obligation": "A collaboration-bridge start must be refused if the bridge's adapter-declared exclusive host resource is already held live by another bridge on this instance, before the bridge's run task is created; the held resource is recorded only once the bridge starts and is released on stop or task crash.",
+        "scope_limits": [
+          "The check covers only resources declared by adapter exclusive_resource and only against bridges running in this process; it converts the eventual TCPSite bind failure (teams/adapter.py 493-498) into a named refusal rather than eliminating the bind.",
+          "The registration-time refusal before the bridge row commit is a distinct commit point in the database stratum and is emitted as a separate contract.",
+          "Rows predating the registration-time check are the stated motivation for this second start-time check (lifecycle_service.py 450-452)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Transaction begin where the tenant stamp is fixed (tenant_session.py 138-161); before each statement dispatch (178-193) and before each flush (196-200) where drift is refused; the identity-map hit inside TenantCheckedSession.get/get_one (328-342).",
+        "contract_id": "ecological-contract:67d784de53a7eddb3b0400436b38c74d",
+        "declared_mechanism": "Process-wide SQLAlchemy event listeners registered once on Session by register_tenant_session_hook: after_begin stamps set_config and records the stamped tenant; do_orm_execute refuses drift before statement dispatch and records statement issuance; before_flush applies the same drift refusal to the flush path; after_transaction_end clears the stamp. TenantCheckedSession (installed via the session factory's sync_session_class) overrides get/get_one to refuse cross-tenant identity-map hits, raising TenantBindingDriftError or CrossTenantIdentityMapError.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 135,
+            "line_start": 111,
+            "path": "core/switch_core/db/tenant_session.py",
+            "role": "guard_registration",
+            "source_sha256": "2dc64bf84ff6edb25ea20cb1b33692b6f5bd159cb2b826131466f05e1831d2bf"
+          },
+          {
+            "line_end": 342,
+            "line_start": 294,
+            "path": "core/switch_core/db/tenant_session.py",
+            "role": "guard_registration",
+            "source_sha256": "2dc64bf84ff6edb25ea20cb1b33692b6f5bd159cb2b826131466f05e1831d2bf"
+          },
+          {
+            "line_end": 161,
+            "line_start": 138,
+            "path": "core/switch_core/db/tenant_session.py",
+            "role": "commit_point",
+            "source_sha256": "2dc64bf84ff6edb25ea20cb1b33692b6f5bd159cb2b826131466f05e1831d2bf"
+          },
+          {
+            "line_end": 193,
+            "line_start": 178,
+            "path": "core/switch_core/db/tenant_session.py",
+            "role": "commit_point",
+            "source_sha256": "2dc64bf84ff6edb25ea20cb1b33692b6f5bd159cb2b826131466f05e1831d2bf"
+          },
+          {
+            "line_end": 200,
+            "line_start": 196,
+            "path": "core/switch_core/db/tenant_session.py",
+            "role": "commit_point",
+            "source_sha256": "2dc64bf84ff6edb25ea20cb1b33692b6f5bd159cb2b826131466f05e1831d2bf"
+          },
+          {
+            "line_end": 342,
+            "line_start": 328,
+            "path": "core/switch_core/db/tenant_session.py",
+            "role": "commit_point",
+            "source_sha256": "2dc64bf84ff6edb25ea20cb1b33692b6f5bd159cb2b826131466f05e1831d2bf"
+          },
+          {
+            "line_end": 108,
+            "line_start": 89,
+            "path": "core/switch_core/db/tenant_session.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2dc64bf84ff6edb25ea20cb1b33692b6f5bd159cb2b826131466f05e1831d2bf"
+          },
+          {
+            "line_end": 219,
+            "line_start": 203,
+            "path": "core/switch_core/db/tenant_session.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2dc64bf84ff6edb25ea20cb1b33692b6f5bd159cb2b826131466f05e1831d2bf"
+          },
+          {
+            "line_end": 291,
+            "line_start": 257,
+            "path": "core/switch_core/db/tenant_session.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2dc64bf84ff6edb25ea20cb1b33692b6f5bd159cb2b826131466f05e1831d2bf"
+          },
+          {
+            "line_end": 46,
+            "line_start": 24,
+            "path": "core/switch_core/db/tenant_session.py",
+            "role": "protected_operation",
+            "source_sha256": "2dc64bf84ff6edb25ea20cb1b33692b6f5bd159cb2b826131466f05e1831d2bf"
+          }
+        ],
+        "forbidden_condition": "A statement dispatched via Session.execute or a flush executed while the currently bound tenant differs from the tenant stamped at the transaction's begin (TenantBindingDriftError), or a Session.get/get_one answered from the identity map with a row belonging to a tenant other than the currently bound one (CrossTenantIdentityMapError).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether agent tool dispatch or agent lifecycle hooks (e.g., the protocol service's pre_tool_call/mediation paths) are among the guarded session consumers cannot be established as an entry binding from the supplied source.",
+          "The RLS DDL (db/rls_ddl.py) and tenant-lookup exemptions referenced by the module are not supplied, so the interplay between process-side drift checks and database-side policy refusal is described but not shown."
+        ],
+        "protected_operation": "All tenant-scoped ORM reads and writes executed through SQLAlchemy sessions in the process: Session.execute statements, flushes, and identity-map Session.get/get_one answers.",
+        "protected_resource": "Tenant-scoped database rows (tables carrying tenant_id, and the tenants table compared on id) accessed through ORM sessions.",
+        "protection_obligation": "Every ORM session in the process must execute its statements and flushes under the tenant stamped at transaction begin (set_config('app.tenant_id', \u2026, true) issued by the globally registered after_begin hook), and must refuse any statement, flush, or identity-map Session.get answer executed under a drifted tenant binding or returning another tenant's row.",
+        "scope_limits": [
+          "The hooks are process-wide database infrastructure; the supplied source contains no decorator, registration, or dataflow binding them specifically to agent tools, agent lifecycle hooks, or agent-generated input.",
+          "Paths that never become a Session are outside the boundary as documented: the raw-asyncpg LISTEN delivery listener and Alembic migrations (tenant_session.py 24-33).",
+          "When no tenant is bound, the hook stamps nothing and refusal is deferred to row-level-security policies (tenant_session.py 35-46); the identity-map check is deliberately silent when nothing is bound (tenant_session.py 257-280).",
+          "Statements that reach the database are also subject to server-side RLS policies not supplied here; this contract covers the process-side checks only."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "task_store.create(session, task) followed by session.commit() in ProtocolService.delegate_task (service.py 1977-1989); the guard call at 1968-1975 raises before this point.",
+        "contract_id": "ecological-contract:a254230b997fc7edc20fb600e8191bbd",
+        "declared_mechanism": "Per-agent AddressingPolicy (ordered allow-rules over rooms/room_groups/users/agents plus symbolic owner/owner_agents subjects) evaluated by AddressingPolicy.allows/can_address: open (allow-all) when no rules, deny-by-default when rules exist; register_agent persists owner_only_policy by default on creation; delegate_task enforces it via _require_can_address \u2192 _can_address, which raises PermissionError for a non-admitted agent sender before task_store.create and session.commit.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1953,
+            "line_start": 1941,
+            "path": "core/switch_core/bridges/agent/protocol/service.py",
+            "role": "protected_operation",
+            "source_sha256": "78c6e3e86905b83292184cee80bfd559da663037b15da18875f556e78305ea9b"
+          },
+          {
+            "line_end": 1211,
+            "line_start": 1185,
+            "path": "core/switch_core/bridges/agent/protocol/service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78c6e3e86905b83292184cee80bfd559da663037b15da18875f556e78305ea9b"
+          },
+          {
+            "line_end": 1975,
+            "line_start": 1964,
+            "path": "core/switch_core/bridges/agent/protocol/service.py",
+            "role": "guard_registration",
+            "source_sha256": "78c6e3e86905b83292184cee80bfd559da663037b15da18875f556e78305ea9b"
+          },
+          {
+            "line_end": 1247,
+            "line_start": 1213,
+            "path": "core/switch_core/bridges/agent/protocol/service.py",
+            "role": "guard_registration",
+            "source_sha256": "78c6e3e86905b83292184cee80bfd559da663037b15da18875f556e78305ea9b"
+          },
+          {
+            "line_end": 1989,
+            "line_start": 1977,
+            "path": "core/switch_core/bridges/agent/protocol/service.py",
+            "role": "commit_point",
+            "source_sha256": "78c6e3e86905b83292184cee80bfd559da663037b15da18875f556e78305ea9b"
+          },
+          {
+            "line_end": 430,
+            "line_start": 425,
+            "path": "core/switch_core/bridges/agent/protocol/service.py",
+            "role": "guard_registration",
+            "source_sha256": "78c6e3e86905b83292184cee80bfd559da663037b15da18875f556e78305ea9b"
+          },
+          {
+            "line_end": 184,
+            "line_start": 141,
+            "path": "core/switch_core/addressing.py",
+            "role": "guard_registration",
+            "source_sha256": "0786fe6f8c7ab44e1dbdc3a779fdc3cc9d3a0e9b491a765a6c467830d196ea65"
+          },
+          {
+            "line_end": 231,
+            "line_start": 214,
+            "path": "core/switch_core/addressing.py",
+            "role": "guard_registration",
+            "source_sha256": "0786fe6f8c7ab44e1dbdc3a779fdc3cc9d3a0e9b491a765a6c467830d196ea65"
+          },
+          {
+            "line_end": 43,
+            "line_start": 37,
+            "path": "core/switch_core/addressing.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0786fe6f8c7ab44e1dbdc3a779fdc3cc9d3a0e9b491a765a6c467830d196ea65"
+          },
+          {
+            "line_end": 1949,
+            "line_start": 1941,
+            "path": "core/switch_core/bridges/agent/protocol/service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "78c6e3e86905b83292184cee80bfd559da663037b15da18875f556e78305ea9b"
+          },
+          {
+            "line_end": 1247,
+            "line_start": 1234,
+            "path": "core/switch_core/bridges/agent/protocol/service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "78c6e3e86905b83292184cee80bfd559da663037b15da18875f556e78305ea9b"
+          }
+        ],
+        "forbidden_condition": "ProtocolService.delegate_task creating and committing a Task row whose requester agent is not admitted by the performer target's addressing policy \u2014 i.e., execution reaching task_store.create/session.commit without _require_can_address having admitted the agent sender (PermissionError must fire first).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied source shows the route, tool registration, or MCP schema that invokes ProtocolService.delegate_task on behalf of a calling agent (the gateway layer is not supplied).",
+          "Whether delegation is also reachable from non-agent-initiated flows is not determinable from the supplied source."
+        ],
+        "protected_operation": "Task delegation from one agent to another in a shared room (ProtocolService.delegate_task), which is an addressing attempt by an agent sender against a target agent.",
+        "protected_resource": "The target performer agent's addressability as governed by its stored addressing_policy, and the Task rows recording delegations.",
+        "protection_obligation": "An agent must not address another agent by delegating a task to it unless the target agent's stored per-agent AddressingPolicy admits that sender in that room; the policy is deny-by-default whenever it carries rules, and newly created agents start with an owner-only policy; ProtocolService.delegate_task must refuse any non-admitted delegation before the Task row exists.",
+        "scope_limits": [
+          "Only the delegation path refuses; send_targeted_message applies the same _can_address evaluation but reports non-admitted targets as AgentStatus.NOT_PERMITTED and still posts the message to the room (service.py 1325-1356), which is outside this contract's forbidden condition.",
+          "The deny-by-default binding applies only when the policy has rules; a policy with no rules admits all senders (addressing.py 37-43, 171-184).",
+          "Room membership (require_room_member) is a separate precondition, not part of the addressing-policy guard.",
+          "The gateway/tool entry that delivers a calling agent's delegation into delegate_task is not in the supplied source; mediation rests on the operation's explicitly defined agent-to-agent semantics (sender_kind='agent' in _can_address), not on visible tool dispatch."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "bridge_store.create(session, bridge) followed by session.commit() in _register_locked (lifecycle_service.py 414-416), reached only after _reject_resource_conflict at 391 has passed.",
+        "contract_id": "ecological-contract:d51f050c11e07463a59659d6d3c20aa3",
+        "declared_mechanism": "Registration serialised by _register_lock (asyncio.Lock), plus _reject_resource_conflict, which computes the wanted resource from the adapter class, enumerates stored bridges across every tenant, and raises ValueError (tenant-aware or non-disclosing) when a same-type stored bridge holds an equal resource; the refusal precedes verify_credentials and the bridge row create/commit.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 104,
+            "line_start": 93,
+            "path": "core/switch_core/bridges/collaboration/lifecycle_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b8216592858ce7711267ac9ef0d55811ab92ab9ed064609db56a1ad5dceab593"
+          },
+          {
+            "line_end": 248,
+            "line_start": 231,
+            "path": "core/switch_core/bridges/collaboration/lifecycle_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b8216592858ce7711267ac9ef0d55811ab92ab9ed064609db56a1ad5dceab593"
+          },
+          {
+            "line_end": 364,
+            "line_start": 354,
+            "path": "core/switch_core/bridges/collaboration/teams/adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "6101535da48cc5bca92c75b83eedaf89e43a0e3f9f295cc0e7324c98d890fccd"
+          },
+          {
+            "line_end": 346,
+            "line_start": 278,
+            "path": "core/switch_core/bridges/collaboration/lifecycle_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b8216592858ce7711267ac9ef0d55811ab92ab9ed064609db56a1ad5dceab593"
+          },
+          {
+            "line_end": 362,
+            "line_start": 348,
+            "path": "core/switch_core/bridges/collaboration/lifecycle_service.py",
+            "role": "protected_operation",
+            "source_sha256": "b8216592858ce7711267ac9ef0d55811ab92ab9ed064609db56a1ad5dceab593"
+          },
+          {
+            "line_end": 416,
+            "line_start": 391,
+            "path": "core/switch_core/bridges/collaboration/lifecycle_service.py",
+            "role": "commit_point",
+            "source_sha256": "b8216592858ce7711267ac9ef0d55811ab92ab9ed064609db56a1ad5dceab593"
+          }
+        ],
+        "forbidden_condition": "Committing a CollaborationBridge row whose computed exclusive_resource equals that of another stored same-type bridge (enumerated across all tenants) \u2014 a registration that would silently store a second claimant of the resource.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds bridge registration to agent mediation (it is an operator/authenticated-request flow); the agent-entry binding is absent."
+        ],
+        "protected_operation": "Collaboration bridge registration (CollaborationBridgeLifecycleService.register \u2192 _register_locked).",
+        "protected_resource": "The host's exclusive adapter resources \u2014 concretely the Teams adapter's inbound listener TCP port (tcp/{listen_port}) \u2014 and the collaboration bridge store.",
+        "protection_obligation": "A collaboration-bridge registration must be refused if the bridge's adapter-declared exclusive host resource (e.g. the Teams inbound listener's TCP port) is already claimed by another stored bridge of the same type on this instance, with the refusal enforced before the bridge row is persisted and committed.",
+        "scope_limits": [
+          "The check runs against stored same-type bridges across all tenants; cross-type, cross-instance, and cross-replica contention is out of scope.",
+          "The underlying TCP bind itself occurs later, when the started adapter opens its TCPSite (teams/adapter.py 493-498); this contract covers only the registration-time refusal before persistence.",
+          "Process-wide lock sufficiency depends on the single-instance deployment noted at lifecycle_service.py 98-103; multi-replica enforcement would require a database constraint, which is not supplied.",
+          "Adapter classes whose exclusive_resource returns None bypass the check (lifecycle_service.py 243-248)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The compare at adapter.py 2073-2077 returns before _handle_lifecycle_event (2079-2081), decrypt_resource_data (2093-2095), and _deliver_graph_message (2096); _handle_http_notifications (2042-2062) routes every notification item through this gate.",
+        "contract_id": "ecological-contract:fb7bfff5471b190778bc86c1755c39ab",
+        "declared_mechanism": "Constant-time hmac.compare_digest of item['clientState'] against TeamsConnectionConfig.client_state at the head of _dispatch_graph_notification, returning early on mismatch; the secret is generated with secrets.token_urlsafe(32) in TeamsAdapter.prepare_config at registration and persisted once in connection_config; the config documents that Graph resource-data encryption proves integrity but not origin, so clientState is the only origin control.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 259,
+            "line_start": 246,
+            "path": "core/switch_core/bridges/collaboration/teams/adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "6101535da48cc5bca92c75b83eedaf89e43a0e3f9f295cc0e7324c98d890fccd"
+          },
+          {
+            "line_end": 2072,
+            "line_start": 2064,
+            "path": "core/switch_core/bridges/collaboration/teams/adapter.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6101535da48cc5bca92c75b83eedaf89e43a0e3f9f295cc0e7324c98d890fccd"
+          },
+          {
+            "line_end": 2077,
+            "line_start": 2073,
+            "path": "core/switch_core/bridges/collaboration/teams/adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "6101535da48cc5bca92c75b83eedaf89e43a0e3f9f295cc0e7324c98d890fccd"
+          },
+          {
+            "line_end": 2096,
+            "line_start": 2079,
+            "path": "core/switch_core/bridges/collaboration/teams/adapter.py",
+            "role": "commit_point",
+            "source_sha256": "6101535da48cc5bca92c75b83eedaf89e43a0e3f9f295cc0e7324c98d890fccd"
+          },
+          {
+            "line_end": 2062,
+            "line_start": 2042,
+            "path": "core/switch_core/bridges/collaboration/teams/adapter.py",
+            "role": "protected_operation",
+            "source_sha256": "6101535da48cc5bca92c75b83eedaf89e43a0e3f9f295cc0e7324c98d890fccd"
+          },
+          {
+            "line_end": 492,
+            "line_start": 489,
+            "path": "core/switch_core/bridges/collaboration/teams/adapter.py",
+            "role": "protected_operation",
+            "source_sha256": "6101535da48cc5bca92c75b83eedaf89e43a0e3f9f295cc0e7324c98d890fccd"
+          },
+          {
+            "line_end": 352,
+            "line_start": 322,
+            "path": "core/switch_core/bridges/collaboration/teams/adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "6101535da48cc5bca92c75b83eedaf89e43a0e3f9f295cc0e7324c98d890fccd"
+          }
+        ],
+        "forbidden_condition": "Honouring (acting on) a Graph change notification whose clientState does not match the bridge's registered client_state \u2014 including forged lifecycle events such as reauthorizationRequired and forged channel-message notifications \u2014 i.e., execution reaching _handle_lifecycle_event, decrypt_resource_data, or _deliver_graph_message without passing the origin check.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "BridgeCore \u2014 the consumer that registers on_message/on_command and routes InboundMessage into rooms and agents \u2014 is not supplied; whether a notification delivered past this guard reaches agent mediation is unestablished.",
+          "Whether forged channel-message content delivered past this guard would constitute agent-facing input in the DEC sense cannot be determined from the supplied source."
+        ],
+        "protected_operation": "The Teams bridge's Graph change-notification dispatch: the /api/teams/notifications webhook endpoint feeding _dispatch_graph_notification.",
+        "protected_resource": "The Teams bridge's notification dispatch pipeline and the per-bridge client_state secret minted at registration, which is the declared sole control authenticating notification origin.",
+        "protection_obligation": "Every Microsoft Graph change notification dispatched by the Teams bridge must be refused unless its clientState matches the bridge's registered per-bridge secret, before any encrypted resource data is decrypted and before any subscription lifecycle event is honoured.",
+        "scope_limits": [
+          "The guard authenticates Graph webhook origin only; the downstream consumption of delivered messages (via _deliver into the _on_message/_on_command callbacks installed at adapter start) leads into BridgeCore, which is not supplied, so no binding of this dispatch to an agent tool, agent lifecycle hook, or agent-generated input can be established from the supplied source.",
+          "The subscription-creation handshake (validationToken echo, adapter.py 2045-2049) and the separate Bot Framework activity path's InboundActivityValidator (adapter.py 1501-1510) are distinct controls not covered by this contract.",
+          "Honoured lifecycle effects include outbound Graph HTTP subscription renewal/recreation (adapter.py 2098-2122); honoured data effects are delivered through in-process callbacks whose further downstream is not supplied."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The gateway/tool-dispatch layer that exposes ProtocolService.delegate_task (and the other protocol operations) to calling agents is not supplied; the delegation contract's agent entry is established only from the operation's explicitly defined agent-to-agent semantics and the agent-sender dataflow inside the method.",
+      "BridgeCore and the collaboration pipeline consuming the Teams adapter's _on_message/_on_command callbacks are not supplied, so the mediation status of the Graph notification dispatch contract (and of any delivered-message downstream effects) cannot be established.",
+      "No supplied source shows who can trigger collaboration-bridge registration/start or whether any agent path reaches them; agent mediation for both resource-conflict contracts is unestablished.",
+      "The row-level-security DDL (db/rls_ddl.py), tenant-lookup exemptions (db/tenant_lookup.py), and session factory wiring (db/engine.create_session_factory) referenced by tenant_session.py are not supplied, so the end-to-end composition of the tenant guard is described but only partially shown.",
+      "Store internals (task_store.create, agent_store.create, bridge_store.create) are not supplied beyond their call sites, so exact flush/commit ordering inside each commit point cannot be confirmed."
+    ],
+    "repository": "sandbox-quantum/switch",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:230b3c72649eb4d1553baa35475d2b71"
+  },
+  "request_sha256": "ff23c1ac1506d3bce34f93860e8a64ffbbb685da7adbbd052b11c244ef499450",
+  "response_sha256": "dd791cfee03e63e634da3a97d69804a35b21d00fec96801e561d0beb4ad66ece",
+  "state": "completed",
+  "tokens": 122928,
+  "unit": "v24-screen:230b3c72649eb4d1553baa35475d2b71"
+}

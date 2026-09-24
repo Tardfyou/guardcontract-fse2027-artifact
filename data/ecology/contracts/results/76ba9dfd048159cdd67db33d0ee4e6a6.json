@@ -1,0 +1,86 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "ss._table().delete().eq('set_name', set_name).execute() at src/llm_from_here/supaSet.py line 42 \u2014 the executed Supabase delete that removes all rows for set_name from the supasets table.",
+        "contract_id": "ecological-contract:bf1a59f84c3133fd9eec74c0d126f2bb",
+        "declared_mechanism": "Environment guard registered at the top of clear_supaset: `if is_production():` where is_production() (common.py lines 23-24) compares get_env() (os.getenv('LLMFH_ENV', 'dev'), common.py lines 20-21) to 'prod'; on true it logs an error and returns False immediately, before SupaSet construction and before the delete chain, so the guarded effect is unreachable through this entry point in production.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 33,
+            "path": "src/llm_from_here/supaSet.py",
+            "role": "guard_registration",
+            "source_sha256": "b5f4f8cdf28553acbad9c266426b1a481d6d0160b94f76c99b9cfc23474bd1f8"
+          },
+          {
+            "line_end": 24,
+            "line_start": 20,
+            "path": "src/llm_from_here/common.py",
+            "role": "forbidden_condition",
+            "source_sha256": "892de8d127c493600191fbf04e1e42c69c38e115967360146d9eff45b2bf3fd8"
+          },
+          {
+            "line_end": 36,
+            "line_start": 34,
+            "path": "src/llm_from_here/supaSet.py",
+            "role": "protected_operation",
+            "source_sha256": "b5f4f8cdf28553acbad9c266426b1a481d6d0160b94f76c99b9cfc23474bd1f8"
+          },
+          {
+            "line_end": 16,
+            "line_start": 13,
+            "path": "src/llm_from_here/plugins/clearSupaSet.py",
+            "role": "protected_operation",
+            "source_sha256": "2f54d79224e16dc947468560822c5f3523225c3be53eaf0ab3053ae1018e6a17"
+          },
+          {
+            "line_end": 43,
+            "line_start": 41,
+            "path": "src/llm_from_here/supaSet.py",
+            "role": "commit_point",
+            "source_sha256": "b5f4f8cdf28553acbad9c266426b1a481d6d0160b94f76c99b9cfc23474bd1f8"
+          }
+        ],
+        "forbidden_condition": "Performing the bulk clear of a SupaSet \u2014 deleting every supasets row matching the supplied set_name \u2014 while is_production() is true (get_env() == 'prod'); the guard branch names this directly ('Cannot clear supaset in production.') and hard-returns False before any client call is made.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "What invokes ClearSupaSet.execute() and where params['set_name'] originates (pipeline configuration, human operator, or agent-generated value).",
+          "Whether ClearSupaSet or SupaSet.clear is registered as an agent tool or wired to an agent lifecycle hook in any unsupplied source.",
+          "Contents of llm_from_here.supabase_env.create_supabase_client (imported at supaSet.py line 26) to confirm client construction and target instance.",
+          "Deployment configuration values of LLMFH_ENV; no supplied source shows 'prod' being set."
+        ],
+        "protected_operation": "clear_supaset(set_name) \u2014 bulk deletion of all supasets rows for the named set, reachable via direct call, via SupaSet.clear() (supaSet.py lines 58-59), or via the ClearSupaSet plugin's execute() (clearSupaSet.py lines 13-15).",
+        "protected_resource": "Rows of the Supabase 'supasets' table (columns id, value, set_name, session_id, is_session_complete, created_at per the schema comment) matching the supplied set_name.",
+        "protection_obligation": "Clearing a Supabase-backed SupaSet must be refused when LLMFH_ENV indicates production (is_production() returns true, i.e., LLMFH_ENV == 'prod'), so the destructive delete of all rows for a set_name never reaches its commit point on the supasets table. (Merged from both reviewer submissions, which describe the same guard, forbidden effect, and commit point; the second adds the ClearSupaSet plugin caller path.)",
+        "scope_limits": [
+          "The refusal triggers only on the exact value 'prod' (case-sensitive comparison in is_production()); unset LLMFH_ENV defaults to 'dev', and any other value is treated as non-production.",
+          "The guard is registered only in clear_supaset. Other destructive paths on the same table in the supplied source have no production guard: SupaSet.autoexpire's delete (lines 67-73), remove() (lines 110-112), and _cleanup_incomplete_sessions() (lines 130-132); SupaSet.__init__ itself triggers _cleanup_incomplete_sessions unguarded.",
+          "ClearSupaSet.execute() is shown only as an in-repo caller; no supplied source shows a plugin/tool registry, dispatcher, or agent runtime binding it, so agent-mediated entry is not asserted.",
+          "Commit-point semantics are limited to the supplied client code; any server-side enforcement (e.g., Supabase policies) is not evidenced and is not part of this contract."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source binds clear_supaset, SupaSet.clear, or ClearSupaSet.execute to an agent tool dispatch, agent lifecycle hook, or agent-generated input dataflow; agent_mediation is therefore not_established and no agent_entry_binding evidence is cited. The 'plugin' naming and repository topic are not treated as proof of agent mediation.",
+      "The caller of ClearSupaSet.execute() and the provenance of its params (including set_name) are outside the supplied views.",
+      "llm_from_here.supabase_env.create_supabase_client is imported (supaSet.py line 26) but its source is not supplied.",
+      "No supplied source shows LLMFH_ENV being configured to 'prod' in any environment or deployment file; the guard's activation condition is defined only in code."
+    ],
+    "repository": "mibass/llm_from_here",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:76ba9dfd048159cdd67db33d0ee4e6a6"
+  },
+  "request_sha256": "4fc6dcb0a33631a235fc6284ff5ec1638e4150c517c8439264a05dffb807b460",
+  "response_sha256": "d3cac1688af1fd44fdc24a651ae050e014f692ee08e2d5567b0d5697de149853",
+  "state": "completed",
+  "tokens": 11040,
+  "unit": "v24-screen:76ba9dfd048159cdd67db33d0ee4e6a6"
+}

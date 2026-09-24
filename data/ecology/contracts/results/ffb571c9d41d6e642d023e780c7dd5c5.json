@@ -1,0 +1,950 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "src/signet/gateway.py:373-377 \u2014 `await _run_sync(self._enqueuer.enqueue, frozen.enqueue_request, reviewed_limits=reviewed_limits)`, the durable enqueue commit (comment at 369-370: the synchronous transaction runs through commit before control is yielded); the call then returns the pending result at src/signet/gateway.py:391 with no downstream client invocation on this path.",
+        "contract_id": "ecological-contract:03e6c1166e9f32c6dd95a7d3c4447ee7",
+        "declared_mechanism": "handle_call routes PolicyMode.APPROVAL exclusively to _enqueue_approval; _enqueue_approval requires exact adapter identity, resolves the execution scope, canonicalizes and freezes the arguments with policy version, schema digest, account, credential identity, and invocation idempotency key, then commits via the synchronous enqueuer.enqueue transaction (IdempotencyConflict/AdmissionRejected/InvalidTransition mapped to domain errors) and returns the stored pending result.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 178,
+            "line_start": 162,
+            "path": "src/signet/gateway.py",
+            "role": "guard_registration",
+            "source_sha256": "6f30a6cf4a89be12a5e254ec2f87ebd7177364bda84e2996247fe8a08e0dbc3b"
+          },
+          {
+            "line_end": 311,
+            "line_start": 299,
+            "path": "src/signet/gateway.py",
+            "role": "guard_registration",
+            "source_sha256": "6f30a6cf4a89be12a5e254ec2f87ebd7177364bda84e2996247fe8a08e0dbc3b"
+          },
+          {
+            "line_end": 347,
+            "line_start": 333,
+            "path": "src/signet/gateway.py",
+            "role": "protected_operation",
+            "source_sha256": "6f30a6cf4a89be12a5e254ec2f87ebd7177364bda84e2996247fe8a08e0dbc3b"
+          },
+          {
+            "line_end": 362,
+            "line_start": 349,
+            "path": "src/signet/gateway.py",
+            "role": "protected_operation",
+            "source_sha256": "6f30a6cf4a89be12a5e254ec2f87ebd7177364bda84e2996247fe8a08e0dbc3b"
+          },
+          {
+            "line_end": 391,
+            "line_start": 369,
+            "path": "src/signet/gateway.py",
+            "role": "commit_point",
+            "source_sha256": "6f30a6cf4a89be12a5e254ec2f87ebd7177364bda84e2996247fe8a08e0dbc3b"
+          },
+          {
+            "line_end": 1474,
+            "line_start": 1468,
+            "path": "src/signet/mcp_mirror.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "abf9c51eebe339832344ff43895f8f6ddb269222cad572894fa66a44d9e08666"
+          }
+        ],
+        "forbidden_condition": "An approval-mode mutation reaching a downstream client (or any provider effect occurring) before the durable human-approval enqueue transaction commits, or an approval-mode call bound to an adapter that does not exactly match the reviewed route (adapter_id, downstream alias, tool name, communication_send classification).",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Transactional durability of enqueuer.enqueue depends on the unsupplied state-machine implementation.",
+          "Whether any supplied wiring can bypass handle_call and reach downstream clients directly on the approval path cannot be excluded from supplied sources alone."
+        ],
+        "protected_operation": "Approval-mode alias tool calls for mutation/send tools.",
+        "protected_resource": "The durable approval queue (pending requests) and the downstream clients that must not be reached on this path.",
+        "protection_obligation": "Approval-mode mutations may reach a downstream client only after the durable human-approval enqueue commits: the alias tool call must freeze the exact reviewed request and return a pending result from the synchronous enqueue transaction, deferring all provider effects to the post-approval dispatch pipeline.",
+        "scope_limits": [
+          "This contract covers the approval-mode call path up to the durable enqueue; post-approval provider execution is contracted separately (dispatch_started ordering and adapter/wrapper gates).",
+          "Downstream client resolution occurs for scope identity only; supplied source shows no downstream call in the approval path before enqueue.",
+          "The enqueuer (ApprovalStateMachine.enqueue) and freezer internals are not supplied; durability is asserted at the call site only."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "src/signet/staging.py:1238 \u2014 `os.unlink(opaque_id, dir_fd=root_fd)` and src/signet/staging.py:1240 \u2014 `os.unlink(metadata_name, dir_fd=metadata_fd)`.",
+        "contract_id": "ecological-contract:10ffcbcd01504797350785179c7006ce",
+        "declared_mechanism": "Opaque-ID grammar check; expected path confined to root/opaque_id; purge-expectation validation; exclusive staging lock; catalog read with exact match (path, size, sha256, envelope format/size/hash, key reference); no-follow opens with single-link regular-file checks; envelope hash and authenticated decryption compared to expected size/sha256; named-file identity recheck before unlink; catalog update conditioned on the unchanged row with rowcount verification.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 1115,
+            "line_start": 1105,
+            "path": "src/signet/staging.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1128,
+            "line_start": 1116,
+            "path": "src/signet/staging.py",
+            "role": "guard_registration",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1171,
+            "line_start": 1164,
+            "path": "src/signet/staging.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1219,
+            "line_start": 1178,
+            "path": "src/signet/staging.py",
+            "role": "guard_registration",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1242,
+            "line_start": 1237,
+            "path": "src/signet/staging.py",
+            "role": "commit_point",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1267,
+            "line_start": 1248,
+            "path": "src/signet/staging.py",
+            "role": "guard_registration",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          }
+        ],
+        "forbidden_condition": "Unlinking a staged object or metadata sidecar whose path is not exactly root/opaque_id, whose catalog row does not match the expected size/sha256/envelope/key reference, whose envelope or plaintext fails integrity verification, or whose file identity changed between open and unlink.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Callers of purge_verified (retention manager) are not supplied, so the triggering policy and any agent linkage cannot be compiled."
+        ],
+        "protected_operation": "Retention-owned purge of a DB-owned staged object and its metadata sidecar.",
+        "protected_resource": "Staged attachment content files and . metadata sidecars under the private staging root.",
+        "protection_obligation": "StagingStore.purge_verified may unlink a staged object and its metadata sidecar only after confined-path, catalog-match, envelope-integrity, and plaintext-integrity verification, and only while the catalog row still matches; it must fail closed on any mismatch or unsafe file state.",
+        "scope_limits": [
+          "missing_ok covers only the narrow crash-recovery case where the filesystem unlink completed before the owning catalog transaction committed.",
+          "The generic purge() path (src/signet/staging.py:1038-1093) is a separate mechanism with its own guards and is not covered here."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "src/signet/staging.py:1309 \u2014 `os.unlink(name, dir_fd=root_fd)`; metadata-temporary cleanup commits at src/signet/staging.py:1320 \u2014 `os.unlink(name, dir_fd=metadata_fd)`.",
+        "contract_id": "ecological-contract:25cc56eae95b179401c0884209bc884e",
+        "declared_mechanism": "Exclusive staging lock; catalogued set derived from valid metadata sidecar names; protected set filtered to valid opaque IDs; per-entry follow_symlinks=False stat requiring a regular file, a single link, and mtime at or before the cutoff; unlink only after all checks pass; directory fsync when anything was removed.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 1276,
+            "line_start": 1276,
+            "path": "src/signet/staging.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1281,
+            "line_start": 1277,
+            "path": "src/signet/staging.py",
+            "role": "guard_registration",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1292,
+            "line_start": 1282,
+            "path": "src/signet/staging.py",
+            "role": "guard_registration",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1302,
+            "line_start": 1301,
+            "path": "src/signet/staging.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1308,
+            "line_start": 1303,
+            "path": "src/signet/staging.py",
+            "role": "guard_registration",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1310,
+            "line_start": 1309,
+            "path": "src/signet/staging.py",
+            "role": "commit_point",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          },
+          {
+            "line_end": 1321,
+            "line_start": 1311,
+            "path": "src/signet/staging.py",
+            "role": "commit_point",
+            "source_sha256": "4ae74584101f3574829a1d7e1ab0bc5b7c027e17feaa6ff07fe52567aa6d192a"
+          }
+        ],
+        "forbidden_condition": "Deleting a catalogued or protected staged object, or any entry that is not an aged unpublished regular single-link file matching the opaque-ID grammar, during orphan sweeping.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds sweep scheduling to any agent tool or lifecycle; callers of sweep_orphans are not among the supplied views."
+        ],
+        "protected_operation": "Orphan-sweep unlinking in the staging content root and metadata root.",
+        "protected_resource": "Staged attachment content files and metadata sidecars under the private staging root.",
+        "protection_obligation": "StagingStore.sweep_orphans may only unlink unpublished staged files that match the opaque-ID grammar, are regular single-link files no newer than the grace-period cutoff, and are neither catalogued (via metadata sidecars) nor in the caller-supplied protected set; it must never delete catalogued or protected objects.",
+        "scope_limits": [
+          "The sweep never touches catalog rows; it is filesystem-only for uncatalogued leftovers.",
+          "Metadata cleanup is restricted to .stg_*_tmp names whose inner identifier matches the opaque grammar."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Adapter registration before bundle return: src/signet/production_connectors.py:548-549 (fastmail) and src/signet/production_connectors.py:713 (whatsapp), each guarded by the _require_approval_send raise at src/signet/production_connectors.py:742-744; on the disabled path, src/signet/production.py:183-191 where ProductionDisabledProviderClient.call_tool raises before delegating.",
+        "contract_id": "ecological-contract:2b775733a154c41655e76eae87906161",
+        "declared_mechanism": "_require_approval_send raises ProductionConnectorError unless the policy tool mode is APPROVAL, communication_send is true, and the adapter ID matches; a missing reviewed schema digest on any tool route aborts live assembly before clients are built; with rollout disabled only ProductionDisabledProviderClient instances are created, and their call_tool/call_tool_raw raise before any network or process effect.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 744,
+            "line_start": 730,
+            "path": "src/signet/production_connectors.py",
+            "role": "guard_registration",
+            "source_sha256": "f3778266c56be0f72527df5207d57f4b95adfd61ca53c1bc0914d7eb2196cd3d"
+          },
+          {
+            "line_end": 457,
+            "line_start": 451,
+            "path": "src/signet/production_connectors.py",
+            "role": "guard_registration",
+            "source_sha256": "f3778266c56be0f72527df5207d57f4b95adfd61ca53c1bc0914d7eb2196cd3d"
+          },
+          {
+            "line_end": 549,
+            "line_start": 537,
+            "path": "src/signet/production_connectors.py",
+            "role": "commit_point",
+            "source_sha256": "f3778266c56be0f72527df5207d57f4b95adfd61ca53c1bc0914d7eb2196cd3d"
+          },
+          {
+            "line_end": 715,
+            "line_start": 698,
+            "path": "src/signet/production_connectors.py",
+            "role": "commit_point",
+            "source_sha256": "f3778266c56be0f72527df5207d57f4b95adfd61ca53c1bc0914d7eb2196cd3d"
+          },
+          {
+            "line_end": 199,
+            "line_start": 176,
+            "path": "src/signet/production.py",
+            "role": "guard_registration",
+            "source_sha256": "fee1883079dd999954887f5b7ff6bc45212b0fe0afd1a14c27d3c93f52bcfba3"
+          },
+          {
+            "line_end": 840,
+            "line_start": 811,
+            "path": "src/signet/production.py",
+            "role": "protected_operation",
+            "source_sha256": "fee1883079dd999954887f5b7ff6bc45212b0fe0afd1a14c27d3c93f52bcfba3"
+          },
+          {
+            "line_end": 948,
+            "line_start": 934,
+            "path": "src/signet/production.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fee1883079dd999954887f5b7ff6bc45212b0fe0afd1a14c27d3c93f52bcfba3"
+          }
+        ],
+        "forbidden_condition": "Assembling or returning a dispatch-enabled provider adapter or session pool for a send route whose policy is not APPROVAL-mode bound to the exact adapter ID, or that lacks communication_send classification or a reviewed schema digest; equivalently, any provider tool call succeeding while provider_rollout is disabled.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "The ProductionConfig.provider_rollout schema (config.py) is not supplied, so rollout-state values and wacli boundary field semantics are inferred from usage only.",
+          "Whether adapters registered through build_review_only_provider_adapters could ever dispatch depends on callers not fully supplied; their reviewed_dispatch_enabled=False construction fail-closes execute."
+        ],
+        "protected_operation": "Connector assembly and adapter registration for live provider send routes in build_live_provider_bundle, _build_whatsapp, and build_review_only_provider_adapters.",
+        "protected_resource": "Live provider adapters/clients and the provider session pool handed to the production runtime (GatewayCallPipeline, DeliveryDispatcher, ReconciliationCoordinator).",
+        "protection_obligation": "Live provider send dispatch (fastmail/send_email; whatsapp/send_text, whatsapp/send_file) is forbidden unless each tool's policy route is approval-mode bound to the exact adapter ID with the communication_send classification and a reviewed schema digest, enforced at connector assembly inside build_live_provider_bundle before any dispatch-enabled adapter or session pool is returned to the production runtime; while provider_rollout is disabled, every provider call fails closed through ProductionDisabledProviderClient.",
+        "scope_limits": [
+          "This is an assembly-time invariant; per-call runtime enforcement is provided by the adapter and wrapper dispatch gates contracted separately.",
+          "WhatsApp send effects ultimately commit through the owned wacli subprocess (process stratum) after approval; fastmail send effects are network/email delivery.",
+          "Assembly wires dispatch capability only; no provider I/O occurs during build_live_provider_bundle itself (sessions start lazily via ProviderSessionPool.run)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "src/signet/gateway_tools.py:703-711 \u2014 `self._state_machine.approve(request.request_id, expected_version=request.version, expected_payload_hash=request.payload_hash, confirmation=confirmation, actor=principal.actor, now=now)` durable transition.",
+        "contract_id": "ecological-contract:5f296d16ade7e38028380edcbabee546",
+        "declared_mechanism": "Namespace-scoped ownership lookup; gateway-internal requests forced to web-only; pending/expiry/stale-prefix checks with constant-time comparison; ActionBinding(action='approve', request_id, version, payload_hash) passed to the TOTP verifier; post-verification proof attribute validation (user, binding, session absence, MCP method, credential, attempt reservation, rate-limit scopes); durable state_machine.approve with expected version/payload hash and structured confirmation, mapping ConfirmationReplay/StaleVersion/RequestExpired/InvalidTransition/InvalidConfirmation to domain errors; record_consumed_success recorded after the commit.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 607,
+            "line_start": 593,
+            "path": "src/signet/gateway_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "126567f2c7365e7d96991ade0344a8991d1c3e47ebd27801d470d9dda944ff1d"
+          },
+          {
+            "line_end": 612,
+            "line_start": 609,
+            "path": "src/signet/gateway_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "126567f2c7365e7d96991ade0344a8991d1c3e47ebd27801d470d9dda944ff1d"
+          },
+          {
+            "line_end": 630,
+            "line_start": 614,
+            "path": "src/signet/gateway_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "126567f2c7365e7d96991ade0344a8991d1c3e47ebd27801d470d9dda944ff1d"
+          },
+          {
+            "line_end": 671,
+            "line_start": 653,
+            "path": "src/signet/gateway_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "126567f2c7365e7d96991ade0344a8991d1c3e47ebd27801d470d9dda944ff1d"
+          },
+          {
+            "line_end": 711,
+            "line_start": 702,
+            "path": "src/signet/gateway_tools.py",
+            "role": "commit_point",
+            "source_sha256": "126567f2c7365e7d96991ade0344a8991d1c3e47ebd27801d470d9dda944ff1d"
+          },
+          {
+            "line_end": 725,
+            "line_start": 721,
+            "path": "src/signet/gateway_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "126567f2c7365e7d96991ade0344a8991d1c3e47ebd27801d470d9dda944ff1d"
+          },
+          {
+            "line_end": 741,
+            "line_start": 741,
+            "path": "src/signet/gateway_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "126567f2c7365e7d96991ade0344a8991d1c3e47ebd27801d470d9dda944ff1d"
+          },
+          {
+            "line_end": 465,
+            "line_start": 464,
+            "path": "src/signet/gateway_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "126567f2c7365e7d96991ade0344a8991d1c3e47ebd27801d470d9dda944ff1d"
+          },
+          {
+            "line_end": 934,
+            "line_start": 933,
+            "path": "src/signet/gateway_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "126567f2c7365e7d96991ade0344a8991d1c3e47ebd27801d470d9dda944ff1d"
+          },
+          {
+            "line_end": 948,
+            "line_start": 941,
+            "path": "src/signet/gateway_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "126567f2c7365e7d96991ade0344a8991d1c3e47ebd27801d470d9dda944ff1d"
+          }
+        ],
+        "forbidden_condition": "Approving (transitioning to approved) a request that is not pending, that has expired, that is stale-versioned relative to the expected version hash, that is gateway-internal (web-only), or whose TOTP proof is absent, invalid, replayed, rate-locked, unavailable, or not bound to the exact request/version/payload-hash binding.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether the MCP caller behind approve_request is a human operator or an agent cannot be distinguished from source; the tool is dispatched identically through the gateway MCP surface with a principal supplied by the transport wiring."
+        ],
+        "protected_operation": "The gateway-owned MCP approve_request tool.",
+        "protected_resource": "The durable approval-request state (pending-to-approved transition) and TOTP credential/attempt state.",
+        "protection_obligation": "The MCP approve_request tool must refuse to transition a pending approval request to approved unless a fresh, single-use TOTP proof bound to that exact request_id, current version, and payload hash is verified against the binding; the durable commit is state_machine.approve and the proof's single-use consumption is recorded after it.",
+        "scope_limits": [
+          "The TOTP verifier, attempt limiter, and state-machine implementations are not supplied; freshness, single-use, and rate-limit behavior are enforced through their call-site contracts only.",
+          "Web-app approval is a separate surface not covered by this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "src/signet/adapters/fastmail.py:780 (`await downstream.call_tool('upload_attachment', upload_arguments)`) and src/signet/adapters/fastmail.py:822 (`await downstream.call_tool(self.tool_name, send_arguments)`), each reachable only after the gate at src/signet/adapters/fastmail.py:753-757; the WhatsApp analog is the gate at src/signet/adapters/whatsapp.py:349-350 before its call at src/signet/adapters/whatsapp.py:358.",
+        "contract_id": "ecological-contract:609745da84bb75011fbce4f4f1663c69",
+        "declared_mechanism": "Both adapters default reviewed_dispatch_enabled=False in their constructors and raise DispatchError/WacliError with dispatch_may_have_occurred=False as the first check of execute; only the reviewed live assembly constructs them with True, and the review-only assembly constructs them with False.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 545,
+            "line_start": 533,
+            "path": "src/signet/adapters/fastmail.py",
+            "role": "guard_registration",
+            "source_sha256": "5bb7c5f72856f50b711a57467731ce2df01a526da3cd33bbefdc64365c26d713"
+          },
+          {
+            "line_end": 757,
+            "line_start": 752,
+            "path": "src/signet/adapters/fastmail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5bb7c5f72856f50b711a57467731ce2df01a526da3cd33bbefdc64365c26d713"
+          },
+          {
+            "line_end": 780,
+            "line_start": 780,
+            "path": "src/signet/adapters/fastmail.py",
+            "role": "commit_point",
+            "source_sha256": "5bb7c5f72856f50b711a57467731ce2df01a526da3cd33bbefdc64365c26d713"
+          },
+          {
+            "line_end": 822,
+            "line_start": 822,
+            "path": "src/signet/adapters/fastmail.py",
+            "role": "commit_point",
+            "source_sha256": "5bb7c5f72856f50b711a57467731ce2df01a526da3cd33bbefdc64365c26d713"
+          },
+          {
+            "line_end": 350,
+            "line_start": 349,
+            "path": "src/signet/adapters/whatsapp.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e3e55a0bb4963250fc5ec529620ebaa7da793cfd9c2918ed721084c62f2e9143"
+          },
+          {
+            "line_end": 626,
+            "line_start": 589,
+            "path": "src/signet/production_connectors.py",
+            "role": "guard_registration",
+            "source_sha256": "f3778266c56be0f72527df5207d57f4b95adfd61ca53c1bc0914d7eb2196cd3d"
+          },
+          {
+            "line_end": 482,
+            "line_start": 479,
+            "path": "src/signet/delivery.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fdaeb7f495218e26104775686eb752e75e99c2b34a0c183ff2a60b51e5392733"
+          },
+          {
+            "line_end": 513,
+            "line_start": 508,
+            "path": "src/signet/delivery.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fdaeb7f495218e26104775686eb752e75e99c2b34a0c183ff2a60b51e5392733"
+          }
+        ],
+        "forbidden_condition": "Provider I/O (Fastmail attachment upload or send_email downstream calls; WhatsApp downstream send calls) occurring through an adapter instance whose reviewed_dispatch_enabled is false.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Adapter constructor call sites outside production_connectors.py are not supplied, so no other production construction path can be audited for the flag's value."
+        ],
+        "protected_operation": "Adapter execute invoked by the delivery dispatcher for an approved request.",
+        "protected_resource": "Downstream provider clients (Fastmail HTTP MCP client; WhatsApp owned wrapper).",
+        "protection_obligation": "Adapter dispatch must pass the fail-closed reviewed_dispatch_enabled gate before provider I/O: FastmailAdapter.execute and WhatsAppAdapter.execute must raise a characterized non-dispatch error before any downstream call unless reviewed dispatch was enabled for that exact adapter instance.",
+        "scope_limits": [
+          "The gate is per-adapter-instance configuration, not a per-request approval check; request approval is enforced upstream (approval enqueue, state machine, frozen-envelope authentication).",
+          "WhatsApp send effects continue into the wacli wrapper's process-stratum gates contracted separately."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "src/signet/gateway.py:213 \u2014 the passthrough `call_tool_raw` dispatch, reachable only for tools admitted under a parsed snapshot satisfying the passthrough read-only constraint.",
+        "contract_id": "ecological-contract:a019485264376b7c21d3325d77213e6b",
+        "declared_mechanism": "Policy parsing requires default_mode deny and raises PolicyError when a passthrough tool is communication_send or not reviewed read-only; preview_promotion repeats the identical guard before any mode change; runtime admission only admits tools under the parsed snapshot.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 499,
+            "line_start": 494,
+            "path": "src/signet/policy.py",
+            "role": "guard_registration",
+            "source_sha256": "391106e7c2d0013077d4b5f8d7d0893859469f8be0f483403bfc3153e1fee046"
+          },
+          {
+            "line_end": 585,
+            "line_start": 582,
+            "path": "src/signet/policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "391106e7c2d0013077d4b5f8d7d0893859469f8be0f483403bfc3153e1fee046"
+          },
+          {
+            "line_end": 863,
+            "line_start": 858,
+            "path": "src/signet/policy.py",
+            "role": "guard_registration",
+            "source_sha256": "391106e7c2d0013077d4b5f8d7d0893859469f8be0f483403bfc3153e1fee046"
+          },
+          {
+            "line_end": 214,
+            "line_start": 212,
+            "path": "src/signet/gateway.py",
+            "role": "commit_point",
+            "source_sha256": "6f30a6cf4a89be12a5e254ec2f87ebd7177364bda84e2996247fe8a08e0dbc3b"
+          },
+          {
+            "line_end": 1312,
+            "line_start": 1311,
+            "path": "src/signet/mcp_mirror.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "abf9c51eebe339832344ff43895f8f6ddb269222cad572894fa66a44d9e08666"
+          },
+          {
+            "line_end": 1476,
+            "line_start": 1432,
+            "path": "src/signet/mcp_mirror.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "abf9c51eebe339832344ff43895f8f6ddb269222cad572894fa66a44d9e08666"
+          }
+        ],
+        "forbidden_condition": "A downstream communication-send dispatch executed in passthrough mode for a tool flagged communication_send or not classified reviewed read-only.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether every durable promotion writer re-parses policy through parse_policy (thereby re-enforcing this guard) cannot be confirmed because the persistence modules are not supplied."
+        ],
+        "protected_operation": "Passthrough dispatch of configured downstream tools through the alias gateway.",
+        "protected_resource": "Downstream communication-send tool routes (e.g., fastmail/send_email, whatsapp send tools) governed by the reviewed policy snapshot.",
+        "protection_obligation": "Communication-send tools are barred from passthrough mode: deny-by-default policy parsing and guarded policy promotion must reject any passthrough configuration for a tool flagged communication_send or lacking reviewed read-only classification, so no communication-send dispatch can be admitted in passthrough mode.",
+        "scope_limits": [
+          "The parse-time guard constrains policy content; the effect named as the commit point is the passthrough send dispatch that the constraint makes unreachable for send tools.",
+          "Other promotion boundaries (web backend, policy persistence) are not supplied; the contract covers the parsing and in-engine promotion guards only."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "src/signet/adapters/base.py:226 \u2014 `await self.__delegate.call_tool(tool_name, detached_arguments)`, reached only after the allowlist rejection at src/signet/adapters/base.py:221-224.",
+        "contract_id": "ecological-contract:aa4295fb9f2cb060594e34d812fdb7b2",
+        "declared_mechanism": "ReadOnlyMCPClient wraps a deliberately private delegate with a frozenset exact-name allowlist and raises ReadOnlyToolViolation for any other name before delegation; the class contract states policy code constructs it from the intersection of the adapter declaration and the reviewed downstream policy; production assembly intersects adapter.reconciliation_tools with the reviewed policy tools when wiring the reconciliation coordinator.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 201,
+            "line_start": 195,
+            "path": "src/signet/adapters/base.py",
+            "role": "guard_registration",
+            "source_sha256": "eab559eb00160a07130ad7c2a85823cf698a08f927e5d32638b416973355b842"
+          },
+          {
+            "line_end": 224,
+            "line_start": 220,
+            "path": "src/signet/adapters/base.py",
+            "role": "forbidden_condition",
+            "source_sha256": "eab559eb00160a07130ad7c2a85823cf698a08f927e5d32638b416973355b842"
+          },
+          {
+            "line_end": 226,
+            "line_start": 226,
+            "path": "src/signet/adapters/base.py",
+            "role": "commit_point",
+            "source_sha256": "eab559eb00160a07130ad7c2a85823cf698a08f927e5d32638b416973355b842"
+          },
+          {
+            "line_end": 531,
+            "line_start": 525,
+            "path": "src/signet/adapters/fastmail.py",
+            "role": "guard_registration",
+            "source_sha256": "5bb7c5f72856f50b711a57467731ce2df01a526da3cd33bbefdc64365c26d713"
+          },
+          {
+            "line_end": 858,
+            "line_start": 838,
+            "path": "src/signet/adapters/fastmail.py",
+            "role": "protected_operation",
+            "source_sha256": "5bb7c5f72856f50b711a57467731ce2df01a526da3cd33bbefdc64365c26d713"
+          },
+          {
+            "line_end": 148,
+            "line_start": 144,
+            "path": "src/signet/adapters/whatsapp.py",
+            "role": "guard_registration",
+            "source_sha256": "e3e55a0bb4963250fc5ec529620ebaa7da793cfd9c2918ed721084c62f2e9143"
+          },
+          {
+            "line_end": 381,
+            "line_start": 374,
+            "path": "src/signet/adapters/whatsapp.py",
+            "role": "protected_operation",
+            "source_sha256": "e3e55a0bb4963250fc5ec529620ebaa7da793cfd9c2918ed721084c62f2e9143"
+          },
+          {
+            "line_end": 1121,
+            "line_start": 1111,
+            "path": "src/signet/production.py",
+            "role": "guard_registration",
+            "source_sha256": "fee1883079dd999954887f5b7ff6bc45212b0fe0afd1a14c27d3c93f52bcfba3"
+          }
+        ],
+        "forbidden_condition": "A downstream MCP tool invocation during reconciliation whose exact tool name is not in the adapter's reviewed reconciliation_tools allowlist reaching the unrestricted delegate client.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds the reconciliation lookup to an agent tool call, agent lifecycle hook, or agent-generated input reaching this effect; the coordinator module and its scheduling dataflow are unsupplied.",
+          "Whether production actually constructs ReadOnlyMCPClient around the live clients (versus the unsupplied coordinator applying reviewed_tools another way) cannot be confirmed from supplied sources."
+        ],
+        "protected_operation": "Read-only reconciliation lookup performed by an approval adapter through ReadOnlyMCPClient.call_tool.",
+        "protected_resource": "Unrestricted downstream MCP client delegates reached during reconciliation of an approval request attempt.",
+        "protection_obligation": "Reconciliation must never invoke a downstream MCP tool outside the adapter's reviewed reconciliation_tools allowlist: ReadOnlyMCPClient.call_tool must reject any non-allowlisted tool name with ReadOnlyToolViolation before delegating to the unrestricted downstream client, with each adapter binding its exact reviewed allowlist (Fastmail permits only search_email; WhatsApp's empty allowlist forbids any reconciliation call).",
+        "scope_limits": [
+          "The guard restricts tool names only; arguments are validated as JSON objects but are not schema-checked against the downstream policy on this path.",
+          "WhatsApp's empty reconciliation allowlist makes every reconciliation inconclusive without any downstream call (src/signet/adapters/whatsapp.py:374-381).",
+          "The ReconciliationCoordinator that drives reconciliation in production is not among the supplied sources, so the full invocation path is unverified."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "src/signet/gateway.py:213 \u2014 `await client.call_tool_raw(policy.tool, arguments)` in _passthrough, reachable only after `self.mirror.admit_call(...)` at src/signet/gateway.py:200.",
+        "contract_id": "ecological-contract:b47edf80415fc327459d2edfd9aa12ac",
+        "declared_mechanism": "SchemaMirror.admit_call atomically (under the publication lock) applies _require_callable_policy_locked \u2014 refusing publication-pending aliases, unconfigured tools, disabled/unreviewed or drifted schemas, and task-supporting tools \u2014 and validates the exact call arguments against the captured reviewed input schema; handle_call executes exactly one reviewed mode only after admission.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 1038,
+            "line_start": 1017,
+            "path": "src/signet/mcp_mirror.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abf9c51eebe339832344ff43895f8f6ddb269222cad572894fa66a44d9e08666"
+          },
+          {
+            "line_end": 1051,
+            "line_start": 1040,
+            "path": "src/signet/mcp_mirror.py",
+            "role": "guard_registration",
+            "source_sha256": "abf9c51eebe339832344ff43895f8f6ddb269222cad572894fa66a44d9e08666"
+          },
+          {
+            "line_end": 1108,
+            "line_start": 1079,
+            "path": "src/signet/mcp_mirror.py",
+            "role": "guard_registration",
+            "source_sha256": "abf9c51eebe339832344ff43895f8f6ddb269222cad572894fa66a44d9e08666"
+          },
+          {
+            "line_end": 178,
+            "line_start": 143,
+            "path": "src/signet/gateway.py",
+            "role": "protected_operation",
+            "source_sha256": "6f30a6cf4a89be12a5e254ec2f87ebd7177364bda84e2996247fe8a08e0dbc3b"
+          },
+          {
+            "line_end": 201,
+            "line_start": 200,
+            "path": "src/signet/gateway.py",
+            "role": "guard_registration",
+            "source_sha256": "6f30a6cf4a89be12a5e254ec2f87ebd7177364bda84e2996247fe8a08e0dbc3b"
+          },
+          {
+            "line_end": 214,
+            "line_start": 212,
+            "path": "src/signet/gateway.py",
+            "role": "commit_point",
+            "source_sha256": "6f30a6cf4a89be12a5e254ec2f87ebd7177364bda84e2996247fe8a08e0dbc3b"
+          },
+          {
+            "line_end": 1312,
+            "line_start": 1311,
+            "path": "src/signet/mcp_mirror.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "abf9c51eebe339832344ff43895f8f6ddb269222cad572894fa66a44d9e08666"
+          },
+          {
+            "line_end": 1476,
+            "line_start": 1432,
+            "path": "src/signet/mcp_mirror.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "abf9c51eebe339832344ff43895f8f6ddb269222cad572894fa66a44d9e08666"
+          }
+        ],
+        "forbidden_condition": "A downstream tool dispatch (or any reviewed-mode execution) for an alias tool call that has not been admitted under the currently reviewed policy and an exactly matching captured schema digest \u2014 including calls while a policy publication is pending, while the captured schema is unreviewed or drifted, or while the tool advertises task execution.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The durable promotion/publication path that clears the mirror publication gate (publication_gate wired into SQLitePolicyPromotionBoundary) is only partially visible; whether every production writer honors the gate cannot be confirmed from supplied sources."
+        ],
+        "protected_operation": "Alias MCP tool invocation handling routed by GatewayCallPipeline.handle_call after admission.",
+        "protected_resource": "Downstream MCP tool surfaces exposed to callers through the per-alias MCP servers.",
+        "protection_obligation": "Every alias tool call must be admitted through SchemaMirror.admit_call under the exact reviewed policy and reviewed schema digest before any dispatch, with fail-closed rejection of unpublished policy changes, unreviewed or drifted schemas, unconfigured tools, and task-support advertising.",
+        "scope_limits": [
+          "The named commit point is the passthrough downstream wire call; admit_call equally gates approval-mode enqueue and virtualize-local handling, whose effects commit in other strata and are contracted separately.",
+          "Schema capture and review approval (capture, approve_schema, drift marking) are only partially covered; this contract covers the call-path admission gate.",
+          "Namespace/alias authorization in AliasToolSurface._namespace is not part of this admission contract beyond the dispatch binding."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "deploy/hermes/configure-demo-profile.py:441-446 (env os.replace) and deploy/hermes/configure-demo-profile.py:463-468 (config os.replace).",
+        "contract_id": "ecological-contract:c4efb43360ab49a6c31c6a5ea468b556",
+        "declared_mechanism": "Private-file snapshot capture (no-follow open, regular single-link 0600 owned-file checks, ACL check); exclusive flock on .signet-configure.lock; _assert_snapshot re-verification (device/inode/size/mtimes plus constant-time content comparison) immediately before each replace; expected-content recheck of .env before the config replace; staged os.replace with dir_fds plus directory fsync and stage-specific error reporting.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 425,
+            "line_start": 412,
+            "path": "deploy/hermes/configure-demo-profile.py",
+            "role": "guard_registration",
+            "source_sha256": "91d03bf6f98e7deebf2d4c2c3398d9b631ff664eab4666aa15b516a922637df2"
+          },
+          {
+            "line_end": 450,
+            "line_start": 437,
+            "path": "deploy/hermes/configure-demo-profile.py",
+            "role": "commit_point",
+            "source_sha256": "91d03bf6f98e7deebf2d4c2c3398d9b631ff664eab4666aa15b516a922637df2"
+          },
+          {
+            "line_end": 468,
+            "line_start": 452,
+            "path": "deploy/hermes/configure-demo-profile.py",
+            "role": "commit_point",
+            "source_sha256": "91d03bf6f98e7deebf2d4c2c3398d9b631ff664eab4666aa15b516a922637df2"
+          },
+          {
+            "line_end": 635,
+            "line_start": 605,
+            "path": "deploy/hermes/configure-demo-profile.py",
+            "role": "guard_registration",
+            "source_sha256": "91d03bf6f98e7deebf2d4c2c3398d9b631ff664eab4666aa15b516a922637df2"
+          },
+          {
+            "line_end": 660,
+            "line_start": 638,
+            "path": "deploy/hermes/configure-demo-profile.py",
+            "role": "guard_registration",
+            "source_sha256": "91d03bf6f98e7deebf2d4c2c3398d9b631ff664eab4666aa15b516a922637df2"
+          }
+        ],
+        "forbidden_condition": "Publishing a profile config or env file that changed since it was read, or publishing without the exclusive profile lock, allowing concurrent modification to be clobbered or a partially applied profile state.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds this deployment script to agent tool dispatch, an agent lifecycle hook, or agent-generated input; the obligation's agent relevance is unestablished."
+        ],
+        "protected_operation": "Atomic publication of the signet-demo Hermes profile config.yaml and .env via _commit_profile_files.",
+        "protected_resource": "The signet-demo Hermes profile directory's config.yaml and .env files.",
+        "protection_obligation": "Hermes demo profile file publication must occur only under an exclusive lock after unchanged-snapshot verification: config.yaml and .env may be replaced only while holding the profile lock, with device/inode/size/timestamps and content matching the read snapshot immediately before each os.replace.",
+        "scope_limits": [
+          "This is a deployment-time configuration script for the disposable signet-demo profile; it does not gate any runtime agent effect.",
+          "The script only adds fake-only MCP routes to a blank profile; it refuses a profile that already contains MCP servers or a conflicting token."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "src/signet/wacli_wrapper.py:741-745 (send_text) and src/signet/wacli_wrapper.py:845-850 (send_file) \u2014 `self._run_(tuple(command), dispatch_may_have_occurred=True, required_signature=verified_signature)`, the send subprocess dispatch.",
+        "contract_id": "ecological-contract:c63638919aba1c52aa80f88385e22f29",
+        "declared_mechanism": "WacliConfig refuses active dispatch without an execution snapshot root, executable SHA-256 digest, reviewed linked JID, and dedicated disjoint home/store; send_text/send_file raise provider_contract_inactive when reviewed_dispatch_enabled is false; verify_version re-runs the version probe under a lock and requires the exact pinned version, caching only an unchanged executable signature; _verify_linked_account requires exactly one matching account and the reviewed linked JID via read-only commands; the send runs with dispatch_may_have_occurred=True only with the verified signature pinned via required_signature.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 181,
+            "line_start": 156,
+            "path": "src/signet/wacli_wrapper.py",
+            "role": "guard_registration",
+            "source_sha256": "7dabc61826a8ce38509879e3b261f94ef29cef9447330df3286baf74a9a64c1b"
+          },
+          {
+            "line_end": 709,
+            "line_start": 708,
+            "path": "src/signet/wacli_wrapper.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7dabc61826a8ce38509879e3b261f94ef29cef9447330df3286baf74a9a64c1b"
+          },
+          {
+            "line_end": 783,
+            "line_start": 782,
+            "path": "src/signet/wacli_wrapper.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7dabc61826a8ce38509879e3b261f94ef29cef9447330df3286baf74a9a64c1b"
+          },
+          {
+            "line_end": 660,
+            "line_start": 654,
+            "path": "src/signet/wacli_wrapper.py",
+            "role": "guard_registration",
+            "source_sha256": "7dabc61826a8ce38509879e3b261f94ef29cef9447330df3286baf74a9a64c1b"
+          },
+          {
+            "line_end": 697,
+            "line_start": 662,
+            "path": "src/signet/wacli_wrapper.py",
+            "role": "guard_registration",
+            "source_sha256": "7dabc61826a8ce38509879e3b261f94ef29cef9447330df3286baf74a9a64c1b"
+          },
+          {
+            "line_end": 740,
+            "line_start": 736,
+            "path": "src/signet/wacli_wrapper.py",
+            "role": "guard_registration",
+            "source_sha256": "7dabc61826a8ce38509879e3b261f94ef29cef9447330df3286baf74a9a64c1b"
+          },
+          {
+            "line_end": 745,
+            "line_start": 741,
+            "path": "src/signet/wacli_wrapper.py",
+            "role": "commit_point",
+            "source_sha256": "7dabc61826a8ce38509879e3b261f94ef29cef9447330df3286baf74a9a64c1b"
+          },
+          {
+            "line_end": 826,
+            "line_start": 819,
+            "path": "src/signet/wacli_wrapper.py",
+            "role": "guard_registration",
+            "source_sha256": "7dabc61826a8ce38509879e3b261f94ef29cef9447330df3286baf74a9a64c1b"
+          },
+          {
+            "line_end": 850,
+            "line_start": 845,
+            "path": "src/signet/wacli_wrapper.py",
+            "role": "commit_point",
+            "source_sha256": "7dabc61826a8ce38509879e3b261f94ef29cef9447330df3286baf74a9a64c1b"
+          },
+          {
+            "line_end": 361,
+            "line_start": 348,
+            "path": "src/signet/adapters/whatsapp.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e3e55a0bb4963250fc5ec529620ebaa7da793cfd9c2918ed721084c62f2e9143"
+          },
+          {
+            "line_end": 705,
+            "line_start": 699,
+            "path": "src/signet/wacli_wrapper.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7dabc61826a8ce38509879e3b261f94ef29cef9447330df3286baf74a9a64c1b"
+          }
+        ],
+        "forbidden_condition": "A wacli message- or file-send subprocess running when reviewed dispatch is disabled, when the executable digest/version does not match the reviewed pin, or when the linked account identity does not match the reviewed JID.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The reviewed CLI version pin (REVIEWED_WACLI_VERSION 0.12.0) is asserted in source, but no supplied source documents the review process that set it.",
+          "signet/reviewed_process.py (VerifiedPrivateDirectory, DirectoryIdentity) is not supplied, so directory-identity verification behind the runtime boundary is unverified."
+        ],
+        "protected_operation": "wacli send_text and send_file dispatch.",
+        "protected_resource": "The pinned wacli executable, the dedicated private home/store runtime directories, and the reviewed linked WhatsApp account.",
+        "protection_obligation": "Outbound WhatsApp dispatch via wacli send_text/send_file must fail closed (\"provider_contract_inactive\", \"version_mismatch\", \"linked_account_mismatch\") unless reviewed dispatch is enabled with a pinned executable SHA-256 and reviewed linked JID, and executable-version plus linked-account verification complete before the send subprocess.",
+        "scope_limits": [
+          "Verification probes themselves run with dispatch_may_have_occurred=False and are treated as effect-free.",
+          "The wrapper never uses a shell and bounds runtime and captured output; this contract covers the ordering of gates to the send invocation, not wrapper internals.",
+          "Agent-generated arguments (to, message, caption, staged media) reach the send only via the approval pipeline and adapter; the wrapper itself cannot distinguish agent origin."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "src/signet/delivery.py:456 \u2014 the durable `mark_dispatch_started` commit, immediately followed by the scope recheck at src/signet/delivery.py:466 and provider I/O at src/signet/delivery.py:479-482 (`prepared.loaded.adapter.execute(prepared.downstream, prepared.payload)`).",
+        "contract_id": "ecological-contract:f90e0d74e3861da067fc30f19754c907",
+        "declared_mechanism": "dispatch_claimed prepares by authenticating the frozen canonical envelope (lease version/payload-hash match against the request row, payload availability and size bounds, decryption with hash verification, canonical envelope field checks against the request/payload rows, adapter identity match, execution-scope currency, attachment snapshot match), then commits state_machine.mark_dispatch_started, rechecks require_current_scope with no intervening await, and only then invokes adapter.execute.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 192,
+            "line_start": 170,
+            "path": "src/signet/delivery.py",
+            "role": "guard_registration",
+            "source_sha256": "fdaeb7f495218e26104775686eb752e75e99c2b34a0c183ff2a60b51e5392733"
+          },
+          {
+            "line_end": 273,
+            "line_start": 228,
+            "path": "src/signet/delivery.py",
+            "role": "guard_registration",
+            "source_sha256": "fdaeb7f495218e26104775686eb752e75e99c2b34a0c183ff2a60b51e5392733"
+          },
+          {
+            "line_end": 310,
+            "line_start": 294,
+            "path": "src/signet/delivery.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fdaeb7f495218e26104775686eb752e75e99c2b34a0c183ff2a60b51e5392733"
+          },
+          {
+            "line_end": 456,
+            "line_start": 454,
+            "path": "src/signet/delivery.py",
+            "role": "commit_point",
+            "source_sha256": "fdaeb7f495218e26104775686eb752e75e99c2b34a0c183ff2a60b51e5392733"
+          },
+          {
+            "line_end": 477,
+            "line_start": 465,
+            "path": "src/signet/delivery.py",
+            "role": "guard_registration",
+            "source_sha256": "fdaeb7f495218e26104775686eb752e75e99c2b34a0c183ff2a60b51e5392733"
+          },
+          {
+            "line_end": 482,
+            "line_start": 478,
+            "path": "src/signet/delivery.py",
+            "role": "commit_point",
+            "source_sha256": "fdaeb7f495218e26104775686eb752e75e99c2b34a0c183ff2a60b51e5392733"
+          },
+          {
+            "line_end": 362,
+            "line_start": 349,
+            "path": "src/signet/gateway.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6f30a6cf4a89be12a5e254ec2f87ebd7177364bda84e2996247fe8a08e0dbc3b"
+          }
+        ],
+        "forbidden_condition": "Provider I/O through the reviewed adapter occurring before the durable dispatch_started commit for the claimed execution lease, or executing after the runtime execution scope (adapter identity, credential identity, schema digest) has drifted from the frozen canonical envelope.",
+        "missing_evidence_roles": [
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether dispatch_claimed is reachable only for requests whose human approval was durably recorded depends on the unsupplied state machine claim_execution implementation."
+        ],
+        "protected_operation": "Reviewed-adapter execution of an approved request in DeliveryDispatcher.dispatch_claimed.",
+        "protected_resource": "The provider-facing downstream client and the durable execution-attempt state attributing provider I/O.",
+        "protection_obligation": "The durable dispatch_started commit must precede adapter execution, and the exact downstream client must be revalidated with no intervening await between the commit and provider I/O, so any provider I/O is durably attributed to a claimed lease whose frozen request, adapter identity, policy version, schema digest, and execution scope were authenticated.",
+        "scope_limits": [
+          "The concrete provider I/O at this boundary in the supplied adapters is the Fastmail downstream MCP HTTP call; the WhatsApp path's send commits at a subprocess (process stratum) and is contracted separately.",
+          "The state machine's lease-claim and mark_dispatch_started transactional semantics are not supplied.",
+          "Outcome settlement (record_outcome, reconciliation scheduling) is outside this contract."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "src/signet/reconcile.py (ReconciliationCoordinator) is not supplied; the worker-to-adapter reconciliation invocation path and any agent linkage for the reconciliation-allowlist obligation cannot be compiled.",
+      "src/signet/state_machine.py (ApprovalStateMachine) is not supplied; durable transactional semantics of enqueue, approve, claim_execution, mark_dispatch_started, and record_outcome are asserted only at call sites.",
+      "Reviewer rationale cites corroborating guards in src/signet/downstream.py (pinned TLS/stdio identity verification) and src/signet/extension_worker.py (hash-pinned worker launches); neither file is supplied, so those obligations cannot be compiled.",
+      "src/signet/config.py (ProductionConfig, provider_rollout, connector schemas) is not supplied; rollout-state values and wacli boundary field semantics are inferred from usage in supplied views only.",
+      "src/signet/freezer.py, src/signet/admission.py, and src/signet/policy_persistence.py are not supplied; freeze durability, admission limits, and the durable promotion/publication path behind the admission and enqueue contracts cannot be verified.",
+      "src/signet/reviewed_process.py (VerifiedPrivateDirectory, DirectoryIdentity) is not supplied; directory-identity verification behind the wacli runtime boundary is unverified.",
+      "src/signet/retention.py (caller of StagingStore.purge_verified/sweep_orphans) is not supplied, so purge/sweep triggering policy cannot be compiled.",
+      "Behavior labels are unavailable per scope; production versus demo-only status of each guard is judged only from the code wiring present in the supplied views."
+    ],
+    "repository": "bee-san/Signet",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:ffb571c9d41d6e642d023e780c7dd5c5"
+  },
+  "request_sha256": "bbd3cc16955a6b2c19159dd3c82dd674081a9301d3f5749486ba83641cd57b5c",
+  "response_sha256": "2e1150adef21fc0bbdc87d7fd0dd10deca962490db29c325211957b0550e4c3e",
+  "state": "completed",
+  "tokens": 185959,
+  "unit": "v24-screen:ffb571c9d41d6e642d023e780c7dd5c5"
+}

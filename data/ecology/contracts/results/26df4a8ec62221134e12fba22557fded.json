@@ -1,0 +1,230 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "SharedSecretASGIMiddleware.__call__: on missing/mismatched header or unavailable secret the 401 JSONResponse is served and the wrapped app is never invoked (app.py lines 68-73); only on a matching header does control pass into the wrapped A2A app at line 74.",
+        "contract_id": "ecological-contract:464a4ee3e222da2648edda8b65d09f46",
+        "declared_mechanism": "SharedSecretASGIMiddleware (app.py lines 36-74): reads the x-a2a-shared-secret request header, lazily fetches the expected secret via a2a_shared_secret(), fails closed on fetch error (expected = None), and returns a JSONResponse 401 on mismatch; it is wrapped outermost around the A2A sub-app at registration (app.py lines 190-194).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 50,
+            "line_start": 36,
+            "path": "apps/api/app.py",
+            "role": "guard_registration",
+            "source_sha256": "c05c29f7328fd081fb4ecc12dc9c3e036713069a1902d6824b1babda05b46899"
+          },
+          {
+            "line_end": 73,
+            "line_start": 59,
+            "path": "apps/api/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c05c29f7328fd081fb4ecc12dc9c3e036713069a1902d6824b1babda05b46899"
+          },
+          {
+            "line_end": 89,
+            "line_start": 77,
+            "path": "apps/api/app.py",
+            "role": "protected_operation",
+            "source_sha256": "c05c29f7328fd081fb4ecc12dc9c3e036713069a1902d6824b1babda05b46899"
+          },
+          {
+            "line_end": 74,
+            "line_start": 68,
+            "path": "apps/api/app.py",
+            "role": "commit_point",
+            "source_sha256": "c05c29f7328fd081fb4ecc12dc9c3e036713069a1902d6824b1babda05b46899"
+          },
+          {
+            "line_end": 194,
+            "line_start": 190,
+            "path": "apps/api/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c05c29f7328fd081fb4ecc12dc9c3e036713069a1902d6824b1babda05b46899"
+          }
+        ],
+        "forbidden_condition": "A request to the mounted A2A sub-app with a missing or non-matching X-A2A-Shared-Secret header \u2014 or one arriving while a2a_shared_secret() is unavailable (expected is None) \u2014 being passed through to the wrapped A2A app/agent instead of receiving the 401 'Missing or invalid A2A credential.' response.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "config.py's a2a_shared_secret() is not supplied: the underlying secret source, secret name, caching, and rotation behavior are unknown.",
+          "The full inner route surface of to_a2a()'s Starlette sub-app (ADK library) is not supplied; the middleware wraps the whole mount, but the exact JSON-RPC and agent-card paths are unverified.",
+          "Whether the medrep agent has any other network exposure (e.g., the standalone Reasoning Engine deployment context noted at medrep/agent.py lines 56-63) outside this middleware's coverage is not established by the supplied views."
+        ],
+        "protected_operation": "HTTP requests served by the mounted Medical Representative A2A endpoint \u2014 the to_a2a() Starlette sub-app carrying the JSON-RPC route and the well-known agent-card route under the mount prefix.",
+        "protected_resource": "The MedRep A2A mount at app.mount('/', SharedSecretASGIMiddleware(OpenTelemetryMiddleware(medrep_a2a_app))) (app.py line 194) \u2014 the network-reachable entry point to medical_representative_agent.",
+        "protection_obligation": "Every HTTP request to the Medical Representative A2A mount must carry an X-A2A-Shared-Secret header exactly matching the expected shared secret, or be rejected with 401 before reaching the wrapped A2A sub-app; if the expected secret cannot be fetched, the gate fails closed and rejects with 401.",
+        "scope_limits": [
+          "Covers only the ASGI mount registered at app.py line 194; FastAPI routes on the outer app (routers registered at app.py lines 145-158, plus /health and /) are not guarded by this middleware.",
+          "Non-HTTP ASGI scopes pass through unguarded (app.py lines 55-58).",
+          "The middleware access-controls the request itself only; screening of request content is Model Armor's role (app.py lines 40-42).",
+          "Header comparison is direct equality after decode; no constant-time comparison is claimed in source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "_pre_llm_vendor_screen's return decision: if not blocked, it returns None and the turn proceeds to the real model call (medrep/agent.py lines 216-217); if blocked, it returns an LlmResponse (medrep/agent.py lines 219-232) so the underlying Gemini call is skipped entirely for that turn.",
+        "contract_id": "ecological-contract:519365711b9cab7d38e18791f14bb945",
+        "declared_mechanism": "_pre_llm_vendor_screen registered as before_model_callback on root_agent (medrep/agent.py line 259): it extracts the latest inbound text via _latest_inbound_text, calls get_armor_service().screen(text), writes best-effort armor events, and on result.blocked returns an LlmResponse so ADK skips the real model call for that turn; screen_vendor_message remains wired as a second, defense-in-depth screening layer.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 6,
+            "path": "apps/api/agents/medrep/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "944d9b4921b4de8fd1398a1b30ec100a14c59c19d325f291c7f9cc01a75b788f"
+          },
+          {
+            "line_end": 176,
+            "line_start": 167,
+            "path": "apps/api/agents/medrep/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "944d9b4921b4de8fd1398a1b30ec100a14c59c19d325f291c7f9cc01a75b788f"
+          },
+          {
+            "line_end": 155,
+            "line_start": 151,
+            "path": "apps/api/agents/medrep/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "944d9b4921b4de8fd1398a1b30ec100a14c59c19d325f291c7f9cc01a75b788f"
+          },
+          {
+            "line_end": 232,
+            "line_start": 216,
+            "path": "apps/api/agents/medrep/agent.py",
+            "role": "commit_point",
+            "source_sha256": "944d9b4921b4de8fd1398a1b30ec100a14c59c19d325f291c7f9cc01a75b788f"
+          },
+          {
+            "line_end": 260,
+            "line_start": 259,
+            "path": "apps/api/agents/medrep/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "944d9b4921b4de8fd1398a1b30ec100a14c59c19d325f291c7f9cc01a75b788f"
+          }
+        ],
+        "forbidden_condition": "A new inbound turn (last content with role 'user', text parts, and no function_response part) being sent to the underlying Gemini model without Model Armor screening, or a Model-Armor-blocked message reaching the model's context.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "services/platform/armor.py and its backend are not supplied: screen() classification behavior and the failure posture when Model Armor is unreachable on this callback path (fail-open vs fail-closed) are unestablished.",
+          "The ADK runtime guarantee that before_model_callback runs before every underlying model call and that a returned LlmResponse skips it is asserted via in-repo comments referencing base_llm_flow.py; the ADK source is not supplied.",
+          "Behavior or prevalence labels for how often screening blocks occur are unavailable (per unit scope)."
+        ],
+        "protected_operation": "The medical_representative_agent's per-turn LLM invocation (the underlying Gemini call for each ADK turn).",
+        "protected_resource": "The MedRep agent's model context \u2014 the Gemini model call guarded by _pre_llm_vendor_screen on root_agent.",
+        "protection_obligation": "Every genuinely new inbound message turn reaching the Medical Representative agent must pass Model Armor screening via the agent's before_model_callback before the underlying model call; a message flagged as blocked must cause the real Gemini call to be skipped entirely for that turn, with only a block notice returned to the turn.",
+        "scope_limits": [
+          "Screens only the latest inbound turn's text parts: a turn whose last content carries a function_response part, or has no text parts, yields None and is not screened (medrep/agent.py lines 151-164).",
+          "The 'blocked before reaching LLM context' boundary is scoped to text arriving as this agent's own first inbound turn; text an upstream fleet agent has already paraphrased (e.g., Supply Chain's wrapped framing) can score clean at this layer \u2014 the second-layer screen_vendor_message re-screens model-extracted text (medrep/agent.py lines 19-29).",
+          "Firestore armor-event writes and activity logs are best-effort and must never affect the security decision (medrep/agent.py lines 185-214).",
+          "This contract guards the model invocation only; downstream tool actions such as send_vendor_reply carry their own manager-approval gating outside this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The return of LocalGatewayService.before_tool_call: a _blocked(...) dict returned at gateway_local.py lines 70, 75, or 82 replaces the real tool execution; returning None at line 99 commits the 'allowed' routing decision, after which the real specialist tool executes.",
+        "contract_id": "ecological-contract:940db955873b03ced42a1b7c2baac4e5",
+        "declared_mechanism": "before_tool_callback=get_gateway_service().before_tool_call wired on the Coordinator Agent (coordinator/agent.py line 86); LocalGatewayService.before_tool_call performs a registry lookup (get_registry_service().get_agent), an entry.status != 'active' check, and _POLICY_TABLE caller authorization, returning a {'gateway_blocked': True, 'reason': ...} dict to block or None to allow.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 87,
+            "line_start": 86,
+            "path": "apps/api/agents/coordinator/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "98c392a1ae19a5402a3679ef2f0fdb7a8f900df5270a3db0e1170eb54f215315"
+          },
+          {
+            "line_end": 9,
+            "line_start": 7,
+            "path": "apps/api/agents/coordinator/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "98c392a1ae19a5402a3679ef2f0fdb7a8f900df5270a3db0e1170eb54f215315"
+          },
+          {
+            "line_end": 85,
+            "line_start": 78,
+            "path": "apps/api/agents/coordinator/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "98c392a1ae19a5402a3679ef2f0fdb7a8f900df5270a3db0e1170eb54f215315"
+          },
+          {
+            "line_end": 82,
+            "line_start": 65,
+            "path": "apps/api/services/platform/gateway_local.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1e6221e7e3326d721dc945d8d4194f83d4b22e66027d7399d85f69c437b6f29e"
+          },
+          {
+            "line_end": 29,
+            "line_start": 18,
+            "path": "apps/api/services/platform/gateway_local.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1e6221e7e3326d721dc945d8d4194f83d4b22e66027d7399d85f69c437b6f29e"
+          },
+          {
+            "line_end": 99,
+            "line_start": 95,
+            "path": "apps/api/services/platform/gateway_local.py",
+            "role": "commit_point",
+            "source_sha256": "1e6221e7e3326d721dc945d8d4194f83d4b22e66027d7399d85f69c437b6f29e"
+          },
+          {
+            "line_end": 59,
+            "line_start": 57,
+            "path": "apps/api/services/platform/gateway_local.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1e6221e7e3326d721dc945d8d4194f83d4b22e66027d7399d85f69c437b6f29e"
+          },
+          {
+            "line_end": 86,
+            "line_start": 86,
+            "path": "apps/api/agents/coordinator/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "98c392a1ae19a5402a3679ef2f0fdb7a8f900df5270a3db0e1170eb54f215315"
+          }
+        ],
+        "forbidden_condition": "A Coordinator-delegated specialist AgentTool call executing without Gateway authorization \u2014 i.e., where the target is not a registered agent ('blocked_unregistered'), is registered but not 'active' ('blocked_inactive'), or the caller has no policy-table entry or the target is not in the caller's allowed target set ('blocked_unauthorized').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "services/platform/gateway.py is not supplied: whether get_gateway_service() returns LocalGatewayService (or another implementation of before_tool_call) is asserted only by module docstrings.",
+          "ADK runtime semantics \u2014 that before_tool_callback is invoked for AgentTool delegations and that a non-None return suppresses the real tool \u2014 come from in-repo comments; the ADK library source is not supplied.",
+          "The registry service implementation is not supplied: registry entry shape, allowed status values (e.g., 'active'), and the presence of entries for all six specialist targets are unverified.",
+          "That tool_context.agent_name equals 'coordinator' for the root agent during sub-agent AgentTool dispatch is asserted by naming, not demonstrated at runtime."
+        ],
+        "protected_operation": "The Coordinator agent's tool-dispatch execution of its six AgentTool sub-agent delegations (shift_allocation_agent, inventory_management_agent, supply_chain_resiliency_agent, hr_agent, chaos_continuity_agent, surgical_scheduling_agent).",
+        "protected_resource": "The specialist sub-agent tools wrapped as AgentTool on the Coordinator root_agent (coordinator/agent.py lines 78-85), via the routing decision enforced in LocalGatewayService.before_tool_call.",
+        "protection_obligation": "Every Coordinator-to-specialist delegation via AgentTool must be authorized by the Gateway interceptor registered as the Coordinator's before_tool_callback before the real specialist tool executes: the target must be a registered agent, its status must be 'active', and the caller must be authorized by the fixed policy table (which authorizes only 'coordinator'); unregistered, inactive, or unauthorized delegation attempts are blocked before the real tool executes.",
+        "scope_limits": [
+          "Applies only to the Coordinator's AgentTool sub-agent delegations; Medical Representative is deliberately not an AgentTool sub-agent (coordinator/agent.py lines 9-13) and is reached via A2A outside this gateway path.",
+          "_POLICY_TABLE is a fixed in-code allow-list authorizing only caller 'coordinator'; there is no mutable/Firestore-backed policy (gateway_local.py lines 14-29).",
+          "No content screening occurs at the gateway: _ARMOR_SCREENED_AGENTS is an empty frozenset (gateway_local.py lines 31-32), so the guard is registry + status + policy only, not per-argument.",
+          "Guard inputs are only the target tool name and tool_context.agent_name; routing-decision audit logging is best-effort and must never affect the decision (gateway_local.py lines 39-54)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "services/platform/gateway.py (get_gateway_service) is not supplied; the binding from the Coordinator's import to LocalGatewayService.before_tool_call is asserted only by module docstrings (coordinator/agent.py lines 7-9 and 21; gateway_local.py lines 1-2).",
+      "The registry service implementation (referenced as services/platform/registry.py via get_registry_service) is not supplied; registry entry structure, allowed status values such as 'active', and the existence of entries for the six specialist targets are unsupported beyond gateway_local.py's usage.",
+      "config.py is not supplied; a2a_shared_secret()'s secret source, secret name, caching, and rotation are unknown.",
+      "Google ADK library sources (before_tool_callback dispatch, before_model_callback semantics in base_llm_flow.py, to_a2a sub-app route surface) are not supplied; callback invocation and tool/model-call suppression semantics rest on in-repo comments.",
+      "services/platform/armor.py and its backend implementation are not supplied; Model Armor screen() classification behavior and its failure posture are unestablished for both the gateway reference and the medrep callback path.",
+      "agents/supply/agent.py \u2014 the A2A client that generates inbound traffic to the medrep agent \u2014 is not supplied, so the upstream side of the A2A boundary is unverified.",
+      "No behavior labels or runtime prevalence data are available for any guarded path (per unit scope)."
+    ],
+    "repository": "sanjay-thiyagarajan/prudently",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:26df4a8ec62221134e12fba22557fded"
+  },
+  "request_sha256": "d56151c71a5894744f34849d41a91f1089e0b34e5241eace6423ef61336d8374",
+  "response_sha256": "0f9481ec34ea2bae6add8a4ae614ba492284159f7cf36a05f52fbfb1a6e2d832",
+  "state": "completed",
+  "tokens": 27654,
+  "unit": "v24-screen:26df4a8ec62221134e12fba22557fded"
+}

@@ -1,0 +1,107 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "sg.client.mail.send.post(request_body=mail) inside send_html_email at cold_email.py:151 \u2014 the SendGrid dispatch executed after careful_job_seeker_manager hands off to emailer_agent, whose tool list includes send_html_email.",
+        "contract_id": "ecological-contract:2256e9e2b0aee3bbe04f9f0bd72f4654",
+        "declared_mechanism": "@input_guardrail-decorated async function guardrail_against_name, which runs the guardrail_agent name-check agent via Runner.run and returns GuardrailFunctionOutput(output_info={\"found_name\": ...}, tripwire_triggered=is_name_in_message); registered on careful_job_seeker_manager via input_guardrails=[guardrail_against_name].",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 202,
+            "line_start": 198,
+            "path": "cold_email.py",
+            "role": "guard_registration",
+            "source_sha256": "ef297a83494f44bb3cd00f3014daba1780086ad8bc40e015c42721eac6f46bb4"
+          },
+          {
+            "line_end": 211,
+            "line_start": 204,
+            "path": "cold_email.py",
+            "role": "guard_registration",
+            "source_sha256": "ef297a83494f44bb3cd00f3014daba1780086ad8bc40e015c42721eac6f46bb4"
+          },
+          {
+            "line_end": 196,
+            "line_start": 187,
+            "path": "cold_email.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ef297a83494f44bb3cd00f3014daba1780086ad8bc40e015c42721eac6f46bb4"
+          },
+          {
+            "line_end": 178,
+            "line_start": 171,
+            "path": "cold_email.py",
+            "role": "protected_operation",
+            "source_sha256": "ef297a83494f44bb3cd00f3014daba1780086ad8bc40e015c42721eac6f46bb4"
+          },
+          {
+            "line_end": 152,
+            "line_start": 143,
+            "path": "cold_email.py",
+            "role": "commit_point",
+            "source_sha256": "ef297a83494f44bb3cd00f3014daba1780086ad8bc40e015c42721eac6f46bb4"
+          },
+          {
+            "line_end": 144,
+            "line_start": 143,
+            "path": "cold_email.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ef297a83494f44bb3cd00f3014daba1780086ad8bc40e015c42721eac6f46bb4"
+          },
+          {
+            "line_end": 166,
+            "line_start": 161,
+            "path": "cold_email.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ef297a83494f44bb3cd00f3014daba1780086ad8bc40e015c42721eac6f46bb4"
+          },
+          {
+            "line_end": 210,
+            "line_start": 207,
+            "path": "cold_email.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ef297a83494f44bb3cd00f3014daba1780086ad8bc40e015c42721eac6f46bb4"
+          }
+        ],
+        "forbidden_condition": "A user message that guardrail_agent ('Name check') classifies as including someone's personal name (NameCheckOutput.is_name_in_message == true, causing tripwire_triggered=true in GuardrailFunctionOutput) reaching the careful_job_seeker_manager agent run and proceeding onward toward the handoff-triggered SendGrid email dispatch.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied line in cold_email.py invokes Runner.run on careful_job_seeker_manager, job_seeker_manager, or emailer_agent; line 213 defines a message ('Send out a cold sales email addressed to Dear CEO from Alice') but no consuming call appears in the supplied view, so the binding of actual user input to the guarded agent run is unestablished.",
+          "Whether an input-guardrail tripwire on careful_job_seeker_manager aborts execution before the handoff to emailer_agent (and therefore before send_html_email executes) is agents-SDK runtime semantics not decidable from the supplied source.",
+          "Whether the guard covers only the initial agent entry or is also enforced on/after handoff to emailer_agent is not established by supplied lines.",
+          "Reviewer 1's rationale claim that 'the app entry point currently invokes the unguarded job_seeker_manager' is unsupported by the supplied view; no such invocation appears in lines 1-213.",
+          "Whether send_email (commit at cold_email.py:105) is reachable from any executed runtime path is unknown from the supplied source."
+        ],
+        "protected_operation": "The run lifecycle of the careful_job_seeker_manager agent \u2014 generating the cold email via its three job_seeker_agent tools and handing off to emailer_agent per job_seeker_manager_instructions ('you hand it off to the Email Manager agent to format and send the email, without asking for further confirmation from the user') \u2014 culminating in dispatch of send_html_email.",
+        "protected_resource": "careful_job_seeker_manager agent run and the downstream SendGrid email dispatch (send_html_email sending from muskankh03@gmail.com to muskankh03@gmail.com) reached via the handoff chain.",
+        "protection_obligation": "User messages containing a person's personal name must trip the 'guardrail_against_name' input guardrail registered on the careful_job_seeker_manager agent (tripwire_triggered=is_name_in_message), blocking the message from being processed by that agent and thereby preventing the run from proceeding through its handoff to the Email Manager agent (emailer_agent) that dispatches send_html_email to send the cold email via SendGrid. (Merged from both reviewers: tripwire-before-handoff framing and block-personal-name-content-before-send framing describe the same registered guard on the same agent protecting the same downstream send.)",
+        "scope_limits": [
+          "This is a source-supported protection-contract hypothesis only; it does not assert that a DEC violation occurred, that the guard is effective at runtime, or anything about prevalence.",
+          "Per supplied wiring, module-level 'tools' is rebound at cold_email.py:168 to [tool1, tool2, tool3], so careful_job_seeker_manager (tools=tools, line 207) reaches the send effect only via handoffs=[emailer_agent] (line 208) and send_html_email (commit at line 151). The send_email tool's commit at cold_email.py:105 is the same communication stratum and is not bound to the guarded agent in the supplied source, so no separate contract is emitted for it.",
+          "SendGrid account configuration, API-key handling (os.environ.get('SENDGRID_API_KEY')), and fixed recipient/sender addressing are ordinary infrastructure concerns outside the scope of this obligation.",
+          "The guard is registered only on careful_job_seeker_manager; the other agent instances in the file (e.g., the earlier job_seeker_manager binding overwritten at lines 180-185, and emailer_agent itself) carry no input_guardrails in the supplied source.",
+          "The supplied view is a single file (cold_email.py lines 1-213); no other modules, callers, or tests were supplied."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Runtime entry point: no supplied line executes careful_job_seeker_manager (or any top-level agent) via Runner.run; the file view ends at line 213 with an unused message definition, so the dataflow from real user messages into the guarded agent run is not evidenced.",
+      "Framework-semantics confirmation that input_guardrails tripwires suppress downstream handoff-triggered tool execution (emailer_agent \u2192 send_html_email) in the imported 'agents' SDK version (line 4); this is runtime behavior outside what the source view establishes.",
+      "Evidence that guardrail_against_name actually trips on name-bearing messages such as the line-213 message in practice (no tests or execution traces supplied).",
+      "Any caller or configuration showing whether the unguarded job_seeker_manager (lines 180-185) or careful_job_seeker_manager (lines 204-211) is the one used at runtime; the reviewers' entry-point claim is not supported by the supplied lines."
+    ],
+    "repository": "MuskanKhandelwal/Cold_Email_AI_Agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:65600b8d2d17c2722f9f7e9454f95de7"
+  },
+  "request_sha256": "67cbdb3c670ce24e3e2e93fcee777592495880e6c93ca12f7ee55a6d0790de61",
+  "response_sha256": "9808c21791f85834685d4115cc415f693d94eb3377368e185e5209030123026f",
+  "state": "completed",
+  "tokens": 13433,
+  "unit": "v24-screen:65600b8d2d17c2722f9f7e9454f95de7"
+}

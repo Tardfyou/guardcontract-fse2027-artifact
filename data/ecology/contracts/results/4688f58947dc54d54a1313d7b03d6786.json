@@ -1,0 +1,109 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The HTTP POST with JSON-RPC method 'tools/call' to K8S_MCP_URL issued by _post_mcp/mcp_call_tool when a guarded tool function runs (supervisor/agents.py:84-109); the resulting Kubernetes mutation is performed by the MCP server outside the supplied source.",
+        "contract_id": "ecological-contract:182beb2f33105b8ef96ebab7e4c987f3",
+        "declared_mechanism": "HumanInTheLoopMiddleware(interrupt_on=hitl_policy, description_prefix='Tool execution pending approval') registered in create_agent for the operations agent, with per-tool interrupt flags set True for the five mutating tools and False for read-only tools (supervisor/agents.py:353-373); enforced end-to-end by the FastAPI approval loop that stores pending interrupts (supervisor/app.py:107-118), parses approve/reject decisions against allowed_decisions (supervisor/app.py:73-93, 147-179), and resumes the interrupted execution only via agent.invoke(Command(resume={'decisions': decisions_payload})) after a valid parsed decision (supervisor/app.py:170-185).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 373,
+            "line_start": 353,
+            "path": "supervisor/agents.py",
+            "role": "guard_registration",
+            "source_sha256": "010f342096743baf72f577009b8fc0ed7dd391e38ea19ec716205f325445be9e"
+          },
+          {
+            "line_end": 118,
+            "line_start": 107,
+            "path": "supervisor/app.py",
+            "role": "guard_registration",
+            "source_sha256": "3fb18c7f2ab3a7c965fc5d81fd77d64c8ebf4a9f026d0326565d062dd34f7c13"
+          },
+          {
+            "line_end": 185,
+            "line_start": 147,
+            "path": "supervisor/app.py",
+            "role": "guard_registration",
+            "source_sha256": "3fb18c7f2ab3a7c965fc5d81fd77d64c8ebf4a9f026d0326565d062dd34f7c13"
+          },
+          {
+            "line_end": 195,
+            "line_start": 174,
+            "path": "supervisor/agents.py",
+            "role": "protected_operation",
+            "source_sha256": "010f342096743baf72f577009b8fc0ed7dd391e38ea19ec716205f325445be9e"
+          },
+          {
+            "line_end": 109,
+            "line_start": 84,
+            "path": "supervisor/agents.py",
+            "role": "commit_point",
+            "source_sha256": "010f342096743baf72f577009b8fc0ed7dd391e38ea19ec716205f325445be9e"
+          },
+          {
+            "line_end": 373,
+            "line_start": 364,
+            "path": "supervisor/agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "010f342096743baf72f577009b8fc0ed7dd391e38ea19ec716205f325445be9e"
+          },
+          {
+            "line_end": 242,
+            "line_start": 234,
+            "path": "supervisor/agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "010f342096743baf72f577009b8fc0ed7dd391e38ea19ec716205f325445be9e"
+          },
+          {
+            "line_end": 39,
+            "line_start": 33,
+            "path": "supervisor/prompts.py",
+            "role": "forbidden_condition",
+            "source_sha256": "87115c79c77d3f8d64e5755d73b65d62eea5830bb2c9287299e2c8b50b597e24"
+          }
+        ],
+        "forbidden_condition": "A mutating operations-agent tool call (create_pod, delete_pod, scale_deployment, restart_rollout, patch_resource) executing, or being dispatched via the tools/call POST to the K8s MCP server, without a prior explicit human approval decision for that specific interrupted call.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether HumanInTheLoopMiddleware's interrupt guarantees the guarded tool function body (and thus the tools/call POST) never executes before Command(resume) is delivered \u2014 middleware implementation not supplied.",
+          "Whether approvals on /run are authenticated or attributed to an authorized human; no authentication is visible in the supplied app.py, so any client posting to a thread with a pending interrupt can supply the decision.",
+          "Whether the in-memory PENDING_INTERRUPTS dict and InMemorySaver checkpointer preserve the approval hold across process restarts \u2014 restart behavior not determinable from supplied source.",
+          "Whether the K8s MCP server applies its own authorization to tools/call requests \u2014 server source not supplied.",
+          "Whether the exec_shell-based mutating tools (create_pod, restart_rollout, patch_resource) and the direct MCP calls (delete_pod, scale_deployment) have identical server-side execution guarantees at the MCP server \u2014 not observable in supplied source."
+        ],
+        "protected_operation": "Execution of the operations agent's mutating Kubernetes tools: create_pod (kubectl run via exec_shell), delete_pod (direct MCP tool call), scale_deployment (direct MCP tool call), restart_rollout (kubectl rollout restart via exec_shell), and patch_resource (kubectl patch via exec_shell).",
+        "protected_resource": "Kubernetes cluster state (pods, deployments, and other patchable resources in target namespaces) reached through the K8s MCP server at K8S_MCP_URL.",
+        "protection_obligation": "Mutating Kubernetes tool calls issued by the operations agent (create_pod, delete_pod, scale_deployment, restart_rollout, patch_resource) must be interrupted by the registered HumanInTheLoopMiddleware and must not be dispatched for execution (the tools/call POST to the K8s MCP server) until an explicit human approve decision is parsed and the interrupted graph is resumed via Command(resume=...).",
+        "scope_limits": [
+          "Read-only operations tools (list_namespaces, list_pods, describe_resource) are explicitly excluded from interruption (hitl_policy values False at supervisor/agents.py:360-362).",
+          "Diagnostics-path tools bypass the operations agent and its HITL middleware entirely, including the arbitrary-command exec_shell binding (supervisor/agents.py:222) and the read-only kubectl get invocation in analysis_node (supervisor/agents.py:313); they are outside this contract.",
+          "The keyword-based mitigation execution gate (supervisor/agents.py:331-332, 422-425) is a separate, weaker keyword check and is not part of the declared HITL mechanism; mitigation execution still routes through the operations agent (supervisor/agents.py:339-350), where the middleware applies.",
+          "The contract binds only up to the tools/call POST dispatch from the supervisor process; the Kubernetes mutation performed by the MCP server occurs outside the supplied source and cannot be contracted here.",
+          "Semantics of the HumanInTheLoopMiddleware library (whether an interrupt guarantees the tool body never runs before resume) are library internals not present in the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "HumanInTheLoopMiddleware library implementation is not supplied, so whether a registered interrupt prevents the tool function body (and its tools/call POST) from executing before Command(resume) cannot be confirmed from source.",
+      "The K8s MCP server implementation is not supplied; server-side authorization or re-validation of mutating tools/call requests is unknown.",
+      "The /run endpoint in supervisor/app.py shows no authentication or authorization on approval decisions; whether approvals must come from an identified, authorized human is unsupported.",
+      "Persistence semantics of PENDING_INTERRUPTS and the InMemorySaver checkpointer across restarts are not determinable from supplied source.",
+      "The original adjective in supervisor/prompts.py line 35 is redacted ('Any <REDACTED> action requires explicit approval'), so the prompt-level policy's intended coverage (e.g., whether it extends to arbitrary diagnostics exec_shell commands) cannot be established.",
+      "Repository enumeration is incomplete and behavior labels are unavailable, so no prevalence or runtime-behavior claims are made for this contract."
+    ],
+    "repository": "emre-unlu/MultiCloudMcp",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4688f58947dc54d54a1313d7b03d6786"
+  },
+  "request_sha256": "f894d5222a1dae844ccc26aae080ae7710b168ab77392e1044786dc1414b8cef",
+  "response_sha256": "a1cd4e9653cec2b53c74e1bca37d4f1ef24a6b2aa4a85af1dbb21bb2e89eb583",
+  "state": "completed",
+  "tokens": 18024,
+  "unit": "v24-screen:4688f58947dc54d54a1313d7b03d6786"
+}

@@ -1,0 +1,352 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "client.stream('GET', url) at src/ash/tools/web.py:115 for each hop, with the actual connection made inside _PinnedPublicTransport.handle_async_request (lines 208-227) after per-request re-resolution and pinning.",
+        "contract_id": "ecological-contract:1b3e493d2eb22ed62fc03de5f06c3f2e",
+        "declared_mechanism": "_validate_public_url applied at the initial fetch (line 104) and on every redirect Location (lines 120-123), enforcing scheme/credential/allowlist checks and forcing resolution via _ensure_public_host to _resolve_public_addresses (lines 172, 233-260, 263-264); _PinnedPublicTransport installed as the default transport (line 105) re-resolves each request's host, rejects non-global addresses, and rewrites the connection to a vetted public address with sni_hostname pinned (lines 202-227).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 124,
+            "line_start": 98,
+            "path": "src/ash/tools/web.py",
+            "role": "guard_registration",
+            "source_sha256": "126d798c570e2603a9faac3f31506306f120994214337705b9c9aa0bf4fddc1f"
+          },
+          {
+            "line_end": 227,
+            "line_start": 202,
+            "path": "src/ash/tools/web.py",
+            "role": "guard_registration",
+            "source_sha256": "126d798c570e2603a9faac3f31506306f120994214337705b9c9aa0bf4fddc1f"
+          },
+          {
+            "line_end": 173,
+            "line_start": 158,
+            "path": "src/ash/tools/web.py",
+            "role": "forbidden_condition",
+            "source_sha256": "126d798c570e2603a9faac3f31506306f120994214337705b9c9aa0bf4fddc1f"
+          },
+          {
+            "line_end": 260,
+            "line_start": 233,
+            "path": "src/ash/tools/web.py",
+            "role": "forbidden_condition",
+            "source_sha256": "126d798c570e2603a9faac3f31506306f120994214337705b9c9aa0bf4fddc1f"
+          },
+          {
+            "line_end": 68,
+            "line_start": 40,
+            "path": "src/ash/tools/web.py",
+            "role": "protected_operation",
+            "source_sha256": "126d798c570e2603a9faac3f31506306f120994214337705b9c9aa0bf4fddc1f"
+          },
+          {
+            "line_end": 115,
+            "line_start": 114,
+            "path": "src/ash/tools/web.py",
+            "role": "commit_point",
+            "source_sha256": "126d798c570e2603a9faac3f31506306f120994214337705b9c9aa0bf4fddc1f"
+          },
+          {
+            "line_end": 180,
+            "line_start": 180,
+            "path": "src/ash/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8261af02f67937457ec3a1d6f18ef3b2c0b9a7f298ad39d422714ead7dee51f1"
+          },
+          {
+            "line_end": 2453,
+            "line_start": 2440,
+            "path": "src/ash/core/loop.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          }
+        ],
+        "forbidden_condition": "Connecting to a non-public network target: localhost, private, loopback, link-local, multicast, reserved, unspecified, or otherwise non-global resolved addresses; URLs with non-http(s) schemes, embedded username/password, or hosts not in allowed_web_domains; or following a redirect whose target would fail the same validation.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "The outbound HTTP GET performed by WebFetchTool.run via _fetch_public_text, including each redirect hop.",
+        "protected_resource": "The host's internal/private network surface (SSRF boundary) reachable through outbound HTTP from the web_fetch tool.",
+        "protection_obligation": "Outbound HTTP fetches performed by the web_fetch tool must target only public, globally routable hosts: the URL scheme must be http/https, embedded credentials are forbidden, hosts outside the configured allowed_web_domains are rejected (when configured), localhost and private/loopback/link-local/multicast/reserved/unspecified/non-global resolved addresses are refused, every redirect target must be revalidated under the same rules, and each outbound connection must be pinned to a vetted public resolved address \u2014 all before each GET is issued.",
+        "scope_limits": [
+          "The pinned transport is applied only when no custom transport is injected (line 105: transport or _PinnedPublicTransport()); an injected transport bypasses connection pinning, though URL/address validation at lines 104 and 120-123 still applies.",
+          "Domain allowlisting is enforced only when allowed_web_domains is configured non-empty (lines 170-171); otherwise any public host is fetchable.",
+          "Redirects are bounded by MAX_REDIRECTS = 5 (lines 20 and 114) and each hop is revalidated before continuation.",
+          "The guard covers the web_fetch tool only; other HTTP egress tools (e.g., web_search, browser tools) receive allowed_web_domains at construction (src/ash/runtime.py lines 180-218) but their fetch internals are not in the supplied source.",
+          "Resolution occurs at validation and again per request inside the pinned transport; for the non-pinned path, a DNS-change window between validation and connection is narrowed but not formally eliminated by the supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "record.dispatched = True, persisted intent, and result_dict = await _execute_tool_once(tool, arguments) at src/ash/core/loop.py:2440-2453 (with _execute_tool_once defined at lines 3392-3406); no external effect can have occurred before the pre-tool hooks/middlewares at lines 2424-2431 complete.",
+        "contract_id": "ecological-contract:886ae892229a924a97f87fe27a8c09c0",
+        "declared_mechanism": "PermissionPolicy(safety_tier) constructed in AshLoop.__init__ (line 548); per-call decision = self.permission_policy.evaluate(tool_name, arguments) (line 2281); approval chain across on_tool_approval / ui.request_tool_approval / PolicyAction.ALLOW (lines 2283-2308); denied short-circuit persisting the ToolCallRecord and audit entries BLOCKED_BY_GUARD/DENIED (lines 2323-2373); _validated_tool_execution_contract rejects non-NEVER replay policies pre-dispatch (lines 3409-3423); approved intent persisted before the single _execute_tool_once commit (lines 2377-2381, 2440-2453).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 548,
+            "line_start": 548,
+            "path": "src/ash/core/loop.py",
+            "role": "guard_registration",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          },
+          {
+            "line_end": 2308,
+            "line_start": 2281,
+            "path": "src/ash/core/loop.py",
+            "role": "guard_registration",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          },
+          {
+            "line_end": 2358,
+            "line_start": 2323,
+            "path": "src/ash/core/loop.py",
+            "role": "forbidden_condition",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          },
+          {
+            "line_end": 2242,
+            "line_start": 2235,
+            "path": "src/ash/core/loop.py",
+            "role": "protected_operation",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          },
+          {
+            "line_end": 2453,
+            "line_start": 2440,
+            "path": "src/ash/core/loop.py",
+            "role": "commit_point",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          },
+          {
+            "line_end": 3398,
+            "line_start": 3392,
+            "path": "src/ash/core/loop.py",
+            "role": "commit_point",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          },
+          {
+            "line_end": 1472,
+            "line_start": 1471,
+            "path": "src/ash/core/loop.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          },
+          {
+            "line_end": 1571,
+            "line_start": 1568,
+            "path": "src/ash/core/loop.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          }
+        ],
+        "forbidden_condition": "A model-issued tool call reaching tool execution (_execute_tool_once) without a permission-policy decision and approval, or reaching it after a PolicyAction.DENY decision or an explicit user denial.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The internal rule semantics of PermissionPolicy.evaluate (tier behavior, READ_ONLY_TOOLS membership, persistent/managed rule matching) are not in the supplied source; only the call site and its gating effect on the loop are visible.",
+          "The blocking behavior of HookRegistry.fire_pre_tool under specific hook configurations (ash/hooks sources not supplied) is unknown."
+        ],
+        "protected_operation": "Dispatch and execution of any tool call emitted by the model through AshLoop._execute_tool_calls.",
+        "protected_resource": "The agent loop's tool execution boundary covering all registered tools and the external effects they can reach (filesystem, process, network, database).",
+        "protection_obligation": "Every model-emitted tool call dispatched by AshLoop._execute_tool_calls (including run_command and file-write tools) must be evaluated against the loop's PermissionPolicy (PermissionPolicy.evaluate) and then approved \u2014 via the on_tool_approval callback, the UI approval callback, or an explicit PolicyAction.ALLOW when no callback is configured \u2014 before the single dispatch boundary _execute_tool_once; denied calls must never execute and must be persisted with a terminal record and audited as BLOCKED_BY_GUARD (policy deny) or DENIED (user denial).",
+        "scope_limits": [
+          "When PolicyAction.ALLOW is returned and neither on_tool_approval nor a UI approval callback is configured, the call is auto-approved without interactive user consent (lines 2304-2305).",
+          "The turn-end auto_commit path (lines 1715-1736) invokes the auto_commit tool or auto_commit_turn directly and does not pass through permission_policy.evaluate.",
+          "Pre-tool hooks and middlewares can still block an approved call after approval (ToolMiddlewareSkip or exception, lines 2424-2432 and the exception handler at line 2487); in dry_run permission mode lifecycle hooks are disabled but policy evaluation still runs (_active_hooks, lines 678-681).",
+          "This gate governs the dispatch boundary; the concrete downstream effect of each tool is additionally governed by tool-specific guards compiled separately (e.g., the SSRF guard in web_fetch, the isolation gate in the plugin host client).",
+          "Independent read-only calls (all in READ_ONLY_TOOLS) may run concurrently but each still passes through the same per-call gating (lines 2244-2255)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "client.send_message(SendMessageRequest(...)) at src/ash/agents/a2a_remote.py:299 inside the httpx.AsyncClient opened at lines 265-273; _validate_remote_url runs before the client is opened (line 258) and origin validation runs after the card fetch (line 274) but before the client is created and any message is sent (lines 275-299).",
+        "contract_id": "ecological-contract:e6fe545d6c0c0cbe5d38df303a45a98f",
+        "declared_mechanism": "Pre-flight _validate_remote_url(config.url) at the top of send_remote_agent (line 258) plus config-load-time validation in _parse_agent_config (line 357); validate_agent_card_origins(config.url, card.supported_interfaces) invoked after A2ACardResolver.get_agent_card() and before ClientFactory client creation (line 275); httpx.AsyncClient configured with follow_redirects=False (line 271).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 275,
+            "line_start": 258,
+            "path": "src/ash/agents/a2a_remote.py",
+            "role": "guard_registration",
+            "source_sha256": "369f080e336affda7b27830387888ac15c99040557e4ac317cdcb112c8db09da"
+          },
+          {
+            "line_end": 392,
+            "line_start": 373,
+            "path": "src/ash/agents/a2a_remote.py",
+            "role": "forbidden_condition",
+            "source_sha256": "369f080e336affda7b27830387888ac15c99040557e4ac317cdcb112c8db09da"
+          },
+          {
+            "line_end": 415,
+            "line_start": 405,
+            "path": "src/ash/agents/a2a_remote.py",
+            "role": "forbidden_condition",
+            "source_sha256": "369f080e336affda7b27830387888ac15c99040557e4ac317cdcb112c8db09da"
+          },
+          {
+            "line_end": 256,
+            "line_start": 240,
+            "path": "src/ash/agents/a2a_remote.py",
+            "role": "protected_operation",
+            "source_sha256": "369f080e336affda7b27830387888ac15c99040557e4ac317cdcb112c8db09da"
+          },
+          {
+            "line_end": 299,
+            "line_start": 265,
+            "path": "src/ash/agents/a2a_remote.py",
+            "role": "commit_point",
+            "source_sha256": "369f080e336affda7b27830387888ac15c99040557e4ac317cdcb112c8db09da"
+          },
+          {
+            "line_end": 155,
+            "line_start": 140,
+            "path": "src/ash/agents/a2a_remote.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "369f080e336affda7b27830387888ac15c99040557e4ac317cdcb112c8db09da"
+          },
+          {
+            "line_end": 234,
+            "line_start": 228,
+            "path": "src/ash/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8261af02f67937457ec3a1d6f18ef3b2c0b9a7f298ad39d422714ead7dee51f1"
+          },
+          {
+            "line_end": 2453,
+            "line_start": 2440,
+            "path": "src/ash/core/loop.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          }
+        ],
+        "forbidden_condition": "Dispatching an A2A message to a remote endpoint whose configured URL is not HTTP(S), embeds credentials, carries a query or fragment, uses plain HTTP for a non-loopback host, or whose Agent Card declares a JSON-RPC interface URL that is invalid or changes origin (scheme/host/port) from the configured URL.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the third-party a2a SDK ClientFactory/client sends subsequent JSON-RPC traffic strictly to the validated card interface URLs cannot be verified from the supplied source (a2a library internals not provided)."
+        ],
+        "protected_operation": "A2A remote-agent delegation: Agent Card resolution and the streaming message send (client.send_message) to the configured remote agent.",
+        "protected_resource": "The configured A2A remote-agent endpoint and the outbound network channel used for delegation.",
+        "protection_obligation": "Outbound A2A remote-agent delegation (send_remote_agent, reached via the delegate_remote_agent tool) may only target endpoints whose configured URL passes _validate_remote_url (HTTP(S) scheme only, no embedded username/password, no query or fragment, valid port, HTTPS mandatory for non-loopback hosts) and whose resolved Agent Card JSON-RPC interfaces all pass _validate_remote_url and preserve the configured origin, enforced inside send_remote_agent before any message is sent.",
+        "scope_limits": [
+          "The Agent Card fetch itself (line 274) is a network request that necessarily precedes validate_agent_card_origins; that first request is protected only by _validate_remote_url against the configured URL, while origin validation guards the subsequent message traffic.",
+          "Plain HTTP is permitted only for loopback hosts (_is_loopback_host, lines 395-402).",
+          "Origin equality is checked only for JSONRPC-protocol-binding interfaces (lines 407-415); the client is separately restricted to TransportProtocol.JSONRPC (line 280).",
+          "follow_redirects=False (line 271) prevents redirect-based origin drift at the httpx layer.",
+          "Delegation is restricted to explicitly configured agents (DelegateRemoteAgentTool.run resolves the config from self.agents, lines 143-149)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "asyncio.create_subprocess_exec(*invocation.argv, ...) at src/ash/plugins/runtime.py:207-216, preceded by sandbox_manager.prepare at lines 190-193.",
+        "contract_id": "ecological-contract:fe359042012c39ff050c5af952aabd40",
+        "declared_mechanism": "Fail-closed check in _ensure_started: raise PluginRuntimeError when not sandbox_manager.is_fully_isolated() and not allow_unisolated (lines 183-188), placed before sandbox_manager.prepare (lines 189-195) and asyncio.create_subprocess_exec (lines 207-216); is_fully_isolated tests the selected backend against _FULL_ISOLATION_BACKENDS = {bubblewrap, docker} (src/ash/sandbox/manager.py lines 71 and 306-309); the plugin SandboxManager is built with workspace_read_only=True, require_read_isolation=True, network=False and no scoped fallback (src/ash/plugins/runtime.py lines 454-462; src/ash/sandbox/manager.py line 203).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 188,
+            "line_start": 180,
+            "path": "src/ash/plugins/runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "aa86c46d455408fe6f68ac5aca7907c9d28e32a37b7a0abae207cf9507ff01af"
+          },
+          {
+            "line_end": 188,
+            "line_start": 183,
+            "path": "src/ash/plugins/runtime.py",
+            "role": "forbidden_condition",
+            "source_sha256": "aa86c46d455408fe6f68ac5aca7907c9d28e32a37b7a0abae207cf9507ff01af"
+          },
+          {
+            "line_end": 309,
+            "line_start": 306,
+            "path": "src/ash/sandbox/manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c17b572bc1622c07dca71a67e9b3f85cd43ec163460d19bb233e726bac934f26"
+          },
+          {
+            "line_end": 71,
+            "line_start": 71,
+            "path": "src/ash/sandbox/manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c17b572bc1622c07dca71a67e9b3f85cd43ec163460d19bb233e726bac934f26"
+          },
+          {
+            "line_end": 121,
+            "line_start": 109,
+            "path": "src/ash/plugins/runtime.py",
+            "role": "protected_operation",
+            "source_sha256": "aa86c46d455408fe6f68ac5aca7907c9d28e32a37b7a0abae207cf9507ff01af"
+          },
+          {
+            "line_end": 216,
+            "line_start": 190,
+            "path": "src/ash/plugins/runtime.py",
+            "role": "commit_point",
+            "source_sha256": "aa86c46d455408fe6f68ac5aca7907c9d28e32a37b7a0abae207cf9507ff01af"
+          },
+          {
+            "line_end": 433,
+            "line_start": 416,
+            "path": "src/ash/plugins/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "aa86c46d455408fe6f68ac5aca7907c9d28e32a37b7a0abae207cf9507ff01af"
+          },
+          {
+            "line_end": 283,
+            "line_start": 269,
+            "path": "src/ash/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8261af02f67937457ec3a1d6f18ef3b2c0b9a7f298ad39d422714ead7dee51f1"
+          },
+          {
+            "line_end": 2453,
+            "line_start": 2440,
+            "path": "src/ash/core/loop.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "41e594252c888017d272c45a331ca26cf1a5a2f136889c9e7168821a10fc97ee"
+          }
+        ],
+        "forbidden_condition": "Spawning the plugin host subprocess when sandbox_manager.is_fully_isolated() is false and allow_unisolated was not explicitly set \u2014 i.e., executing untrusted plugin code without an OS isolation boundary.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The literal remediation text of the raised PluginRuntimeError is redacted in the supplied source (line 185 shows '<REDACTED>'); the fail-closed condition itself is unambiguous."
+        ],
+        "protected_operation": "Starting the plugin host subprocess for executable plugin tools (PluginHostClient._ensure_started, reached from PluginRuntimeTool.run via call_tool).",
+        "protected_resource": "The host operating system process boundary against untrusted executable plugin runtimes.",
+        "protection_obligation": "Executable plugin tools must refuse to start the plugin host subprocess unless the active sandbox backend provides full filesystem and network isolation (SandboxManager.is_fully_isolated(), i.e., the selected backend is bubblewrap or docker) or the operator explicitly set allow_unisolated; the check must run in PluginHostClient._ensure_started before sandbox_manager.prepare and asyncio.create_subprocess_exec spawn the plugin process.",
+        "scope_limits": [
+          "allow_unisolated is an operator-controlled escape hatch sourced from runtime_config.allow_unsafe_plugin_runtime (src/ash/runtime.py lines 280-282).",
+          "The gate is evaluated at first process start; while a host process is already running, call_tool reuses it (line 181) and the isolation recheck is not repeated per tool call.",
+          "The guard checks the backend class capability (bubblewrap/docker), not per-spawn verification that the prepared argv enforces the requested isolation flags.",
+          "Additional pre-spawn defenses (process-tree preparation, lines 196-201) run after the isolation gate but before the spawn."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "PermissionPolicy.evaluate internal semantics (tier rules, READ_ONLY_TOOLS membership, persistent/managed rule matching) are defined in src/ash/safety/policy.py, which is not part of the supplied source; only the call site and gating behavior in src/ash/core/loop.py are visible.",
+      "Third-party a2a SDK internals (request targeting after validate_agent_card_origins) are not in the supplied source, so end-to-end confinement of message traffic to validated interface URLs cannot be confirmed.",
+      "HookRegistry.fire_pre_tool behavior for configured hooks (ash/hooks sources not supplied) is unknown; it is cited only as an additional pre-dispatch blocking layer.",
+      "Fetch internals for other HTTP egress tools (web_search, browser tools) are not in the supplied source; the SSRF obligation is compiled for web_fetch only.",
+      "The literal remediation text inside the PluginRuntimeError raised at src/ash/plugins/runtime.py line 185 is redacted in the supplied source."
+    ],
+    "repository": "Suraj-H675/Ash-Harness",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d73e1b9f9c731c3b90e6431974d8369a"
+  },
+  "request_sha256": "f8e9befac28c4f77380e16fe24fa54d0320c7e08d0d1c2495adab929b601e51e",
+  "response_sha256": "f55722a60c13078e5b0d7cee543ff88725642c394db86a4f448901cb77163bb3",
+  "state": "completed",
+  "tokens": 102471,
+  "unit": "v24-screen:d73e1b9f9c731c3b90e6431974d8369a"
+}

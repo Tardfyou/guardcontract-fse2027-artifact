@@ -1,0 +1,195 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "database_query(...) executing the f-string-interpolated SQL: the full-scope EXISTS query at method/agents/data_source_validation/tools.py:96-114 and the _query_table_scope query at method/agents/data_source_validation/tools.py:146-172.",
+        "contract_id": "ecological-contract:a76f232cc8ef90906d1839761b338836",
+        "declared_mechanism": "REAL_ESTATE_TABLES static allowlist (method/agents/data_source_validation/tools.py:18-25); run() lazily builds _existing_tables_cache from an information_schema query restricted to allowlisted names (tools.py:72-85) and rejects tables absent from that cache before further queries (tools.py:87-89); _query_table_scope's docstring declares the table precondition as already allowlist- and existence-checked (tools.py:134-138). Only the allowlisted table identifier is interpolated; city/block/start_date/end_date slots are passed as bound parameters.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 25,
+            "line_start": 18,
+            "path": "method/agents/data_source_validation/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b22ec21f949bf251e8fcdeffe0de42c2d1a93db6092406142781cfe5f3c6e381"
+          },
+          {
+            "line_end": 85,
+            "line_start": 72,
+            "path": "method/agents/data_source_validation/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b22ec21f949bf251e8fcdeffe0de42c2d1a93db6092406142781cfe5f3c6e381"
+          },
+          {
+            "line_end": 89,
+            "line_start": 87,
+            "path": "method/agents/data_source_validation/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b22ec21f949bf251e8fcdeffe0de42c2d1a93db6092406142781cfe5f3c6e381"
+          },
+          {
+            "line_end": 138,
+            "line_start": 134,
+            "path": "method/agents/data_source_validation/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b22ec21f949bf251e8fcdeffe0de42c2d1a93db6092406142781cfe5f3c6e381"
+          },
+          {
+            "line_end": 114,
+            "line_start": 96,
+            "path": "method/agents/data_source_validation/tools.py",
+            "role": "commit_point",
+            "source_sha256": "b22ec21f949bf251e8fcdeffe0de42c2d1a93db6092406142781cfe5f3c6e381"
+          },
+          {
+            "line_end": 172,
+            "line_start": 146,
+            "path": "method/agents/data_source_validation/tools.py",
+            "role": "commit_point",
+            "source_sha256": "b22ec21f949bf251e8fcdeffe0de42c2d1a93db6092406142781cfe5f3c6e381"
+          },
+          {
+            "line_end": 215,
+            "line_start": 207,
+            "path": "method/agents/data_source_validation/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b22ec21f949bf251e8fcdeffe0de42c2d1a93db6092406142781cfe5f3c6e381"
+          },
+          {
+            "line_end": 234,
+            "line_start": 228,
+            "path": "method/agents/data_source_validation/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b22ec21f949bf251e8fcdeffe0de42c2d1a93db6092406142781cfe5f3c6e381"
+          },
+          {
+            "line_end": 312,
+            "line_start": 312,
+            "path": "method/agents/data_source_validation/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b22ec21f949bf251e8fcdeffe0de42c2d1a93db6092406142781cfe5f3c6e381"
+          },
+          {
+            "line_end": 150,
+            "line_start": 140,
+            "path": "method/agents/data_source_validation/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d7c93601fed8659c3d8d821f102974e531b051ec5893ec5ff8767e841c7e7dcf"
+          }
+        ],
+        "forbidden_condition": "Executing a table-interpolated SELECT (FROM public.{table}) where the requested table is not in the allowlist-derived _existing_tables_cache, i.e. a table outside REAL_ESTATE_TABLES or absent from the database; the run() path returns {\"table_exists\": False} and must not proceed to any table-interpolated query in that case.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any caller invokes DataSourceQueryTool.run outside the slot_query tool path (no such caller appears in the supplied views).",
+          "The system prompt content (DEFAULT_PROMPT_PATH target file) that would further constrain tool use is not supplied."
+        ],
+        "protected_operation": "slot_query tool invocation dispatching into DataSourceQueryTool.run's database evidence queries (the full-scope EXISTS query and the _query_table_scope scope queries).",
+        "protected_resource": "public-schema database tables addressed via FROM public.{table} in the data-source validation queries.",
+        "protection_obligation": "Database queries issued through the data-source validation tool path (slot_query -> DataSourceQueryTool.run) must only execute against tables in the static REAL_ESTATE_TABLES allowlist; an unknown table name must be rejected before any SQL that interpolates the table identifier is executed.",
+        "scope_limits": [
+          "This gate covers the data_source_validation tool path only; the supplied content_validation view shows fetch_raw_data interpolating an analysis-state-provided table name into SQL (method/agents/content_validation/tools.py:469-478) with a nosec comment asserting allowlist provenance (line 477) but no in-view allowlist check, so the reviewer claim that the gate covers 'every SQL commit point' is scoped here to the data_source_validation tool.",
+          "Enforcement is membership in _existing_tables_cache, the intersection of REAL_ESTATE_TABLES with tables actually present in information_schema; it is stricter than bare allowlist membership.",
+          "Judgment is limited to the three supplied source views; no safety, runtime-behavior, or prevalence determination is made."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "method/agents/data_source_validation/agent.py:157-161 - the return of {'final_data_source': final_data_source, ...} from DataSourceValidationAgent.arun, where the validated data source is committed as the workflow result.",
+        "contract_id": "ecological-contract:f7ffe623a347c21c1551f6ffeeee1e31",
+        "declared_mechanism": "_validate_final_data_source (method/agents/data_source_validation/agent.py:205-217) raises ValueError for non-allowlisted tables and inverted date ranges, using the REAL_ESTATE_TABLES allowlist imported from .tools (agent.py:22-27; tools.py:18-25); arun applies it to result['structured_response'].model_dump() at agent.py:156 before constructing the return value.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 25,
+            "line_start": 18,
+            "path": "method/agents/data_source_validation/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b22ec21f949bf251e8fcdeffe0de42c2d1a93db6092406142781cfe5f3c6e381"
+          },
+          {
+            "line_end": 27,
+            "line_start": 22,
+            "path": "method/agents/data_source_validation/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "d7c93601fed8659c3d8d821f102974e531b051ec5893ec5ff8767e841c7e7dcf"
+          },
+          {
+            "line_end": 217,
+            "line_start": 205,
+            "path": "method/agents/data_source_validation/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "d7c93601fed8659c3d8d821f102974e531b051ec5893ec5ff8767e841c7e7dcf"
+          },
+          {
+            "line_end": 209,
+            "line_start": 208,
+            "path": "method/agents/data_source_validation/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d7c93601fed8659c3d8d821f102974e531b051ec5893ec5ff8767e841c7e7dcf"
+          },
+          {
+            "line_end": 216,
+            "line_start": 210,
+            "path": "method/agents/data_source_validation/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d7c93601fed8659c3d8d821f102974e531b051ec5893ec5ff8767e841c7e7dcf"
+          },
+          {
+            "line_end": 125,
+            "line_start": 112,
+            "path": "method/agents/data_source_validation/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "d7c93601fed8659c3d8d821f102974e531b051ec5893ec5ff8767e841c7e7dcf"
+          },
+          {
+            "line_end": 156,
+            "line_start": 144,
+            "path": "method/agents/data_source_validation/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d7c93601fed8659c3d8d821f102974e531b051ec5893ec5ff8767e841c7e7dcf"
+          },
+          {
+            "line_end": 161,
+            "line_start": 157,
+            "path": "method/agents/data_source_validation/agent.py",
+            "role": "commit_point",
+            "source_sha256": "d7c93601fed8659c3d8d821f102974e531b051ec5893ec5ff8767e841c7e7dcf"
+          }
+        ],
+        "forbidden_condition": "Returning final_data_source whose connection.table is not in REAL_ESTATE_TABLES (method/agents/data_source_validation/agent.py:208-209 raises ValueError), or whose filters have start_date > end_date (agent.py:210-216).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which pipeline component consumes arun's returned final_data_source and whether the table name reaches content_validation's fetch_raw_data only through this validated path; the handoff wiring is not in the supplied sources.",
+          "Whether the redacted system prompt (DEFAULT_PROMPT_PATH) imposes additional constraints on the structured answer; the prompt file is not supplied."
+        ],
+        "protected_operation": "DataSourceValidationAgent.arun's acceptance and return of the ReAct agent's structured DataSource answer as the slide-level final_data_source for downstream use.",
+        "protected_resource": "The analysis workflow's slide-level final_data_source (connection.table plus filters) produced by the data-source validation agent.",
+        "protection_obligation": "The slide-level final data source returned by DataSourceValidationAgent.arun must reference a table in the static REAL_ESTATE_TABLES allowlist (and carry a valid start_date <= end_date range); an agent structured answer failing either check must be rejected before final_data_source is committed as the workflow's accepted output.",
+        "scope_limits": [
+          "This gate validates only the agent's structured final answer; intermediate slot_query evidence calls are governed by the tool-level gate in the data_source_validation tools contract.",
+          "The supplied source shows the validated final_data_source only as arun's return value; content_validation tools read caption data_source from analysis_state table states, so the end-to-end dataflow from this gate to content-repair SQL is not established in the supplied views."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Content-validation SQL gate: method/agents/content_validation/tools.py fetch_raw_data interpolates an analysis-state-provided table name into SQL and executes it (lines 469-478), reached from agent tool sql_retrieve (lines 74-92, table taken from state at line 88; tool registered in CONTENT_VALIDATION_TOOLS at lines 358-366) and from execute_table_state (lines 420-437). A nosec comment at line 477 asserts 'table/column names come from analysis state and dataset allowlists', but no allowlist enforcement for this commit point appears in the supplied views, so the reviewer claim that the allowlist gate covers 'every SQL commit point' including content-repair fetches is unsupported by the supplied source; no contract is emitted for that path.",
+      "Filesystem guard claim: a reviewer rationale cites with_tool_flow.py lines 363-397 (apply_textbox_edit blocked unless has_issue is confirmed and shape_id is in an editable set), but that file is not among the supplied sources; no file-stratum contract can be compiled from the supplied evidence.",
+      "Downstream handoff: no supplied source binds DataSourceValidationAgent.arun's validated final_data_source into content_validation's analysis_state (content tools read caption['data_source'] from table_state), so the claim that the allowlisted final data source is what reaches content repair is unestablished in the supplied views.",
+      "Prompt-level constraints: the data-source validation system prompt file (DEFAULT_PROMPT_PATH, method/agents/data_source_validation/agent.py:29-30) is not supplied, so prompt-declared guard language cannot be verified."
+    ],
+    "repository": "BlackJack0083/PPTReviewer",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4b800a5b7515f1230065561f31a90b7c"
+  },
+  "request_sha256": "4572a2c1cee8b97c74a4efdb70f63950e2c5f5e7fca1a41bcfea547e2f5e948d",
+  "response_sha256": "d0ac9dd0e995c910a11b117bd2573b64b521fa2239dd4507e80d86e1937ea490",
+  "state": "completed",
+  "tokens": 30721,
+  "unit": "v24-screen:4b800a5b7515f1230065561f31a90b7c"
+}

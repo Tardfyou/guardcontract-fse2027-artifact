@@ -1,0 +1,97 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "subprocess.run(cmd, capture_output=True, text=True, check=True) at package_manager.py lines 146-151, executing the command built at line 145 as cls._get_pip_command() + ['install', package_name] ('uv pip install' or '<sys.executable> -m pip install').",
+        "contract_id": "ecological-contract:0202b9e8698e1eb8d88d7878b53aa783",
+        "declared_mechanism": "PackageManager.is_whitelisted (package_manager.py lines 88-102), backed by the blocked/safe/whitelisted lists in package_config.toml (lines 1-35) with a DEFAULT_PACKAGE_LIST fallback (lines 20-24), invoked at the top of PackageManager.install_package (line 129); a False result logs a warning and returns a {'success': False} dict (lines 130-134), skipping the subprocess.run call entirely.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 134,
+            "line_start": 119,
+            "path": "src/sparq/tools/python_repl/package_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "18eccf71ca1fa564596ef667fde2363396d396714866587580e76e7401f781c6"
+          },
+          {
+            "line_end": 102,
+            "line_start": 88,
+            "path": "src/sparq/tools/python_repl/package_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "18eccf71ca1fa564596ef667fde2363396d396714866587580e76e7401f781c6"
+          },
+          {
+            "line_end": 35,
+            "line_start": 1,
+            "path": "src/sparq/tools/python_repl/package_config.toml",
+            "role": "forbidden_condition",
+            "source_sha256": "0e1f1d8b870d6cc20865edff1ebf0f7480aff13073ab487509d0a97625d777a1"
+          },
+          {
+            "line_end": 151,
+            "line_start": 145,
+            "path": "src/sparq/tools/python_repl/package_manager.py",
+            "role": "commit_point",
+            "source_sha256": "18eccf71ca1fa564596ef667fde2363396d396714866587580e76e7401f781c6"
+          },
+          {
+            "line_end": 110,
+            "line_start": 91,
+            "path": "src/sparq/tools/python_repl/executor.py",
+            "role": "protected_operation",
+            "source_sha256": "0e0d04a5a05ad7e2306d71ebef676c5b4948a8235bf76486398e27be905c1298"
+          },
+          {
+            "line_end": 224,
+            "line_start": 210,
+            "path": "src/sparq/tools/python_repl/package_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "18eccf71ca1fa564596ef667fde2363396d396714866587580e76e7401f781c6"
+          }
+        ],
+        "forbidden_condition": "PackageManager.install_package invoking the pip/uv install subprocess (subprocess.run) for a package_name that is absent from both the 'safe' and 'whitelisted' lists, or present in the 'blocked' list \u2014 i.e., committing installation of a non-whitelisted package into the execution environment.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "What registers executor.execute_code (or a wrapper around it) as an agent tool \u2014 a decorator, server/tool manifest, or dispatch path \u2014 to establish direct_tool or agent_generated_input_to_guarded_effect mediation?",
+          "Are there call sites of PackageManager.install_package / PackageUtils.install_package other than executor.py line 101, and are any of them agent-reachable?",
+          "Is any package-name normalization applied before is_whitelisted membership testing anywhere in the codebase?",
+          "Which package_config.toml location is effective in the deployed environment (user path, user config dir, packaged default, or the DEFAULT_PACKAGE_LIST fallback), and can it differ from the repo default?",
+          "Does deployed usage pass agent-authored code to execute_code such that the ImportError message (agent-influenced input) flows through extract_package_name_error into install_package, satisfying the agent_generated_input_to_guarded_effect dataflow?"
+        ],
+        "protected_operation": "Automatic package installation performed by PackageManager.install_package / PackageUtils.install_package, reached from executor.execute_code's ModuleNotFoundError/ImportError retry loop after PackageUtils.extract_package_name_error parses the missing module name from the execution error message.",
+        "protected_resource": "The Python runtime environment of the code-execution tool (the interpreter environment / site-packages into which 'uv pip install' or '<python> -m pip install' installs packages).",
+        "protection_obligation": "Before PackageManager.install_package commits a pip/uv package installation via subprocess.run, the requested package name must pass the PackageManager.is_whitelisted check against the blocked/safe/whitelisted lists loaded from package_config.toml; packages not on the safe/whitelisted allowlists (with blocked entries hard-refused) must be refused without invoking the install subprocess, so that installation into the Python execution environment is committed only for allowed packages on the auto-install path invoked from executor.execute_code's ImportError retry loop. (Merges first-phase and second-phase reviewer wordings of the same gate-before-commit obligation.)",
+        "scope_limits": [
+          "The gate covers only PackageManager.install_package; PackageManager.uninstall_package (package_manager.py lines 164-204) runs its pip/uv subprocess with no whitelist check and is not part of this obligation.",
+          "is_whitelisted performs exact string membership testing (package_manager.py lines 99-102); no supplied source shows package-name normalization (case folding, PEP 503 canonicalization, extras, or version specifiers), so name-variant behavior is neither confirmed nor refuted.",
+          "On the executor auto-install path, PackageUtils.extract_package_name_error (package_manager.py lines 210-224) only returns names already present in the whitelisted+safe lists, so the retry loop at executor.py lines 95-110 can only propose allowlisted names; the refusal branch of install_package binds other/direct callers and any runtime config drift.",
+          "The effective allowlist depends on config resolution order \u2014 user-supplied path, then ~/.config/sparq/package_config.toml, then the packaged default (package_manager.py lines 56-64) \u2014 with silent fallback to DEFAULT_PACKAGE_LIST on load error (lines 83-86).",
+          "Agent mediation is not established from the supplied views: no decorator, tool registration, manifest entry, dispatch wiring, or production caller of execute_code is visible; comments mentioning 'the agent' (executor.py lines 75-76) are documentation, not binding wiring.",
+          "Assessment is limited to the supplied source views; repository enumeration is incomplete and behavior labels are unavailable."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source shows a decorator, tool registration, manifest entry, or dispatch path binding execute_code or install_package to an agent; agent mediation cannot be classified beyond not_established, so no agent_entry_binding evidence is cited.",
+      "Production callers of executor.execute_code (other than the __main__ self-test at executor.py lines 307-316) are not present in the supplied views.",
+      "The effective package_config.toml in a deployed environment (versus user config or the DEFAULT_PACKAGE_LIST fallback at package_manager.py lines 20-24, 83-86) is unknown.",
+      "Whether any package-name normalization or aliasing occurs before is_whitelisted is unknown from supplied source.",
+      "Behavior labels and prevalence/trigger data are unavailable per the stated scope; no runtime-frequency or safety determination is made."
+    ],
+    "repository": "SENSD-AI/SPARQ",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:452b829644e27ad51524d1b69190875b"
+  },
+  "request_sha256": "f4ce771a07fbb2d36c537b0dde3808fa24dde688a0f06d4c31a8bf5ed7771b62",
+  "response_sha256": "5d909fb51b675b3d55abbd8632ef3e5664323f268bb1eb9b135dafb35134c92e",
+  "state": "completed",
+  "tokens": 15548,
+  "unit": "v24-screen:452b829644e27ad51524d1b69190875b"
+}

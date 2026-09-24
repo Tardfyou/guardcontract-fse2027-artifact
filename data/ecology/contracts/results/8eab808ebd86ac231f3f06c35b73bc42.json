@@ -1,0 +1,308 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "main.py:160 \u2014 state.research_report is replaced with the scrubbed text immediately after raw crew output is stored (main.py:153-154) and before evaluate_research (main.py:162-175) and run_writing_crew (main.py:197-212) read it.",
+        "contract_id": "ecological-contract:51399141b7bf01e5e61a9d9b10255910",
+        "declared_mechanism": "The @listen(run_research_crew) step scrub_report applies _scrub (case-insensitive regex substitution replacing matches with '[REDACTED]') and writes the scrubbed text back to state.research_report before the @router(scrub_report) step and the writing crew consume it.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 158,
+            "line_start": 157,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 23,
+            "line_start": 18,
+            "path": "src/guide_creator_flow/security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2d3e0544c28949eab4107161f6910ef3850a254b789eadf317768c62521ad174"
+          },
+          {
+            "line_end": 35,
+            "line_start": 34,
+            "path": "src/guide_creator_flow/security.py",
+            "role": "guard_registration",
+            "source_sha256": "2d3e0544c28949eab4107161f6910ef3850a254b789eadf317768c62521ad174"
+          },
+          {
+            "line_end": 160,
+            "line_start": 153,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 175,
+            "line_start": 162,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 212,
+            "line_start": 197,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          }
+        ],
+        "forbidden_condition": "Text matching _INJECTION_PATTERN (e.g., 'ignore previous instructions?', 'you are now', '<|system|>', case-insensitive) persisting in state.research_report when it is consumed downstream.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the downstream consumers (llm_score_report, ResearchQualityScorerTool, WritingCrew.crew().kickoff) are agent/LLM-mediated, which would bind this guard to agent-facing effects; their implementations are not supplied.",
+          "Whether enrichment-appended content (main.py:190-194) requires the same scrub before writing-crew consumption."
+        ],
+        "protected_operation": "Downstream consumption of state.research_report: evaluate_research scoring/routing (llm_score_report or ResearchQualityScorerTool) and the WritingCrew kickoff that receives research_report as input.",
+        "protected_resource": "state.research_report content flowing to downstream consumers.",
+        "protection_obligation": "Research-report content must have prompt-injection patterns redacted before the report is consumed by the downstream quality-scoring/routing step and the writing crew (supported by the registered scrub_report step and _scrub mechanism; preserved as a distinct supported obligation).",
+        "scope_limits": [
+          "Scrubbing is a single case-insensitive regex pattern; the source declares no semantic or multi-pass injection defense.",
+          "The scrub applies to state.research_report only; enrichment output appended later (main.py:190-194) is not re-scrubbed in the supplied views, nor is final_guide after run_writing_crew (main.py:210).",
+          "The origin of research_report (research crew output at main.py:153-154) and the agent/tool character of the consumers are outside the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Filtered document paths are written back to state (main.py:90) and committed into downstream execution when passed in the inputs dict to ResearchCrew().crew_for_sources(...).kickoff(inputs=inputs) (main.py:139-145); they are additionally passed to infer_topic (main.py:114).",
+        "contract_id": "ecological-contract:7f33337bf7caff6c2df0b759de5b0a24",
+        "declared_mechanism": "validate_document_paths() invoked inside GuideGeneratorFlow.validate_inputs (the @start step): for each path it requires p.resolve().relative_to(document_input_dir.resolve()) to succeed, else logs 'path traversal rejected' and drops via emit_input_rejected; then requires p.exists() and p.stat().st_size <= max_file_bytes; survivors are written back to state.document_paths.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 72,
+            "line_start": 71,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 90,
+            "line_start": 87,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 65,
+            "line_start": 58,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "guard_registration",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 80,
+            "line_start": 67,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 138,
+            "line_start": 121,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 114,
+            "line_start": 108,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 145,
+            "line_start": 139,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          }
+        ],
+        "forbidden_condition": "A user-supplied document path whose resolved location falls outside document_input_dir (DOCUMENT_INPUT_DIR, default 'documents'), a non-existent file, or a file whose st_size exceeds max_file_bytes (MAX_FILE_BYTES, default 52428800) surviving validation and being passed onward to downstream local file access.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which component performs the local file reads of the validated document paths (the reviewer's FileReadTool reference does not appear in the supplied views).",
+          "Whether infer_topic (main.py:114) reads the documents, creating an additional consumer to bind (its module is not supplied).",
+          "Whether the ResearchCrew kickoff that receives the paths is agent/tool-mediated (required to upgrade agent_mediation from not_established)."
+        ],
+        "protected_operation": "Local filesystem access/reads of the surviving document paths by downstream consumers, principally the ResearchCrew execution receiving them via the kickoff inputs dict.",
+        "protected_resource": "Local filesystem outside DOCUMENT_INPUT_DIR and the size-bounded read envelope for user-supplied documents.",
+        "protection_obligation": "User-supplied local document paths must be filtered at the flow's registered start step so that paths resolving outside DOCUMENT_INPUT_DIR (path traversal), missing files, and files exceeding MAX_FILE_BYTES are rejected before the surviving paths are handed to downstream crew execution (merged from both reviewer opinions).",
+        "scope_limits": [
+          "document_input_dir and max_file_bytes are environment-configurable at runtime (main.py:71-72); the contract binds to the configured values.",
+          "Containment is enforced via resolve()+relative_to at validation time only; supplied source shows no re-check at the downstream read point (symlink/TOCTOU rebinding not bound).",
+          "Existence and size checks use the unresolved Path p (input_validation.py:75-78) while containment uses the resolved path.",
+          "The evidenced downstream consumers are the research crew kickoff and infer_topic; what performs the actual file reads is not shown in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Filtered URL lists are written back to flow state (main.py:80-82) and committed into downstream execution when run_research_crew passes them in the inputs dict to ResearchCrew().crew_for_sources(...).kickoff(inputs=inputs) (main.py:139-145).",
+        "contract_id": "ecological-contract:d8d666cfd60161ecc44c1e552fb43059",
+        "declared_mechanism": "validate_urls() invoked inside GuideGeneratorFlow.validate_inputs, the step registered with @start(): per URL it extracts the hostname via urlparse, resolves it via _is_private_ip() against _PRIVATE_RANGES, and drops matching URLs with an 'SSRF: rejected private IP URL' error_log entry and an emit_input_rejected event; it additionally drops URLs whose reachability probe raises ConnectionError or Timeout; survivors are written back to flow state.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 65,
+            "line_start": 64,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 82,
+            "line_start": 74,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 37,
+            "line_start": 31,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 16,
+            "line_start": 8,
+            "path": "src/guide_creator_flow/security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2d3e0544c28949eab4107161f6910ef3850a254b789eadf317768c62521ad174"
+          },
+          {
+            "line_end": 31,
+            "line_start": 26,
+            "path": "src/guide_creator_flow/security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2d3e0544c28949eab4107161f6910ef3850a254b789eadf317768c62521ad174"
+          },
+          {
+            "line_end": 138,
+            "line_start": 121,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 114,
+            "line_start": 108,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 145,
+            "line_start": 139,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          }
+        ],
+        "forbidden_condition": "A user-supplied URL whose hostname resolves into any private/link-local range (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16, ::1/128, fc00::/7) surviving validation and being passed onward to downstream fetching.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which component inside ResearchCrew performs the outbound HTTP fetch of the validated URL lists (crew_for_sources and the research crew module are not in the supplied views).",
+          "Whether the downstream fetch re-resolves hostnames independently of _is_private_ip (DNS rebinding/TOCTOU binding).",
+          "Whether emit_input_rejected (event_listeners module not supplied) is an enforcement sink or telemetry only.",
+          "Whether the ResearchCrew kickoff that receives the URLs is agent/tool-mediated (required to upgrade agent_mediation from not_established)."
+        ],
+        "protected_operation": "Outbound HTTP fetching/scraping of the surviving user-supplied URLs by the downstream ResearchCrew execution that receives them via the kickoff inputs dict.",
+        "protected_resource": "Internal/private network endpoints addressable via user-supplied URLs; integrity of the URL lists committed to downstream crew execution.",
+        "protection_obligation": "User-supplied URL lists (youtube_links, webpage_links, research_paper_links) must be filtered at the flow's registered start step so that any URL whose hostname resolves to a private or link-local IP address is rejected (SSRF) before the surviving URL lists are handed to downstream crew execution (merged from both reviewer opinions).",
+        "scope_limits": [
+          "The guard runs once at flow-start validation; supplied source shows no re-validation of hostnames/resolved IPs at the downstream fetch point (DNS re-resolution window not bound).",
+          "_is_private_ip returns False on any exception, including DNS resolution failure (security.py:30-31), so unresolvable hostnames are not rejected by the SSRF check.",
+          "The guard's own reachability probe performs an outbound requests.head(url, timeout=5, allow_redirects=True) (input_validation.py:40); non-network exceptions during the probe are swallowed and the URL treated as reachable (input_validation.py:49-50).",
+          "Only the research-crew consumer is evidenced by supplied dataflow: EnrichmentCrew receives only topic_hint and gaps (main.py:184-188) and WritingCrew only topic_hint and research_report (main.py:204-208), so the filter does not gate any URL list those crews receive; whether the enrichment crew's own 'web search' falls under this obligation is unbound.",
+          "Crew-internal consumption of the URL lists is outside the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The raise at main.py:103-105 within the @start step; if it does not fire, the validated state is committed for the next step registered via @listen(validate_inputs) (main.py:121-122), which kicks off the research crew (main.py:139-145).",
+        "contract_id": "ecological-contract:fc4ef3225b611e206de3291aa94c8763",
+        "declared_mechanism": "Inside the @start step validate_inputs, an explicit gate raises ValueError('No valid sources remain after validation. ...') when all of state.youtube_links, state.webpage_links, state.research_paper_links, and state.document_paths are empty after filtering, halting the flow before the @listen(validate_inputs) step can run.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 65,
+            "line_start": 63,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 102,
+            "line_start": 94,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 105,
+            "line_start": 103,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 138,
+            "line_start": 121,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          }
+        ],
+        "forbidden_condition": "Flow progression into downstream steps when all four validated source lists are empty, i.e., no source survived validation.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The downstream effects shielded by this gate span the research crew kickoff (http/file per sibling contracts) and later LLM-consuming steps; confirmation of the primary stratum classification (flow-state progression) against flow-engine semantics not supplied.",
+          "Whether the gate's placement constitutes an agent lifecycle binding or purely flow-orchestration state control (crew internals not supplied)."
+        ],
+        "protected_operation": "The downstream crew pipeline, beginning with run_research_crew registered via @listen(validate_inputs), which consumes the flow state.",
+        "protected_resource": "Flow execution/state progression from the validation step into downstream crew execution.",
+        "protection_obligation": "The flow must not advance past input validation unless at least one source list (youtube_links, webpage_links, research_paper_links, document_paths) retains a surviving entry; otherwise the run must abort before any downstream crew step executes (explicitly labeled 'Guard' in source, preserved as a distinct supported obligation).",
+        "scope_limits": [
+          "This gate enforces non-emptiness only; it does not re-verify individual URLs or paths beyond the sibling filters.",
+          "The gate is evaluated once in the start step; supplied source shows no re-evaluation before the enrichment or writing crews run."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "ResearchCrew.crew_for_sources and the research crew module (agents, tasks, tools) are not in the supplied views; the reviewers' claims of outbound scraping and FileReadTool local file reads are therefore unsupported by supplied source, and no tool-dispatch agent_entry_binding can be cited for the http/file contracts.",
+      "EnrichmentCrew.crew() and WritingCrew.crew() definitions are not supplied; whether their effects are agent/tool-mediated is unverified (main.py supplies only their kickoff calls and inputs).",
+      "guide_creator_flow.event_listeners.emit_input_rejected is imported and called (input_validation.py:10, 36, 43, 47, 73) but the event_listeners module is not supplied; whether rejection events reach an enforcement sink or are telemetry-only is unverified.",
+      "infer_topic (guide_creator_flow.tools.topic_inference_tool) is not supplied; it receives the validated URL lists and document paths (main.py:108-114) and may constitute an additional consumer of the protected resources.",
+      "GuideFlowState (flow_state module) and cli.get_inputs are not supplied; the provenance of user-supplied URLs/paths into flow state is only evidenced by the kickoff entry points (main.py:233-252).",
+      "The enrichment crew's 'web search' behavior (main.py:179 docstring) is not bound to the validated URL lists by any supplied dataflow; whether it falls within the SSRF obligation's protection scope is unbound."
+    ],
+    "repository": "aiwithsiddhesh/ai-guide-creator",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:8eab808ebd86ac231f3f06c35b73bc42"
+  },
+  "request_sha256": "f9d920c3e2a547b58216e7f29da8e5e79531f8e86e3079e28a6e61fa046ddce9",
+  "response_sha256": "ca6600551371452a6696223adfc442024a408eaf78210693df792452bf0911f8",
+  "state": "completed",
+  "tokens": 29079,
+  "unit": "v24-screen:8eab808ebd86ac231f3f06c35b73bc42"
+}

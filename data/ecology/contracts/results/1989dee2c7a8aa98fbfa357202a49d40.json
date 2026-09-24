@@ -1,0 +1,79 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "`rc = _reset()` at server.py:134 \u2014 the direct in-process call to scripts.reset_memory.reset_memory() (per handler docstring: clears chromadb's process-wide cache, rmtree, then reseeds), after which the handler reports the reseeded store count.",
+        "contract_id": "ecological-contract:91639a766caa18b202d20cbcf58e8609",
+        "declared_mechanism": "Environment-flag gate at the top of the handler: `if os.getenv(\"ALLOW_DEMO_RESET\") != \"1\": raise HTTPException(status_code=403, ...)` (server.py:120-127), registered ahead of the lazy imports and the _reset() invocation so the destructive effect is unreachable while the flag is absent; handler then treats rc != 0 as a 500, indicating the reset is expected to have committed by then.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 106,
+            "line_start": 105,
+            "path": "rca-agent-system/server.py",
+            "role": "protected_operation",
+            "source_sha256": "b9ad9fc03ae9ba5b8400bd4339aac1f9ee16ca487a7dee464315c55335d7bf54"
+          },
+          {
+            "line_end": 118,
+            "line_start": 107,
+            "path": "rca-agent-system/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b9ad9fc03ae9ba5b8400bd4339aac1f9ee16ca487a7dee464315c55335d7bf54"
+          },
+          {
+            "line_end": 127,
+            "line_start": 120,
+            "path": "rca-agent-system/server.py",
+            "role": "guard_registration",
+            "source_sha256": "b9ad9fc03ae9ba5b8400bd4339aac1f9ee16ca487a7dee464315c55335d7bf54"
+          },
+          {
+            "line_end": 134,
+            "line_start": 128,
+            "path": "rca-agent-system/server.py",
+            "role": "commit_point",
+            "source_sha256": "b9ad9fc03ae9ba5b8400bd4339aac1f9ee16ca487a7dee464315c55335d7bf54"
+          }
+        ],
+        "forbidden_condition": "Reaching the destructive wipe-and-reseed commit while ALLOW_DEMO_RESET is unset or set to any value other than '1' \u2014 i.e., an unauthorized reset that would erase the reflection-driven score adjustments accumulated in the persistent ChromaDB dynamic memory between unrelated production runs.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, agent lifecycle hook, or agent-generated workflow actually invokes POST /demo/reset-memory (required to raise agent_mediation above not_established).",
+          "Source of scripts/reset_memory.py to confirm the exact database mutation sequence behind the line-134 call and the rc != 0 semantics checked at server.py:135-139.",
+          "Whether the rmtree described in the handler docstring constitutes a distinct file-stratum commit point that would warrant a separate contract.",
+          "Whether ALLOW_DEMO_RESET is bound to any deployment/runtime configuration that changes when the guard permits the effect (only the env read at server.py:120 is supplied)."
+        ],
+        "protected_operation": "POST /demo/reset-memory request handling that culminates in invoking scripts.reset_memory.reset_memory to wipe and re-seed the ChromaDB incident knowledge base.",
+        "protected_resource": "The ChromaDB-backed incident/dynamic memory store (reflection-driven score adjustments) wiped and re-seeded by scripts.reset_memory.reset_memory.",
+        "protection_obligation": "The destructive memory-reset exposed by POST /demo/reset-memory must be refused with HTTP 403 unless the agent-service environment sets ALLOW_DEMO_RESET=1; the environment-variable check must execute in the request handler before the destructive wipe-and-reseed of the ChromaDB incident knowledge base is allowed to commit (phase-1 and phase-2 reviewer wording merged: same route, same guard, same commit point).",
+        "scope_limits": [
+          "Derived solely from the two supplied views (server.py, rca_system/eval_api/routes.py); the body of scripts.reset_memory.reset_memory and the ChromaDB store implementation are not supplied, so the internal wipe/reseed sequence is taken from the handler docstring only.",
+          "No supplied source binds POST /demo/reset-memory to an agent tool, an agent lifecycle hook, or agent-generated input reaching the reset effect; the endpoint is a plain HTTP demo helper on the FastAPI app, so no agent_entry_binding evidence is cited and mediation remains not_established.",
+          "The guard constrains only the process environment variable; no caller authentication, authorization, or CORS property is asserted, and ordinary web controls are out of scope.",
+          "Only the database-stratum commit observable in supplied source (the _reset() call at line 134) is contracted; any distinct filesystem-deletion commit inside reset_memory (implied by the docstring's rmtree description) cannot be separately contracted without that implementation source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "scripts/reset_memory.py is not supplied; the wipe-and-reseed implementation, return-code semantics, and any internal filesystem deletion are known only from the handler docstring (server.py:107-118).",
+      "rca_system/memory/chroma_store.py (IncidentMemory) is not supplied; the persistence layout of the wiped/reseeded store is unverified beyond the handler's description.",
+      "Reviewer phase-1 rationale additionally cites the resolved-path containment check on GET /eval/results (rca-agent-system/rca_system/eval_api/routes.py:158-173). Supplied source contains no binding of that read endpoint to an agent tool, agent lifecycle hook, or agent-generated input, and the check is generic application validation (path-parameter containment on an HTTP file read, with the module docstring stating reads are 'always allowed'), so it is recorded here as out of scope rather than emitted as a contract.",
+      "Repository enumeration is incomplete per the unit scope; other callers or registrations of /demo/reset-memory or of scripts.reset_memory.reset_memory may exist and are not visible in the supplied views."
+    ],
+    "repository": "Wathsu4/Reflection-Enhanced-Multi-Agent-RAG-RCA",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1989dee2c7a8aa98fbfa357202a49d40"
+  },
+  "request_sha256": "2615ebfeedc6ad30ab168694da69d418967fdaa743635d4b3bdc451bc262ccc0",
+  "response_sha256": "2c61e6f2088047d70f0e227316961e84e9e8a76a82b04237610b2d2fe8340e33",
+  "state": "completed",
+  "tokens": 12974,
+  "unit": "v24-screen:1989dee2c7a8aa98fbfa357202a49d40"
+}

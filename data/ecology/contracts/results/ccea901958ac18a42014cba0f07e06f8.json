@@ -1,0 +1,295 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "conn.commit() after the INSERT inside db.add_message (db.py 136-143), reached at server.py 176 (user message) and server.py 191 (assistant message); secondary commit inside db.set_chat_title (db.py 118-122) when triggered at server.py 178-179.",
+        "contract_id": "ecological-contract:004dc11b28b6540d46b5b379a5683c96",
+        "declared_mechanism": "FastAPI dependency Depends(require_user) raising HTTPException 401 (server.py 86-91, registered on the route at server.py 167); ownership pre-check db.get_chat(chat_id, user['id']) raising 404 (server.py 168-170; ownership-bound query at db.py 108-115); quota pre-check token_balance <= 0 raising 402 (server.py 172-173). All three execute before any write call.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 91,
+            "line_start": 86,
+            "path": "server.py",
+            "role": "guard_registration",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 167,
+            "line_start": 166,
+            "path": "server.py",
+            "role": "guard_registration",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 115,
+            "line_start": 108,
+            "path": "db.py",
+            "role": "guard_registration",
+            "source_sha256": "c03a61480e237943d28046f72c7fd239bdffb4fecd2b81082daeeedf4ed8320d"
+          },
+          {
+            "line_end": 170,
+            "line_start": 168,
+            "path": "server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 173,
+            "line_start": 172,
+            "path": "server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 176,
+            "line_start": 175,
+            "path": "server.py",
+            "role": "protected_operation",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 191,
+            "line_start": 190,
+            "path": "server.py",
+            "role": "protected_operation",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 176,
+            "line_start": 176,
+            "path": "server.py",
+            "role": "commit_point",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 191,
+            "line_start": 191,
+            "path": "server.py",
+            "role": "commit_point",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 143,
+            "line_start": 136,
+            "path": "db.py",
+            "role": "commit_point",
+            "source_sha256": "c03a61480e237943d28046f72c7fd239bdffb4fecd2b81082daeeedf4ed8320d"
+          },
+          {
+            "line_end": 191,
+            "line_start": 181,
+            "path": "server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          }
+        ],
+        "forbidden_condition": "A request to POST /api/chats/{chat_id}/messages from (a) an unauthenticated caller whose session user_id does not resolve to a user (server.py 89-90), (b) a caller whose chat_id is not owned per the db.get_chat miss (server.py 169-170), or (c) a caller with token_balance <= 0 (server.py 172-173) reaching the message INSERT effect.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the pre-run user INSERT (server.py 176) and the post-run assistant INSERT (server.py 191) are intended as separately protected commit points within this obligation.",
+          "Whether db.set_chat_title (server.py 178-179; db.py 118-122) is in scope of this obligation or a distinct title-integrity obligation; supplied source declares no separate guard.",
+          "Whether any guard is intended between the agent run and the assistant INSERT (server.py 185-191); none is present in supplied source."
+        ],
+        "protected_operation": "Posting a chat message: the post_chat_message handler persisting the user message (server.py 176) and the post-run assistant message (server.py 191), including the conditional derived-title update (server.py 178-179).",
+        "protected_resource": "Rows of the messages table for chat_id, plus the chats.title column via db.set_chat_title, in chat_history.db.",
+        "protection_obligation": "Message persistence via POST /api/chats/{chat_id}/messages must be gated so that only authenticated users (401 via require_user) who own the target chat (404 via db.get_chat(chat_id, user.id)) and hold token_balance > 0 (402) can cause chat message rows to be inserted; unauthenticated, non-owner, or zero-balance requests must never reach db.add_message.",
+        "scope_limits": [
+          "Covers the POST persistence path only; the read-only GET message endpoint has no agent binding in supplied source and is excluded as ordinary web access control (see missing_information).",
+          "The user-turn INSERT at server.py 176 carries caller-supplied content; the agent-mediation binding rests on the assistant-turn INSERT at server.py 191, whose content is produced by the agent run at server.py 181-185.",
+          "Hypothesis compilation only: no DEC violation, safety, runtime behavior, or prevalence determination is made.",
+          "Only the two supplied views (server.py, db.py) were used; repository enumeration is incomplete."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "web_agent.invoke dispatch (server.py 205) and the direct tool invocations mil_std_rag_tool.invoke / general_question_tool.invoke (server.py 229-232); post-run consumption is evidenced by usage metadata (server.py 187).",
+        "contract_id": "ecological-contract:435657590cc6f374ccb92b78360b5944",
+        "declared_mechanism": "Route-level pre-checks on the sole dispatch path: Depends(require_user) raising 401 (server.py 86-91, 167), db.get_chat ownership check raising 404 (server.py 168-170), and token_balance <= 0 raising 402 (server.py 172-173), all evaluated before the invocation block (server.py 181-185).",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 91,
+            "line_start": 86,
+            "path": "server.py",
+            "role": "guard_registration",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 167,
+            "line_start": 166,
+            "path": "server.py",
+            "role": "guard_registration",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 170,
+            "line_start": 169,
+            "path": "server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 173,
+            "line_start": 172,
+            "path": "server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 185,
+            "line_start": 181,
+            "path": "server.py",
+            "role": "protected_operation",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 205,
+            "line_start": 205,
+            "path": "server.py",
+            "role": "commit_point",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 232,
+            "line_start": 229,
+            "path": "server.py",
+            "role": "commit_point",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 41,
+            "line_start": 32,
+            "path": "server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 185,
+            "line_start": 182,
+            "path": "server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          }
+        ],
+        "forbidden_condition": "An unauthenticated (server.py 89-90), non-owner (server.py 169-170), or zero-balance (server.py 172-173) request reaching the agent/tool dispatch at server.py 181-185 and the underlying invocations at server.py 205 and server.py 229-232.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "tools.py is not supplied; whether either tool performs additional guarded external effects (e.g., its own model or retrieval calls) is unrecorded.",
+          "The transport of ChatGoogleGenerativeAI / web_agent.invoke is not shown in supplied source; the stratum is recorded as other_external (paid third-party model invocation), with network/API ('http') as the plausible alternative classification.",
+          "Whether the quota gate is intended to bound per-turn spend (not merely forbid zero-balance callers) is not declared in supplied source."
+        ],
+        "protected_operation": "The agent turn dispatch: _run_auto resolving to web_agent.invoke (server.py 205), or _run_forced resolving to mil_std_rag_tool.invoke / general_question_tool.invoke (server.py 229-232).",
+        "protected_resource": "web_agent (create_agent over ChatGoogleGenerativeAI with tools [general_question_tool, mil_std_rag_tool], server.py 32-41) and its external paid model usage.",
+        "protection_obligation": "Invocation of the LLM agent (web_agent) or its tools (mil_std_rag_tool, general_question_tool) from POST /api/chats/{chat_id}/messages must be reachable only by authenticated chat owners (401/404) with token_balance > 0 (402); unauthenticated, non-owner, or zero-balance requests must not trigger the paid model invocation.",
+        "scope_limits": [
+          "Intent-mismatch messaging in _run_forced (server.py 218-227) is application routing logic, not a guard mechanism, and carries no separate obligation here.",
+          "Internal effects of general_question_tool and mil_std_rag_tool are defined in tools.py, which is not supplied.",
+          "Hypothesis compilation only: no DEC violation, safety, runtime behavior, or prevalence determination is made."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "UPDATE users SET token_balance = token_balance - ? committed via conn.commit() inside db.deduct_tokens (db.py 78-85), invoked at server.py 189.",
+        "contract_id": "ecological-contract:cc707121b9ae293135c444a1b8ff819c",
+        "declared_mechanism": "require_user 401 dependency (server.py 86-91, registered at server.py 167); ownership 404 check (server.py 168-170); quota gate raising 402 when token_balance <= 0 before any metered run (server.py 172-173); deduction amount derived from usage_cb.usage_metadata and applied only when tokens_spent is non-zero (server.py 187-189).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 91,
+            "line_start": 86,
+            "path": "server.py",
+            "role": "guard_registration",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 167,
+            "line_start": 166,
+            "path": "server.py",
+            "role": "guard_registration",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 173,
+            "line_start": 172,
+            "path": "server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 185,
+            "line_start": 181,
+            "path": "server.py",
+            "role": "protected_operation",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 189,
+            "line_start": 187,
+            "path": "server.py",
+            "role": "commit_point",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 85,
+            "line_start": 78,
+            "path": "db.py",
+            "role": "commit_point",
+            "source_sha256": "c03a61480e237943d28046f72c7fd239bdffb4fecd2b81082daeeedf4ed8320d"
+          },
+          {
+            "line_end": 187,
+            "line_start": 181,
+            "path": "server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          },
+          {
+            "line_end": 205,
+            "line_start": 205,
+            "path": "server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ae78fc33894bcf8ae4645da28a2232e296c2ce7727be5d6036d25fec0503b56b"
+          }
+        ],
+        "forbidden_condition": "A debit against users.token_balance reached by a request that failed the auth (server.py 89-90), ownership (server.py 169-170), or quota (server.py 172-173, token_balance <= 0) pre-checks; equivalently, a zero-balance user incurring any token deduction.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether token_balance is re-checked, or the debit is transactionally atomic with the pre-run check; supplied source checks the balance only pre-run (server.py 172-173) and commits the debit independently (db.py 78-85).",
+          "Whether under-reporting or over-reporting in usage_cb.usage_metadata is an intended guard target; no such mechanism is declared in supplied source."
+        ],
+        "protected_operation": "The usage-metered paid agent turn: the get_usage_metadata_callback-wrapped agent execution (server.py 181-185) followed by db.deduct_tokens(user['id'], tokens_spent) (server.py 187-189).",
+        "protected_resource": "users.token_balance of the authenticated user (users table in chat_history.db; column declared at db.py 16-24).",
+        "protection_obligation": "Token deduction for a chat turn must occur only for authenticated chat owners (401/404) whose token_balance is positive at the gate (402), and only for usage actually metered from the agent run; unauthenticated, non-owner, or zero-balance requests must never reach db.deduct_tokens, and no deduction is applied when the metered run yields no usage.",
+        "scope_limits": [
+          "Deduction-amount fidelity versus provider-side usage is not verifiable from supplied source; only the metering wiring (server.py 14, 181, 187) is evidenced.",
+          "Gate hypotheses only: no DEC violation, safety, runtime behavior, or prevalence determination is made.",
+          "Only supplied views used; repository enumeration is incomplete."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Reviewer 1's read-access clause for GET /api/chats/{chat_id}/messages (server.py 159-163: require_user 401 plus db.get_chat ownership 404 returning db.get_messages) has no agent tool, agent lifecycle hook, or agent-generated-input binding anywhere in supplied source; per scope rules it is treated as ordinary web access control and is not compiled as a contract. It is recorded here for traceability; compilation would require an established agent binding and an http-stratum commit point.",
+      "tools.py (general_question_tool, mil_std_rag_tool, classify_question) is not supplied; the internal effects and any additional guards of agent tool executions are unrecorded.",
+      "Supplied source shows no re-validation of token_balance between the pre-run gate (server.py 172-173) and db.deduct_tokens (server.py 189), and no cross-call transaction: db.add_message (db.py 136-143), db.set_chat_title (db.py 118-122), and db.deduct_tokens (db.py 78-85) each commit independently. Whether transactional atomicity is an intended obligation is unrecorded.",
+      "The network transport and internal call chain of ChatGoogleGenerativeAI / web_agent.invoke are not shown in supplied source; the 'other_external' stratum for the paid model invocation is a classification choice, with 'http' (network/API request) as the plausible alternative.",
+      "The accuracy and completeness of usage_cb.usage_metadata (get_usage_metadata_callback at server.py 14, wired at server.py 181, read at server.py 187) as a record of provider-side token consumption cannot be verified from supplied source.",
+      "Behavior labels are unavailable for this unit and repository enumeration is incomplete; only the two supplied line-numbered views were used, so endpoint coverage outside server.py/db.py cannot be assessed."
+    ],
+    "repository": "Kayrakalkan/llm-agent-memory-rag-roketsan",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:ccea901958ac18a42014cba0f07e06f8"
+  },
+  "request_sha256": "8f98f784c40ef8967349f5664c970dffc75d47dd16dbb2ccb3f6a1748b69429a",
+  "response_sha256": "a0e5688f4b19fb1d0011bb82011da126ffe01a54e725513f175e298ca21e7ae9",
+  "state": "completed",
+  "tokens": 27086,
+  "unit": "v24-screen:ccea901958ac18a42014cba0f07e06f8"
+}

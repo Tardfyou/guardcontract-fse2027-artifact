@@ -1,0 +1,118 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Guardrail evaluation occurs inside Runner.run(agent, input=messages) (main.py:249) before the run proceeds to model/tool dispatch; the gated external effect commits inside add_to_card via collection.update_one in ShoppingCartItem.update_existing_user_cart (cart_manager.py:65-68) for existing users, or collection.insert_one in add_new_user_with_cart_item (cart_manager.py:103-118) for new users.",
+        "contract_id": "ecological-contract:bf57cdb1101ad0a6e9c7eb2ea9008d7b",
+        "declared_mechanism": "Input guardrail: @input_guardrail async def bakery_guardrail (main.py:98-108) delegates classification to guardrail_agent (structured BakeryHelpingOutput.is_bakery) and returns GuardrailFunctionOutput(output_info=result.final_output, tripwire_triggered=not result.final_output.is_bakery); it is attached to the agent via input_guardrails=[bakery_guardrail] (main.py:245) and enforced by Runner.run, which raises InputGuardrailTripwireTriggered on trip; main_assistant catches that exception (main.py:251-252) and returns a refusal message instead of a run result.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 108,
+            "line_start": 98,
+            "path": "class_assignments/assignment_3/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5ad2df5c01782fd23eff4386c0e8e3d1cb61c997f997448bed166d50b599b899"
+          },
+          {
+            "line_end": 246,
+            "line_start": 243,
+            "path": "class_assignments/assignment_3/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5ad2df5c01782fd23eff4386c0e8e3d1cb61c997f997448bed166d50b599b899"
+          },
+          {
+            "line_end": 108,
+            "line_start": 104,
+            "path": "class_assignments/assignment_3/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ad2df5c01782fd23eff4386c0e8e3d1cb61c997f997448bed166d50b599b899"
+          },
+          {
+            "line_end": 91,
+            "line_start": 63,
+            "path": "class_assignments/assignment_3/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ad2df5c01782fd23eff4386c0e8e3d1cb61c997f997448bed166d50b599b899"
+          },
+          {
+            "line_end": 252,
+            "line_start": 249,
+            "path": "class_assignments/assignment_3/main.py",
+            "role": "protected_operation",
+            "source_sha256": "5ad2df5c01782fd23eff4386c0e8e3d1cb61c997f997448bed166d50b599b899"
+          },
+          {
+            "line_end": 178,
+            "line_start": 167,
+            "path": "class_assignments/assignment_3/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "dfe204e703ae380f740fa06d362bb5cd8b5ffda3c4805e8885bde3a31e0fdd5b"
+          },
+          {
+            "line_end": 68,
+            "line_start": 65,
+            "path": "class_assignments/assignment_3/cart_manager.py",
+            "role": "commit_point",
+            "source_sha256": "06a2ebaf3a4b2a01b9d8a2e4a28fcddcb25243444f986955f5e72355bb9f6bcf"
+          },
+          {
+            "line_end": 118,
+            "line_start": 103,
+            "path": "class_assignments/assignment_3/cart_manager.py",
+            "role": "commit_point",
+            "source_sha256": "06a2ebaf3a4b2a01b9d8a2e4a28fcddcb25243444f986955f5e72355bb9f6bcf"
+          },
+          {
+            "line_end": 249,
+            "line_start": 243,
+            "path": "class_assignments/assignment_3/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5ad2df5c01782fd23eff4386c0e8e3d1cb61c997f997448bed166d50b599b899"
+          },
+          {
+            "line_end": 100,
+            "line_start": 99,
+            "path": "class_assignments/assignment_3/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "dfe204e703ae380f740fa06d362bb5cd8b5ffda3c4805e8885bde3a31e0fdd5b"
+          }
+        ],
+        "forbidden_condition": "A user query that the guardrail classifier marks non-bakery (BakeryHelpingOutput.is_bakery == False) proceeding past bakery_guardrail \u2014 i.e., the tripwire (tripwire_triggered = not result.final_output.is_bakery) not firing for such input \u2014 allowing Runner.run of the Nafees Bakery Assistant to continue into model and tool execution, including add_to_card's MongoDB cart writes into nafeesBakery.addToCardData.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "OpenAI Agents SDK internals are not included in the supplied source; the ordering 'input guardrail executes before the model turn and before tool dispatch' for this SDK version is asserted by reviewer opinion but not directly evidenced.",
+          "No behavior/runtime labels are available; it cannot be verified from source that the tripwire actually fires for particular off-topic inputs or that the abort precedes tool execution in this environment.",
+          "Repository enumeration is incomplete; the existence of an alternate, unguarded call path to add_to_card or to ShoppingCartItem.update_existing_user_cart/add_new_user_with_cart_item outside the supplied views cannot be ruled out."
+        ],
+        "protected_operation": "Execution of the Nafees Bakery Assistant agent run (Runner.run(agent, input=messages)) and its registered function tools, specifically the add_to_card tool invocation path that persists cart items via ShoppingCartItem.update_existing_user_cart or ShoppingCartItem.add_new_user_with_cart_item.",
+        "protected_resource": "MongoDB database 'nafeesBakery', collection 'addToCardData' (user shopping-cart documents), reached from the add_to_card agent tool.",
+        "protection_obligation": "Non-bakery-related (off-topic) user input submitted to the Nafees Bakery Assistant must trip the registered bakery_guardrail input guardrail so that Runner.run aborts with InputGuardrailTripwireTriggered before the agent's model turn and any registered function tool executes \u2014 concretely preventing the add_to_card tool from committing cart writes to MongoDB.",
+        "scope_limits": [
+          "This contract covers only the database cart-write effect of add_to_card; the same run-level guardrail abort also gates the other registered tools (read_all_product, order_information, bakery_information, read_add_to_card_product), but their Sanity HTTP GETs, MongoDB reads, and nested agent runs are not the commit point of this contract.",
+          "The guard is an LLM-based classifier (guardrail_agent, gemini-2.0-flash via LitellmModel); tripping is probabilistic, and bakery-related inputs (is_bakery True) pass through with no additional guard on tool arguments such as email, quantity, price, or description.",
+          "ModelSettings(tool_choice=\"required\") (main.py:244) forces every admitted run to invoke at least one tool, but this contract does not govern which tool the model chooses.",
+          "The binding is established only for the main_assistant run path in the supplied views; any entry point that invokes add_to_card or the ShoppingCartItem write methods directly (bypassing the guarded run) is outside the supplied evidence."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "OpenAI Agents SDK guardrail execution-order semantics (guard runs before the model turn and before tool execution) are not evidenced within the supplied source views; SDK version internals are unavailable.",
+      "No runtime/behavior labels: whether bakery_guardrail actually trips for specific off-topic inputs, and whether Runner.run aborts before add_to_card executes, cannot be confirmed from static source.",
+      "Repository enumeration is not complete; unguarded call paths to add_to_card or the ShoppingCartItem write methods (update_existing_user_cart, add_new_user_with_cart_item) outside the supplied views cannot be excluded.",
+      "The guardrail classifier (guardrail_agent) is LLM-based; its decision boundaries between bakery-related and non-bakery inputs are not deterministically specified in source beyond the prompt examples at main.py:73-91."
+    ],
+    "repository": "sajeel0944/openai_agent_SDK",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4460ec48c2d490a2fcae7c8264d88abb"
+  },
+  "request_sha256": "920da0ab7c1b960163faa9ae22c90dc007dd42434e3b43a5606e800edc16da9b",
+  "response_sha256": "5cd75ad5c2856dc7cde5d8095be700bdcd822c570046681135040adcfb07bed4",
+  "state": "completed",
+  "tokens": 20406,
+  "unit": "v24-screen:4460ec48c2d490a2fcae7c8264d88abb"
+}

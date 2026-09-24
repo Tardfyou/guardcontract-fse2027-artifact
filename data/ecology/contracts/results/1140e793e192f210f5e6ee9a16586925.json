@@ -1,0 +1,333 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await chat.send_message(msg) at lines 210-211: the outbound LLM API request carrying the agent prompt (system message) and the request-body input.",
+        "contract_id": "ecological-contract:1d862bb351e8837f6270822dd2f70038",
+        "declared_mechanism": "Depends(get_current_user) JWT gate on the route (line 201; guard definition lines 100-112) plus a mandatory ownership precheck db.agents.find_one({\"id\": agent_id, \"user_id\": current_user.id}) with 404 when absent (lines 202-204), sequenced before LlmChat construction and send_message (lines 207-211).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 112,
+            "line_start": 100,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 201,
+            "line_start": 200,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 204,
+            "line_start": 200,
+            "path": "backend/server.py",
+            "role": "protected_operation",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 204,
+            "line_start": 202,
+            "path": "backend/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 211,
+            "line_start": 206,
+            "path": "backend/server.py",
+            "role": "commit_point",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          }
+        ],
+        "forbidden_condition": "chat.send_message being reached without get_current_user success (401 paths, lines 105-112) or for an agent record whose stored user_id does not equal current_user.id (ownership precheck 404, lines 202-204).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether LlmChat or this endpoint is registered with any agent framework as a tool, or invoked from an agent lifecycle hook, is not shown in source.",
+          "Whether agent['prompt'] (user-authored at creation via AgentCreate, lines 66-72) encodes tool instructions executed by an external agent runtime is not shown.",
+          "Whether the request input at line 210 can be agent-generated output from a prior automated step is not shown; source shows only direct HTTP caller input."
+        ],
+        "protected_operation": "POST /api/agents/{agent_id}/run agent execution: construction of LlmChat with system_message=agent['prompt'] and send_message of the request input.",
+        "protected_resource": "The stored agent record (prompt and identity) and the external LLM session keyed as session_id=f\"agent-{agent_id}\" (line 207).",
+        "protection_obligation": "Merged from both reviewers: execution of a stored agent via the external LLM is forbidden for requests lacking a valid JWT bearer bound to an existing user, and forbidden for agent IDs not owned by the authenticated user; the auth dependency and the ownership precheck must complete before any LLM API request is issued using the stored agent's prompt.",
+        "scope_limits": [
+          "Covers only the synchronous HTTP-triggered LLM invocation in run_agent; the commit point is the outbound network/API request to the LLM provider, whose internal behavior is outside the supplied source.",
+          "The run input is taken verbatim from the HTTP body via request.get('input', '') (lines 210, 216) with no validation shown; no output filtering, tool dispatch, or downstream agent loop appears in source.",
+          "The persisted AgentRun record produced by this handler is covered by the separate database-stratum contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Scoped query execution and return of results: db.agents.find(...).to_list with return (lines 165-166); db.agents.find_one with 404-or-return (lines 178-181); db.agent_runs.find(...).to_list with return (lines 231-232).",
+        "contract_id": "ecological-contract:4a87d194119bd1a945fdcfa769270981",
+        "declared_mechanism": "Per-route Depends(get_current_user) JWT gate (lines 164, 177, 230; guard definition lines 100-112); tenant scoping via mandatory user_id == current_user.id in every find filter (lines 165, 178, 231) with 404 for non-owned detail lookups (lines 179-180).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 112,
+            "line_start": 100,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 164,
+            "line_start": 163,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 177,
+            "line_start": 176,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 230,
+            "line_start": 229,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 166,
+            "line_start": 163,
+            "path": "backend/server.py",
+            "role": "protected_operation",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 181,
+            "line_start": 176,
+            "path": "backend/server.py",
+            "role": "protected_operation",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 232,
+            "line_start": 229,
+            "path": "backend/server.py",
+            "role": "protected_operation",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 112,
+            "line_start": 105,
+            "path": "backend/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 180,
+            "line_start": 178,
+            "path": "backend/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 166,
+            "line_start": 165,
+            "path": "backend/server.py",
+            "role": "commit_point",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 181,
+            "line_start": 178,
+            "path": "backend/server.py",
+            "role": "commit_point",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 232,
+            "line_start": 231,
+            "path": "backend/server.py",
+            "role": "commit_point",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          }
+        ],
+        "forbidden_condition": "A GET /api/agents, GET /api/agents/{agent_id}, or GET /api/agents/{agent_id}/history response produced without get_current_user validation (401 paths, lines 105-112) or containing rows not matching user_id == current_user.id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No source evidence ties agent reads to agent tool dispatch, agent lifecycle hooks, or agent-generated inputs; the binding needed for any other agent_mediation value is absent."
+        ],
+        "protected_operation": "Authenticated, tenant-scoped reads of agent list, agent detail, and agent run history.",
+        "protected_resource": "Agent records in db.agents and run records in db.agent_runs owned by the authenticated user, as disclosed via HTTP responses.",
+        "protection_obligation": "Merged from both reviewers: read access to agent records and agent-run history is forbidden to unauthenticated callers and forbidden cross-tenant: every read must be filtered by user_id == current_user.id so only the authenticated user's agents and runs are returned in the HTTP response.",
+        "scope_limits": [
+          "effect_stratum is http because these reads are non-mutating; the disclosure commits when the scoped result is returned in the response rather than at any persistent mutation.",
+          "Covers only the three read endpoints listed; no bulk/export path beyond to_list(1000)/to_list(100) caps is shown.",
+          "Guard checks token validity and user existence only; no field-level redaction or role distinction appears in source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await db.agents.insert_one(agent_dict) (line 173); await db.agents.update_one(...) (lines 185-188); await db.agents.delete_one(...) (line 195); await db.agent_runs.insert_one(run_dict) (line 222).",
+        "contract_id": "ecological-contract:de49aba9ce16b76462f506759793a408",
+        "declared_mechanism": "Per-route dependency injection of get_current_user (HTTPBearer credentials, jwt HS256 decode, user existence lookup, 401 rejection paths; lines 100-112) via Depends(get_current_user) on each route (lines 169, 184, 194, 201); ownership enforced by binding user_id=current_user.id on created objects (line 170; AgentRun at line 215) and by requiring user_id == current_user.id in update/delete match filters (lines 186, 195) with 404 when unmatched (lines 189-190, 196-197).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 112,
+            "line_start": 100,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 170,
+            "line_start": 168,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 184,
+            "line_start": 183,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 194,
+            "line_start": 193,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 201,
+            "line_start": 200,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 174,
+            "line_start": 168,
+            "path": "backend/server.py",
+            "role": "protected_operation",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 191,
+            "line_start": 183,
+            "path": "backend/server.py",
+            "role": "protected_operation",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 198,
+            "line_start": 193,
+            "path": "backend/server.py",
+            "role": "protected_operation",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 112,
+            "line_start": 105,
+            "path": "backend/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 170,
+            "line_start": 170,
+            "path": "backend/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 186,
+            "line_start": 185,
+            "path": "backend/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 204,
+            "line_start": 202,
+            "path": "backend/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 173,
+            "line_start": 173,
+            "path": "backend/server.py",
+            "role": "commit_point",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 188,
+            "line_start": 185,
+            "path": "backend/server.py",
+            "role": "commit_point",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 195,
+            "line_start": 195,
+            "path": "backend/server.py",
+            "role": "commit_point",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          },
+          {
+            "line_end": 222,
+            "line_start": 213,
+            "path": "backend/server.py",
+            "role": "commit_point",
+            "source_sha256": "be1502385900eb485fe1433da670a400c8b22aed5d7ecbb0cd48308b00541ba4"
+          }
+        ],
+        "forbidden_condition": "A db.agents insert/update/delete or db.agent_runs insert that executes without get_current_user having validated the bearer token and resolved an existing user (401 paths, backend/server.py lines 105-112), or that is attributed to or matched against a user_id other than current_user.id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No source evidence shows these HTTP routes or their database writes being registered as agent tools or invoked from agent lifecycle hooks; such a binding would be required to reclassify agent_mediation.",
+          "Whether AgentCreate payloads or run inputs can originate from agent-generated output in some external flow is not shown."
+        ],
+        "protected_operation": "POST /api/agents agent creation; PUT /api/agents/{agent_id} agent update; DELETE /api/agents/{agent_id} agent deletion; and the AgentRun record write inside POST /api/agents/{agent_id}/run.",
+        "protected_resource": "MongoDB collections db.agents and db.agent_runs in the database configured at backend/server.py lines 22-24.",
+        "protection_obligation": "Merged from both reviewers: agent record mutations are forbidden to any request lacking a valid JWT bearer bound to an existing user, and cross-tenant mutation is forbidden: inserted/updated/deleted agent rows and persisted run records must be scoped to user_id == current_user.id, with the get_current_user dependency completing before any write commits.",
+        "scope_limits": [
+          "Covers only the four write operations listed in the single supplied handler file backend/server.py; no other transport, caller, or background writer is shown.",
+          "The guard checks token validity and user existence only; no role, scope, or admin distinction appears in source.",
+          "CORS middleware (lines 290-296) and the public auth register/login routes (lines 114-142) are outside this contract."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No agent-framework tool registration, agent lifecycle hook, or agent-generated input dataflow is present in the supplied source (the only registered hook is the app shutdown DB close at lines 298-300); all contracts therefore record agent_mediation='not_established' and no agent_entry_binding evidence exists.",
+      "Deployment or serving context linking these HTTP routes to an agent runtime (tool registry, orchestrator, scheduler consumer) is absent from the supplied view; whether one exists is unknown.",
+      "Agent model fields 'schedule' (line 61) and 'memory_scope' (line 63) are never referenced by any execution logic in the supplied source; background or scheduled agent execution cannot be confirmed or excluded.",
+      "Other authenticated endpoints (auth/me lines 144-146, intelligence/analyze lines 148-161, tools catalog lines 234-258, tools/image-gen/execute lines 260-274, dashboard/stats lines 276-286) reuse the same get_current_user guard, but reviewers asserted no distinct agent obligation for them and their agent nexus is not established, so no separate contracts were emitted.",
+      "Only backend/server.py is supplied and repository enumeration is incomplete; any frontend or service-side component that might mediate agent interactions with these endpoints is unknown.",
+      "The exact downstream LLM provider behavior and network path behind emergentintegrations LlmChat (line 15, lines 207-211) is not visible in the supplied source."
+    ],
+    "repository": "DevDebjit83/vaelis-frontend",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1140e793e192f210f5e6ee9a16586925"
+  },
+  "request_sha256": "5670b66787e58c6afc550ed5f53c249b9473b3aff1872e50d3f7fb4eeac00b18",
+  "response_sha256": "113481899a2b643f8087c057eb63468733f669360dded80ca2ce5c986037f80f",
+  "state": "completed",
+  "tokens": 27969,
+  "unit": "v24-screen:1140e793e192f210f5e6ee9a16586925"
+}

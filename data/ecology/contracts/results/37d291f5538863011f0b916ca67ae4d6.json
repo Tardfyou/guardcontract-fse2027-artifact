@@ -1,0 +1,249 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The 'Send command' block: s.proc.stdin.write(payload) followed by flush, where payload is the command plus done/cwd sentinel echoes; the deny and approval checks return before this write occurs.",
+        "contract_id": "ecological-contract:162f5e8011c1a7286b2e0f1f42308cfe",
+        "declared_mechanism": "SessionManager.run_command calls _is_denied(command) against DENY_PATTERNS and returns a 'Command blocked by safety policy' error on match; it then calls classify_risk(command) against HIGH_PATTERNS/MEDIUM_PATTERNS and returns a 'Command requires approval (risk=...)' error when risk != 'safe' and not approved. The @mcp.tool()-decorated run_command exposes the operation and forwards the caller's approved flag into manager.run_command.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 61,
+            "line_start": 55,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 53,
+            "line_start": 28,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 84,
+            "line_start": 69,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "guard_registration",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 144,
+            "line_start": 129,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "guard_registration",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 248,
+            "line_start": 241,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 265,
+            "line_start": 249,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "protected_operation",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 160,
+            "line_start": 146,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "commit_point",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          }
+        ],
+        "forbidden_condition": "Writing a command payload to the shell subprocess stdin when (a) the command matches a DENY_PATTERNS regex, or (b) classify_risk(command) returns 'medium' or 'high' and approved is false.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "MCP transport and client configuration (mcp.run() entry point) is not in supplied source; which agent clients can invoke the tool in deployment is unresolved.",
+          "Whether any deployed path sets approved=true without explicit user consent (e.g., via terminal_client.set_approved_mode) is unresolved because terminal_client.py is not supplied."
+        ],
+        "protected_operation": "Execution of a caller-supplied command inside an open shell session via SessionManager.run_command, exposed as the registered MCP tool run_command.",
+        "protected_resource": "The per-session shell subprocess (ShellSession.proc) and the host shell environment in which its commands execute.",
+        "protection_obligation": "Shell commands dispatched through the terminal MCP run_command tool must be rejected before execution when the command text matches any DENY_PATTERNS entry (rm -rf /, sudo, shutdown, reboot, fork bomb), and commands classified risk 'medium' or 'high' by classify_risk must be rejected unless the caller passes approved=true; both checks must complete before the command payload is written to the live shell subprocess stdin (merged first/second reviewer wording on the same obligation).",
+        "scope_limits": [
+          "The guard is a string/regex scan of the literal command text; classify_risk evaluates a lowercased copy while _is_denied matches the raw string.",
+          "approved is caller-supplied: it is a tool parameter on the MCP run_command signature forwarded unchanged to manager.run_command; undo_last internally invokes manager.run_command with approved=True, bypassing the approval requirement (deny patterns still apply) for undo commands.",
+          "The deny/approval checks do not govern the adjacent checkpoint/backup pre-execution logic (deletion detection and backup writes) in the tool wrapper, which runs before manager.run_command.",
+          "The guard rejects only; it does not sanitize, rewrite, or constrain commands that pass the checks."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The executor dispatch sequence: set_current_task_id(task_id) and set_approved_mode(approved) followed by exec_res = await self.executor.run(exec_prompt); the gate's return in the approval_required block prevents reaching this point.",
+        "contract_id": "ecological-contract:2520b71a9c465cb409099335e5d2e88c",
+        "declared_mechanism": "Option B approval gate: after planner.run(), each plan step's command is classified with classify_risk (imported from terminal_mcp.terminal_mcp_server) and any 'medium'/'high' result sets requires_approval; when requires_approval and not approved, the executor enqueues an 'approval_required' response and returns before invoking the executor agent.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 68,
+            "line_start": 53,
+            "path": "terminal/terminal_a2a/terminal_a2a_executer.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6595613169e6dc23e69e1d1cd3ed7e343cf015892a1bed16939920a063d53495"
+          },
+          {
+            "line_end": 84,
+            "line_start": 70,
+            "path": "terminal/terminal_a2a/terminal_a2a_executer.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6595613169e6dc23e69e1d1cd3ed7e343cf015892a1bed16939920a063d53495"
+          },
+          {
+            "line_end": 171,
+            "line_start": 163,
+            "path": "terminal/terminal_a2a/terminal_a2a_executer.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6595613169e6dc23e69e1d1cd3ed7e343cf015892a1bed16939920a063d53495"
+          },
+          {
+            "line_end": 194,
+            "line_start": 179,
+            "path": "terminal/terminal_a2a/terminal_a2a_executer.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6595613169e6dc23e69e1d1cd3ed7e343cf015892a1bed16939920a063d53495"
+          },
+          {
+            "line_end": 207,
+            "line_start": 197,
+            "path": "terminal/terminal_a2a/terminal_a2a_executer.py",
+            "role": "guard_registration",
+            "source_sha256": "6595613169e6dc23e69e1d1cd3ed7e343cf015892a1bed16939920a063d53495"
+          },
+          {
+            "line_end": 216,
+            "line_start": 210,
+            "path": "terminal/terminal_a2a/terminal_a2a_executer.py",
+            "role": "protected_operation",
+            "source_sha256": "6595613169e6dc23e69e1d1cd3ed7e343cf015892a1bed16939920a063d53495"
+          },
+          {
+            "line_end": 229,
+            "line_start": 218,
+            "path": "terminal/terminal_a2a/terminal_a2a_executer.py",
+            "role": "commit_point",
+            "source_sha256": "6595613169e6dc23e69e1d1cd3ed7e343cf015892a1bed16939920a063d53495"
+          }
+        ],
+        "forbidden_condition": "requires_approval computed true from agent-generated plan steps (any step command with classify_risk in {'medium','high'}) while the request's approved flag is false, with execution continuing past the approval gate.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "terminal_mcp.terminal_client.set_approved_mode and set_current_task_id implementations are not supplied; how approved mode reaches MCP run_command calls is unresolved.",
+          "build_planner_agent/build_executor_agent tool bindings (terminal_mcp.terminal_agent) are not supplied; whether and how the executor agent dispatches to the MCP run_command tool is unresolved.",
+          "The A2A server wiring that registers TerminalAgentExecutor is not supplied."
+        ],
+        "protected_operation": "Handing the plan to the executor agent via self.executor.run(exec_prompt), which drives downstream MCP shell tool dispatch.",
+        "protected_resource": "The plan execution pipeline and the shell-command effects reachable through the executor agent.",
+        "protection_obligation": "A2A tasks handled by TerminalAgentExecutor must not proceed to executor-agent execution when the planner-generated plan contains any step command classified 'medium' or 'high' risk, unless the A2A request carries approved=true in its data parts.",
+        "scope_limits": [
+          "The gate inspects only plan['steps'] list items with a 'command' field; if steps is not a list it falls back to the planner's own requires_approval flag (trusts planner schema).",
+          "The approved flag originates from A2A message data parts and is caller-controlled.",
+          "Undo-intent requests bypass planning and this gate entirely, invoking terminal_client.open_shell/undo_last directly.",
+          "This gate is upstream of the MCP tool-level deny/approval checks; it scans only plan step text via classify_risk and enforces by refusing to invoke the executor agent, not by mutating the plan.",
+          "Propagation of approved mode into the MCP layer depends on terminal_client.set_approved_mode, which is outside supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "close_shell(session_id) terminating the shell subprocess (proc.terminate plus session removal) and the accompanying error return; per the method's control flow this check executes after the current command payload was already written and executed (the stdin write precedes the cwd check), so the guard prevents further use of the session rather than the already-run command.",
+        "contract_id": "ecological-contract:7f72b38e890d3541ef789f296ee936c4",
+        "declared_mechanism": "SANDBOX_ROOT is read from the TERMINAL_SANDBOX_ROOT environment variable at import; inside SessionManager.run_command's output loop, when the cwd sentinel resolves to a path outside SANDBOX_ROOT and not approved, the code calls self.close_shell(session_id) and returns an error stating the session was closed.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 67,
+            "line_start": 63,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "guard_registration",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 197,
+            "line_start": 195,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 203,
+            "line_start": 195,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "guard_registration",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 127,
+            "line_start": 118,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "commit_point",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 248,
+            "line_start": 241,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 308,
+            "line_start": 307,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          },
+          {
+            "line_end": 132,
+            "line_start": 129,
+            "path": "terminal/terminal_mcp/terminal_mcp_server.py",
+            "role": "protected_operation",
+            "source_sha256": "bfd9183d94b7b407db773e6f29766826f61ef00fb1425feb703b6454e92b5bde"
+          }
+        ],
+        "forbidden_condition": "Continuing to execute commands in a session whose resulting cwd does not start with SANDBOX_ROOT while approved is false ('running outside sandbox silently').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether deployment sets TERMINAL_SANDBOX_ROOT is not determinable from supplied source.",
+          "Whether open_shell's caller-supplied cwd argument is validated against SANDBOX_ROOT anywhere is unresolved (no such check appears in the supplied open_shell)."
+        ],
+        "protected_operation": "Subsequent run_command dispatches into the affected persistent shell session.",
+        "protected_resource": "The persistent shell subprocess session (ShellSession) whose execution scope is bounded by SANDBOX_ROOT.",
+        "protection_obligation": "When TERMINAL_SANDBOX_ROOT is configured, a shell session whose tracked working directory resolves outside the sandbox root must be terminated and further commands refused unless approved=true.",
+        "scope_limits": [
+          "Active only when TERMINAL_SANDBOX_ROOT is set; an empty value disables the sandbox.",
+          "approved=true bypasses the sandbox termination check.",
+          "The confinement test is a str.startswith prefix comparison on the tracked cwd string echoed by pwd in the shell; cwd is sampled once after the command completes.",
+          "Enforcement is post-execution relative to the command that moved the cwd; pre-write rejection of that command is governed by the separate deny/approval guard.",
+          "Session termination is triggered only from within the run_command output path; sessions abandoned without further run_command calls are not reaped by this mechanism in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "terminal/terminal_mcp/terminal_client.py is not supplied (set_approved_mode, set_current_task_id, open_shell, undo_last); the mapping from the A2A executor's approved mode to the MCP run_command approved parameter cannot be verified from supplied source.",
+      "terminal/terminal_mcp/terminal_agent.py is not supplied (build_planner_agent, build_executor_agent); the executor agent's tool bindings to the terminal MCP server are unresolved.",
+      "A2A server setup that instantiates/registers TerminalAgentExecutor is not supplied; only the executor callback implementation is available.",
+      "terminal_mcp_server.py line 305 references 'logger', but no logger definition or import appears in the supplied file content; the specified behavior of the backup-failure except path is not fully supported by supplied source.",
+      "Deployment configuration values (TERMINAL_SANDBOX_ROOT, SHELL) are not available from supplied source, so sandbox activation and shell selection in practice are unknown.",
+      "Repository enumeration is incomplete and behavior labels are unavailable per the supplied scope; no claim herein asserts violation, safety, runtime behavior, or prevalence."
+    ],
+    "repository": "MayssaHH/OSiri_Mac_Assistant",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:37d291f5538863011f0b916ca67ae4d6"
+  },
+  "request_sha256": "ee1c0d85d699df9a5f3afbeaa8635db760e57ecce874fe5c30e861eb7515186a",
+  "response_sha256": "dc9d88315f3acda1219bf91d5d71ad3760b94c088eaed2934f93aea26681659b",
+  "state": "completed",
+  "tokens": 28353,
+  "unit": "v24-screen:37d291f5538863011f0b916ca67ae4d6"
+}

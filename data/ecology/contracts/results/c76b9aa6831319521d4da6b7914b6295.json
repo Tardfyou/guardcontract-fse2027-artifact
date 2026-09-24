@@ -1,0 +1,263 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The probe-result check in _verify_tests_hidden: sandbox.exec(probe) followed by the `if self._ANSWER_MARKER in result.stdout: raise EngineError(...)` branch, executed as the final step of _prepare_solve_container in _solve_phase, strictly before self.solver.solve(...).",
+        "contract_id": "ecological-contract:1b60d641ed9373e8723e5f6dffb22677",
+        "declared_mechanism": "Engine._SANITIZE_CMD (`rm -rf .git && git init -q && git config user.email/name bundlebench && git add -A && git commit -q -m 'bundlebench: sanitized base'`) executed by _sanitize_git_history (EngineError on timeout or non-zero exit), followed by _verify_tests_hidden's probe `if git rev-parse -q --verify {fix}^{commit} >/dev/null 2>&1; then echo BUNDLEBENCH_ANSWER_PRESENT; fi`; the marker in stdout raises EngineError('reward-hacking guardrail: the fix commit is still reachable in the solve container'). The chain is wired in _prepare_solve_container (run_setup -> sanitize -> optional hide -> verify) immediately before solver.solve.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 82,
+            "line_start": 81,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 89,
+            "line_start": 83,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "guard_registration",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 407,
+            "line_start": 402,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "guard_registration",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 417,
+            "line_start": 409,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "guard_registration",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 437,
+            "line_start": 434,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 383,
+            "line_start": 382,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "protected_operation",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 393,
+            "line_start": 391,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "protected_operation",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 437,
+            "line_start": 428,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "commit_point",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 393,
+            "line_start": 392,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 6,
+            "line_start": 4,
+            "path": "bundles/example-mini/Dockerfile",
+            "role": "forbidden_condition",
+            "source_sha256": "ba1e2913eb7af67302b8cab1c30a1e2b60428596d8febf2ff0f30c1e6fedee52"
+          },
+          {
+            "line_end": 27,
+            "line_start": 23,
+            "path": "bundles/example-mini/Dockerfile",
+            "role": "forbidden_condition",
+            "source_sha256": "ba1e2913eb7af67302b8cab1c30a1e2b60428596d8febf2ff0f30c1e6fedee52"
+          }
+        ],
+        "forbidden_condition": "The hidden fix commit (the graded answer, carried in the image git history as tag bundlebench-fix) remains reachable in the solve container's git object store while the solver's agent session runs, so a shell-armed solver could reach it with git commands (`git log`/`git checkout`) \u2014 the 'reward-hacking gap in prebuilt images' named in the source.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Per-bundle manifest values (fix_commit, test.setup_cmds) are not supplied, so whether the tree is guaranteed to be at base_commit when _SANITIZE_CMD commits is unsupported.",
+          "The Solver/agent implementation mapping agent-generated commands to sandbox.exec (tool dispatch) is not supplied; the binding rests on the engine handoff at _engine.py:393 and the engine's own 'shell-armed solver' characterization (_engine.py:81-82)."
+        ],
+        "protected_operation": "The solver's (agent's) shell-command session inside the solve container: `self.solver.solve(self.bundle.description, sandbox, run_state)`, invoked only after the sanitize/probe guard chain completes in _prepare_solve_container.",
+        "protected_resource": "The solve container's git history/object store, which in the unsanitized image contains the fix commit with the corrected source and graded tests (Dockerfile tag bundlebench-fix, HEAD reset to bundlebench-base).",
+        "protection_obligation": "Before the solver's session begins, the solve container's git history must be re-initialized to a sanitized single-commit base state and the bundle's hidden fix commit must be verified unreachable; if `git rev-parse -q --verify <fix_commit>^{commit}` still resolves, the run must abort with EngineError before solver.solve is invoked. (Merged statement of both reviewers' fix-commit guardrail wording.)",
+        "scope_limits": [
+          "Solve-phase container only; the eval container built by _execute runs setup/patch-apply/inject/tests with no sanitize or probe step.",
+          "The probe tests reachability of the original fix SHA only; it does not verify absence of fix content from the working tree, which depends on manifest.test.setup_cmds leaving the tree at base before _SANITIZE_CMD's `git add -A` (setup command contents are not supplied).",
+          "The engine registers the mechanism and aborts on the marker; container-side git behavior is enforced through the sandbox exec port whose implementation (task_bundle.sandbox) is not supplied.",
+          "Covers the git-history access path only; file-based and network-based answer access are separate contracts."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The `sandbox.exec(self._shell(f\"rm -f {files}\"))` call at _engine.py:423 \u2014 the filesystem mutation that commits the hiding before _verify_tests_hidden and solver.solve run.",
+        "contract_id": "ecological-contract:7c32045df2a9f44a19a96a00c5a3ea4f",
+        "declared_mechanism": "_hide_graded_test_files: shlex-quoted selected_test_files removed via `rm -f` through sandbox.exec, gated on bundle.manifest.test.strict_test_hiding in _prepare_solve_container, ordered between _sanitize_git_history and _verify_tests_hidden.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 406,
+            "line_start": 405,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "guard_registration",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 423,
+            "line_start": 419,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "guard_registration",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 421,
+            "line_start": 420,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 393,
+            "line_start": 391,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "protected_operation",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 423,
+            "line_start": 423,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "commit_point",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 393,
+            "line_start": 392,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          }
+        ],
+        "forbidden_condition": "Graded test files listed in manifest.test.selected_test_files remain present/readable in the solve tree while the agent operates \u2014 the source states hiding must 'physically remove the graded test files from the solve tree, not just withhold their injected versions'.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any graded bundle sets test.strict_test_hiding, and which paths selected_test_files lists (bundle manifests are not supplied).",
+          "The agent-side file-read path (tool dispatch inside the Solver implementation) is not supplied."
+        ],
+        "protected_operation": "The solver's (agent's) session in the solve container (solver.solve), during which the agent could read graded test files from the working tree.",
+        "protected_resource": "The graded test files at manifest.test.selected_test_files inside the solve container's working tree.",
+        "protection_obligation": "When the bundle declares manifest.test.strict_test_hiding, the graded test files must be physically removed from the solve container's working tree (`rm -f` of manifest.test.selected_test_files) after git sanitization and before the solver's session begins.",
+        "scope_limits": [
+          "Opt-in: the removal runs only when manifest.test.strict_test_hiding is set (_engine.py:405-406); without the flag the injected versions are merely withheld, not deleted.",
+          "The supplied source does not check the rm exit code and no supplied step verifies file absence afterwards; _verify_tests_hidden probes only git reachability, and the tests_hidden event only records the withheld-path list (_engine.py:438-443).",
+          "Solve container only; the graded test versions are injected into the eval container in _execute via _inject_hidden_tests (_engine.py:459, 502-511)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Container creation/start in _solve_phase: `spec = self._container_spec(phase='solve', network=self._network_for('solve', None), ...)` at _engine.py:386-388 followed by sandbox.start() at 389-390, fixing the network posture before any solver activity.",
+        "contract_id": "ecological-contract:caf78e9427ce0cbd4efad044a5f72c89",
+        "declared_mechanism": "_network_for('solve', None) resolving 'bridge'/'none' from manifest.network.solve and config.solve_network (a per-run override is deliberately not honored for solve); the resolved posture is written into ContainerSpec.network by _container_spec, and the container is started with it via sandbox_factory(spec) + sandbox.start() in _solve_phase.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 59,
+            "line_start": 56,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "guard_registration",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 758,
+            "line_start": 750,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "guard_registration",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 778,
+            "line_start": 769,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "guard_registration",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 771,
+            "line_start": 770,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 390,
+            "line_start": 386,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "commit_point",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 393,
+            "line_start": 391,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "protected_operation",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          },
+          {
+            "line_end": 393,
+            "line_start": 392,
+            "path": "src/task_bundle/engine/_engine.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "998e759b70656984c0f737f8d228c5f4de963895143dc39f1f37fad358d10ed8"
+          }
+        ],
+        "forbidden_condition": "The solver's agent session fetching the graded answer (or performing any network egress) from the solve container: 'Solve isolates by default (a solver with no network can't fetch the answer)'.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The ContainerSpec-to-container-runtime mapping proving network='none' is enforced (task_bundle.sandbox implementation not supplied).",
+          "Effective values/defaults of manifest.network.solve and config.solve_network in shipped bundles and configuration are not supplied."
+        ],
+        "protected_operation": "The solver's (agent's) session in the network-postured solve container (solver.solve on the started sandbox).",
+        "protected_resource": "Network egress from the solve-phase container \u2014 the channel over which the graded answer could be fetched.",
+        "protection_obligation": "The solve-phase container must start with docker network 'none' unless the bundle (manifest.network.solve == 'enabled') or config (solve_network) enables networking, so the solver cannot fetch the answer over the network during its session.",
+        "scope_limits": [
+          "Solve phase only; eval-phase networking follows manifest.network.test / config.eval_network / a per-run override (_engine.py:773-777).",
+          "Isolation is defeatable by bundle policy (manifest.network.solve == 'enabled') or the config.solve_network flag (_engine.py:772-773); the contract describes the default posture only.",
+          "The engine only records the posture in ContainerSpec; actual packet-level enforcement lives in the sandbox/docker layer (task_bundle.sandbox), which is not supplied."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Bundle manifest contents (e.g., example-mini task.) are not supplied: fix_commit/base_commit, test.strict_test_hiding, test.selected_test_files, test.setup_cmds, network.solve, and image.mode are unknown, so per-bundle applicability of each guard cannot be confirmed.",
+      "task_bundle.sandbox (the ContainerSpec executor) is not supplied; container-layer enforcement of the resolved network posture, shell execution semantics, and teardown is unverified from source.",
+      "The Solver implementation behind the engine's Solver seam is not supplied; the tool-dispatch path from agent-generated commands to sandbox.exec is unverified beyond the engine handoff at _engine.py:393 and the engine's own 'shell-armed solver' / 'an agent's tooling' descriptions (_engine.py:81-82, 90-91).",
+      "Only the Dockerfile-built image layout is shown; whether prebuilt-reference images (manifest.image.mode other than the Dockerfile build path) carry the fix commit in their git history is unsupported by the supplied views."
+    ],
+    "repository": "bearlike/bundlebench",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:c76b9aa6831319521d4da6b7914b6295"
+  },
+  "request_sha256": "5b92ae831bac7d24a1ea8da8f937e77fe4e29ea7a9e675c8489c602695def2ef",
+  "response_sha256": "88aaa007a03a665073c53fd5120e56ef36d48ede035277d1ac9622d18f19d930",
+  "state": "completed",
+  "tokens": 36144,
+  "unit": "v24-screen:c76b9aa6831319521d4da6b7914b6295"
+}

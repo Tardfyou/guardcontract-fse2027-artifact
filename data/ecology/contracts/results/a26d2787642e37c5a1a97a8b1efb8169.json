@@ -1,0 +1,106 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "ADK tool dispatch of the execute_sql call immediately after forbidden_dml_check returns None (agent.py:89); the blocking non-None return at agent.py:86 prevents the SQL from reaching BigQuery execution. The framework-internal execution point itself is not shown in the supplied source.",
+        "contract_id": "ecological-contract:0f20af575e4155fb72ba76f2c84c0ced",
+        "declared_mechanism": "forbidden_dml_check (agent.py:74-89) registered as before_tool_callback on bq_investigation_agent (agent.py:156) and decision_agent (agent.py:222); the callback returns a non-None dict (agent.py:86) to block the tool call and returns None (agent.py:89) to permit execution.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 46,
+            "line_start": 46,
+            "path": "ADK_code/bigquery_agent_app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "0ba8bbd17e76405b5c5670739ac2f87fabf31cc246d633fc0fcb84dbbf423230"
+          },
+          {
+            "line_end": 82,
+            "line_start": 79,
+            "path": "ADK_code/bigquery_agent_app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "0ba8bbd17e76405b5c5670739ac2f87fabf31cc246d633fc0fcb84dbbf423230"
+          },
+          {
+            "line_end": 86,
+            "line_start": 83,
+            "path": "ADK_code/bigquery_agent_app/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ba8bbd17e76405b5c5670739ac2f87fabf31cc246d633fc0fcb84dbbf423230"
+          },
+          {
+            "line_end": 89,
+            "line_start": 85,
+            "path": "ADK_code/bigquery_agent_app/agent.py",
+            "role": "commit_point",
+            "source_sha256": "0ba8bbd17e76405b5c5670739ac2f87fabf31cc246d633fc0fcb84dbbf423230"
+          },
+          {
+            "line_end": 156,
+            "line_start": 155,
+            "path": "ADK_code/bigquery_agent_app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "0ba8bbd17e76405b5c5670739ac2f87fabf31cc246d633fc0fcb84dbbf423230"
+          },
+          {
+            "line_end": 222,
+            "line_start": 221,
+            "path": "ADK_code/bigquery_agent_app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "0ba8bbd17e76405b5c5670739ac2f87fabf31cc246d633fc0fcb84dbbf423230"
+          },
+          {
+            "line_end": 156,
+            "line_start": 155,
+            "path": "ADK_code/bigquery_agent_app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0ba8bbd17e76405b5c5670739ac2f87fabf31cc246d633fc0fcb84dbbf423230"
+          },
+          {
+            "line_end": 222,
+            "line_start": 221,
+            "path": "ADK_code/bigquery_agent_app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0ba8bbd17e76405b5c5670739ac2f87fabf31cc246d633fc0fcb84dbbf423230"
+          }
+        ],
+        "forbidden_condition": "A tool call named 'execute_sql' whose 'query' argument contains any of the whole-word keywords UPDATE, DELETE, MERGE, or TRUNCATE (checked after uppercase normalization via word-boundary regex) reaching tool dispatch.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether ADK's before_tool_callback semantics (non-None return blocks tool execution) hold for BigQueryToolset.execute_sql \u2014 the BigQueryToolset and ADK runner internals are not in the supplied source.",
+          "Whether BigQueryToolset exposes additional tools besides execute_sql that could commit DML against BigQuery.",
+          "Whether any other agent or code path in the repository invokes bigquery_toolset without the forbidden_dml_check callback (repository views beyond agent.py were not supplied).",
+          "Whether the deployed runtime is a persistent service (reviewer claim; no deployment configuration is present in the supplied source)."
+        ],
+        "protected_operation": "Execution of SQL via the execute_sql tool of the BigQueryToolset invoked by an agent during its tool-calling loop.",
+        "protected_resource": "BigQuery data reachable through the shared BigQueryToolset (configured project PROJECT_ID / dataset DATASET_ID, agent.py:28-30; the instruction-level restriction 'NEVER, EVER DELETE OR MODIFY ANY EXISTING DATA IN BIGQUERY' at agent.py:152 is advisory prompt text, not the enforced mechanism).",
+        "protection_obligation": "Destructive DML statements (UPDATE, DELETE, MERGE, TRUNCATE) must not be executed against BigQuery through the execute_sql tool of the shared BigQueryToolset; the forbidden_dml_check before_tool_callback must intercept such tool calls on both agents holding the toolset (bq_investigation_agent and decision_agent) and return a blocking result before the SQL is dispatched for execution. (Merges the duplicate first-phase and second-phase reviewer obligations, which name the same guard, operations, and commit point.)",
+        "scope_limits": [
+          "The guard triggers only for tool calls whose tool.name is 'execute_sql' (agent.py:79); other BigQueryToolset tools are not name-checked by this callback.",
+          "Only the 'query' argument is inspected (agent.py:81); if it is absent or falsy, the keyword check is silently skipped.",
+          "Keyword matching uses a word-boundary regex over the uppercased query text (agent.py:84-85), so DML keywords anywhere in the query \u2014 including inside string literals or comments \u2014 trigger blocking; no obfuscation handling beyond .upper().strip() is declared.",
+          "The callback is registered only on bq_investigation_agent and decision_agent; the supplied source shows no before_tool_callback on google_search_agent, the orchestrator agents, or the App.",
+          "Blocking behavior relies on ADK before_tool_callback semantics (non-None return short-circuits execution), which is declared by the return value at agent.py:86 but whose enforcement is implemented outside the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "BigQueryToolset internals and ADK tool-dispatch semantics are not in the supplied source; the exact execution commit point after the callback returns None is inferred from the callback's return contract, not shown directly.",
+      "No deployment/configuration source is supplied to support the reviewers' claim that the agents run as a persistent Vertex AI service rather than a demo-only simulator.",
+      "The completeness of BigQueryToolset's tool surface (whether tools other than execute_sql can mutate BigQuery data) is unknown from the supplied source.",
+      "Whether before_tool_callback covers all invocation paths (e.g., parallel function calling or nested dispatch) cannot be verified from the supplied source."
+    ],
+    "repository": "norlove/Real-time_Cyber_Security_AI_with_BigQuery_continuous_queries_and_ADK",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a26d2787642e37c5a1a97a8b1efb8169"
+  },
+  "request_sha256": "ca19d2cffdaf5a434b7edb7b21d958ac7675dce0143a0ea04edac21cae4ebc7b",
+  "response_sha256": "373720d88cfb92b0fbe86177adeb05d1061b75a6cd49fecf85e1bdd586201bff",
+  "state": "completed",
+  "tokens": 11597,
+  "unit": "v24-screen:a26d2787642e37c5a1a97a8b1efb8169"
+}

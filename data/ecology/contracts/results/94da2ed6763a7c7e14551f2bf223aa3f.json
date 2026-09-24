@@ -1,0 +1,409 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The agent's model-call step, where the registered middleware counts each model invocation against thread_limit/run_limit and ends the run or raises once the limit is reached, before further model invocation.",
+        "contract_id": "ecological-contract:2d8a21014cae9dae04f7194a39a183f0",
+        "declared_mechanism": "ModelCallLimitMiddleware(thread_limit, run_limit, exit_behavior) returned by create_model_call_limit_middleware, registered in the agent's middleware list via create_agent_with_memory, which supplies the checkpointer required for thread limiting.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 368,
+            "line_start": 364,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "guard_registration",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 378,
+            "line_start": 375,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "commit_point",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 397,
+            "line_start": 392,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 402,
+            "line_start": 399,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 410,
+            "line_start": 404,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "guard_registration",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 170,
+            "line_start": 162,
+            "path": "ai_toolkit/agents/agent_helpers.py",
+            "role": "guard_registration",
+            "source_sha256": "e667ed99f5e88b6cd7aeaa9aa8457a5ffc474c1509d1f404eaad41dccb6d2395"
+          }
+        ],
+        "forbidden_condition": "Model calls exceeding the configured thread_limit and/or run_limit, i.e., unbounded model invocation (infinite agent loop) continuing past the registered cap.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The concrete transport/provider request behind each model call is not shown in supplied source; the http stratum is assigned at the model-invocation commit point as a classification, and should be confirmed against the library implementation."
+        ],
+        "protected_operation": "Counting and capping of the agent's model-call invocations per run and per thread, terminating or raising at the limit.",
+        "protected_resource": "The agent's configured chat-model invocation path within agent runs and threads.",
+        "protection_obligation": "Agent model invocations must not exceed the per-thread and/or per-run limits configured in ModelCallLimitMiddleware (e.g., agent infinite loops), with exit_behavior 'end' stopping the run gracefully or 'error' raising an exception at the limit; the middleware must be registered in the agent's middleware list and thread limiting requires a checkpointer.",
+        "scope_limits": [
+          "Covers model invocations only; tool executions are governed by ToolCallLimitMiddleware (separate contract).",
+          "Behavior at the limit is selected by exit_behavior ('end' graceful stop vs. 'error' exception).",
+          "Thread-level limiting requires a checkpointer (stated at line 401); the example provisions one via create_agent_with_memory(checkpointer_type='inmemory').",
+          "Counting and termination internals are LangChain library code not included in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Each agent tool call during a run/thread, where the registered middleware counts the invocation against thread_limit/run_limit and blocks calls beyond the cap before further tool execution.",
+        "contract_id": "ecological-contract:3715786f26538fe7667649953dddd98d",
+        "declared_mechanism": "ToolCallLimitMiddleware(tool_name, thread_limit, run_limit) returned by create_tool_call_limit_middleware, registered in the agent's middleware list; multiple instances can be combined (global limiter plus per-tool limiters).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 417,
+            "line_start": 413,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "guard_registration",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 427,
+            "line_start": 424,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "commit_point",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 446,
+            "line_start": 442,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "protected_operation",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 452,
+            "line_start": 448,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 457,
+            "line_start": 454,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 465,
+            "line_start": 459,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "guard_registration",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 89,
+            "line_start": 83,
+            "path": "ai_toolkit/agents/agent_helpers.py",
+            "role": "guard_registration",
+            "source_sha256": "e667ed99f5e88b6cd7aeaa9aa8457a5ffc474c1509d1f404eaad41dccb6d2395"
+          }
+        ],
+        "forbidden_condition": "Tool calls exceeding the configured thread_limit and/or run_limit (globally or for the named tool), i.e., excessive tool usage beyond the registered cap.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Concrete over-limit behavior (skip, end run, or raise) is not shown in supplied source; 'Prevents excessive tool usage' is the only stated behavior.",
+          "Whether thread_limit persistence for tools requires a checkpointer is not stated; the example registers via create_agent_with_tools without a checkpointer."
+        ],
+        "protected_operation": "Counting and capping of agent tool executions per thread and per run.",
+        "protected_resource": "Tools registered on the agent (example: search_tool, database_tool), optionally scoped to a single named tool (example: tool_name='search').",
+        "protection_obligation": "Agent tool invocations must not exceed the per-thread and/or per-run call limits configured in ToolCallLimitMiddleware (global, or scoped to a specific tool_name), enforced where the middleware is registered in the agent's middleware list at the tool-call dispatch point.",
+        "scope_limits": [
+          "Covers tool-call counting/capping only; model-call limits are a separate middleware and separate contract.",
+          "Global vs. per-tool scoping depends on the tool_name parameter (None means global limit).",
+          "Over-limit enforcement internals are LangChain library code not included in supplied source; only the wrapper configuration and registration are shown."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The circuit check at the start of RetryManager.retry (lines 165-167), which raises CircuitBreakerOpenError before the first attempt of func(*args, **kwargs) at line 176.",
+        "contract_id": "ecological-contract:416a2c3f26400e856375ea90b4ab9e65",
+        "declared_mechanism": "RetryManager circuit breaker: CircuitBreakerConfig(failure_threshold, recovery_timeout, success_threshold) supplied as circuit_config; _can_execute() state check at the start of retry() raising CircuitBreakerOpenError when blocked; failure recording transitions CLOSED->OPEN and HALF_OPEN->OPEN; reset via reset_circuit_breaker.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 59,
+            "line_start": 55,
+            "path": "ai_toolkit/errors/retry_manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2b40e42e8f4e53d72c193414277618a8fcfd69062ec1d1425d5c036e1b61bb94"
+          },
+          {
+            "line_end": 93,
+            "line_start": 88,
+            "path": "ai_toolkit/errors/retry_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "2b40e42e8f4e53d72c193414277618a8fcfd69062ec1d1425d5c036e1b61bb94"
+          },
+          {
+            "line_end": 134,
+            "line_start": 126,
+            "path": "ai_toolkit/errors/retry_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "2b40e42e8f4e53d72c193414277618a8fcfd69062ec1d1425d5c036e1b61bb94"
+          },
+          {
+            "line_end": 147,
+            "line_start": 143,
+            "path": "ai_toolkit/errors/retry_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "2b40e42e8f4e53d72c193414277618a8fcfd69062ec1d1425d5c036e1b61bb94"
+          },
+          {
+            "line_end": 176,
+            "line_start": 165,
+            "path": "ai_toolkit/errors/retry_manager.py",
+            "role": "commit_point",
+            "source_sha256": "2b40e42e8f4e53d72c193414277618a8fcfd69062ec1d1425d5c036e1b61bb94"
+          },
+          {
+            "line_end": 386,
+            "line_start": 364,
+            "path": "ai_toolkit/errors/retry_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "2b40e42e8f4e53d72c193414277618a8fcfd69062ec1d1425d5c036e1b61bb94"
+          },
+          {
+            "line_end": 436,
+            "line_start": 425,
+            "path": "ai_toolkit/errors/retry_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "2b40e42e8f4e53d72c193414277618a8fcfd69062ec1d1425d5c036e1b61bb94"
+          },
+          {
+            "line_end": 550,
+            "line_start": 540,
+            "path": "ai_toolkit/errors/retry_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "2b40e42e8f4e53d72c193414277618a8fcfd69062ec1d1425d5c036e1b61bb94"
+          }
+        ],
+        "forbidden_condition": "Executing func when the circuit breaker state is OPEN and the recovery timeout has not elapsed, i.e., invocation proceeding instead of raising CircuitBreakerOpenError ('Circuit breaker is open'); CircuitState.OPEN is documented as 'Failing, reject requests'.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which concrete operations in the agent stack (if any) execute through RetryManager.retry or with_circuit_breaker is not shown in supplied source; without that, the guard cannot be bound to any agent tool dispatch or lifecycle step.",
+          "Whether CircuitBreakerOpenError is intended to gate any agent tool execution, and with what upstream handling, is not established."
+        ],
+        "protected_operation": "Invocation of the callable passed to RetryManager.retry, gated by the pre-execution circuit check and state machine (CLOSED/OPEN/HALF_OPEN with failure and success thresholds).",
+        "protected_resource": "The guarded callable's execution path via RetryManager.retry / with_circuit_breaker.",
+        "protection_obligation": "A callable executed through RetryManager.retry with a circuit breaker configured (e.g., via with_circuit_breaker) must not run while the circuit breaker is OPEN; the manager must raise CircuitBreakerOpenError before the first func invocation, and the circuit must reopen on failure-threshold breaches or HALF_OPEN failures.",
+        "scope_limits": [
+          "Generic error-handling infrastructure in ai_toolkit/errors; no supplied source binds RetryManager, with_circuit_breaker, or the retry decorator to an agent tool, agent lifecycle hook, or agent-generated input, so no agent_entry_binding evidence exists and mediation is not_established.",
+          "The circuit breaker is active only when circuit_config is supplied to RetryManager; the module-level retry decorator constructs RetryManager without circuit_config (line 518) and therefore does not activate this guard.",
+          "The guarded callable is an arbitrary Callable; its concrete external effect stratum is not fixed by supplied source, so the stratum reflects the in-process invocation commit point only."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The agent's tool-execution dispatch step: the middleware interrupts the mapped tool call before the tool executes, pending the human decision.",
+        "contract_id": "ecological-contract:cdce7630082f60c166f39f90558fcd05",
+        "declared_mechanism": "HumanInTheLoopMiddleware(interrupt_on=...) returned by create_human_in_loop_middleware, registered into the agent via the middleware list (middleware=[human_approval] on create_agent_with_memory), which forwards the middleware list and a MemoryManager-created checkpointer (e.g., checkpointer_type='inmemory') into create_agent.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 313,
+            "line_start": 310,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "guard_registration",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 325,
+            "line_start": 320,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 340,
+            "line_start": 331,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "protected_operation",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 348,
+            "line_start": 343,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 354,
+            "line_start": 350,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "commit_point",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 361,
+            "line_start": 355,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "guard_registration",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 156,
+            "line_start": 151,
+            "path": "ai_toolkit/agents/agent_helpers.py",
+            "role": "guard_registration",
+            "source_sha256": "e667ed99f5e88b6cd7aeaa9aa8457a5ffc474c1509d1f404eaad41dccb6d2395"
+          },
+          {
+            "line_end": 170,
+            "line_start": 162,
+            "path": "ai_toolkit/agents/agent_helpers.py",
+            "role": "guard_registration",
+            "source_sha256": "e667ed99f5e88b6cd7aeaa9aa8457a5ffc474c1509d1f404eaad41dccb6d2395"
+          }
+        ],
+        "forbidden_condition": "Execution of a tool call named in the interrupt_on mapping without a recorded human decision of approve/edit/reject (i.e., a mapped tool running without the interrupt/approval having occurred).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The concrete external effect of send_email_tool (e.g., actual email delivery) is not shown in supplied source; only the tool name and its registration appear.",
+          "Exact runtime handling of approve/edit/reject decisions and the post-interrupt resume path live inside LangChain's HumanInTheLoopMiddleware and are not in supplied source.",
+          "Whether checkpointer_required=True triggers any enforcement at creation time is unshown; the function body contains only a placeholder comment and 'pass' (lines 357-359)."
+        ],
+        "protected_operation": "Pre-execution interruption of agent tool calls named in the interrupt_on mapping, pending a human approve/edit/reject decision.",
+        "protected_resource": "Agent tools registered in the agent's tools list whose names appear in interrupt_on (example: send_email_tool; read_email_tool is explicitly exempted via interrupt_on value False).",
+        "protection_obligation": "Agent tool calls whose names are listed in the interrupt_on mapping of HumanInTheLoopMiddleware (created by create_human_in_loop_middleware, e.g., 'send_email_tool' with allowed_decisions ['approve','edit','reject']) must not execute until a human issues an allowed decision (approve/edit/reject); the middleware must be registered in the agent's middleware list and the agent must be created with a checkpointer for interrupt state.",
+        "scope_limits": [
+          "Gate applies only to tool names present in the interrupt_on mapping; tools mapped to False (read_email_tool in the example) are explicitly not gated.",
+          "The binding shown is the docstring example path (create_human_in_loop_middleware -> middleware=[human_approval] -> create_agent_with_memory); no production call site and no tool implementation are present in supplied source.",
+          "Interrupt state depends on the checkpointer provisioned at agent creation (MemoryManager via create_agent_with_memory); the wrapper itself only carries a checkpointer_required flag and enforces nothing in its body.",
+          "Does not cover the other middleware wrappers in this unit (summarization, call limits, PII, shell tool, retries, emulators, etc.)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The agent lifecycle input-processing step (and the output step when apply_to_output=True), where detected PII content is rejected under strategy='block' before downstream model invocation or response delivery.",
+        "contract_id": "ecological-contract:f6dd7b3c6c135ae56837d4c69be09779",
+        "declared_mechanism": "PIIMiddleware(pii_type, strategy, apply_to_input, apply_to_output, detector) returned by create_pii_middleware, registered in the agent's middleware list; strategies are redact (remove), mask (***), block (reject), hash (SHA256).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 513,
+            "line_start": 507,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "guard_registration",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 525,
+            "line_start": 520,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "protected_operation",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 524,
+            "line_start": 522,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "commit_point",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 543,
+            "line_start": 539,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "guard_registration",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 567,
+            "line_start": 563,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 572,
+            "line_start": 570,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 585,
+            "line_start": 574,
+            "path": "ai_toolkit/agents/middleware_utils.py",
+            "role": "guard_registration",
+            "source_sha256": "4a587cc95cbb6d4bf75343f6905080d7d239e61bf73f7088c28a8790fa2eb5e5"
+          },
+          {
+            "line_end": 89,
+            "line_start": 83,
+            "path": "ai_toolkit/agents/agent_helpers.py",
+            "role": "guard_registration",
+            "source_sha256": "e667ed99f5e88b6cd7aeaa9aa8457a5ffc474c1509d1f404eaad41dccb6d2395"
+          }
+        ],
+        "forbidden_condition": "Content containing the configured pii_type passing through the agent's guarded input surface (and/or model output when apply_to_output=True) without the 'block' (reject) handling being applied, i.e., rejected-class PII reaching the model or the user.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Concrete 'block' rejection behavior (exception vs. content removal, error surfaced to caller) is implemented in LangChain's PIIMiddleware and is not shown in supplied source.",
+          "The underlying hook placement (before the model call vs. after the model response) for apply_to_input/apply_to_output handling is not shown in supplied source."
+        ],
+        "protected_operation": "Agent input-processing and, when configured, model-output handling for the configured pii_type under the 'block' strategy.",
+        "protected_resource": "Agent message content at the input/output boundary (user input by default with apply_to_input=True; model output only when apply_to_output=True).",
+        "protection_obligation": "Content containing the configured PII type must be handled by the configured strategy at the agent's input/output boundary; under strategy='block', PII-bearing content (e.g., 'api_key' matching detector r'sk-[a-zA-Z0-9]{32}') is rejected rather than passed to the model or returned to the user, via PIIMiddleware registered in the agent's middleware list.",
+        "scope_limits": [
+          "Covers the wrapper configuration surface (pii_type, strategy, apply_to_input/output, detector); detection and rejection internals are LangChain library code not included in supplied source.",
+          "apply_to_output defaults to False; output-side coverage exists only when explicitly configured.",
+          "This contract records the 'block' (reject) strategy as cited by the reviewer; redact/mask/hash transform content rather than reject it and are not covered by this forbidden condition."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Concrete tool implementations (e.g., send_email_tool, read_email_tool) and any production (non-docstring) registration sites are absent from supplied source; the HITL and tool-call-limit bindings rest on docstring examples within create_human_in_loop_middleware, create_tool_call_limit_middleware, create_model_call_limit_middleware, and create_pii_middleware.",
+      "Internal enforcement logic of HumanInTheLoopMiddleware, ToolCallLimitMiddleware, ModelCallLimitMiddleware, and PIIMiddleware (LangChain library code referenced via imports) is not included in supplied source; exact reject/stop semantics, interruption timing, and resume paths are library-internal.",
+      "No supplied source binds RetryManager, with_circuit_breaker, or the retry decorator to agent tool dispatch, agent lifecycle hooks, or agent-generated input; agent mediation for the circuit-breaker guard is not established and should not be inferred from repository topic.",
+      "The concrete external effects of the example tools (e.g., whether send_email_tool performs email delivery over a network) are not shown, so downstream effect strata beyond the tool-execution commit point cannot be fixed.",
+      "Whether checkpointer_required=True in create_human_in_loop_middleware enforces anything at creation time is unshown (body contains only a placeholder comment and 'pass', lines 357-359); checkpointer provisioning is only demonstrated at agent creation via create_agent_with_memory.",
+      "The transport behind agent model invocations (assumed provider API request for the http stratum on the model-call-limit contract) is not shown in supplied source."
+    ],
+    "repository": "lenhop/ai-toolkit",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:94da2ed6763a7c7e14551f2bf223aa3f"
+  },
+  "request_sha256": "8f08e9f5cd913a65762ee43b0fa5ca7d3d38b9a5564ed8e9a3753f6f9f6ae1f2",
+  "response_sha256": "7d3bc266f3e578c6698132d97730f14efa5bd3520497f34f33c455340e20c923",
+  "state": "completed",
+  "tokens": 41285,
+  "unit": "v24-screen:94da2ed6763a7c7e14551f2bf223aa3f"
+}

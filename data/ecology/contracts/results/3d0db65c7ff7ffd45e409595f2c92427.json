@@ -1,0 +1,355 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "open(resolved_file_path, \"rb\") in run_v1_document (ocr_pipeline.py:123), run_v2_classify_segment (ocr_pipeline.py:167), and run_phase2_extract (ocr_pipeline.py:209), each preceded by resolve_input_file_path (lines 115, 152, 191).",
+        "contract_id": "ecological-contract:4c447d4e36af824042168db60b09302c",
+        "declared_mechanism": "resolve_upload_path (services/file_policy.py:67-86) resolves relative input paths under the configured UPLOADS_DIR, resolves absolute paths, and raises HTTP 400 unless the resolved path is contained within UPLOADS_DIR; OcrServiceAdapter invokes it via resolve_input_file_path (services/ocr_pipeline.py:385-387) before existence checks and file opens.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 86,
+            "line_start": 67,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 387,
+            "line_start": 385,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          },
+          {
+            "line_end": 84,
+            "line_start": 78,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 19,
+            "line_start": 13,
+            "path": "src/agent-service/api/schemas.py",
+            "role": "forbidden_condition",
+            "source_sha256": "752ccc51082c17f6b5f23d820f6dccc31d09d1ab62f31eb116b1e7a623f32780"
+          },
+          {
+            "line_end": 118,
+            "line_start": 112,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "protected_operation",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          },
+          {
+            "line_end": 156,
+            "line_start": 149,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "protected_operation",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          },
+          {
+            "line_end": 195,
+            "line_start": 188,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "protected_operation",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          },
+          {
+            "line_end": 124,
+            "line_start": 123,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          },
+          {
+            "line_end": 168,
+            "line_start": 167,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          },
+          {
+            "line_end": 210,
+            "line_start": 209,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          }
+        ],
+        "forbidden_condition": "Opening/reading a workflow input document whose path resolves outside UPLOADS_DIR (path traversal or an absolute path escaping the uploads directory via input_file).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which component invokes OcrPipeline.prepare_initial_ocr / prepare_phase2_ocr (agent tool, graph node, or lifecycle hook); services/graph_service.py is not supplied.",
+          "Whether context.input_file is agent-generated (produced by an agent node or tool) or passes straight through from a client-supplied ClaimRequest.input_file.",
+          "Whether this contract should be treated as DEC-scoped only under a demonstrated agent-tool or lifecycle binding for the OCR effect."
+        ],
+        "protected_operation": "Opening workflow input documents for OCR reads in OcrServiceAdapter.run_v1_document, run_v2_classify_segment, and run_phase2_extract.",
+        "protected_resource": "Local filesystem contents reached through workflow input paths (workflow input documents stored under UPLOADS_DIR and anything reachable by escaping it).",
+        "protection_obligation": "Workflow input document paths (input_file) must be confined to UPLOADS_DIR before the OCR adapter opens the document for OCR processing; any path that resolves outside UPLOADS_DIR must be rejected with HTTP 400 instead of being opened and read. (Merges both reviewer statements about confinement at the OCR-read commit point.)",
+        "scope_limits": [
+          "Covers only the three supplied OcrServiceAdapter OCR call paths; no other file-open sites appear in the supplied views.",
+          "Confinement is enforced at resolve time before open(); symlink or TOCTOU behavior after resolution is not addressed by supplied source.",
+          "Empty or blank input_file is rejected with HTTP 400 by the same guard; handling of non-string types is only partially specified in supplied source.",
+          "The local file read feeds an outbound OCR service request covered by a separate http-stratum contract; OCR-service-side behavior is out of scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "output_path.write_bytes(content) (upload.py:56).",
+        "contract_id": "ecological-contract:57b969379e83c13099818ddcfa920e1b",
+        "declared_mechanism": "validate_upload_metadata (extension allow-list HTTP 415; MIME allow-list HTTP 415; extension\u2013MIME consistency HTTP 415; file_policy.py:33-64), safe_upload_filename (basename-only naming, file_policy.py:25-30, applied with a uuid prefix), and a MAX_UPLOAD_SIZE_MB size check raising HTTP 413 (upload.py:49-54), all executed before output_path.write_bytes(content).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 44,
+            "line_start": 36,
+            "path": "src/agent-service/api/upload.py",
+            "role": "guard_registration",
+            "source_sha256": "a2cfc449babb8ace48799817e1f9d5b33ce915f685b3fb221dceb9be79d306c5"
+          },
+          {
+            "line_end": 64,
+            "line_start": 33,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 30,
+            "line_start": 25,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 54,
+            "line_start": 49,
+            "path": "src/agent-service/api/upload.py",
+            "role": "guard_registration",
+            "source_sha256": "a2cfc449babb8ace48799817e1f9d5b33ce915f685b3fb221dceb9be79d306c5"
+          },
+          {
+            "line_end": 44,
+            "line_start": 37,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 54,
+            "line_start": 46,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 64,
+            "line_start": 56,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 54,
+            "line_start": 50,
+            "path": "src/agent-service/api/upload.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a2cfc449babb8ace48799817e1f9d5b33ce915f685b3fb221dceb9be79d306c5"
+          },
+          {
+            "line_end": 31,
+            "line_start": 23,
+            "path": "src/agent-service/api/upload.py",
+            "role": "protected_operation",
+            "source_sha256": "a2cfc449babb8ace48799817e1f9d5b33ce915f685b3fb221dceb9be79d306c5"
+          },
+          {
+            "line_end": 56,
+            "line_start": 56,
+            "path": "src/agent-service/api/upload.py",
+            "role": "commit_point",
+            "source_sha256": "a2cfc449babb8ace48799817e1f9d5b33ce915f685b3fb221dceb9be79d306c5"
+          }
+        ],
+        "forbidden_condition": "Persisting uploaded bytes to disk when the filename extension is disallowed, the declared MIME type is disallowed, the extension and MIME type are inconsistent, or the content exceeds MAX_UPLOAD_SIZE_MB.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether POST /workflows/upload is exposed to or invoked by an agent tool or lifecycle hook; no such registration appears in supplied source.",
+          "Whether UploadResponse.file_path returned to clients becomes agent-generated workflow input (the flow from UploadResponse.file_path to ClaimRequest.input_file is not shown in supplied source)."
+        ],
+        "protected_operation": "POST /workflows/upload persisting uploaded claim-document bytes to the uploads directory.",
+        "protected_resource": "Filesystem under settings.UPLOADS_DIR receiving persisted uploaded files.",
+        "protection_obligation": "Uploaded workflow documents must pass the extension allow-list, the MIME allow-list (including extension\u2013MIME consistency), and the maximum-size check before their bytes are written to disk under UPLOADS_DIR.",
+        "scope_limits": [
+          "Applies only to POST /workflows/upload; other write paths under UPLOADS_DIR are not in supplied source.",
+          "Allowed extensions/MIME types are fixed constants in file_policy.py; the MAX_UPLOAD_SIZE_MB value is a setting not supplied.",
+          "Bytes are read fully into memory before the size check; streaming behavior is outside the contract.",
+          "Write-path confinement is by construction (uuid-prefixed basename under resolve_upload_dir()); uploads-directory creation is not part of this contract.",
+          "Supplied source shows a plain client-facing HTTP endpoint with no agent binding."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "FileResponse(path=file_path, media_type=..., filename=..., content_disposition_type='inline') returned by view_workflow_document (upload.py:87-93).",
+        "contract_id": "ecological-contract:b520f0b6b542bd9856d5554275d400fc",
+        "declared_mechanism": "resolve_upload_path applied to state.values['input_file'] (upload.py:83) before the is_file check and FileResponse construction; HTTP 400 raised when the resolved path escapes UPLOADS_DIR (file_policy.py:78-84).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 85,
+            "line_start": 82,
+            "path": "src/agent-service/api/upload.py",
+            "role": "guard_registration",
+            "source_sha256": "a2cfc449babb8ace48799817e1f9d5b33ce915f685b3fb221dceb9be79d306c5"
+          },
+          {
+            "line_end": 86,
+            "line_start": 67,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 84,
+            "line_start": 78,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 77,
+            "line_start": 72,
+            "path": "src/agent-service/api/upload.py",
+            "role": "protected_operation",
+            "source_sha256": "a2cfc449babb8ace48799817e1f9d5b33ce915f685b3fb221dceb9be79d306c5"
+          },
+          {
+            "line_end": 93,
+            "line_start": 87,
+            "path": "src/agent-service/api/upload.py",
+            "role": "commit_point",
+            "source_sha256": "a2cfc449babb8ace48799817e1f9d5b33ce915f685b3fb221dceb9be79d306c5"
+          }
+        ],
+        "forbidden_condition": "Serving a document whose stored path resolves outside UPLOADS_DIR to a client via FileResponse (path traversal through persisted workflow state).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which workflow nodes or tools write state.values['input_file'] into the checkpointer; no state-writing view is supplied.",
+          "Whether run_id-addressed runs are agent executions whose lifecycle includes the document-view response, and whether input_file in state is agent-generated."
+        ],
+        "protected_operation": "GET /workflows/document/{run_id} returning the workflow document for browser preview via FileResponse.",
+        "protected_resource": "Workflow documents delivered to clients over HTTP from the uploads directory.",
+        "protection_obligation": "Documents served back to clients by GET /workflows/document/{run_id} must resolve strictly inside UPLOADS_DIR; the state-stored input_file must pass resolve_upload_path (HTTP 400 on escape) before the document is returned.",
+        "scope_limits": [
+          "Applies only to GET /workflows/document/{run_id}; other document-serving paths are not in supplied source.",
+          "input_file is read from persisted LangGraph checkpointer state (graph.aget_state); the writers of that state are not shown in supplied source.",
+          "Missing state or non-file paths return 404; those branches are outside the path-confinement contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "requests.post(...) uploading the opened document to the OCR Service in run_v1_document (ocr_pipeline.py:125-129), run_v2_classify_segment (ocr_pipeline.py:169-174), and run_phase2_extract (ocr_pipeline.py:211-216).",
+        "contract_id": "ecological-contract:f0735603af069ceb078dcf118649ab78",
+        "declared_mechanism": "resolve_input_file_path \u2192 resolve_upload_path (HTTP 400 unless the resolved path is inside UPLOADS_DIR), called at the top of run_v1_document, run_v2_classify_segment, and run_phase2_extract before the file is opened and posted.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 86,
+            "line_start": 67,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 387,
+            "line_start": 385,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          },
+          {
+            "line_end": 84,
+            "line_start": 78,
+            "path": "src/agent-service/services/file_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e43bef3a6f083422f87e7f2377818afcee6fe6db79740bbd653e00a16c47e6d3"
+          },
+          {
+            "line_end": 101,
+            "line_start": 93,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "protected_operation",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          },
+          {
+            "line_end": 129,
+            "line_start": 125,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          },
+          {
+            "line_end": 174,
+            "line_start": 169,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          },
+          {
+            "line_end": 216,
+            "line_start": 211,
+            "path": "src/agent-service/services/ocr_pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "66effecee7d163ce671c4da5a6ea638d952eee663750baf545362205d3f059cc"
+          }
+        ],
+        "forbidden_condition": "Issuing an OCR service request whose attached file originates from a path that resolves outside UPLOADS_DIR.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the OCR service calls are dispatched from an agent tool, graph node, or lifecycle hook; services/graph_service.py and any tool registrations are not supplied.",
+          "Whether the input_file passed to the adapter is agent-generated rather than directly client-supplied."
+        ],
+        "protected_operation": "Outbound multipart POST of the workflow document to the external OCR Service (settings.OCR_SERVICE_URL) via OcrServiceAdapter.",
+        "protected_resource": "Outbound HTTP requests to the external OCR Service carrying local document bytes.",
+        "protection_obligation": "Document bytes transmitted to the external OCR Service must originate from a path confined to UPLOADS_DIR; the resolve_upload_path guard (HTTP 400 on escape) must run before each outbound multipart OCR request is issued.",
+        "scope_limits": [
+          "Covers only the three requests.post calls to settings.OCR_SERVICE_URL endpoints shown in supplied source.",
+          "The guard gates the request transitively (resolve precedes existence check, open, and post); OCR-service-side handling is out of scope.",
+          "Supplied source does not establish that the OCR call is triggered by an agent tool or lifecycle hook."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source view (services/graph_service.py, agent tool registrations, node definitions, or lifecycle hooks) binds the upload, OCR, or document-view operations to an agent tool, agent lifecycle hook, or agent-generated input; agent_mediation is 'not_established' and no agent_entry_binding evidence is cited for any contract.",
+      "Callers of OcrPipeline.prepare_initial_ocr and prepare_phase2_ocr, and the writers of state.values['input_file'] in the LangGraph checkpointer, are not present in supplied source.",
+      "Values of settings.UPLOADS_DIR, settings.MAX_UPLOAD_SIZE_MB, settings.OCR_SERVICE_URL, and related OCR settings are not supplied.",
+      "The flow linking UploadResponse.file_path from POST /workflows/upload to ClaimRequest.input_file consumed by the workflow is not shown in supplied source.",
+      "Whether the OCR pipeline or document-view endpoint executes within an agent lifecycle (tool dispatch or hook callback) cannot be determined from the supplied views."
+    ],
+    "repository": "anhtuan23004/Multi-Agent-Insurance-Claims-Validation",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:3d0db65c7ff7ffd45e409595f2c92427"
+  },
+  "request_sha256": "9cdfef0f852ab6c13565bbb8d688ea090c2be553d3a2ea269a2027dd3adc0ec0",
+  "response_sha256": "342dce537bf62c14e84b42383e8faa839a7fb61e659794a9ee7dd12f5c5d7017",
+  "state": "completed",
+  "tokens": 30461,
+  "unit": "v24-screen:3d0db65c7ff7ffd45e409595f2c92427"
+}

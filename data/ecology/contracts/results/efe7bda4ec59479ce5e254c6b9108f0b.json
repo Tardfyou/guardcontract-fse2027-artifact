@@ -1,0 +1,107 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The two execute_query UPDATE statements inside process_refund that persist invoices.status='refunded' and orders.status='returned' (backend/tools/billing_tools.py:90-91).",
+        "contract_id": "ecological-contract:29f0f2219686af055d3ea462fe7d5f92",
+        "declared_mechanism": "HumanInTheLoopMiddleware(interrupt_on={'process_refund': {'allowed_decisions': ['approve', 'reject'], 'description': 'Refund processing requires support lead approval before execution.'}}) registered in the billing agent's middleware stack; interrupt resolution via POST /admin/approve-refund/{conversation_id}, which calls _auth_admin(x_admin_token) (verify_admin_token) and then resumes the graph with Command(resume={'decisions': [decision]}).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 66,
+            "line_start": 59,
+            "path": "backend/agents/billing_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "6d6b13fdc6128083a6053b47d3aa6a5cdfb515365c2701499dda5f66424852bc"
+          },
+          {
+            "line_end": 476,
+            "line_start": 463,
+            "path": "backend/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "21ef66b7a6cf924250a94a8df4daea214725bcb39ec28e70bab533a4dd32ee73"
+          },
+          {
+            "line_end": 160,
+            "line_start": 158,
+            "path": "backend/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "21ef66b7a6cf924250a94a8df4daea214725bcb39ec28e70bab533a4dd32ee73"
+          },
+          {
+            "line_end": 52,
+            "line_start": 50,
+            "path": "backend/agents/billing_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6d6b13fdc6128083a6053b47d3aa6a5cdfb515365c2701499dda5f66424852bc"
+          },
+          {
+            "line_end": 122,
+            "line_start": 122,
+            "path": "backend/tools/billing_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "00e1896d09046df47df0c373c561158624041c607438980e7fccab707cdacdf1"
+          },
+          {
+            "line_end": 64,
+            "line_start": 62,
+            "path": "backend/tools/billing_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "00e1896d09046df47df0c373c561158624041c607438980e7fccab707cdacdf1"
+          },
+          {
+            "line_end": 91,
+            "line_start": 90,
+            "path": "backend/tools/billing_tools.py",
+            "role": "commit_point",
+            "source_sha256": "00e1896d09046df47df0c373c561158624041c607438980e7fccab707cdacdf1"
+          },
+          {
+            "line_end": 34,
+            "line_start": 34,
+            "path": "backend/agents/billing_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6d6b13fdc6128083a6053b47d3aa6a5cdfb515365c2701499dda5f66424852bc"
+          }
+        ],
+        "forbidden_condition": "Execution of process_refund's database mutations (invoices.status='refunded' and orders.status='returned') while the registered human-approval interrupt is unresolved \u2014 i.e., before an approve/reject decision is returned via the Command(resume=...) invocation on the admin-authenticated /admin/approve-refund path. Source also declares the condition normatively: 'process_refund is sensitive and must only run through the human-approval interrupt path' and the tool docstring states 'Requires human approval before execution.'",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "backend/graph/multi_agent_graph.py is not supplied, so it cannot be confirmed from source that techcart_graph (used by /chat and /admin/approve-refund) composes billing_agent/build_billing_agent \u2014 and therefore the HumanInTheLoopMiddleware interrupt \u2014 into its billing node path.",
+          "Whether settings.ADMIN_PASSWORD is set in the target deployment such that _auth_admin actually enforces admin token verification on /admin/approve-refund.",
+          "The framework-level semantics of HumanInTheLoopMiddleware (that the interrupt fires before process_refund's body executes, not mid-mutation) are library behavior not shown in the supplied source.",
+          "backend/api/hitl.py (hitl_from_graph_state) and backend/api/admin_auth.py (verify_admin_token, issue_admin_token) are not supplied, so the interrupt-detection and token-verification logic cannot be validated."
+        ],
+        "protected_operation": "Agent-invoked execution of the process_refund tool for a customer order refund.",
+        "protected_resource": "The invoices and orders rows for the targeted order_id (invoice status set to 'refunded'; order status set to 'returned').",
+        "protection_obligation": "The billing agent's process_refund tool must not execute its refund database mutations until the HumanInTheLoopMiddleware interrupt registered on process_refund is resolved by a human support-lead decision (approve/reject) delivered through the admin-token-gated resume endpoint POST /admin/approve-refund/{conversation_id}.",
+        "scope_limits": [
+          "Applies only to process_refund; the interrupt_on map registers no interrupt for the other billing tools. update_payment_dispute also performs an invoice mutation (backend/tools/billing_tools.py:107-119) with no registered approval gate, and is not covered by this obligation.",
+          "The admin gate on the resume path is conditional: _auth_admin enforces verify_admin_token only when settings.ADMIN_PASSWORD is set (backend/api/main.py:158-160); the supplied source does not establish that it is configured in the deployment.",
+          "The refund confirmation sequencing in BILLING_PROMPT (backend/agents/billing_agent.py:26-32) is prompt-level policy, not a code-enforced guard; the code-enforced mechanism is the middleware interrupt plus the admin resume path.",
+          "The protected effect is limited to the MySQL updates shown in source; no external payment-provider call is present in the supplied process_refund body.",
+          "The /chat endpoint itself performs no admin authentication; the approval flow depends entirely on the separate /admin endpoints."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "backend/graph/multi_agent_graph.py (composition of techcart_graph, including the billing node/agent wiring) is not in the supplied source views, so the link between the billing agent's HITL middleware and the graph invoked by /chat and /admin/approve-refund is unverified.",
+      "backend/api/hitl.py (hitl_from_graph_state) is not supplied; pending-HITL extraction and refund_summary construction cannot be validated.",
+      "backend/api/admin_auth.py (verify_admin_token, issue_admin_token, verify_admin_password) is not supplied; admin-token semantics (expiry, format, verification strength) cannot be validated.",
+      "Runtime configuration values (settings.ADMIN_PASSWORD, settings.GRAPH_RECURSION_LIMIT, settings.PRIMARY_MODEL) are not established by the supplied source.",
+      "Behavior/runtime labels are unavailable per the stated scope; no claim about actual enforcement behavior or prevalence is made."
+    ],
+    "repository": "parvpatel20/electronics_customer_support_agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:efe7bda4ec59479ce5e254c6b9108f0b"
+  },
+  "request_sha256": "c2c9e90f5d0b1ad337186cfec2fc3e2c0a0e64263ace6778ded7d4088a28ddc1",
+  "response_sha256": "5846825fe7370f8dbe7261b3ea99623e3ccf349a98354b12a38ef5d2acf1caa6",
+  "state": "completed",
+  "tokens": 17492,
+  "unit": "v24-screen:efe7bda4ec59479ce5e254c6b9108f0b"
+}

@@ -1,0 +1,111 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "workflows.py:128 \u2014 await Runner.run(self.plant_matrix_agent, user_input), where the registered input guardrail evaluates user_input; a trip aborts the agent run before the second Runner.run stage (workflows.py:129-132) and before run_pipeline's post-run log writes (ecooptima.py:62-66), with the raised InputGuardrailTripwireTriggered handled at ecooptima.py:118-120.",
+        "contract_id": "ecological-contract:48e8009f9bacf950befca4e4c9140d21",
+        "declared_mechanism": "InputGuardrail(guardrail_function=self.eco_optima_guardrail) declared in input_guardrails on the plant_matrix_agent Agent (workflows.py:117-119); eco_optima_guardrail delegates the input to the 'Guardrail' agent via Runner.run(self.guardrail_agent, input_data) and sets tripwire_triggered=not final_output.is_eco_optima on the GuardrailOutput verdict (workflows.py:58-65); a trip raises InputGuardrailTripwireTriggered, which ecooptima.main catches to block the pipeline and return the block message (ecooptima.py:118-120).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 119,
+            "line_start": 117,
+            "path": "workflows.py",
+            "role": "guard_registration",
+            "source_sha256": "75b51487fdf17ff85c08878eaa1fa76d12fb6ea22551ea8dc973fd39f9f87b84"
+          },
+          {
+            "line_end": 65,
+            "line_start": 58,
+            "path": "workflows.py",
+            "role": "forbidden_condition",
+            "source_sha256": "75b51487fdf17ff85c08878eaa1fa76d12fb6ea22551ea8dc973fd39f9f87b84"
+          },
+          {
+            "line_end": 105,
+            "line_start": 98,
+            "path": "workflows.py",
+            "role": "forbidden_condition",
+            "source_sha256": "75b51487fdf17ff85c08878eaa1fa76d12fb6ea22551ea8dc973fd39f9f87b84"
+          },
+          {
+            "line_end": 133,
+            "line_start": 127,
+            "path": "workflows.py",
+            "role": "protected_operation",
+            "source_sha256": "75b51487fdf17ff85c08878eaa1fa76d12fb6ea22551ea8dc973fd39f9f87b84"
+          },
+          {
+            "line_end": 128,
+            "line_start": 128,
+            "path": "workflows.py",
+            "role": "commit_point",
+            "source_sha256": "75b51487fdf17ff85c08878eaa1fa76d12fb6ea22551ea8dc973fd39f9f87b84"
+          },
+          {
+            "line_end": 120,
+            "line_start": 118,
+            "path": "ecooptima.py",
+            "role": "commit_point",
+            "source_sha256": "9463c880124505d8cf41d4f7c7678940328dfd0f4ab0711ab5880d698d7df60d"
+          },
+          {
+            "line_end": 121,
+            "line_start": 107,
+            "path": "workflows.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "75b51487fdf17ff85c08878eaa1fa76d12fb6ea22551ea8dc973fd39f9f87b84"
+          },
+          {
+            "line_end": 60,
+            "line_start": 52,
+            "path": "ecooptima.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9463c880124505d8cf41d4f7c7678940328dfd0f4ab0711ab5880d698d7df60d"
+          },
+          {
+            "line_end": 106,
+            "line_start": 105,
+            "path": "ecooptima.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9463c880124505d8cf41d4f7c7678940328dfd0f4ab0711ab5880d698d7df60d"
+          }
+        ],
+        "forbidden_condition": "plant_matrix_agent processing user input that the guardrail classifies as off-topic: GuardrailOutput.is_eco_optima evaluates false (the 'Guardrail' agent judges the user is not asking about plants), so eco_optima_guardrail returns tripwire_triggered=True and the guarded Runner.run raises InputGuardrailTripwireTriggered instead of completing the agent run.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "app.py, cited by reviewers as the production Flask deployment binding the pipeline (app.py:120-123), is not among the supplied sources; the web-entry binding of user_text into main() is unverified.",
+          "The agents SDK implementation is not supplied; the exact ordering of input-guardrail evaluation relative to the first model call inside Runner.run is framework-internal.",
+          "Behavior when guardrail_agent output cannot be cast via final_output_as(GuardrailOutput) (schema mismatch or agent failure) is not shown \u2014 trip, pass, or error is unknown."
+        ],
+        "protected_operation": "Runner.run(self.plant_matrix_agent, user_input) in CommunityWorkflow.run (workflows.py:128) \u2014 the Plant Matrix Advisor agent run consuming raw user input, whose successful completion feeds the downstream local_roi_agent stage (workflows.py:129-132).",
+        "protected_resource": "The CommunityWorkflow plant-matrix analysis pipeline: the plant_matrix_agent ('Plant Matrix Advisor') run and its downstream processing (local_roi_agent stage and its FileSearchTool / plot_bar_chart tool effects), reached from ecooptima.main via run_pipeline.",
+        "protection_obligation": "Off-topic (non-plant) user input is forbidden from being processed by the CommunityWorkflow 'Plant Matrix Advisor' agent: the InputGuardrail (eco_optima_guardrail) registered on plant_matrix_agent at agent construction must evaluate the raw user input and trip InputGuardrailTripwireTriggered when the guardrail agent's is_eco_optima verdict is false, aborting the agent run at the Runner.run(self.plant_matrix_agent, user_input) commit point in CommunityWorkflow.run and thereby halting the pipeline (including the downstream local_roi_agent stage with vector-store search and chart-writing tools), with the tripwire caught and surfaced in ecooptima.main. (Merged from duplicate first- and second-phase reviewer wording.)",
+        "scope_limits": [
+          "Community workflow only: ConsumerWorkflow, AcademicWorkflow, BusinessWorkflow, and GovernmentWorkflow register no input guardrails on any of their agents (workflows.py:206-257, 350-439, 517-573, 653-771).",
+          "The conversational follow-up path (run_followup -> Runner.run(workflow.conversational_agent, ...), ecooptima.py:73-81) is not covered by this guardrail.",
+          "The topicality verdict is produced by the LLM 'Guardrail' agent (gpt-5-nano) prompted to 'Check if the user is asking about plants' (workflows.py:98-105); no deterministic policy rule is supplied in source.",
+          "The guard fires only at the plant_matrix_agent run; it does not screen the local_roi_agent input (agent-generated JSON) or any other stage.",
+          "Side effects occurring before workflow.run in run_pipeline (log directory creation and ECOOPTIMA_LOG_DIR env assignment, ecooptima.py:56-58) are not undone by the trip."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "app.py (Flask entry point cited by both reviewers) is absent from the supplied sources; deployment binding and production-prevalence claims are unverified.",
+      "agents SDK internals (Runner.run guardrail evaluation ordering, final_output_as failure semantics) are not in the supplied source views.",
+      "No behavior or runtime labels are available for scope; the apparent absence of guardrails on the other four workflows and on the follow-up path is supported by the supplied source, but the author's intent for guard coverage breadth is unknown."
+    ],
+    "repository": "anthonyrohloff/ecooptima-agentic-workflow",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:21f4ef21d2edd570f886a3c2409f4293"
+  },
+  "request_sha256": "8e0b3b3f66781284682118eda9ab7d1e842438810590a1db883086cf4d5d124f",
+  "response_sha256": "ebba9761da74c5459c57f565dc78f2c795da69e0e0863cb56bed57a2b0d383cb",
+  "state": "completed",
+  "tokens": 23086,
+  "unit": "v24-screen:21f4ef21d2edd570f886a3c2409f4293"
+}

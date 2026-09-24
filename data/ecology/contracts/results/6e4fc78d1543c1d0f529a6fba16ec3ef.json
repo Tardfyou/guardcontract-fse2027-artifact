@@ -1,0 +1,210 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The \"record_tool_calls\" \u2192 \"tools\" edge (graph.py:177) where the \"tools\" node (ToolNode(tools), registered at graph.py:164) executes the pending AIMessage tool_calls; the guard diverts to \"stop_repeated_call\" \u2192 END before this execution occurs.",
+        "contract_id": "ecological-contract:26520334a32fb0fdff3dc7f37a12db47",
+        "declared_mechanism": "route_after_agent conditional-edge router registered via builder.add_conditional_edges(\"agent_model\", route_after_agent, ...) (graph.py:167-175), which computes signatures with _tool_call_signature (graph.py:53-62), compares them within the current batch and against state.tool_call_signatures, and on a duplicate returns \"stop_repeated_call\" \u2014 a terminal node (graph.py:149-160, 179) that emits AGENT_REPEAT_CALL_MESSAGE and never reaches record_tool_calls\u2192tools.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 175,
+            "line_start": 167,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 62,
+            "line_start": 53,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 118,
+            "line_start": 108,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 153,
+            "line_start": 110,
+            "path": "src/chatbot/agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "9957e575a9ab7b782259d35800ba103adf17533d7a36ff98285123d56b0b2a64"
+          },
+          {
+            "line_end": 165,
+            "line_start": 162,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "commit_point",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 179,
+            "line_start": 176,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "commit_point",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 111,
+            "line_start": 110,
+            "path": "src/chatbot/agent/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9957e575a9ab7b782259d35800ba103adf17533d7a36ff98285123d56b0b2a64"
+          },
+          {
+            "line_end": 67,
+            "line_start": 67,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 164,
+            "line_start": 164,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          }
+        ],
+        "forbidden_condition": "Execution of a tool call whose signature produced by _tool_call_signature (JSON of name+args with sort_keys) equals another signature in the same latest_message.tool_calls batch or matches any entry already present in state.tool_call_signatures; route_after_agent returns \"stop_repeated_call\" for this condition (graph.py:108-118).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Call-site wiring that binds create_agent_tools(...) (tools.py:69-155) into create_agent_loop_graph/create_multi_turn_agent_graph (graph.py:182-194, 215-301).",
+          "Effect class/externality of retrieve_articles (chatbot.rag.retrieval) invoked by search_law_articles (tools.py:81-86).",
+          "Bodies of fetch_deposit_products/fetch_saving_products confirming network access beyond the httpx.HTTPError catch inference.",
+          "Whether create_agent_loop_graph is compiled with a production checkpointer, which determines whether signature history persists across requests on a thread."
+        ],
+        "protected_operation": "ToolNode execution of agent-issued tool calls in the agent loop, concretely the external Finlife deposit/saving product query performed inside search_financial_products via fetch_deposit_products/fetch_saving_products (tools.py:110-153).",
+        "protected_resource": "The agent tools dispatched by ToolNode(tools) in the graph \u2014 specifically search_financial_products (Finlife HTTP product query) and, generically, the other bound tools including search_law_articles.",
+        "protection_obligation": "The agent loop must not execute a tool call whose (name, args) signature was already issued in the current request: route_after_agent must detect duplicates (within the same AIMessage batch or against previously accumulated tool_call_signatures) and divert to stop_repeated_call before the record_tool_calls\u2192tools edge causes ToolNode to execute the tool (e.g., the Finlife HTTP product query in search_financial_products).",
+        "scope_limits": [
+          "The http stratum is anchored to search_financial_products' external fetch (httpx.HTTPError handling at tools.py:133; 'Finlife \uacf5\uc2dc \uc815\ubcf4' messaging at tools.py:136); the effect class of search_law_articles' retrieve_articles call is not determinable from the supplied views, though the same guard gates it generically.",
+          "Duplicate detection covers exact (name, args) matches only; re-queries with different arguments are permitted until the call cap is reached.",
+          "The check blocks scheduling of the entire latest tool-call batch when any signature repeats; it does not filter individual calls out of the batch.",
+          "Duplicate state is per request/turn: in create_multi_turn_agent_graph, analyze_turn_node resets tool_call_count and tool_call_signatures on each analyzed user turn (graph.py:235-239); for create_agent_loop_graph, cross-request persistence depends on the supplied checkpointer, not shown in the supplied views.",
+          "The supplied views do not show the caller that passes create_agent_tools() output as the tools list into the graph builders; the guard is generic over whatever list is passed to _add_agent_loop_nodes."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The \"record_tool_calls\" \u2192 \"tools\" edge (graph.py:177) where the \"tools\" node (ToolNode(tools), registered at graph.py:164) executes the pending AIMessage tool_calls; the guard diverts to \"stop_repeated_call\" \u2192 END before this execution occurs.",
+        "contract_id": "ecological-contract:dda6a7c601b0688966756c6eb69f1a7c",
+        "declared_mechanism": "route_after_agent conditional-edge router registered via builder.add_conditional_edges(\"agent_model\", route_after_agent, ...) (graph.py:167-175), which reads state.tool_call_count, compares tool_call_count + len(signatures) against MAX_AGENT_TOOL_CALLS = 4 (graph.py:18, 120-122), and on violation returns \"stop_repeated_call\" instead of \"record_tool_calls\"; record_tool_calls_node increments the counters only after the guard admits the batch (graph.py:141-147).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 175,
+            "line_start": 167,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 18,
+            "line_start": 18,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 123,
+            "line_start": 120,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 160,
+            "line_start": 149,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 153,
+            "line_start": 110,
+            "path": "src/chatbot/agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "9957e575a9ab7b782259d35800ba103adf17533d7a36ff98285123d56b0b2a64"
+          },
+          {
+            "line_end": 165,
+            "line_start": 162,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "commit_point",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 179,
+            "line_start": 176,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "commit_point",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 111,
+            "line_start": 110,
+            "path": "src/chatbot/agent/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9957e575a9ab7b782259d35800ba103adf17533d7a36ff98285123d56b0b2a64"
+          },
+          {
+            "line_end": 67,
+            "line_start": 67,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          },
+          {
+            "line_end": 164,
+            "line_start": 164,
+            "path": "src/chatbot/agent/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ca03510e0e8e2bcd110e0b76e319e6743debc6bf54d4d39aa90ba6e7a4493788"
+          }
+        ],
+        "forbidden_condition": "tool_call_count + len(signatures) > MAX_AGENT_TOOL_CALLS (with MAX_AGENT_TOOL_CALLS = 4 at graph.py:18) evaluated in route_after_agent (graph.py:120-122); when true, the batch must not reach ToolNode execution, and stop_repeated_call_node renders the distinct AGENT_CALL_LIMIT_MESSAGE for this over-limit branch (graph.py:149-160).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Call-site wiring that binds create_agent_tools(...) (tools.py:69-155) into create_agent_loop_graph/create_multi_turn_agent_graph (graph.py:182-194, 215-301).",
+          "Effect class/externality of retrieve_articles (chatbot.rag.retrieval) invoked by search_law_articles (tools.py:81-86).",
+          "Bodies of fetch_deposit_products/fetch_saving_products confirming network access beyond the httpx.HTTPError catch inference.",
+          "Whether create_agent_loop_graph is compiled with a production checkpointer, which determines whether the call counter persists across requests on a thread."
+        ],
+        "protected_operation": "ToolNode execution of agent-issued tool calls in the agent loop, concretely the external Finlife deposit/saving product query performed inside search_financial_products via fetch_deposit_products/fetch_saving_products (tools.py:110-153).",
+        "protected_resource": "The agent tools dispatched by ToolNode(tools) in the graph \u2014 specifically search_financial_products (Finlife HTTP product query) and, generically, the other bound tools including search_law_articles.",
+        "protection_obligation": "The agent loop must not execute more than MAX_AGENT_TOOL_CALLS = 4 tool calls per request: when the accumulated tool_call_count plus the pending batch's signatures would exceed 4, route_after_agent must divert to stop_repeated_call before the record_tool_calls\u2192tools edge causes ToolNode to execute the tools (e.g., the Finlife HTTP product query in search_financial_products).",
+        "scope_limits": [
+          "The http stratum is anchored to search_financial_products' external fetch (httpx.HTTPError handling at tools.py:133; 'Finlife \uacf5\uc2dc \uc815\ubcf4' messaging at tools.py:136); the effect class of search_law_articles' retrieve_articles call is not determinable from the supplied views, though the same guard gates it generically.",
+          "The cap is on cumulative executed tool calls per request/turn; batches are admitted while the projected total stays \u2264 4, so a final batch may land exactly at 4.",
+          "In create_multi_turn_agent_graph, analyze_turn_node resets tool_call_count and tool_call_signatures on each analyzed user turn (graph.py:235-239), so the cap is per user turn, not global; for create_agent_loop_graph, cross-request persistence depends on the supplied checkpointer, not shown in the supplied views.",
+          "The supplied views do not show the caller that passes create_agent_tools() output as the tools list into the graph builders; the guard is generic over whatever list is passed to _add_agent_loop_nodes."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied source shows the assembly that wires create_agent_tools() output (tools.py:69-155) into create_agent_loop_graph/create_multi_turn_agent_graph (graph.py:182-194, 215-301), nor any production entrypoint (e.g., HTTP service) invoking the compiled graphs; repository enumeration is incomplete.",
+      "Implementations of chatbot.products.fetch_deposit_products/fetch_saving_products and chatbot.rag.retrieval.retrieve_articles are not supplied; their effect classes are inferred only from the httpx.HTTPError catch (tools.py:133), the Finlife disclosure messaging (tools.py:136), and the encoder/collection parameters of retrieve_articles.",
+      "Whether create_agent_loop_graph is instantiated with a persistent checkpointer in deployment (affecting whether tool_call_count/tool_call_signatures persist across requests on a thread) is not determinable from the supplied views.",
+      "Behavior/runtime labels are unavailable per the stated scope."
+    ],
+    "repository": "SWHee/finbom-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:6e4fc78d1543c1d0f529a6fba16ec3ef"
+  },
+  "request_sha256": "a59a24a39c49906765caa27c75b102924f8e25fa58b94829cbe1af4ced3dc271",
+  "response_sha256": "d3f1c9214637e6d249dd0cbc483d5a071a5122961567bff318ea65cef6da4b5b",
+  "state": "completed",
+  "tokens": 20246,
+  "unit": "v24-screen:6e4fc78d1543c1d0f529a6fba16ec3ef"
+}

@@ -1,0 +1,223 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The blocking dict returned inside the fetch_web_page branch of validate_tool_call (app/safety.py:143-147, 153-158, 160-167) at ADK tool dispatch \u2014 before the tool function executes at app/agent.py:59 and therefore before the underlying HTTP request is issued.",
+        "contract_id": "ecological-contract:3b94d09168d72c6bdcf6636914538101",
+        "declared_mechanism": "before_tool_callback=domain_safety_guard on scout_agent (app/agent.py:111); validate_tool_call's fetch_web_page branch (app/safety.py:135-167) performs scheme, netloc-keyword, and TLD checks against app/policies.yaml security lists loaded by PolicyService (app/safety.py:24-38).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 112,
+            "line_start": 109,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 176,
+            "line_start": 174,
+            "path": "app/safety.py",
+            "role": "guard_registration",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 59,
+            "line_start": 53,
+            "path": "app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 147,
+            "line_start": 134,
+            "path": "app/safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 167,
+            "line_start": 149,
+            "path": "app/safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 52,
+            "line_start": 30,
+            "path": "app/policies.yaml",
+            "role": "forbidden_condition",
+            "source_sha256": "7fcdfa4cf19b61390cf0d2730227c63d688a80da21de9b775235b31916b1f3ea"
+          },
+          {
+            "line_end": 147,
+            "line_start": 142,
+            "path": "app/safety.py",
+            "role": "commit_point",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 167,
+            "line_start": 160,
+            "path": "app/safety.py",
+            "role": "commit_point",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 111,
+            "line_start": 110,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          }
+        ],
+        "forbidden_condition": "fetch_web_page invoked with (a) a URL whose parsed scheme is not http or https (app/safety.py:142-147), (b) a netloc containing any security.blocked_keywords entry such as facebook.com, twitter.com, reddit.com (app/safety.py:151-158; app/policies.yaml:31-41), or (c) a netloc ending with any security.blocked_tlds entry such as .xyz or .tk (app/safety.py:160-167; app/policies.yaml:42-52); a missing URL argument also errors out (app/safety.py:136-138).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "app/mcp_server.py is not among the supplied sources; the concrete HTTP request site for fetch_web_page (invoked at app/agent.py:59 via mcp_fetch_web_page) cannot be line-cited, so the exact commit of the network effect is bound only at guard interception rather than at the request issuance point."
+        ],
+        "protected_operation": "Outbound web-page fetch performed by the fetch_web_page tool (wrapper at app/agent.py:53-59 delegating to mcp_fetch_web_page), registered on and instructed for scout_agent.",
+        "protected_resource": "External web pages reachable via caller-supplied URL and retrieved by the tool's underlying HTTP client.",
+        "protection_obligation": "Every fetch_web_page invocation must pass domain_safety_guard's URL structural checks before the page fetch executes: the URL argument must be present, must use scheme http or https, must not contain any blacklisted social-domain keyword in the host, and must not end with any blacklisted TLD (per app/policies.yaml security lists); violating calls are denied pre-execution.",
+        "scope_limits": [
+          "URL checks trigger only when tool.name == 'fetch_web_page' (app/safety.py:135); other potentially network-bound tools (e.g., search_competitor_pricing_news) receive no scheme/domain/TLD screening from this guard.",
+          "Domain matching is substring containment in the lowercased netloc and TLD matching is suffix endswith, exactly as coded (app/safety.py:149-167); bypass tolerance (e.g., lookalike domains, userinfo tricks) is not assessed here.",
+          "The URL checks bind only agent-mediated tool dispatch; any direct call path to mcp_fetch_web_page (imported at app/agent.py:45) outside agent tool execution would not be guarded, and no such path is shown in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The blocking dict returned by PolicyService.validate_tool_call for an unauthorized pair (app/safety.py:122-127); per the declared callback contract (app/safety.py:117-119: dict = safety block, None = allow), the denial commits at this pre-execution return, before the invoked tool body runs and before any downstream effect.",
+        "contract_id": "ecological-contract:49a8f15851c360e67ac2e2a223052715",
+        "declared_mechanism": "before_tool_callback=domain_safety_guard registered on each Agent (app/agent.py:111, 129, 144, 180); domain_safety_guard delegates to policy_service.validate_tool_call (app/safety.py:174-176), whose is_tool_allowed check (app/safety.py:40-55) returns a blocking dict for tool names outside the role's allowed_tools loaded from app/policies.yaml (app/safety.py:24-38, app/policies.yaml:7-28).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 112,
+            "line_start": 109,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 130,
+            "line_start": 128,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 145,
+            "line_start": 143,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 181,
+            "line_start": 179,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 176,
+            "line_start": 174,
+            "path": "app/safety.py",
+            "role": "guard_registration",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 28,
+            "line_start": 7,
+            "path": "app/policies.yaml",
+            "role": "forbidden_condition",
+            "source_sha256": "7fcdfa4cf19b61390cf0d2730227c63d688a80da21de9b775235b31916b1f3ea"
+          },
+          {
+            "line_end": 55,
+            "line_start": 40,
+            "path": "app/safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 127,
+            "line_start": 120,
+            "path": "app/safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 119,
+            "line_start": 109,
+            "path": "app/safety.py",
+            "role": "commit_point",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 112,
+            "line_start": 100,
+            "path": "app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 181,
+            "line_start": 147,
+            "path": "app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 111,
+            "line_start": 110,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 181,
+            "line_start": 178,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          }
+        ],
+        "forbidden_condition": "A tool invocation proceeding to execution where the invoking agent's name (tool_context.agent_name) paired with tool.name is not present in the roles.<agent>.allowed_tools list of app/policies.yaml \u2014 e.g., scout_agent invoking save_intelligence_report or analyst_agent invoking post_slack_notification.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "That a non-None dict returned from an ADK before_tool_callback actually prevents tool execution is a framework semantic; supplied source shows only the declared contract (docstring at app/safety.py:117-119) and the blocking returns, not the ADK runtime enforcement code.",
+          "How ADK populates tool_context.agent_name during sub-agent delegation (app/safety.py:120) is framework-internal and not shown in supplied source, so the agent identity used for allowlist matching is bound only by declaration."
+        ],
+        "protected_operation": "Agent-initiated tool invocation dispatch for all tools registered on the four agents: fetch_web_page (scout_agent), get_own_pricing_catalog / get_competitor_history / search_competitor_pricing_news (analyst_agent), query_pricing_db / generate_history_chart (db_analyst_agent), and save_intelligence_report / export_pricing_strategy / post_slack_notification (coordinator_agent).",
+        "protected_resource": "The agents' tool-execution surface (the Python-function tools registered on the ADK Agent instances and the downstream effects they would perform).",
+        "protection_obligation": "Every tool invocation by any ADK agent in this unit (scout_agent, analyst_agent, db_analyst_agent, coordinator_agent) must pass the registered before_tool_callback domain_safety_guard (PolicyService.validate_tool_call) before the tool executes, and the guard must deny any agent/tool pair whose tool name is not listed in that agent's role allowlist in app/policies.yaml. (Merged wording of both reviewers: unauthorized agent-to-tool pairs are blocked at the tool-execution dispatch point, prior to any downstream effect of the tool such as the HTTP page fetch, the Slack webhook POST, or local file/SQLite writes.)",
+        "scope_limits": [
+          "Covers only the before_tool_callback role-gating mechanism; the separate FunctionTool require_confirmation=True flag on export_pricing_strategy (app/agent.py:148-151) is a distinct mechanism not asserted by the reviewed obligations.",
+          "transfer_to_agent is unconditionally allowed for every agent (app/safety.py:52-54) and is outside this denial obligation.",
+          "This dispatch-point gate transitively guards downstream effects of differing strata (HTTP page fetch, Slack webhook POST at app/tools.py:221-233, file/SQLite writes at app/tools.py:37-151) only insofar as it denies unauthorized agent/tool pairs; it does not perform safety content checks on those tools' arguments (only bracketed-placeholder sanitization at app/safety.py:129-132).",
+          "Applicability to tool invocations occurring outside the four registered Agent instances is not established by the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "app/mcp_server.py is not supplied: implementations of fetch_web_page, search_competitor_pricing_news, get_own_pricing_catalog, get_competitor_history, query_pricing_db, and generate_history_chart are not line-citable, so the underlying HTTP request commit for fetch_web_page and the effect strata of the other MCP-backed tools cannot be verified from supplied source.",
+      "No supplied source demonstrates ADK runtime enforcement of the before_tool_callback blocking contract (that a returned dict suppresses tool execution) or the population of tool_context.agent_name; these framework behaviors are bound only by the declared docstring contract (app/safety.py:117-119) and callback naming.",
+      "Whether any code path invokes the guarded tools outside the registered ADK Agent tool-dispatch flow (e.g., direct calls to mcp_fetch_web_page or the app/tools.py functions) is not shown in supplied source, so universal coverage of the guard cannot be established."
+    ],
+    "repository": "harishkumar04/saas-pricing-scout-agent-kaggle",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:69fdc0c14d32b0073a3a9f666f00ea1c"
+  },
+  "request_sha256": "e24bd398aca20d0069a2bdddeace8628ec4563683dfd545ba721d4f692e707f9",
+  "response_sha256": "b6afca098d3630ecf193524da20030ea87541034c041e22ab3f2535a7df416b1",
+  "state": "completed",
+  "tokens": 22548,
+  "unit": "v24-screen:69fdc0c14d32b0073a3a9f666f00ea1c"
+}

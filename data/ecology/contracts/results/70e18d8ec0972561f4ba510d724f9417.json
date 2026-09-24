@@ -1,0 +1,95 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tool_context.state[key] = value at state_tools.py:40 \u2014 the rejected key conditions must never reach this line.",
+        "contract_id": "ecological-contract:6e0646a3f0c020b4e9dde4a662f2b907",
+        "declared_mechanism": "In-tool validation inside set_user_state: (1) a prefix check that returns an error dict for any key not starting with 'user:' (state_tools.py:28-32); (2) a blocklist check against PROTECTED_STATE_KEYS that returns an error dict for 'user:name'/'user:email' (state_tools.py:34-38, keys defined at state_tools.py:16-19). The agent instruction restates the identity-key prohibition at prompt level (agent.py:45-46), but the code checks are the enforcing mechanism.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 19,
+            "line_start": 16,
+            "path": "app/tools/state_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5a19a355798cf4d833265ef5b4c9e069d01fb197d1c6d43f84c5168e5dc80fcc"
+          },
+          {
+            "line_end": 38,
+            "line_start": 28,
+            "path": "app/tools/state_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "5a19a355798cf4d833265ef5b4c9e069d01fb197d1c6d43f84c5168e5dc80fcc"
+          },
+          {
+            "line_end": 27,
+            "line_start": 22,
+            "path": "app/tools/state_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "5a19a355798cf4d833265ef5b4c9e069d01fb197d1c6d43f84c5168e5dc80fcc"
+          },
+          {
+            "line_end": 40,
+            "line_start": 40,
+            "path": "app/tools/state_tools.py",
+            "role": "commit_point",
+            "source_sha256": "5a19a355798cf4d833265ef5b4c9e069d01fb197d1c6d43f84c5168e5dc80fcc"
+          },
+          {
+            "line_end": 46,
+            "line_start": 45,
+            "path": "app/agents/orchestrator/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9db44b30d8a750b13d95b198e0807750c5cc0f5fdebb8aa6fea9e293c5522a2f"
+          },
+          {
+            "line_end": 51,
+            "line_start": 51,
+            "path": "app/agents/orchestrator/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9db44b30d8a750b13d95b198e0807750c5cc0f5fdebb8aa6fea9e293c5522a2f"
+          },
+          {
+            "line_end": 95,
+            "line_start": 91,
+            "path": "app/api/v1/endpoints/chat.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3ab5bbea79a7f3ee40b754742fcd598086b88f85c1ab40c1ea9780b23d26b1d3"
+          }
+        ],
+        "forbidden_condition": "A set_user_state invocation whose key is 'user:name' or 'user:email' (the PROTECTED_STATE_KEYS set) or whose key does not start with 'user:' passing the in-tool checks and reaching the state write.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether tool_context.state mutations in this deployment are persisted by the session service to a database (app/services/adk_service is not supplied); if so, a second commit point in the database stratum may exist and would warrant a separate contract.",
+          "Whether any registered callback (log_before_tool/log_after_tool, agent.py:56-57) independently enforces the key policy; the callback implementations in app.agents.callbacks are not supplied and the file comments describe them only as logging."
+        ],
+        "protected_operation": "Agent-dispatched update of user-scoped session state via the set_user_state tool, i.e., setting an allowed 'user:'-prefixed preference key to a new string value.",
+        "protected_resource": "ADK ToolContext session state \u2014 specifically the auth-owned identity keys 'user:name' and 'user:email' (sourced from the authenticated user record when seeding session state, chat.py:35-38) and the 'user:'-scoped key namespace managed by the tool.",
+        "protection_obligation": "The set_user_state ADK tool, registered on the production root agent, must reject any write targeting an auth-owned identity key ('user:name' or 'user:email') or any key lacking the 'user:' prefix before the value is committed to tool_context.state. (Merged from the two reviewer opinions, which state the same obligation with the second adding the production-root-agent registration binding.)",
+        "scope_limits": [
+          "The guard applies only to writes attempted through the set_user_state tool; other state writes, such as seeding 'user:name'/'user:email' via build_user_state at session creation (chat.py:30-40, 73-77), are outside this guard and are the legitimate path for those keys.",
+          "The prompt-level agent instruction (agent.py:39-48) is recorded as declared intent only and is not treated as an enforcing mechanism.",
+          "Only the in-process ToolContext.state commit is asserted; any downstream persistence of that state by the session service (e.g., into a database) is not established from the supplied source.",
+          "Authentication of the chat endpoint (get_current_user, chat.py:47) is ordinary web auth and out of scope; chat.py:91-95 is cited solely as the dataflow binding the agent run \u2014 and thus tool dispatch \u2014 to the production request path."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The session service implementation (imported at chat.py:24 from app.services.adk_service) is not supplied, so whether the ToolContext.state write at state_tools.py:40 is subsequently persisted to a database cannot be confirmed from the supplied lines; only the in-process session-state commit is evidenced.",
+      "Implementations of app.agents.callbacks (log_before_tool, log_after_tool, etc., imported at agent.py:12 and registered at agent.py:54-59) are not supplied; whether any lifecycle callback adds independent enforcement of the key policy is unknown.",
+      "No supplied source shows the ADK framework's tool-dispatch internals, so how tool arguments produced by the model reach set_user_state (and whether any framework-level validation applies before the in-tool checks) is not evidenced; this does not affect the in-tool guard itself but limits precise characterization of the dispatch path."
+    ],
+    "repository": "1109inc/google-adk-sample-folder-structure",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:70e18d8ec0972561f4ba510d724f9417"
+  },
+  "request_sha256": "74e2f8fb6725a907fc8fea182d8ef4f09addc1ce9e9bea083687647edc9dc564",
+  "response_sha256": "dff5b10499982155264d77f0983d653b0a72676ec113e2187b2938cc60105257",
+  "state": "completed",
+  "tokens": 12261,
+  "unit": "v24-screen:70e18d8ec0972561f4ba510d724f9417"
+}

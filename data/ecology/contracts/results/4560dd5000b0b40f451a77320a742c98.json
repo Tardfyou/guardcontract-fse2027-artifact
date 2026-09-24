@@ -1,0 +1,331 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The call-count check / early return at the top of use_dataviz_agent, which short-circuits before visualize_data is reached (modules/05/langgraph/orchestrator_agent.py:163-167; modules/05/strands/orchestrator_agent.py:226-231).",
+        "contract_id": "ecological-contract:0143d48d4ecb14d8d0953f22efacc959",
+        "declared_mechanism": "Closure-scoped call counter ('call_count' dict) created at tool-factory time, incremented at tool entry, with an early return of 'Chart already created' when count > 1, evaluated before the downstream agent invocation.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 172,
+            "line_start": 144,
+            "path": "modules/05/langgraph/orchestrator_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "fcbe4f94a74a636d725deac2c36df7e0add22ca0dd8da6b0addaeadcb332d64e"
+          },
+          {
+            "line_end": 165,
+            "line_start": 163,
+            "path": "modules/05/langgraph/orchestrator_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fcbe4f94a74a636d725deac2c36df7e0add22ca0dd8da6b0addaeadcb332d64e"
+          },
+          {
+            "line_end": 167,
+            "line_start": 163,
+            "path": "modules/05/langgraph/orchestrator_agent.py",
+            "role": "commit_point",
+            "source_sha256": "fcbe4f94a74a636d725deac2c36df7e0add22ca0dd8da6b0addaeadcb332d64e"
+          },
+          {
+            "line_end": 170,
+            "line_start": 166,
+            "path": "modules/05/langgraph/orchestrator_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "fcbe4f94a74a636d725deac2c36df7e0add22ca0dd8da6b0addaeadcb332d64e"
+          },
+          {
+            "line_end": 111,
+            "line_start": 106,
+            "path": "modules/05/langgraph/orchestrator_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fcbe4f94a74a636d725deac2c36df7e0add22ca0dd8da6b0addaeadcb332d64e"
+          },
+          {
+            "line_end": 140,
+            "line_start": 134,
+            "path": "modules/05/langgraph/orchestrator_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fcbe4f94a74a636d725deac2c36df7e0add22ca0dd8da6b0addaeadcb332d64e"
+          },
+          {
+            "line_end": 234,
+            "line_start": 217,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 228,
+            "line_start": 226,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 231,
+            "line_start": 226,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "commit_point",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 231,
+            "line_start": 229,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 312,
+            "line_start": 305,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 202,
+            "line_start": 188,
+            "path": "modules/05/strands/agentcore_runtime_adapter.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a936833fcb79848b11ea5ed5b75f613265ce3f39833fc1a4840cfc8ff5cec5d0"
+          }
+        ],
+        "forbidden_condition": "A second invocation of the downstream DataViz agent via use_dataviz_agent \u2014 i.e., the closure call counter exceeding 1 \u2014 which would trigger another chart-generation run (LLM loop plus chart tool calls).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the downstream effects gated by this counter (gateway MCP HTTP calls, local chart tool executions, LLM invocations inside visualize_data) should be compiled as separate guarded effects in other strata.",
+          "Whether the intended unit of limitation is per user request, per orchestrator thread/session, or per agent instance is not stated in source."
+        ],
+        "protected_operation": "Invocation of the downstream DataViz agent from the orchestrator's use_dataviz_agent tool (self.dataviz_agent.visualize_data(data, description) / dataviz.visualize_data(data, description)).",
+        "protected_resource": "Downstream DataViz agent chart-generation pipeline reached through the orchestrator's use_dataviz_agent tool.",
+        "protection_obligation": "The orchestrator-registered use_dataviz_agent tool must permit at most one invocation of the downstream DataViz agent per orchestrator agent instance; repeat tool calls must be short-circuited with 'Chart already created' at tool entry before dataviz.visualize_data executes (merged from LangGraph and Strands orchestrator implementations, identical reviewer wording).",
+        "scope_limits": [
+          "The counter lives in the tool-creation closure: a fresh counter is created on each create_dataviz_tool()/_create_tools() call, and runtime adapters construct a fresh orchestrator agent per request (modules/05/langgraph/agentcore_runtime_adapter.py:198-199; modules/05/strands/agentcore_runtime_adapter.py:87-88), so the effective limitation window depends on agent instance lifetime rather than an explicit session store.",
+          "The guard returns a soft string response instead of raising; the use_electrify_agent tool has no analogous counter in the supplied source.",
+          "A prompt-level SINGLE CHART RULE also exists (modules/05/strands/orchestrator_agent.py:57-60), but the mechanism compiled here is the code-level counter, not prompt text."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The MCP tool call issued through the gateway-bound MCP client, where gateway policy evaluates or denies the call; denials surface at the runtime handler tool-call exception boundaries (modules/05/langgraph/agentcore_runtime_adapter.py:262-290 and 309-320).",
+        "contract_id": "ecological-contract:6c000a54088010b1070c85907b7c5f01",
+        "declared_mechanism": "Gateway-bound HTTPS MCP clients (MCPClient wrapping streamablehttp_client with JWT Authorization headers) whose list_tools_sync() output forms the sub-agent tool set; LangGraph sub-agents configured via HttpsServerConfig with gateway URLs; runtime handlers convert tool-call ExceptionGroups into 'tool call was denied by policy' responses.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 277,
+            "line_start": 265,
+            "path": "modules/05/strands/dataviz_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "4e0452b8cdde090db261c19cdc802dd943adfa0e1b418c07b5aaa4cee5531c45"
+          },
+          {
+            "line_end": 276,
+            "line_start": 274,
+            "path": "modules/05/strands/dataviz_agent.py",
+            "role": "commit_point",
+            "source_sha256": "4e0452b8cdde090db261c19cdc802dd943adfa0e1b418c07b5aaa4cee5531c45"
+          },
+          {
+            "line_end": 129,
+            "line_start": 121,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 285,
+            "line_start": 284,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 186,
+            "line_start": 176,
+            "path": "modules/05/strands/agentcore_runtime_adapter.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a936833fcb79848b11ea5ed5b75f613265ce3f39833fc1a4840cfc8ff5cec5d0"
+          },
+          {
+            "line_end": 302,
+            "line_start": 298,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 79,
+            "line_start": 56,
+            "path": "modules/05/langgraph/orchestrator_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "fcbe4f94a74a636d725deac2c36df7e0add22ca0dd8da6b0addaeadcb332d64e"
+          },
+          {
+            "line_end": 97,
+            "line_start": 92,
+            "path": "modules/05/langgraph/orchestrator_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "fcbe4f94a74a636d725deac2c36df7e0add22ca0dd8da6b0addaeadcb332d64e"
+          },
+          {
+            "line_end": 290,
+            "line_start": 262,
+            "path": "modules/05/langgraph/agentcore_runtime_adapter.py",
+            "role": "commit_point",
+            "source_sha256": "e4043470ccd4cab2d84509b72130450f278df61cf924ee1501f6fcd8152cd9c5"
+          },
+          {
+            "line_end": 320,
+            "line_start": 309,
+            "path": "modules/05/langgraph/agentcore_runtime_adapter.py",
+            "role": "commit_point",
+            "source_sha256": "e4043470ccd4cab2d84509b72130450f278df61cf924ee1501f6fcd8152cd9c5"
+          }
+        ],
+        "forbidden_condition": "A chart or electrify MCP tool call executing outside gateway policy enforcement (a policy bypass); the source encodes this via explicit bypass-exclusion comments and via 'tool call was denied by policy' error surfaces that presuppose gateway policy evaluation of tool calls.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The concrete gateway request execution (tool call over streamable HTTP) occurs in library code (strands MCPClient / mcp streamable HTTP client) that is not supplied.",
+          "Whether the LangGraph sub-agents issue gateway calls with equivalent policy-enforced tool wiring is not verifiable from the supplied source (sub-agent files not supplied)."
+        ],
+        "protected_operation": "Agent-invoked MCP tool calls against the gateway-bound MCP clients (dataviz chart tools, electrify data-query tools).",
+        "protected_resource": "AgentCore Gateway MCP endpoints for the DataViz and Electrify tools.",
+        "protection_obligation": "MCP tool invocations (dataviz chart tools; electrify customer-data queries) must execute only through the policy-enforced AgentCore Gateway; MCP tool calls that bypass gateway policy enforcement are forbidden (second-phase reviewer obligation, execution-side commit point).",
+        "scope_limits": [
+          "Gateway policy definitions and enforcement behavior are external to the supplied source; only client-side wiring (client construction, tool-list restriction, JWT headers) and denial handling are visible.",
+          "The database effect behind electrify gateway queries is not shown in supplied source; only the HTTPS MCP transport to the gateway is in scope for this contract.",
+          "Without a configured gateway URL, no policy enforcement applies (modules/05/strands/dataviz_agent.py:278-285 constructs the agent with BUILTIN_TOOLS)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "StrandsAgent construction with the gateway-only tools list (modules/05/strands/agentcore_runtime_adapter.py:170-174 and 182-186; modules/05/strands/orchestrator_agent.py:286-290 and 298-302; modules/05/strands/dataviz_agent.py:327-331).",
+        "contract_id": "ecological-contract:d1cbc5ed1fd73bdb45112289ab4cd0d1",
+        "declared_mechanism": "Sub-agent Strands Agents constructed exclusively with tools from mcp_client.list_tools_sync() over the gateway-bound MCP client, plus local getDateTime (dataviz) or getDateTime/calculateSavings (electrify), with explicit in-source comments excluding BUILTIN_TOOLS.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 174,
+            "line_start": 159,
+            "path": "modules/05/strands/agentcore_runtime_adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "a936833fcb79848b11ea5ed5b75f613265ce3f39833fc1a4840cfc8ff5cec5d0"
+          },
+          {
+            "line_end": 169,
+            "line_start": 168,
+            "path": "modules/05/strands/agentcore_runtime_adapter.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a936833fcb79848b11ea5ed5b75f613265ce3f39833fc1a4840cfc8ff5cec5d0"
+          },
+          {
+            "line_end": 174,
+            "line_start": 170,
+            "path": "modules/05/strands/agentcore_runtime_adapter.py",
+            "role": "commit_point",
+            "source_sha256": "a936833fcb79848b11ea5ed5b75f613265ce3f39833fc1a4840cfc8ff5cec5d0"
+          },
+          {
+            "line_end": 186,
+            "line_start": 176,
+            "path": "modules/05/strands/agentcore_runtime_adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "a936833fcb79848b11ea5ed5b75f613265ce3f39833fc1a4840cfc8ff5cec5d0"
+          },
+          {
+            "line_end": 291,
+            "line_start": 280,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 285,
+            "line_start": 284,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 290,
+            "line_start": 286,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 303,
+            "line_start": 293,
+            "path": "modules/05/strands/orchestrator_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "b6f1479d54c6e96cb84f943f72f506b726b8e8ec7ab39cb752377edb7edd985c"
+          },
+          {
+            "line_end": 332,
+            "line_start": 320,
+            "path": "modules/05/strands/dataviz_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "4e0452b8cdde090db261c19cdc802dd943adfa0e1b418c07b5aaa4cee5531c45"
+          },
+          {
+            "line_end": 326,
+            "line_start": 325,
+            "path": "modules/05/strands/dataviz_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4e0452b8cdde090db261c19cdc802dd943adfa0e1b418c07b5aaa4cee5531c45"
+          },
+          {
+            "line_end": 331,
+            "line_start": 327,
+            "path": "modules/05/strands/dataviz_agent.py",
+            "role": "commit_point",
+            "source_sha256": "4e0452b8cdde090db261c19cdc802dd943adfa0e1b418c07b5aaa4cee5531c45"
+          }
+        ],
+        "forbidden_condition": "Registration of local built-in duplicate chart/analysis tools (BUILTIN_TOOLS) \u2014 or other local duplicates of gateway-mediated tools \u2014 into the DataViz (or Electrify) sub-agent when a gateway is configured, because such duplicates allow tool calls that bypass gateway policy enforcement.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether the LangGraph variant (modules/05/langgraph/dataviz_agent.py, electrify_agent.py \u2014 not supplied) enforces gateway-only registration inside its sub-agents.",
+          "Whether the electrify gateway also exposes getDateTime/calculateSavings, which would determine whether the retained local electrify helpers are themselves policy-bypassing duplicates."
+        ],
+        "protected_operation": "Sub-agent tool registration at agent construction: the tool list wired into the Strands Agent from which the agent subsequently dispatches tool calls.",
+        "protected_resource": "DataViz and Electrify sub-agent tool registries at the gateway policy-enforcement boundary.",
+        "protection_obligation": "When an AgentCore gateway is configured, sub-agent tool registration must include only policy-enforced gateway MCP tools (plus local helper tools not duplicated by the gateway); registering local built-in duplicate tools (BUILTIN_TOOLS) that bypass gateway policy enforcement is forbidden (merges first-phase chart-tool clause with second-phase registration clause; duplicate reviewer wording consolidated).",
+        "scope_limits": [
+          "Applies only when a gateway URL is configured (DATAVIZ_MCP_SERVER_URL / ELECTRIFY_MCP_SERVER_URL / MCP_GATEWAY_URL); with no gateway, the DataViz agent is explicitly constructed with BUILTIN_TOOLS as the fallback ('no gateway = no policy enforcement') per modules/05/strands/dataviz_agent.py:269-285.",
+          "The Electrify sub-agent retains local getDateTime and calculateSavings alongside gateway tools; only gateway-duplicated tools are excluded (modules/05/strands/orchestrator_agent.py:296-302).",
+          "Registration sites compiled here are the Strands CLI chat_loop and the adapter request handler; LangGraph sub-agent internal tool registration is not visible in the supplied source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "modules/05/langgraph/dataviz_agent.py and modules/05/langgraph/electrify_agent.py are not supplied; how the LangGraph sub-agents register tools, and whether local gateway-duplicate tools exist there, is unknown.",
+      "AgentCore Gateway policy definitions and enforcement configuration are not supplied; enforcement semantics are asserted only via source comments and denial-handling messages.",
+      "The intended scope of the single-use dataviz counter (per request, per thread/session, or per agent instance) is not stated in source; adapters construct a fresh agent per request while the CLI retains one agent across queries.",
+      "The MCP tool-call execution path over streamable HTTP resides in library code (strands MCPClient / mcp client) not included in the supplied views.",
+      "Whether the electrify gateway also serves getDateTime/calculateSavings (which would make the retained local electrify helpers gateway duplicates) is not shown.",
+      "Behavior labels and runtime prevalence data are unavailable per the stated scope; no runtime-behavior or prevalence determination is made here."
+    ],
+    "repository": "HNarendranath/aws-multi-agent-workshop",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4560dd5000b0b40f451a77320a742c98"
+  },
+  "request_sha256": "f90b8609a7a238d52994adb372622d2bb3fc41ccc8c15d52405fbec1b64527dd",
+  "response_sha256": "d04d233783d089d98a02fb903d5e2915021ffaea1c586d726090e3f09839b178",
+  "state": "completed",
+  "tokens": 41027,
+  "unit": "v24-screen:4560dd5000b0b40f451a77320a742c98"
+}

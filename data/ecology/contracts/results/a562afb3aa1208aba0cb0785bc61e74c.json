@@ -1,0 +1,357 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The ValueError raised inside resolve_sandboxed_path during _resolve_write_path, which must precede the mkdir/os.open/f.write sequence of each tool: write_file (guard at file_write.py line 82 before os.open at 103 and write at 105), overwrite_file (guard at 139 before os.open at 155), edit_file (guard at 190 before the write-back os.open at 234).",
+        "contract_id": "ecological-contract:0fc9994b8b401b9b3172f90f754d0c68",
+        "declared_mechanism": "FileWriteTools._resolve_write_path routes every write-tool path through resolve_sandboxed_path(root, effective_path, write_mode=True), which raises ValueError for absolute/'..'/~ paths, write-protected targets (subject to the AGENT_WRITABLE_FILES exception), and paths resolving outside the workspace root; each tool catches the ValueError and returns an error message instead of proceeding to open; os.open additionally sets O_NOFOLLOW where available to harden against symlink traversal.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 61,
+            "line_start": 29,
+            "path": "openpaw/agent/tools/file_write.py",
+            "role": "guard_registration",
+            "source_sha256": "c804b2af5d7807d8ae4837ef6928a89e67537d08096e1ca09233398b6c8621c8"
+          },
+          {
+            "line_end": 99,
+            "line_start": 75,
+            "path": "openpaw/agent/tools/sandbox.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ad9129db57aea2d60fe390468c9902a82f1fd0be04a1d4f3750c2c9150d7ed30"
+          },
+          {
+            "line_end": 41,
+            "line_start": 8,
+            "path": "openpaw/agent/tools/sandbox.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ad9129db57aea2d60fe390468c9902a82f1fd0be04a1d4f3750c2c9150d7ed30"
+          },
+          {
+            "line_end": 105,
+            "line_start": 66,
+            "path": "openpaw/agent/tools/file_write.py",
+            "role": "protected_operation",
+            "source_sha256": "c804b2af5d7807d8ae4837ef6928a89e67537d08096e1ca09233398b6c8621c8"
+          },
+          {
+            "line_end": 155,
+            "line_start": 121,
+            "path": "openpaw/agent/tools/file_write.py",
+            "role": "protected_operation",
+            "source_sha256": "c804b2af5d7807d8ae4837ef6928a89e67537d08096e1ca09233398b6c8621c8"
+          },
+          {
+            "line_end": 234,
+            "line_start": 173,
+            "path": "openpaw/agent/tools/file_write.py",
+            "role": "protected_operation",
+            "source_sha256": "c804b2af5d7807d8ae4837ef6928a89e67537d08096e1ca09233398b6c8621c8"
+          },
+          {
+            "line_end": 105,
+            "line_start": 81,
+            "path": "openpaw/agent/tools/file_write.py",
+            "role": "commit_point",
+            "source_sha256": "c804b2af5d7807d8ae4837ef6928a89e67537d08096e1ca09233398b6c8621c8"
+          },
+          {
+            "line_end": 155,
+            "line_start": 138,
+            "path": "openpaw/agent/tools/file_write.py",
+            "role": "commit_point",
+            "source_sha256": "c804b2af5d7807d8ae4837ef6928a89e67537d08096e1ca09233398b6c8621c8"
+          },
+          {
+            "line_end": 234,
+            "line_start": 189,
+            "path": "openpaw/agent/tools/file_write.py",
+            "role": "commit_point",
+            "source_sha256": "c804b2af5d7807d8ae4837ef6928a89e67537d08096e1ca09233398b6c8621c8"
+          },
+          {
+            "line_end": 44,
+            "line_start": 43,
+            "path": "openpaw/agent/tools/file_write.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c804b2af5d7807d8ae4837ef6928a89e67537d08096e1ca09233398b6c8621c8"
+          },
+          {
+            "line_end": 67,
+            "line_start": 63,
+            "path": "openpaw/agent/tools/file_write.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c804b2af5d7807d8ae4837ef6928a89e67537d08096e1ca09233398b6c8621c8"
+          }
+        ],
+        "forbidden_condition": "A write-path resolution performed under write_mode that (a) targets any path inside WRITE_PROTECTED_DIRS ('data/', 'config/', 'memory/logs', 'memory/conversations') except the AGENT_WRITABLE_FILES exception ('agent/HEARTBEAT.md'), or (b) is an absolute path, contains a '..' path part, or starts with '~', or (c) resolves to a path outside the workspace root. Any such path reaching os.open/f.write in write_file, overwrite_file, or edit_file is the forbidden end state.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Concrete contents of WRITE_PROTECTED_DIRS, AGENT_WRITABLE_FILES, TOP_LEVEL_DIRS, and WORKSPACE_DIR (openpaw/core/paths module not supplied).",
+          "Wiring showing FilesystemTools includes FileWriteTools' tools in the agent's tool list (openpaw/agent/tools/filesystem not supplied).",
+          "Whether any other write-capable tool shares this same guard."
+        ],
+        "protected_operation": "Agent-invoked workspace file creation, full-content overwrite, and text replacement performed via the write_file, overwrite_file, and edit_file LangChain tools returned by FileWriteTools.get_tools.",
+        "protected_resource": "Files under the workspace root, in particular the framework-managed write-protected directories (data/, config/, memory/logs, memory/conversations) and every filesystem location outside the workspace root.",
+        "protection_obligation": "Agent workspace write tools (write_file, overwrite_file, edit_file) must refuse to create, overwrite, or modify files at paths inside write-protected directories or outside the workspace sandbox, with the check executed before any file is opened or written. (Merges the duplicate file-write wording of the phase-first and phase-second opinions.)",
+        "scope_limits": [
+          "The obligation covers only the three write tools in FileWriteTools; read-mode resolution (write_mode=False) permits reading any path inside the workspace root, including data/ (sandbox.py lines 51-54).",
+          "The ValueError is converted into a returned error string; enforcement is by refusing to open the file, not by raising to the caller.",
+          "Write-protected directory names and the agent/HEARTBEAT.md exception are documented in docstrings (sandbox.py lines 8-41, 56-61); the concrete constants in openpaw.core.paths are outside the supplied views.",
+          "builder.py imports and instantiates FilesystemTools (from openpaw.agent.tools.filesystem), not FileWriteTools directly; the supplied views do not show FilesystemTools aggregating these three tools, so their registration into the agent tool list is inferred from the @tool decoration and agent-facing docstrings."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Dispatch of EmailProvider.send, whose abstract contract states it sends the email and returns the sent message ID (base.py lines 149-179). The supplied views do not contain the call site that orders RecipientPolicy.validate relative to this dispatch; that ordering is a pending binding question, not an established fact.",
+        "contract_id": "ecological-contract:2062bc483410bb6df7aac40d5b5df67c",
+        "declared_mechanism": "RecipientPolicy.validate \u2014 an allowlist safety gate constructed from configured allowed_patterns (lowercased) and max_recipients, returning an error string for empty recipient lists, over-cap recipient counts, empty allowlists, and any recipient not matched by fnmatch against the allowed patterns.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 94,
+            "line_start": 88,
+            "path": "openpaw/builtins/tools/email/base.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d4376c4497d5f6d49c0a56231ba7818cc7f330bb50148fbc58f3cc77992e21b0"
+          },
+          {
+            "line_end": 101,
+            "line_start": 96,
+            "path": "openpaw/builtins/tools/email/base.py",
+            "role": "guard_registration",
+            "source_sha256": "d4376c4497d5f6d49c0a56231ba7818cc7f330bb50148fbc58f3cc77992e21b0"
+          },
+          {
+            "line_end": 131,
+            "line_start": 106,
+            "path": "openpaw/builtins/tools/email/base.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d4376c4497d5f6d49c0a56231ba7818cc7f330bb50148fbc58f3cc77992e21b0"
+          },
+          {
+            "line_end": 139,
+            "line_start": 133,
+            "path": "openpaw/builtins/tools/email/base.py",
+            "role": "guard_registration",
+            "source_sha256": "d4376c4497d5f6d49c0a56231ba7818cc7f330bb50148fbc58f3cc77992e21b0"
+          },
+          {
+            "line_end": 160,
+            "line_start": 142,
+            "path": "openpaw/builtins/tools/email/base.py",
+            "role": "protected_operation",
+            "source_sha256": "d4376c4497d5f6d49c0a56231ba7818cc7f330bb50148fbc58f3cc77992e21b0"
+          },
+          {
+            "line_end": 179,
+            "line_start": 161,
+            "path": "openpaw/builtins/tools/email/base.py",
+            "role": "commit_point",
+            "source_sha256": "d4376c4497d5f6d49c0a56231ba7818cc7f330bb50148fbc58f3cc77992e21b0"
+          }
+        ],
+        "forbidden_condition": "An email send whose recipient list is empty, exceeds max_recipients, contains any address not matching allowed_patterns via fnmatch, or is attempted while allowed_patterns is empty (which blocks ALL outbound email by design).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The send tool wrapper and the concrete ordering of RecipientPolicy.validate against the EmailProvider.send dispatch.",
+          "Whether cc/bcc recipients are passed through the same validation.",
+          "Whether and where an agent-facing email send tool is registered (decorator or tool dispatch) that would bind this effect to agent mediation.",
+          "The configuration source supplying allowed_patterns and max_recipients to RecipientPolicy."
+        ],
+        "protected_operation": "Outbound email delivery performed via EmailProvider.send (to/cc/bcc recipients with subject, body, threading, and attachments).",
+        "protected_resource": "The outbound email channel and its externally-visible recipient set.",
+        "protection_obligation": "Outbound email must be delivered only to recipients matching the configured allowlist patterns and within the recipient cap; when no allowlist is configured, no outbound email may be sent at all (deny-by-default).",
+        "scope_limits": [
+          "Only RecipientPolicy and the EmailProvider ABC are supplied; concrete providers (Gmail/SMTP/SES are named in docstrings only) and the tool layer that would invoke validate before send are not in the supplied views.",
+          "Coverage of cc/bcc (and any other recipient fields) by the policy is not shown; validate's documented parameter is a single recipients list.",
+          "The docstring claim that the gate applies 'before agents can send' (base.py lines 91-93) is documentation, not a shown registration into an agent tool, so agent mediation is not established from the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The raise of ApprovalRequiredError (approval.py lines 108-112) executed in place of handler(request) for unapproved gated tools; handler is reached only when the gate is unconfigured, the tool does not require approval, or the tool was recently approved (approval.py lines 78-79, 84-85, 88-95).",
+        "contract_id": "ecological-contract:564758bcb041d0eeb17ae23b0041cc2a",
+        "declared_mechanism": "ApprovalToolMiddleware.get_middleware returns a @wrap_tool_call middleware that consults ApprovalGateManager.requires_approval and check_recent_approval, creates a PendingApproval via request_approval, and raises ApprovalRequiredError instead of invoking handler; AgentBuilder passes the middleware list into create_agent, whose comments name 'approval gates' among the wired middleware (builder.py lines 113, 166, 188).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 71,
+            "line_start": 61,
+            "path": "openpaw/agent/middleware/approval.py",
+            "role": "guard_registration",
+            "source_sha256": "46511dce387abffb576c8dd02c294fad0106fb7fb62de9ebdb25543e97942635"
+          },
+          {
+            "line_end": 170,
+            "line_start": 164,
+            "path": "openpaw/agent/builder.py",
+            "role": "guard_registration",
+            "source_sha256": "3b7f66e0532cd0789f45faf4df58270c8ea7cf3758dd528cbbd6427549b3def8"
+          },
+          {
+            "line_end": 95,
+            "line_start": 84,
+            "path": "openpaw/agent/middleware/approval.py",
+            "role": "forbidden_condition",
+            "source_sha256": "46511dce387abffb576c8dd02c294fad0106fb7fb62de9ebdb25543e97942635"
+          },
+          {
+            "line_end": 85,
+            "line_start": 73,
+            "path": "openpaw/agent/middleware/approval.py",
+            "role": "protected_operation",
+            "source_sha256": "46511dce387abffb576c8dd02c294fad0106fb7fb62de9ebdb25543e97942635"
+          },
+          {
+            "line_end": 113,
+            "line_start": 97,
+            "path": "openpaw/agent/middleware/approval.py",
+            "role": "commit_point",
+            "source_sha256": "46511dce387abffb576c8dd02c294fad0106fb7fb62de9ebdb25543e97942635"
+          },
+          {
+            "line_end": 71,
+            "line_start": 65,
+            "path": "openpaw/agent/middleware/approval.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "46511dce387abffb576c8dd02c294fad0106fb7fb62de9ebdb25543e97942635"
+          },
+          {
+            "line_end": 189,
+            "line_start": 183,
+            "path": "openpaw/agent/builder.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3b7f66e0532cd0789f45faf4df58270c8ea7cf3758dd528cbbd6427549b3def8"
+          }
+        ],
+        "forbidden_condition": "handler(request) executing for a tool_name where requires_approval(tool_name) is True and check_recent_approval is False, unless a PendingApproval has first been created and ApprovalRequiredError raised; more generally, any gated tool effect committing with no approval context configured for the invocation.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ApprovalGateManager implementation: which tool names are gated and how approvals are recorded and decided (openpaw/runtime/approval not supplied).",
+          "Call sites invoking ApprovalToolMiddleware.set_context and reset per run.",
+          "WorkspaceRunner handling of ApprovalRequiredError (approval delivery, denial, and agent re-run semantics).",
+          "The concrete construction site adding ApprovalToolMiddleware to AgentBuilder's middleware argument."
+        ],
+        "protected_operation": "Execution of approval-gated agent tool calls within the agent's tool-call pipeline (the handler invocation wrapped by ApprovalToolMiddleware._check_and_execute).",
+        "protected_resource": "The agent's tool execution path \u2014 every tool call dispatched through the middleware-wrapped agent produced by AgentBuilder/create_agent.",
+        "protection_obligation": "Tool calls that ApprovalGateManager marks as requiring approval must not have their handler execute until a human approval exists (freshly granted or recently granted); execution of a gated tool without approval is forbidden.",
+        "scope_limits": [
+          "If set_context has not configured a manager and session_key, the middleware executes all tool calls normally (approval.py lines 78-79); the gate is inactive without per-invocation configuration.",
+          "check_recent_approval permits one post-approval execution without re-prompting and clears after successful execution (approval.py lines 87-95); approved-path execution is by design.",
+          "The gate is name-based (requires_approval(tool_name)) and does not inspect tool_args; argument-level policies such as sandbox write protection and the email recipient allowlist are separate mechanisms.",
+          "The WorkspaceRunner catch / approval-UI / denial / re-run flow is described only in the class docstring (approval.py lines 26-36) and is not present in the supplied views.",
+          "builder.py wires a middleware list into create_agent, but the supplied views do not show the site that instantiates ApprovalToolMiddleware and appends it to that list; the association rests on the builder comments."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The final filter_subagent_tools assignment to runner.additional_tools (profiler.py lines 221-225) followed by runner._agent = runner._build_agent() (line 235); excluded tools must be absent from the tool list consumed by the rebuild.",
+        "contract_id": "ecological-contract:b88822426bb232245fa0231c1ace471e",
+        "declared_mechanism": "filter_subagent_tools applies SUBAGENT_EXCLUDED_TOOLS removal as unconditional Step 1, documented as 'always applied, never overridable', ahead of the allowed_tools whitelist and denied_tools blocklist; SubAgentProfiler.setup invokes it twice \u2014 a profile pass when profile allow/deny lists exist, and an unconditional per-spawn pass \u2014 before rebuilding the agent.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 17,
+            "path": "openpaw/runtime/subagent/filter.py",
+            "role": "forbidden_condition",
+            "source_sha256": "43741b9a06328052f6f5024dfcca20df3b38e8a2af7e5677087a961038146a95"
+          },
+          {
+            "line_end": 68,
+            "line_start": 63,
+            "path": "openpaw/runtime/subagent/filter.py",
+            "role": "guard_registration",
+            "source_sha256": "43741b9a06328052f6f5024dfcca20df3b38e8a2af7e5677087a961038146a95"
+          },
+          {
+            "line_end": 113,
+            "line_start": 108,
+            "path": "openpaw/runtime/subagent/filter.py",
+            "role": "guard_registration",
+            "source_sha256": "43741b9a06328052f6f5024dfcca20df3b38e8a2af7e5677087a961038146a95"
+          },
+          {
+            "line_end": 123,
+            "line_start": 118,
+            "path": "openpaw/runtime/subagent/filter.py",
+            "role": "guard_registration",
+            "source_sha256": "43741b9a06328052f6f5024dfcca20df3b38e8a2af7e5677087a961038146a95"
+          },
+          {
+            "line_end": 209,
+            "line_start": 164,
+            "path": "openpaw/runtime/subagent/profiler.py",
+            "role": "protected_operation",
+            "source_sha256": "4888e9fa6f97482d4af3bedd6e08e9ce643af511e9b586cb7ddbc296ecddacb5"
+          },
+          {
+            "line_end": 225,
+            "line_start": 211,
+            "path": "openpaw/runtime/subagent/profiler.py",
+            "role": "guard_registration",
+            "source_sha256": "4888e9fa6f97482d4af3bedd6e08e9ce643af511e9b586cb7ddbc296ecddacb5"
+          },
+          {
+            "line_end": 235,
+            "line_start": 221,
+            "path": "openpaw/runtime/subagent/profiler.py",
+            "role": "commit_point",
+            "source_sha256": "4888e9fa6f97482d4af3bedd6e08e9ce643af511e9b586cb7ddbc296ecddacb5"
+          },
+          {
+            "line_end": 235,
+            "line_start": 214,
+            "path": "openpaw/runtime/subagent/profiler.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4888e9fa6f97482d4af3bedd6e08e9ce643af511e9b586cb7ddbc296ecddacb5"
+          }
+        ],
+        "forbidden_condition": "A sub-agent runner reaching _build_agent() while its additional_tools still contain any tool whose name is in SUBAGENT_EXCLUDED_TOOLS: spawn_agent, list_subagents, get_subagent_result, cancel_subagent, request_followup, send_message, send_file, schedule_at, schedule_every, list_scheduled, cancel_scheduled, browser_navigate, browser_snapshot, browser_click, browser_type, browser_select, browser_scroll, browser_back, browser_screenshot, browser_close, browser_tabs, browser_switch_tab, create_cron, list_crons, update_cron, delete_cron, write_plan, read_plan \u2014 including such tools requested via allowed_tools (they are warned about and still excluded).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Origin of SubAgentRequest (e.g., dispatch via the parent agent's spawn_agent tool) \u2014 the spawn tool wiring is not in the supplied views.",
+          "AgentRunner._build_agent internals, to confirm the rebuild cannot re-introduce excluded tools outside additional_tools.",
+          "Whether any construction path can build a sub-agent without passing through SubAgentProfiler.setup."
+        ],
+        "protected_operation": "Assembly of the sub-agent's executable additional_tools during SubAgentProfiler.setup (profile tool injection, replace, and append paths) and the subsequent rebuild of the sub-agent runner.",
+        "protected_resource": "The sub-agent runner's tool set and built agent (runner.additional_tools / runner._agent).",
+        "protection_obligation": "Sub-agent tool lists must always have the SUBAGENT_EXCLUDED_TOOLS floor removed before the sub-agent agent is built, regardless of profile-level or per-spawn allowed/denied tool requests; the floor is never overridable. (Merges the duplicate phase-first and phase-second sub-agent floor opinions.)",
+        "scope_limits": [
+          "The floor filters runner.additional_tools only; base filesystem tools are constructed inside AgentBuilder.build and are not shown passing through filter_subagent_tools (no filesystem tool names appear in the floor set).",
+          "The guarded commit point is the sub-agent tool-list composition (application state); the downstream effects the excluded tools would enable span multiple strata (agent spawning, user messaging, scheduling/cron persistence, browser sessions, plan persistence) and appear only as rationale comments in filter.py lines 17-54.",
+          "Unknown tool names in allowed/denied lists and failed 'group:' resolutions produce warnings, not errors (filter.py lines 72, 96-100, 124-129, 137-142).",
+          "The profile pass (profiler.py lines 214-219) runs only when a profile with allowed_tools or denied_tools exists, but the per-spawn pass (lines 221-225) always runs, so the floor is applied at least once on this path."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "openpaw/runtime/approval (ApprovalGateManager) is not supplied: the set of gated tool names, and how approvals are requested, recorded, decided, and recently-approved-cached are unverified.",
+      "The WorkspaceRunner component that catches ApprovalRequiredError and drives the approval UI, denial, and agent re-run is not supplied.",
+      "The site instantiating ApprovalToolMiddleware and appending it to AgentBuilder's middleware list is not supplied; builder.py references approval gates only in comments (lines 113, 166, 188).",
+      "openpaw/agent/tools/filesystem (FilesystemTools) is not supplied, so the aggregation of FileWriteTools' tools into the agent tool list built in AgentBuilder.build is not directly shown.",
+      "openpaw/core/paths constants (WRITE_PROTECTED_DIRS, AGENT_WRITABLE_FILES, TOP_LEVEL_DIRS, WORKSPACE_DIR) are not supplied; protected-path values are known only from docstrings.",
+      "The email send tool wrapper, the call ordering of RecipientPolicy.validate relative to EmailProvider.send, and any concrete email provider implementation are not supplied.",
+      "The spawn_agent tool definition / SubAgentRequest origin and AgentRunner._build_agent are not supplied, leaving the sub-agent spawn entry path and rebuild internals unverified."
+    ],
+    "repository": "johnsosoka/OpenPaw",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a562afb3aa1208aba0cb0785bc61e74c"
+  },
+  "request_sha256": "3994e18d252cc6c0450bc3eb0cb531b197da2f8990ef8167ec3aae4b9ca4f847",
+  "response_sha256": "3e5342b2e0663e994fe3dfdd4f3f57155aca7edf2bde088773e4143005b15625",
+  "state": "completed",
+  "tokens": 39998,
+  "unit": "v24-screen:a562afb3aa1208aba0cb0785bc61e74c"
+}

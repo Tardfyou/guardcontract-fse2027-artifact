@@ -1,0 +1,204 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "A database mutation would commit at client.execute / client.execute_many inside a subagent-dispatched write tool (shared/tools/postgres.py:472 and 571); the guard's enforcement point is the explorer toolset assembly passed to create_agent (agents/supervisor/nodes/supervisor.py:107-111).",
+        "contract_id": "ecological-contract:474d76a76a566d401aebd3113c685a33",
+        "declared_mechanism": "Name-based read-only allowlist in _get_explorer_tools: read_only_tools = [t for t in tools if t.name in ('postgres_query', 'postgres_get_schema')]; only the filtered list is passed as the tools argument to create_agent for the explorer subgraph.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 100,
+            "line_start": 96,
+            "path": "agents/supervisor/nodes/supervisor.py",
+            "role": "guard_registration",
+            "source_sha256": "b52011a598afcfcea56a37753f8c80e3103763a36fedfa2d4cd261b879e57afc"
+          },
+          {
+            "line_end": 581,
+            "line_start": 581,
+            "path": "shared/tools/postgres.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 111,
+            "line_start": 103,
+            "path": "agents/supervisor/nodes/supervisor.py",
+            "role": "protected_operation",
+            "source_sha256": "b52011a598afcfcea56a37753f8c80e3103763a36fedfa2d4cd261b879e57afc"
+          },
+          {
+            "line_end": 473,
+            "line_start": 470,
+            "path": "shared/tools/postgres.py",
+            "role": "commit_point",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 138,
+            "line_start": 119,
+            "path": "agents/supervisor/nodes/supervisor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b52011a598afcfcea56a37753f8c80e3103763a36fedfa2d4cd261b879e57afc"
+          },
+          {
+            "line_end": 212,
+            "line_start": 208,
+            "path": "agents/supervisor/nodes/supervisor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b52011a598afcfcea56a37753f8c80e3103763a36fedfa2d4cd261b879e57afc"
+          }
+        ],
+        "forbidden_condition": "Binding postgres_execute or postgres_execute_batch into the database explorer subagent's tool set: PostgresClient.get_tools() returns all four tools including the two write tools, and _get_explorer_tools must remove every tool whose name is not postgres_query or postgres_get_schema.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any construction path other than _get_explorer_tools can create the explorer subgraph with an unfiltered tool list (only this path appears in the supplied views)."
+        ],
+        "protected_operation": "Construction and tool dispatch of the database explorer subagent created by _create_database_explorer_subgraph (create_agent with the filtered explorer tool list), which is itself invoked as the supervisor tool database_explorer_subagent.",
+        "protected_resource": "The PostgreSQL database reachable through the shared PostgresClient connection pool (the same data and schema that the excluded write tools would mutate).",
+        "protection_obligation": "The database explorer subagent must be provisioned only with read-only PostgreSQL tools (postgres_query, postgres_get_schema); the write tools (postgres_execute, postgres_execute_batch) must be filtered out before the explorer subgraph is constructed, so no database write can be dispatched through the explorer.",
+        "scope_limits": [
+          "The read-only restriction applies only to the explorer subagent; the supervisor agent itself receives the full unfiltered tool set including postgres_execute and postgres_execute_batch (agents/supervisor/nodes/supervisor.py:214-220).",
+          "The filter is name-membership based at subagent construction time; it does not re-validate tool identity at dispatch time.",
+          "This guard constrains only which tools are bound to the explorer; it adds no approval step to any write executed through other paths."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "await client.execute(statement, *params) inside postgres_execute (shared/tools/postgres.py:472) and await client.execute_many(statement, args_list) inside postgres_execute_batch (shared/tools/postgres.py:571), each reached only after the approval check passes.",
+        "contract_id": "ecological-contract:50613c78b319cf0af88f8b58d6942d1e",
+        "declared_mechanism": "In-tool approval gate: when config.postgres_write_requires_approval is True, the tool calls _request_write_approval, which formats the statement (plus a batch summary for bulk operations) and calls langgraph.types.interrupt() to suspend for a human response; _is_write_approved validates the reply; a non-approval returns 'Operation cancelled: User rejected the write operation...' before execution; GraphInterrupt is re-raised for LangGraph human-in-the-loop handling. The flag postgres_write_requires_approval is declared in SeerConfig with default True.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 469,
+            "line_start": 458,
+            "path": "shared/tools/postgres.py",
+            "role": "guard_registration",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 568,
+            "line_start": 549,
+            "path": "shared/tools/postgres.py",
+            "role": "guard_registration",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 385,
+            "line_start": 352,
+            "path": "shared/tools/postgres.py",
+            "role": "guard_registration",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 105,
+            "line_start": 99,
+            "path": "shared/config.py",
+            "role": "guard_registration",
+            "source_sha256": "d732457f965e80a50c037ce32cf8a3b7f666be17743698cb9ef96b0c4f4c7018"
+          },
+          {
+            "line_end": 467,
+            "line_start": 464,
+            "path": "shared/tools/postgres.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 566,
+            "line_start": 564,
+            "path": "shared/tools/postgres.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 457,
+            "line_start": 433,
+            "path": "shared/tools/postgres.py",
+            "role": "protected_operation",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 548,
+            "line_start": 518,
+            "path": "shared/tools/postgres.py",
+            "role": "protected_operation",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 473,
+            "line_start": 470,
+            "path": "shared/tools/postgres.py",
+            "role": "commit_point",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 572,
+            "line_start": 569,
+            "path": "shared/tools/postgres.py",
+            "role": "commit_point",
+            "source_sha256": "b8b4153c92775f37f08004e583c6b0c2d8f69cade611a59f2c2d88d6c6bf48b1"
+          },
+          {
+            "line_end": 224,
+            "line_start": 214,
+            "path": "agents/supervisor/nodes/supervisor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b52011a598afcfcea56a37753f8c80e3103763a36fedfa2d4cd261b879e57afc"
+          },
+          {
+            "line_end": 242,
+            "line_start": 227,
+            "path": "agents/supervisor/nodes/supervisor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b52011a598afcfcea56a37753f8c80e3103763a36fedfa2d4cd261b879e57afc"
+          },
+          {
+            "line_end": 342,
+            "line_start": 337,
+            "path": "agents/supervisor/nodes/supervisor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b52011a598afcfcea56a37753f8c80e3103763a36fedfa2d4cd261b879e57afc"
+          }
+        ],
+        "forbidden_condition": "Executing a write SQL statement through postgres_execute (leading to PostgresClient.execute) or postgres_execute_batch (leading to PostgresClient.execute_many) when config.postgres_write_requires_approval is True and the interrupt response is absent, None, or not in the approval token set ('yes', 'y', 'approve', 'approved', 'ok', 'proceed', 'true', '1').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The deployment-time value of postgres_write_requires_approval (env/.env contents not supplied; only the Pydantic default of True is supported by the source).",
+          "Which serving layer/checkpointer surfaces the interrupt to a human and resumes the graph: config describes database_uri as required for human-in-the-loop interrupts (shared/config.py:93-96) and the supervisor node re-raises GraphInterrupt (agents/supervisor/nodes/supervisor.py:353-357), but the graph assembly/checkpointer wiring is not in the supplied views.",
+          "Whether postgres_execute/postgres_execute_batch are bound to any agents or entry points other than the supervisor agent (repository enumeration is not complete)."
+        ],
+        "protected_operation": "Agent-invoked write tool calls: postgres_execute(statement, parameters) and postgres_execute_batch(statement, parameters_list) defined inside _create_tools_for_client.",
+        "protected_resource": "The PostgreSQL database reachable through the PostgresClient connection pool (data and schema mutated by client.execute / client.execute_many on the configured connection string).",
+        "protection_obligation": "PostgreSQL write statements (INSERT, UPDATE, DELETE, DDL) invoked through the agent tools postgres_execute and postgres_execute_batch must obtain explicit human approval via a LangGraph interrupt, gated by config.postgres_write_requires_approval (default True), before any execution; if the human response is not an approval token, the write is cancelled and never reaches the database client. (Merged from both first- and second-phase reviewer opinions, which describe the same obligation.)",
+        "scope_limits": [
+          "The gate is conditional on config.postgres_write_requires_approval; the flag is loaded from environment/.env via Pydantic Settings, so a deployment setting it to False disables approval entirely and writes execute without any interrupt.",
+          "The approval gate exists only inside the postgres_execute/postgres_execute_batch tool wrappers; PostgresClient.execute and client.execute_many themselves are ungated, so non-tool callers (e.g., PostgresProvider.provision_resources/cleanup_resources at shared/tools/postgres.py:742 and 772) would bypass approval.",
+          "postgres_query's read-only enforcement is a separate SELECT/WITH prefix check routed through client.query (conn.fetch); it sits outside this approval gate, so a WITH-prefixed statement containing data modification would not traverse the gate.",
+          "Approval is a simple string match on the interrupt response and presumes a LangGraph runtime in which interrupt() suspends and resumes with a human reply (the tools re-raise GraphInterrupt)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Deployment/runtime value of postgres_write_requires_approval: supplied source shows only the Pydantic default True (shared/config.py:102-105); environment/.env overrides are not visible.",
+      "Graph assembly and checkpointer wiring that surfaces the LangGraph interrupt to a human and resumes the supervisor graph: config notes database_uri is required for human-in-the-loop interrupts (shared/config.py:93-96) and the supervisor node re-raises GraphInterrupt, but the serving/checkpointer wiring is outside the supplied views.",
+      "Complete set of call sites binding postgres_execute/postgres_execute_batch or PostgresClient tools to agents or entry points (repository enumeration is not complete).",
+      "Whether statements routed through postgres_query (e.g., WITH-prefixed data-modifying CTEs that would pass the SELECT/WITH prefix check and execute via client.query/conn.fetch) are intended to be covered by the write-approval requirement; the supplied source does not establish this intent."
+    ],
+    "repository": "ankitcodes001/seer",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7b55b1585f6adb01cc4a47ad7605e0e1"
+  },
+  "request_sha256": "f386a725e6f4536fc29b67760502b44051d381e692e11c9f63ebf4c00649b50c",
+  "response_sha256": "27ab0b914f33f36e47f1b04eaaaeeef8c03c5b38b8275fa54f1368eda89e82ca",
+  "state": "completed",
+  "tokens": 30612,
+  "unit": "v24-screen:7b55b1585f6adb01cc4a47ad7605e0e1"
+}

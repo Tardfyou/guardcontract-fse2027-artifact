@@ -1,0 +1,102 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The in-line time.sleep(delay) inside rate_limit_callback (callbacks.py:73) blocks the model invocation path before the callback returns; the model request can only proceed after the callback returns with the window state reset (callbacks.py:74-79). The actual network dispatch of the LLM request occurs in framework code after the callback returns and is not present in the supplied source.",
+        "contract_id": "ecological-contract:9cc512c1dbed97782297a874f656b0ea",
+        "declared_mechanism": "rate_limit_callback registered as before_model_callback on the root_agent Agent (admission_advisor/agent.py:64). The callback initializes 'timer_start' and 'request_count' in callback_context.state on first invocation (callbacks.py:49-57), increments request_count on subsequent model requests (callbacks.py:59), and when request_count > RPM_QUOTA computes delay = RATE_LIMIT_SECS - elapsed_secs + 1 and calls time.sleep(delay) before resetting 'timer_start' and 'request_count' (callbacks.py:69-75); otherwise it persists the incremented count (callbacks.py:76-77).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 64,
+            "line_start": 62,
+            "path": "admission_advisor/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "cd4b4b793666b8b2256e8ae427188f300e5a62243d8cee95984e83e5eb487088"
+          },
+          {
+            "line_end": 51,
+            "line_start": 47,
+            "path": "admission_advisor/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "cd4b4b793666b8b2256e8ae427188f300e5a62243d8cee95984e83e5eb487088"
+          },
+          {
+            "line_end": 42,
+            "line_start": 33,
+            "path": "admission_advisor/shared_libraries/callbacks.py",
+            "role": "protected_operation",
+            "source_sha256": "d49ce1012b76e3941d399948bbfaf893b025cda783453d5402a6926720c59e02"
+          },
+          {
+            "line_end": 30,
+            "line_start": 29,
+            "path": "admission_advisor/shared_libraries/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d49ce1012b76e3941d399948bbfaf893b025cda783453d5402a6926720c59e02"
+          },
+          {
+            "line_end": 71,
+            "line_start": 59,
+            "path": "admission_advisor/shared_libraries/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d49ce1012b76e3941d399948bbfaf893b025cda783453d5402a6926720c59e02"
+          },
+          {
+            "line_end": 79,
+            "line_start": 71,
+            "path": "admission_advisor/shared_libraries/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "d49ce1012b76e3941d399948bbfaf893b025cda783453d5402a6926720c59e02"
+          },
+          {
+            "line_end": 64,
+            "line_start": 64,
+            "path": "admission_advisor/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "cd4b4b793666b8b2256e8ae427188f300e5a62243d8cee95984e83e5eb487088"
+          }
+        ],
+        "forbidden_condition": "More than RPM_QUOTA=10 LLM model requests being issued within a RATE_LIMIT_SECS=60-second window for the agent session \u2014 i.e., request_count exceeding RPM_QUOTA relative to the stored 'timer_start' \u2014 without the quota delay being applied before the request proceeds (callbacks.py:59-71).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The ADK framework's implementation of before_model_callback is not supplied; the semantics that a None return unconditionally allows the model request to proceed to network dispatch are unverified in the provided views.",
+          "The concrete model provider/endpoint that configs.agent_settings.model resolves to is defined in config.py, which is not supplied.",
+          "The scope, persistence, and isolation of callback_context.state across sessions, users, and runners is not established by the supplied source.",
+          "Whether any LLM requests can occur outside the root_agent's before_model_callback path (e.g., sub-agents or tool-internal model calls that would bypass the quota) is not supported by the supplied source.",
+          "The exact point at which the delayed LLM request is committed to the network (post-callback framework dispatch) is inferred from the callback's before-model position and is not directly evidenced in supplied lines."
+        ],
+        "protected_operation": "The root_agent's LLM generate-content model invocation: the LlmRequest dispatched by the ADK agent lifecycle to the model configured via configs.agent_settings.model.",
+        "protected_resource": "The LLM model backend/API endpoint configured for the agent (configs.agent_settings.model, admission_advisor/agent.py:48), reached via the agent's before_model_callback-guarded model invocation path.",
+        "protection_obligation": "Throttle the agent's LLM model invocations to at most RPM_QUOTA=10 requests per RATE_LIMIT_SECS=60-second window by interposing an in-line delay (time.sleep) on any request that would exceed the quota, before the model request is allowed to proceed on the root_agent's model invocation path.",
+        "scope_limits": [
+          "Quota accounting uses per-context session state ('timer_start'/'request_count' in callback_context.state); the supplied source shows only session-scoped counters, not a global or per-provider limiter.",
+          "The callback always returns None (callbacks.py:57, 79), so the guard delays rather than rejects or cancels requests; no hard blocking behavior is enforced by this mechanism.",
+          "before_tool_callback (before_tool) and before_agent_callback (before_agent) are logging-only and return None (callbacks.py:82-103); they enforce no protection and are excluded from this contract.",
+          "The store_student_profile confirmation behavior referenced by reviewers exists only as prompt/instruction text with no code-level enforcement in the supplied source; no contract is compiled for it.",
+          "Rewriting empty text parts to a single space (callbacks.py:43-46) is request-content normalization performed by the same callback and is not part of the rate-limit protection obligation.",
+          "Ordinary web authentication, CORS, and generic application validation are out of scope and no supplied source binds them to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Contents of admission_advisor/config.py (configs.agent_settings.model) are not supplied; the concrete LLM provider/endpoint being throttled cannot be confirmed from source.",
+      "The ADK framework runner and model-dispatch code is not supplied; the exact network commit point of the LLM request and the guarantee that a None return from before_model_callback permits dispatch are framework behavior not evidenced in the provided lines.",
+      "Scope and lifetime of callback_context.state (per-session vs. global) is not established by the supplied source, so the population to which the 10-requests/60-seconds quota applies cannot be fully bounded.",
+      "No supplied source shows whether tools or other components issue additional LLM requests that would bypass the before_model_callback guard.",
+      "Behavior/runtime labels (e.g., whether the sleep has been observed to hold requests in practice) are unavailable per the stated scope; this contract is compiled as a source-supported hypothesis only, with no DEC violation, safety, runtime, or prevalence determination made."
+    ],
+    "repository": "nghyane/admission-advisor",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:cfa6a20d329081bb0230081da7fc33a5"
+  },
+  "request_sha256": "23d9d78eefe5fea838e181829bc3cca60225c71c89a8f65fba2b1ef118a68ead",
+  "response_sha256": "33ca0b1fbd958cb5e28f4eec9a6c0da345a7a1b8613ad237f3b89750143ff471",
+  "state": "completed",
+  "tokens": 8405,
+  "unit": "v24-screen:cfa6a20d329081bb0230081da7fc33a5"
+}

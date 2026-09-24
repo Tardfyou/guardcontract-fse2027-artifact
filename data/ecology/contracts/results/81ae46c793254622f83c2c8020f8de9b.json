@@ -1,0 +1,104 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Pre-execution gate at tool dispatch: the require_confirmation predicate is evaluated before the process_refund body runs (lines 81-83: 'By the time this body runs, ADK has already handled the pause/approval dance'); the protected commit point is entry into and execution of the process_refund tool body, corroborated by the runtime trace 'Agent execution paused -> emits confirmation request -> manager approves -> resumes & executes tool' (lines 125-127).",
+        "contract_id": "ecological-contract:637372a8f0e2270f8ea66578f2660aac",
+        "declared_mechanism": "ADK Tool Confirmation flow bound at construction: refund_tool = FunctionTool(process_refund, require_confirmation=refund_requires_approval), where refund_requires_approval(amount, tool_context) returns amount > REFUND_APPROVAL_THRESHOLD (50.00). Per the source, require_confirmation is evaluated before the tool body runs; when true, the agent run pauses and emits a confirmation request, resuming execution only after a human (manager) approves; when false (amount <= 50.00), the tool executes immediately with no pause.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 9,
+            "line_start": 1,
+            "path": "part08/cartpilot/support_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "f49abf65a0e2fbd67c3e1995a697e6517a12b0f74ed2aa475a786daeb9290f26"
+          },
+          {
+            "line_end": 26,
+            "line_start": 26,
+            "path": "part08/cartpilot/support_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f49abf65a0e2fbd67c3e1995a697e6517a12b0f74ed2aa475a786daeb9290f26"
+          },
+          {
+            "line_end": 70,
+            "line_start": 68,
+            "path": "part08/cartpilot/support_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f49abf65a0e2fbd67c3e1995a697e6517a12b0f74ed2aa475a786daeb9290f26"
+          },
+          {
+            "line_end": 91,
+            "line_start": 73,
+            "path": "part08/cartpilot/support_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "f49abf65a0e2fbd67c3e1995a697e6517a12b0f74ed2aa475a786daeb9290f26"
+          },
+          {
+            "line_end": 83,
+            "line_start": 81,
+            "path": "part08/cartpilot/support_agent.py",
+            "role": "commit_point",
+            "source_sha256": "f49abf65a0e2fbd67c3e1995a697e6517a12b0f74ed2aa475a786daeb9290f26"
+          },
+          {
+            "line_end": 97,
+            "line_start": 94,
+            "path": "part08/cartpilot/support_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "f49abf65a0e2fbd67c3e1995a697e6517a12b0f74ed2aa475a786daeb9290f26"
+          },
+          {
+            "line_end": 116,
+            "line_start": 116,
+            "path": "part08/cartpilot/support_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f49abf65a0e2fbd67c3e1995a697e6517a12b0f74ed2aa475a786daeb9290f26"
+          },
+          {
+            "line_end": 127,
+            "line_start": 125,
+            "path": "part08/cartpilot/support_agent.py",
+            "role": "commit_point",
+            "source_sha256": "f49abf65a0e2fbd67c3e1995a697e6517a12b0f74ed2aa475a786daeb9290f26"
+          }
+        ],
+        "forbidden_condition": "Execution of the process_refund tool body for a refund whose amount > REFUND_APPROVAL_THRESHOLD (50.00) without a prior human approval of ADK's tool confirmation request.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "If the process_refund stub is replaced by the real payments/refunds integration referenced at line 84, the actual external effect stratum (e.g., http or other_external) is unconfirmed, and a separate contract at that distinct commit point may be required.",
+          "Whether require_confirmation is enforced identically across the ADK versions referenced in the docstring (experimental in 1.14, carried into 2.0) is unverified in the supplied source.",
+          "Whether any other repository file registers or dispatches process_refund without passing through refund_tool's require_confirmation gate is unknown because repository enumeration is not complete."
+        ],
+        "protected_operation": "Processing a refund via the process_refund FunctionTool for a given order_id, amount, and reason.",
+        "protected_resource": "The CartPilot refund/payments operation behind process_refund (stubbed in the supplied source; a comment at line 84 states that production calls the real payments/refunds system).",
+        "protection_obligation": "Refund operations invoked through the process_refund tool with an amount strictly greater than REFUND_APPROVAL_THRESHOLD (50.00) must not execute until a human approves the pending tool confirmation request; the run must pause at the pre-execution gate and resume the tool body only after approval.",
+        "scope_limits": [
+          "Only refunds with an amount strictly greater than 50.00 are gated; amounts at or below the threshold auto-approve and execute immediately without pause (lines 26, 68-70, 94-96, 120-123).",
+          "The guarded effect in the supplied source is the in-process execution of the process_refund stub body, which only returns a success dict (lines 85-91); no external payment mutation is performed in the supplied code, so the contract is compiled at the tool-invocation commit point (tool_execution), not at a verified external payments effect.",
+          "The guard is declared only on refund_tool as registered in support_agent's tools list (line 116); the supplied source shows no other dispatch path for process_refund, and behavior of hypothetical unregistered paths is out of scope.",
+          "The agent instruction to confirm order_id, amount, and reason with the shopper before calling process_refund (lines 110-112) is prompt-level guidance, not a declared guard mechanism, and is not compiled as a separate contract.",
+          "ADK's Tool Confirmation flow is described as experimental in the module docstring (lines 4-5); enforcement semantics are taken from docstrings, inline comments, and illustrative runtime-output comments rather than independently verified."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The supplied source contains no concrete payments/refunds integration; the real external effect behind process_refund (referenced only in the line-84 comment) and its effect stratum are unconfirmed.",
+      "No executable test or non-comment runtime artifact verifies ADK's require_confirmation enforcement; support comes only from the module docstring, inline comments, and illustrative runtime-output comments (lines 1-9, 81-83, 94-96, 119-128).",
+      "Behavior labels and complete repository enumeration are unavailable, so alternative registration or dispatch sites for process_refund elsewhere in the repository cannot be ruled in or out."
+    ],
+    "repository": "imdurgadas/cartpilot-adk2-series",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:81ae46c793254622f83c2c8020f8de9b"
+  },
+  "request_sha256": "e6b7fbc341fbd874460aab782047e3b6cdf8ec40eea2a6dfe4dc78ee1bfeec44",
+  "response_sha256": "050893cf88a5271e5bd665e4db99fa24eb02c08b2c26d7ff7fa84e6adef940fe",
+  "state": "completed",
+  "tokens": 12673,
+  "unit": "v24-screen:81ae46c793254622f83c2c8020f8de9b"
+}

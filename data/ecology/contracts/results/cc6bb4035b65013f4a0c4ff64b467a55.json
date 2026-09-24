@@ -1,0 +1,394 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "list_analyses returns the user-scoped rows in the HTTP response (backend/app/main.py:324-325) after get_user_analyses executes its user_id-constrained select (backend/app/database.py:59-67).",
+        "contract_id": "ecological-contract:32b0df90f82c9ca0313764e301b1ede1",
+        "declared_mechanism": "Route-level user=Depends(get_current_user) (HTTPBearer; JWT validated via Supabase admin auth.get_user; 401 on missing/invalid token) plus get_user_analyses applying .eq('user_id', user_id) to the select on the service-role (RLS-bypassing) admin client before .execute().",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 322,
+            "line_start": 321,
+            "path": "backend/app/main.py",
+            "role": "guard_registration",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          },
+          {
+            "line_end": 29,
+            "line_start": 22,
+            "path": "backend/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "78a27a6c1174539373c8c8022ba874f766e9f78a354194d61ce23acc1b9b678d"
+          },
+          {
+            "line_end": 102,
+            "line_start": 67,
+            "path": "backend/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78a27a6c1174539373c8c8022ba874f766e9f78a354194d61ce23acc1b9b678d"
+          },
+          {
+            "line_end": 67,
+            "line_start": 53,
+            "path": "backend/app/database.py",
+            "role": "protected_operation",
+            "source_sha256": "ecfb89301c665ce7f1c0d58ca8a4b57deef9c6a8e635c403b5574ef215e33e02"
+          },
+          {
+            "line_end": 325,
+            "line_start": 324,
+            "path": "backend/app/main.py",
+            "role": "commit_point",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          }
+        ],
+        "forbidden_condition": "A GET /analyses request completing for a caller whose Bearer JWT is missing or invalid (must raise HTTP 401), or a response disclosing 'analyses' rows whose user_id is not the authenticated user's id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any PydanticAI agent tool or lifecycle hook in backend/app/agent.py (not supplied) invokes get_user_analyses or calls GET /analyses, which would establish agent mediation.",
+          "Whether agent-generated identifiers can reach this guarded read as input."
+        ],
+        "protected_operation": "Listing the authenticated user's 30 most recent analyses via GET /analyses (list_analyses -> get_user_analyses(user.id)).",
+        "protected_resource": "Rows of the Supabase 'analyses' table owned by the authenticated user (user_id equal to the validated user's id).",
+        "protection_obligation": "Only a caller with a valid Supabase Bearer JWT may list saved analyses, and the listing must be scoped to the authenticated user's own rows; unauthenticated or cross-user reads of the analysis history are forbidden.",
+        "scope_limits": [
+          "Claims only the registered HTTP auth guard and ownership scoping for this route; CORS configuration and generic request validation are not claimed.",
+          "The ownership barrier asserted is application-level user_id scoping over the service-role (RLS-bypassing) admin client; Supabase RLS policy definitions are not supplied.",
+          "No agent tool registration, agent lifecycle hook, or agent-generated-input dataflow to this route appears in the supplied views; agent mediation is not established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "delete_stock commits the user_id- and ticker-constrained delete via .execute() on the admin client (backend/app/database.py:117-123).",
+        "contract_id": "ecological-contract:39cc9f608bc739e4926eccf8e3e188a0",
+        "declared_mechanism": "Route-level user=Depends(get_current_user) (HTTPBearer JWT validated via Supabase admin auth.get_user; 401 on missing/invalid token) plus delete_stock chaining .delete().eq('user_id', user_id).eq('ticker_name', ticker.upper()) through the service-role (RLS-bypassing) admin client before .execute().",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 311,
+            "line_start": 310,
+            "path": "backend/app/main.py",
+            "role": "guard_registration",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          },
+          {
+            "line_end": 102,
+            "line_start": 67,
+            "path": "backend/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78a27a6c1174539373c8c8022ba874f766e9f78a354194d61ce23acc1b9b678d"
+          },
+          {
+            "line_end": 314,
+            "line_start": 312,
+            "path": "backend/app/main.py",
+            "role": "protected_operation",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          },
+          {
+            "line_end": 123,
+            "line_start": 113,
+            "path": "backend/app/database.py",
+            "role": "commit_point",
+            "source_sha256": "ecfb89301c665ce7f1c0d58ca8a4b57deef9c6a8e635c403b5574ef215e33e02"
+          },
+          {
+            "line_end": 25,
+            "line_start": 20,
+            "path": "backend/supabase_client.py",
+            "role": "guard_registration",
+            "source_sha256": "61d3eaba321597d74754ed6f50fd8cfff09dd0a7a8b6273da7f5e2aa886c51bf"
+          }
+        ],
+        "forbidden_condition": "A 'stocks' delete committing for a caller without a valid Supabase JWT (must raise HTTP 401), or a delete that is not constrained to user_id equal to the authenticated user's id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any PydanticAI agent tool or lifecycle hook in backend/app/agent.py (not supplied) invokes delete_stock or DELETE /stocks/{ticker_name}, which would establish agent mediation.",
+          "Whether agent-generated values (e.g., an agent-proposed ticker to remove) flow into this guarded delete as input."
+        ],
+        "protected_operation": "Removing a ticker from the authenticated user's watchlist via DELETE /stocks/{ticker_name} (remove_stock -> delete_stock(user.id, ticker_name.upper())).",
+        "protected_resource": "The Supabase 'stocks' row(s) matching ticker_name and user_id equal to the authenticated user's id.",
+        "protection_obligation": "Only an authenticated user may remove a watchlist ticker, and the delete must be constrained to rows owned by that user; unauthenticated watchlist deletion and cross-user watchlist deletion are forbidden.",
+        "scope_limits": [
+          "The ownership barrier asserted is application-level user_id scoping over the service-role (RLS-bypassing) admin client; Supabase RLS policy definitions are not supplied.",
+          "No agent tool registration, agent lifecycle hook, or agent-generated-input dataflow to this route appears in the supplied views; agent mediation is not established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "list_stocks returns the user-scoped rows in the HTTP response (backend/app/main.py:296-297) after get_user_stocks executes the user_id-constrained select on the admin client (backend/app/database.py:100-105).",
+        "contract_id": "ecological-contract:6ceb66cce1fcf9663d1703197d72f578",
+        "declared_mechanism": "Route-level FastAPI dependency user=Depends(get_current_user) (HTTPBearer; JWT validated via Supabase admin auth.get_user; HTTP 401 on missing/invalid token) plus get_user_stocks applying .eq('user_id', user_id) to the select on the service-role (RLS-bypassing) admin client before .execute().",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 294,
+            "line_start": 293,
+            "path": "backend/app/main.py",
+            "role": "guard_registration",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          },
+          {
+            "line_end": 29,
+            "line_start": 22,
+            "path": "backend/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "78a27a6c1174539373c8c8022ba874f766e9f78a354194d61ce23acc1b9b678d"
+          },
+          {
+            "line_end": 102,
+            "line_start": 67,
+            "path": "backend/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78a27a6c1174539373c8c8022ba874f766e9f78a354194d61ce23acc1b9b678d"
+          },
+          {
+            "line_end": 107,
+            "line_start": 96,
+            "path": "backend/app/database.py",
+            "role": "protected_operation",
+            "source_sha256": "ecfb89301c665ce7f1c0d58ca8a4b57deef9c6a8e635c403b5574ef215e33e02"
+          },
+          {
+            "line_end": 297,
+            "line_start": 296,
+            "path": "backend/app/main.py",
+            "role": "commit_point",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          }
+        ],
+        "forbidden_condition": "A GET /stocks request completing for a caller whose Bearer JWT is missing or invalid (get_current_user must raise HTTP 401), or a watchlist response disclosing 'stocks' rows whose user_id is not the authenticated user's id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any PydanticAI agent tool or lifecycle hook in backend/app/agent.py (not supplied) invokes get_user_stocks or calls GET /stocks, which would establish agent mediation.",
+          "Whether agent-generated identifiers (e.g., an agent-chosen ticker) can reach this guarded read as input."
+        ],
+        "protected_operation": "Listing the authenticated user's stock watchlist via GET /stocks (list_stocks -> get_user_stocks(user.id)).",
+        "protected_resource": "Rows of the Supabase 'stocks' table owned by the authenticated user (user_id equal to the validated user's id).",
+        "protection_obligation": "Only a caller presenting a valid Supabase Bearer JWT may list a stock watchlist, and the listing must be scoped to the authenticated user's own rows; unauthenticated watchlist reads (which must fail with 401) and cross-user watchlist reads are both forbidden.",
+        "scope_limits": [
+          "Claims only the registered HTTP auth guard and ownership scoping for this route; CORS configuration and generic request validation are not claimed.",
+          "The ownership barrier asserted is application-level user_id scoping over the service-role (RLS-bypassing) admin client; Supabase RLS policy definitions are not supplied.",
+          "No agent tool registration, agent lifecycle hook, or agent-generated-input dataflow to this route appears in the supplied views; agent mediation is not established.",
+          "The /research/analyze route's persistence flow (backend/app/main.py:496-511) uses get_optional_user rather than get_current_user and is outside this obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "upsert_stock commits the user_id-keyed row via .execute() on the admin client (backend/app/database.py:84-91).",
+        "contract_id": "ecological-contract:6d4ca8f56309f673f71c481c8463c843",
+        "declared_mechanism": "Route-level user=Depends(get_current_user) (HTTPBearer JWT validated via Supabase admin auth.get_user; 401 on missing/invalid token) plus upsert_stock writing {'user_id': user.id} with on_conflict='user_id,ticker_name' through the service-role (RLS-bypassing) admin client before .execute().",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 301,
+            "line_start": 300,
+            "path": "backend/app/main.py",
+            "role": "guard_registration",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          },
+          {
+            "line_end": 102,
+            "line_start": 67,
+            "path": "backend/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78a27a6c1174539373c8c8022ba874f766e9f78a354194d61ce23acc1b9b678d"
+          },
+          {
+            "line_end": 307,
+            "line_start": 302,
+            "path": "backend/app/main.py",
+            "role": "protected_operation",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          },
+          {
+            "line_end": 91,
+            "line_start": 84,
+            "path": "backend/app/database.py",
+            "role": "commit_point",
+            "source_sha256": "ecfb89301c665ce7f1c0d58ca8a4b57deef9c6a8e635c403b5574ef215e33e02"
+          },
+          {
+            "line_end": 25,
+            "line_start": 20,
+            "path": "backend/supabase_client.py",
+            "role": "guard_registration",
+            "source_sha256": "61d3eaba321597d74754ed6f50fd8cfff09dd0a7a8b6273da7f5e2aa886c51bf"
+          }
+        ],
+        "forbidden_condition": "A watchlist upsert committing for a caller without a valid Supabase JWT (must raise HTTP 401), or a 'stocks' row being inserted/overwritten under a user_id other than the authenticated user's id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any PydanticAI agent tool or lifecycle hook in backend/app/agent.py (not supplied) invokes upsert_stock or POST /stocks, which would establish agent mediation.",
+          "Whether agent-generated values (e.g., an agent-selected ticker_name) flow into this guarded upsert as input."
+        ],
+        "protected_operation": "Adding a ticker to the authenticated user's watchlist via POST /stocks (add_stock -> upsert_stock(user.id, ticker, body.display_name)).",
+        "protected_resource": "Rows of the Supabase 'stocks' table keyed on (user_id, ticker_name) belonging to the authenticated user.",
+        "protection_obligation": "Only an authenticated user may add a ticker to a watchlist, and the persisted 'stocks' row must carry that user's own user_id; unauthenticated watchlist creation and cross-user watchlist writes are forbidden.",
+        "scope_limits": [
+          "The ownership barrier asserted is application-level user_id scoping over the service-role (RLS-bypassing) admin client; Supabase RLS policy definitions are not supplied.",
+          "No agent tool registration, agent lifecycle hook, or agent-generated-input dataflow to this route appears in the supplied views; agent mediation is not established.",
+          "The /research/analyze route also creates watchlist rows and analyses under optional authentication (backend/app/main.py:496-511) via get_optional_user, not get_current_user; that path is not covered by this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The doubly-constrained delete commits via .execute() on the admin client at backend/app/main.py:342; the handler maps exceptions to HTTP 500 and returns confirmation only after commit (lines 343-345).",
+        "contract_id": "ecological-contract:8fd4a1781eda29bf1821751adbba789f",
+        "declared_mechanism": "Route-level Depends(get_current_user) (HTTPBearer; JWT validated via Supabase admin auth.get_user; 401 on missing/invalid token) plus an inline service-role (RLS-bypassing) admin-client delete chained .delete().eq('id', analysis_id).eq('user_id', user.id) immediately before .execute().",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 338,
+            "line_start": 337,
+            "path": "backend/app/main.py",
+            "role": "guard_registration",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          },
+          {
+            "line_end": 29,
+            "line_start": 22,
+            "path": "backend/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "78a27a6c1174539373c8c8022ba874f766e9f78a354194d61ce23acc1b9b678d"
+          },
+          {
+            "line_end": 102,
+            "line_start": 67,
+            "path": "backend/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78a27a6c1174539373c8c8022ba874f766e9f78a354194d61ce23acc1b9b678d"
+          },
+          {
+            "line_end": 345,
+            "line_start": 339,
+            "path": "backend/app/main.py",
+            "role": "protected_operation",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          },
+          {
+            "line_end": 342,
+            "line_start": 342,
+            "path": "backend/app/main.py",
+            "role": "commit_point",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          },
+          {
+            "line_end": 25,
+            "line_start": 20,
+            "path": "backend/supabase_client.py",
+            "role": "guard_registration",
+            "source_sha256": "61d3eaba321597d74754ed6f50fd8cfff09dd0a7a8b6273da7f5e2aa886c51bf"
+          }
+        ],
+        "forbidden_condition": "An 'analyses' row being deleted for a caller without a valid Supabase JWT (must raise HTTP 401), or a delete whose filter does not constrain both id = analysis_id and user_id = the authenticated user's id (which would allow another user's analysis to be removed).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any PydanticAI agent tool or lifecycle hook in backend/app/agent.py (not supplied) triggers analysis deletion or calls DELETE /analyses/{analysis_id}, which would establish agent mediation.",
+          "Whether agent-generated values (e.g., an agent-supplied analysis_id) flow into this guarded delete as input."
+        ],
+        "protected_operation": "Deleting a single analysis owned by the authenticated user via DELETE /analyses/{analysis_id} (delete_analysis).",
+        "protected_resource": "The Supabase 'analyses' row identified by analysis_id and owned by the authenticated user (user_id match).",
+        "protection_obligation": "Unauthenticated or cross-user deletion of a saved analysis must be forbidden: DELETE /analyses/{analysis_id} is guarded by the get_current_user dependency (validating the Supabase JWT and raising 401 on missing/invalid token), and the row delete on the RLS-bypassing admin client must be constrained to id = analysis_id AND user_id = the authenticated user's id before .execute() commits it.",
+        "scope_limits": [
+          "The ownership barrier asserted is the application-level id + user_id delete filter over the service-role (RLS-bypassing) admin client; Supabase RLS policy definitions are not supplied.",
+          "No agent tool registration, agent lifecycle hook, or agent-generated-input dataflow to this route appears in the supplied views; agent mediation is not established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "get_analysis returns the owner-matched row in the HTTP response, or 404 when no row matches both id and user_id (backend/app/main.py:331-334) after the constrained select executes (backend/app/database.py:139-147).",
+        "contract_id": "ecological-contract:b1279dba2ead7ef26b0a04f5bb44dc6c",
+        "declared_mechanism": "Route-level user=Depends(get_current_user) (HTTPBearer; JWT validated via Supabase admin auth.get_user; 401 on missing/invalid token) plus get_analysis_by_id constraining the select with .eq('id', analysis_id).eq('user_id', user_id) on the service-role (RLS-bypassing) admin client, returning None (handler maps to HTTP 404) when no owner-matched row exists.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 329,
+            "line_start": 328,
+            "path": "backend/app/main.py",
+            "role": "guard_registration",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          },
+          {
+            "line_end": 29,
+            "line_start": 22,
+            "path": "backend/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "78a27a6c1174539373c8c8022ba874f766e9f78a354194d61ce23acc1b9b678d"
+          },
+          {
+            "line_end": 102,
+            "line_start": 67,
+            "path": "backend/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78a27a6c1174539373c8c8022ba874f766e9f78a354194d61ce23acc1b9b678d"
+          },
+          {
+            "line_end": 150,
+            "line_start": 132,
+            "path": "backend/app/database.py",
+            "role": "protected_operation",
+            "source_sha256": "ecfb89301c665ce7f1c0d58ca8a4b57deef9c6a8e635c403b5574ef215e33e02"
+          },
+          {
+            "line_end": 334,
+            "line_start": 331,
+            "path": "backend/app/main.py",
+            "role": "commit_point",
+            "source_sha256": "bd43902e5e70717223b62ff0257ccdb4d80d99c62915663888a1ad95d61f50a5"
+          }
+        ],
+        "forbidden_condition": "A GET /analyses/{analysis_id} request completing for a caller whose Bearer JWT is missing or invalid (must raise HTTP 401), or a response disclosing an 'analyses' row whose user_id is not the authenticated user's id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any PydanticAI agent tool or lifecycle hook in backend/app/agent.py (not supplied) invokes get_analysis_by_id or calls GET /analyses/{analysis_id}, which would establish agent mediation.",
+          "Whether agent-generated identifiers (e.g., an agent-supplied analysis_id) can reach this guarded read as input."
+        ],
+        "protected_operation": "Fetching a single analysis by id via GET /analyses/{analysis_id} (get_analysis -> get_analysis_by_id(analysis_id, user.id)).",
+        "protected_resource": "The Supabase 'analyses' row with id = analysis_id and user_id equal to the authenticated user's id.",
+        "protection_obligation": "A single saved analysis may be fetched only by its owner: unauthenticated requests must be rejected with 401, and an analysis_id belonging to another user must yield no row (mapped to 404) rather than the row's contents.",
+        "scope_limits": [
+          "Claims only the registered HTTP auth guard and ownership scoping for this route; CORS configuration and generic request validation are not claimed.",
+          "The ownership barrier asserted is application-level user_id scoping over the service-role (RLS-bypassing) admin client; Supabase RLS policy definitions are not supplied.",
+          "No agent tool registration, agent lifecycle hook, or agent-generated-input dataflow to this route appears in the supplied views; agent mediation is not established."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source binds these watchlist/analysis operations to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; agent_mediation is recorded as not_established for all six contracts. backend/app/agent.py, where PydanticAI tool registrations would live, is not among the supplied views.",
+      "Supabase RLS policy definitions for the 'stocks' and 'analyses' tables are not supplied; the asserted ownership barrier is application-level user_id scoping over the service-role client that explicitly bypasses RLS (backend/supabase_client.py:20-25).",
+      "The /research/analyze SSE route resolves the user with get_optional_user (never 401; backend/auth.py:44-60) and persists watchlist rows and analyses only when authenticated (backend/app/main.py:367-369, 496-511). No reviewer obligation covers this persistence path, and whether it requires its own guard contract is unresolved.",
+      "The unguarded /api/stocks/* market-data routes and SPA fallback (backend/app/main.py:614-646) expose public Yahoo Finance data and static files; no reviewer asserted a protection obligation over them, so no contracts were compiled for them."
+    ],
+    "repository": "tylerdinh/google-ai-hack-2026",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:cc6bb4035b65013f4a0c4ff64b467a55"
+  },
+  "request_sha256": "76c21252125994ee552447fbfea8ad8067dd4ed7f2da83c16dc86538b03db23b",
+  "response_sha256": "4112326b4cc5d2f75209d0d5f7f7e53e812a5c90a7622653087c998e0658e586",
+  "state": "completed",
+  "tokens": 35117,
+  "unit": "v24-screen:cc6bb4035b65013f4a0c4ff64b467a55"
+}

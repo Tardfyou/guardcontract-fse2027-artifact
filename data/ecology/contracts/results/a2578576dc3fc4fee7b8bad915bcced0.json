@@ -1,0 +1,162 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "store.put(('support_tickets', context.employee_id), ticket_id, ticket) inside create_support_ticket (create_support_ticket.py:48-52) \u2014 the sole ticket commit in the tool body.",
+        "contract_id": "ecological-contract:0d9626b5bed54f3b72d7a471c65369a1",
+        "declared_mechanism": "HumanInTheLoopMiddleware registered in create_agent's middleware list with interrupt_on={'create_support_ticket': {'allowed_decisions': ['approve', 'reject'], 'description': ...}} (helpdesk_agent.py:48-56); cli.invoke_helpdesk detects __interrupt__, prints pending actions, collects approve/reject decisions per action (cli.py:35-56), and resumes only via Command(resume={'decisions': ...}) (cli.py:91-104); when allow_review is false it prints a refusal ('Non-interactive mode does not automatically approve write operations,The work order has not been created yet.') and returns without resuming (cli.py:95-97); the non-interactive --message entry passes allow_review=False (main.py:47-54).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 56,
+            "line_start": 48,
+            "path": "backend/app/agents/helpdesk_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "38e66d26caef5d977bf47a239618f0fd5b07e39358195a29171403912b64c46c"
+          },
+          {
+            "line_end": 39,
+            "line_start": 32,
+            "path": "backend/app/agents/helpdesk_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "38e66d26caef5d977bf47a239618f0fd5b07e39358195a29171403912b64c46c"
+          },
+          {
+            "line_end": 19,
+            "line_start": 13,
+            "path": "backend/app/tools/create_support_ticket.py",
+            "role": "protected_operation",
+            "source_sha256": "fe761987f00029f0e877c578936b74d87e7b277242eebd8e5ae7a573b4bf4a37"
+          },
+          {
+            "line_end": 20,
+            "line_start": 20,
+            "path": "backend/app/tools/create_support_ticket.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fe761987f00029f0e877c578936b74d87e7b277242eebd8e5ae7a573b4bf4a37"
+          },
+          {
+            "line_end": 52,
+            "line_start": 47,
+            "path": "backend/app/tools/create_support_ticket.py",
+            "role": "commit_point",
+            "source_sha256": "fe761987f00029f0e877c578936b74d87e7b277242eebd8e5ae7a573b4bf4a37"
+          },
+          {
+            "line_end": 56,
+            "line_start": 35,
+            "path": "backend/app/cli.py",
+            "role": "guard_registration",
+            "source_sha256": "12dba4c0abb0b7d71955ac33460902af77e2923f43ee8f32a06e7b78d9cb19d6"
+          },
+          {
+            "line_end": 104,
+            "line_start": 91,
+            "path": "backend/app/cli.py",
+            "role": "guard_registration",
+            "source_sha256": "12dba4c0abb0b7d71955ac33460902af77e2923f43ee8f32a06e7b78d9cb19d6"
+          },
+          {
+            "line_end": 97,
+            "line_start": 95,
+            "path": "backend/app/cli.py",
+            "role": "forbidden_condition",
+            "source_sha256": "12dba4c0abb0b7d71955ac33460902af77e2923f43ee8f32a06e7b78d9cb19d6"
+          },
+          {
+            "line_end": 54,
+            "line_start": 47,
+            "path": "backend/app/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a7d486d0c4fb7d5ea808d631fba20e7aca8e4cb6cda08a8360c959bc70db6b5d"
+          }
+        ],
+        "forbidden_condition": "Execution of the create_support_ticket tool call \u2014 and consequently its store.put ticket write \u2014 without an explicit human 'approve' decision, including any automatic approval of write operations in non-interactive mode.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any non-CLI entrypoint can invoke the helpdesk agent without the allow_review gate \u2014 main.py:13 notes an API layer may replace this entry in the future, and no API source is supplied.",
+          "LangChain/LangGraph middleware internals are not supplied; that the interrupt is raised before the tool executes (i.e., before store.put) rests on the middleware registration plus the comment at cli.py:89-90, not on framework source.",
+          "That the resume payload shape {'decisions': [{'type': 'approve'|'reject', ...}]} (cli.py:56, 99-104) exactly matches the middleware's expected resume schema is unverified from supplied source."
+        ],
+        "protected_operation": "Invocation of the create_support_ticket tool by the helpdesk agent (the model-issued tool call dispatched through create_agent's tool pipeline).",
+        "protected_resource": "The support-ticket record written under store namespace ('support_tickets', employee_id) via runtime.store.put inside create_support_ticket (in supplied source, the agent's in-process InMemoryStore).",
+        "protection_obligation": "The helpdesk agent must not execute the state-changing create_support_ticket tool call without an explicit human approve/reject decision: HumanInTheLoopMiddleware(interrupt_on={'create_support_ticket'}) must interrupt the tool call before execution, and the invocation path must never auto-approve the write (non-interactive mode returns without resuming), so that no IT ticket is committed to the ticket store without user confirmation.",
+        "scope_limits": [
+          "Only create_support_ticket is interrupted; check_service_status, search_knowledge_base, and list_my_tickets execute without human review (helpdesk_agent.py:34-39, 48-56).",
+          "In supplied source the ticket store is an in-process langgraph InMemoryStore providing cross-thread, in-process memory (helpdesk_agent.py:9, 29-30), so the commit point is classified as application-state mutation; the 'changes external state' comment (helpdesk_agent.py:48) does not change the stratum of the code shown.",
+          "The shown enforcement wiring covers the CLI entry path only (run_interactive_cli with allow_review=True; --message path with allow_review=False); no other entrypoint appears in supplied source.",
+          "Allowed decisions for create_support_ticket are approve/reject only \u2014 no 'edit' option (helpdesk_agent.py:50-54).",
+          "The CLI refusal path leaves the interrupt unresolved (returns the result containing __interrupt__) rather than issuing a synthetic reject (cli.py:95-97)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Not citable from supplied source \u2014 the write_file tool implementation (app/tools/write_file.py) is not provided, so its internal effect commit point is unknown.",
+        "contract_id": "ecological-contract:66ca906b93294e42bf710b57bcb78f2c",
+        "declared_mechanism": "HumanInTheLoopMiddleware registered in test_agent's create_agent middleware list with interrupt_on={'write_file': {'allowed_decisions': ['approve', 'edit', 'reject']}} and description_prefix='Tool execution pending approval' (test_agent.py:21-28).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 28,
+            "line_start": 21,
+            "path": "backend/app/agents/test_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "26713eab9d739ac8a1d4f9571fea249fdaaf264964e6a3a69dfcd80953ed4fe2"
+          },
+          {
+            "line_end": 17,
+            "line_start": 15,
+            "path": "backend/app/agents/test_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "26713eab9d739ac8a1d4f9571fea249fdaaf264964e6a3a69dfcd80953ed4fe2"
+          },
+          {
+            "line_end": 17,
+            "line_start": 17,
+            "path": "backend/app/agents/test_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "26713eab9d739ac8a1d4f9571fea249fdaaf264964e6a3a69dfcd80953ed4fe2"
+          }
+        ],
+        "forbidden_condition": "Execution of the write_file tool call \u2014 and any file mutation it performs \u2014 without an explicit human approve/edit/reject decision.",
+        "missing_evidence_roles": [
+          "commit_point",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "The write_file implementation is not supplied: the commit point cannot be cited, the protected file resource cannot be named, and the file stratum cannot be confirmed.",
+          "No decision-delivery/resume wiring for the test agent is supplied, so how an approve/edit/reject decision reaches the interrupted call is unverified.",
+          "Whether TestMiddleware (test_agent.py:20) interacts with the HITL interrupt flow is unverified."
+        ],
+        "protected_operation": "Invocation of the write_file tool by the test agent (the model-issued tool call dispatched through create_agent's tool pipeline).",
+        "protected_resource": "The filesystem target written by the write_file tool; the concrete path/resource is not shown in supplied source.",
+        "protection_obligation": "The test agent must not execute the state-changing write_file tool call without an explicit human decision: HumanInTheLoopMiddleware(interrupt_on={'write_file'}) with allowed decisions approve/edit/reject must interrupt the tool call before the tool's effect commit.",
+        "scope_limits": [
+          "Only write_file is interrupted on the test agent; get_weather_tomorrow, has_umbrella, energy_level, and execute_sql are not in interrupt_on and would run without human review (test_agent.py:17, 21-28).",
+          "Allowed decisions include 'edit', unlike the helpdesk agent's approve/reject-only configuration (test_agent.py:24 vs helpdesk_agent.py:52).",
+          "No interrupt-handling or resume path for the test agent is supplied, so enforcement beyond the middleware registration itself is unverified.",
+          "The effect_stratum 'file' rests on the tool's name and the reviewer wording; the tool body is not in supplied source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "backend/app/tools/write_file.py is not supplied; the write_file commit point, target resource, and effect-stratum verification for the test-agent contract cannot be grounded in source.",
+      "No API/server entrypoint for the helpdesk agent is supplied (main.py:13 anticipates an API layer replacing the CLI entry), so universal enforcement of the review gate across all invocation paths cannot be confirmed.",
+      "LangChain/LangGraph middleware, checkpointer, and Command(resume=...) internals are not supplied; the interrupt-before-execution ordering relative to store.put and the resume-schema compatibility are unverified from supplied source.",
+      "The guard on test_agent's other tools (notably execute_sql) cannot be assessed because execute_sql's implementation is not supplied; only its absence from interrupt_on is source-supported."
+    ],
+    "repository": "leonyangdev/decision-flow",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a2578576dc3fc4fee7b8bad915bcced0"
+  },
+  "request_sha256": "6696920087bf86d49c6edd88d039546694f3c62565f23fcacb9c4e478edcc644",
+  "response_sha256": "5c727a55894b2840e961349af9e1aee4f124a9ca5fc1f47a8c39be84a8883de9",
+  "state": "completed",
+  "tokens": 17178,
+  "unit": "v24-screen:a2578576dc3fc4fee7b8bad915bcced0"
+}

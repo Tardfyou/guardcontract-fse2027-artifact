@@ -1,0 +1,93 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The await run_agent(...) call in the /chat handler at agent/server.py:647-652, which begins agent execution via runner.run_async at agent/server.py:413-417 and commits the external Google API requests; the inline wait must complete and _last_request_time must be updated (line 630) before this commit point is reached.",
+        "contract_id": "ecological-contract:4ecbe98e0bf723a149da4deaa112e9c7",
+        "declared_mechanism": "Module-level global timestamp throttle: _last_request_time and _MIN_REQUEST_INTERVAL = 2.0 are declared for the Google API to avoid 429 errors (agent/server.py:147-150); chat() enforces it inline by computing time_since_last, awaiting asyncio.sleep(wait_time) when time_since_last < _MIN_REQUEST_INTERVAL, and then updating _last_request_time = time.time() (agent/server.py:624-630) before run_agent is called.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 150,
+            "line_start": 147,
+            "path": "agent/server.py",
+            "role": "guard_registration",
+            "source_sha256": "54db5c35453404d2bf3c36ddff95ae01a1bacc6844f7bb9f00ce50cf53ad7153"
+          },
+          {
+            "line_end": 630,
+            "line_start": 624,
+            "path": "agent/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "54db5c35453404d2bf3c36ddff95ae01a1bacc6844f7bb9f00ce50cf53ad7153"
+          },
+          {
+            "line_end": 600,
+            "line_start": 599,
+            "path": "agent/server.py",
+            "role": "protected_operation",
+            "source_sha256": "54db5c35453404d2bf3c36ddff95ae01a1bacc6844f7bb9f00ce50cf53ad7153"
+          },
+          {
+            "line_end": 652,
+            "line_start": 646,
+            "path": "agent/server.py",
+            "role": "commit_point",
+            "source_sha256": "54db5c35453404d2bf3c36ddff95ae01a1bacc6844f7bb9f00ce50cf53ad7153"
+          },
+          {
+            "line_end": 417,
+            "line_start": 413,
+            "path": "agent/server.py",
+            "role": "commit_point",
+            "source_sha256": "54db5c35453404d2bf3c36ddff95ae01a1bacc6844f7bb9f00ce50cf53ad7153"
+          },
+          {
+            "line_end": 693,
+            "line_start": 688,
+            "path": "agent/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "54db5c35453404d2bf3c36ddff95ae01a1bacc6844f7bb9f00ce50cf53ad7153"
+          }
+        ],
+        "forbidden_condition": "Invoking the agent from the /chat handler (run_agent, which drives runner.run_async and the outbound Google API model calls) when less than _MIN_REQUEST_INTERVAL (2.0 seconds) have elapsed since _last_request_time was recorded, i.e., agent invocations more frequent than once per 2 seconds that would trigger Google API rate-limit (429) errors.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the obligation is intended to bind to an agent-mediated dispatch path (agent tool or lifecycle hook) or remains scoped to the HTTP /chat handler only.",
+          "Whether other run_agent call sites, notably /api/voice/chat (agent/server.py:1833-1838), and any scheduler-initiated agent runs fall under the same minimum-interval obligation.",
+          "Whether the commit point should be attributed to the run_agent call site (agent/server.py:647-652) or to the underlying runner.run_async model-call loop (agent/server.py:413-417); both are cited and share the http stratum.",
+          "Whether the 429/quota detection on the response path (agent/server.py:688-693) should serve as the failure signal for this obligation in the DEC study."
+        ],
+        "protected_operation": "Invocation of the Google Gemini-backed agent from the POST /chat handler: chat() awaits run_agent(user_id, session_id, message, memory_context), which executes runner.run_async and produces external Google API model requests.",
+        "protected_resource": "External Google Gemini/LLM API rate-limit quota (the Google API named as the rate-limit target at agent/server.py:147 and 624).",
+        "protection_obligation": "Chat requests submitted to POST /chat must be throttled to a minimum interval of 2.0 seconds before the Google Gemini-backed agent is invoked via run_agent, so that the agent is never invoked more than once per 2 seconds and back-to-back invocations do not exhaust the external Google API quota (429 / RESOURCE_EXHAUSTED). (Merged from duplicate first-phase and second-phase reviewer wording.)",
+        "scope_limits": [
+          "The throttle is evidenced only inside the POST /chat handler; the supplied source shows no equivalent wait in the /api/voice/chat handler, which also invokes run_agent (agent/server.py:1833-1838), and no throttle is shown for scheduler-driven agent runs.",
+          "The mechanism is a single process-global timestamp, not per-user or distributed; because asyncio.sleep yields before _last_request_time is updated, concurrent requests can each pass the check after their own sleeps, so the source does not establish strict serial pacing under concurrency.",
+          "The guard delays requests (awaits) rather than rejecting them; it bounds request pacing toward the Google API and does not itself enforce or track a quota.",
+          "The guard is wired to an HTTP endpoint handler; no agent tool registration, lifecycle hook, or agent-generated-input dataflow binds this operation to agent mediation, so agent_mediation is recorded as not_established and no agent_entry_binding evidence is cited."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source view shows a decorator, registration, callback wiring, tool dispatch, or concrete dataflow binding the throttled agent invocation to agent mediation (agent tool, lifecycle hook, or agent-generated input reaching the guarded effect); agent_mediation is therefore not_established.",
+      "No supplied source shows the throttle applied to any path other than POST /chat; coverage of /api/voice/chat and scheduler-driven agent runs is unverified.",
+      "Concurrency and race behavior of _last_request_time under simultaneous requests is not addressed in the supplied source.",
+      "No supplied source establishes the exact number, timing, or endpoint of the outbound Google API requests issued per agent invocation; the external Google API effect is supported only by the comments at agent/server.py:147 and 624 and the 429/quota handling at agent/server.py:688-693."
+    ],
+    "repository": "paridhijain19/encode_hackathon",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:2bfbff6b71f2b77f0e70abdd1e7430e8"
+  },
+  "request_sha256": "38fc6c386b0ed90a42164a9d69dea22066ee617d3cb6075b3e587a496eb6acd3",
+  "response_sha256": "fcd925720fa0b7cf369826c0990a5051f677b2c6630407163e3aeda835f78aec",
+  "state": "completed",
+  "tokens": 34674,
+  "unit": "v24-screen:2bfbff6b71f2b77f0e70abdd1e7430e8"
+}

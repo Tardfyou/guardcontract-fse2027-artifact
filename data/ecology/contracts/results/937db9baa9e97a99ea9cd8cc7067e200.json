@@ -1,0 +1,391 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Return of the aggregated dashboard payload at admin.py lines 31-38, gated ahead of the reads at lines 13-29.",
+        "contract_id": "ecological-contract:2341727f0f32be6548d348ebbc7add56",
+        "declared_mechanism": "FastAPI dependency injection Depends(get_current_user) on the route plus an inline role check returning a 401 Response before any database read.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 64,
+            "line_start": 6,
+            "path": "backend/app/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "643957024c8fd7729bee15137833701f1797c37079a776a5c398c62c2de921f9"
+          },
+          {
+            "line_end": 9,
+            "line_start": 8,
+            "path": "backend/app/routers/admin.py",
+            "role": "guard_registration",
+            "source_sha256": "e2708b8ccde8dcbf159e786c838e1994808861f7cc0bd8c4462b976332e0b871"
+          },
+          {
+            "line_end": 11,
+            "line_start": 10,
+            "path": "backend/app/routers/admin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e2708b8ccde8dcbf159e786c838e1994808861f7cc0bd8c4462b976332e0b871"
+          },
+          {
+            "line_end": 29,
+            "line_start": 13,
+            "path": "backend/app/routers/admin.py",
+            "role": "protected_operation",
+            "source_sha256": "e2708b8ccde8dcbf159e786c838e1994808861f7cc0bd8c4462b976332e0b871"
+          },
+          {
+            "line_end": 38,
+            "line_start": 31,
+            "path": "backend/app/routers/admin.py",
+            "role": "commit_point",
+            "source_sha256": "e2708b8ccde8dcbf159e786c838e1994808861f7cc0bd8c4462b976332e0b871"
+          }
+        ],
+        "forbidden_condition": "Serving the dashboard aggregate to a caller where get_current_user resolves to None or current_user.role != 'admin' (admin.py lines 10-11 return Response(status_code=401) instead of proceeding).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool or lifecycle hook can dispatch requests to /admin/dashboard (no such binding appears in the supplied views).",
+          "How 'admin' role values are minted into access tokens (app.utils.auth_utils not supplied).",
+          "Whether the admin and tickets routers are mounted by the application entrypoint (wiring not supplied)."
+        ],
+        "protected_operation": "GET /admin/dashboard handler execution and the platform-wide reads it performs (patient count, doctor list/count, ticket count, full report list).",
+        "protected_resource": "Aggregated administrative data across Patient, Doctor, Ticket, and Report collections returned in the dashboard response.",
+        "protection_obligation": "Only callers whose resolved identity has role 'admin' may retrieve the admin dashboard; unauthenticated or non-admin requests must be rejected before any platform-wide data is read or returned.",
+        "scope_limits": [
+          "Guard is an ordinary HTTP role check on a server route; no supplied source binds /admin/dashboard to an agent tool, agent lifecycle hook, or agent-generated input.",
+          "Effect is read-only aggregation; no persistent mutation is guarded at this endpoint.",
+          "Role is taken from the decoded token payload (dependencies.py lines 40-41); token issuance and role-assignment code is not in the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await process_medical_pdf(file_bytes, file.filename) at admin.py line 51 \u2014 the outermost commit visible in source; internal MongoDB/Pinecone write sites are not in the supplied source.",
+        "contract_id": "ecological-contract:2d63aee9684aa875ed3a9495abbea322",
+        "declared_mechanism": "Depends(get_current_user) on the route plus an inline check raising HTTPException(status_code=401, detail='Unauthorized') before the filename check, file read, and processing call.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 64,
+            "line_start": 6,
+            "path": "backend/app/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "643957024c8fd7729bee15137833701f1797c37079a776a5c398c62c2de921f9"
+          },
+          {
+            "line_end": 44,
+            "line_start": 41,
+            "path": "backend/app/routers/admin.py",
+            "role": "guard_registration",
+            "source_sha256": "e2708b8ccde8dcbf159e786c838e1994808861f7cc0bd8c4462b976332e0b871"
+          },
+          {
+            "line_end": 44,
+            "line_start": 43,
+            "path": "backend/app/routers/admin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e2708b8ccde8dcbf159e786c838e1994808861f7cc0bd8c4462b976332e0b871"
+          },
+          {
+            "line_end": 52,
+            "line_start": 46,
+            "path": "backend/app/routers/admin.py",
+            "role": "protected_operation",
+            "source_sha256": "e2708b8ccde8dcbf159e786c838e1994808861f7cc0bd8c4462b976332e0b871"
+          },
+          {
+            "line_end": 51,
+            "line_start": 51,
+            "path": "backend/app/routers/admin.py",
+            "role": "commit_point",
+            "source_sha256": "e2708b8ccde8dcbf159e786c838e1994808861f7cc0bd8c4462b976332e0b871"
+          }
+        ],
+        "forbidden_condition": "A caller with current_user None or role != 'admin' causing the handler to proceed past admin.py lines 43-44, which raise HTTPException 401 before any file processing or write.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Source of app.utils.ai_utils.process_medical_pdf to confirm the MongoDB/Pinecone commit points and their strata inside the call at admin.py line 51.",
+          "Whether any agent-mediated path (tool or lifecycle hook) can reach this endpoint or invoke process_medical_pdf directly."
+        ],
+        "protected_operation": "POST /admin/upload-medical-pdf ingestion: PDF extension validation, await file.read(), and await process_medical_pdf(file_bytes, file.filename).",
+        "protected_resource": "Medical knowledge corpus persisted by process_medical_pdf (per reviewer rationale: MongoDB documents and Pinecone vector index); implementation not in the supplied source.",
+        "protection_obligation": "Only callers whose resolved identity has role 'admin' may trigger medical-PDF ingestion; no file read, parsing, or downstream persistence via process_medical_pdf may occur for unauthenticated or non-admin callers (merged from both reviewers' upload-medical-pdf wording).",
+        "scope_limits": [
+          "Plain HTTP endpoint; no supplied source binds the upload operation to an agent tool, lifecycle hook, or agent-generated input, even though the populated store is later queried by the agent tool search_medical_knowledge (tools.py lines 13-58).",
+          "The PDF extension check (admin.py line 46) is content validation, outside the guarded obligation.",
+          "Only the call site of process_medical_pdf is visible; its internal commit points cannot be bound from the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await ticket.save() at tickets.py line 160.",
+        "contract_id": "ecological-contract:3cfb322f896f3cc2d3dd4990548aa987",
+        "declared_mechanism": "Depends(require_user) authentication plus an inline check raising HTTPException 403 when user.role == 'patient' and ticket.created_by != user.id (tickets.py lines 121-123).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 73,
+            "line_start": 66,
+            "path": "backend/app/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "643957024c8fd7729bee15137833701f1797c37079a776a5c398c62c2de921f9"
+          },
+          {
+            "line_end": 113,
+            "line_start": 112,
+            "path": "backend/app/routers/tickets.py",
+            "role": "guard_registration",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          },
+          {
+            "line_end": 123,
+            "line_start": 121,
+            "path": "backend/app/routers/tickets.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          },
+          {
+            "line_end": 160,
+            "line_start": 149,
+            "path": "backend/app/routers/tickets.py",
+            "role": "protected_operation",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          },
+          {
+            "line_end": 160,
+            "line_start": 160,
+            "path": "backend/app/routers/tickets.py",
+            "role": "commit_point",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          }
+        ],
+        "forbidden_condition": "A patient whose id differs from ticket.created_by driving the handler past tickets.py lines 122-123, which raise HTTP 403 'Not authorized' before the AI summary and status mutation.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether closure is intended to be restricted to assigned doctors only; the comment 'only doctor can close' at tickets.py line 121 does not match the implemented patient-creator check."
+        ],
+        "protected_operation": "POST /tickets/{id}/analyze-closure: generating the closure summary, setting ticket.status = 'completed' and appending '[CLOSURE]' notes, then saving (tickets.py lines 149-160).",
+        "protected_resource": "Ticket document's status and helpful_notes fields (persistent Ticket record).",
+        "protection_obligation": "Ticket closure via analyze-closure (status moved to 'completed' with an AI closure summary appended) must not be performed by a patient who is not the ticket's creator; the implemented check forbids user.role == 'patient' with ticket.created_by != user.id before saving (cited in the first reviewer's rationale at tickets.py lines 122-123).",
+        "scope_limits": [
+          "Check only restricts non-creator patients; any authenticated doctor or the creator may close regardless of assignment \u2014 the guard is narrower than an assignee-only rule.",
+          "No supplied source binds this HTTP endpoint to an agent tool, lifecycle hook, or agent-generated input (the agent's close_ticket tool at tools.py lines 303-335 enforces a separate assigned_to identity check before ticket.save())."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "await ticket.insert() at tools.py line 91 (followed by an unguarded async spawn of process_ticket_ai at lines 93-94).",
+        "contract_id": "ecological-contract:4bd95151e10d1ecfe6291528605f22f5",
+        "declared_mechanism": "LangGraph interrupt({'action': 'approve_ticket', 'title': ..., 'description': ...}) at tools.py lines 66-70, with an early-return gate at lines 73-74 blocking document construction and insertion unless approval.get('approved') is truthy.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 61,
+            "line_start": 60,
+            "path": "backend/app/utils/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1563815912026b89abf630ef7328cccc63808d39cbdac3137d305a5a151b96fc"
+          },
+          {
+            "line_end": 253,
+            "line_start": 253,
+            "path": "backend/app/utils/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1563815912026b89abf630ef7328cccc63808d39cbdac3137d305a5a151b96fc"
+          },
+          {
+            "line_end": 70,
+            "line_start": 66,
+            "path": "backend/app/utils/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "1563815912026b89abf630ef7328cccc63808d39cbdac3137d305a5a151b96fc"
+          },
+          {
+            "line_end": 74,
+            "line_start": 73,
+            "path": "backend/app/utils/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1563815912026b89abf630ef7328cccc63808d39cbdac3137d305a5a151b96fc"
+          },
+          {
+            "line_end": 64,
+            "line_start": 61,
+            "path": "backend/app/utils/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "1563815912026b89abf630ef7328cccc63808d39cbdac3137d305a5a151b96fc"
+          },
+          {
+            "line_end": 91,
+            "line_start": 91,
+            "path": "backend/app/utils/tools.py",
+            "role": "commit_point",
+            "source_sha256": "1563815912026b89abf630ef7328cccc63808d39cbdac3137d305a5a151b96fc"
+          }
+        ],
+        "forbidden_condition": "A Ticket document reaching await ticket.insert() without a prior interrupt resume value carrying approved == true \u2014 tools.py lines 73-74 return early for absent or unapproved responses, so insertion without approval is the forbidden condition.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Where the tools list at tools.py line 253 is bound to a compiled LangGraph agent and how clients supply the interrupt resume value (graph construction not supplied).",
+          "Whether the interrupt gate is guaranteed to run before every insert for resumed threads, given the graph definition is not in the supplied source."
+        ],
+        "protected_operation": "Agent-tool invocation of create_ticket(title, description, config) that constructs a Ticket for the user and persists it (tools.py lines 85-91).",
+        "protected_resource": "Ticket collection (new Ticket documents created on a user's behalf by the agent).",
+        "protection_obligation": "The chatbot agent's create_ticket tool must not insert a Ticket document unless the user explicitly approves the proposed ticket through the LangGraph interrupt gate; absent or negative approval must abort with 'Ticket creation cancelled by user.' before any persistence.",
+        "scope_limits": [
+          "Gate covers only the agent tool path; the HTTP endpoint POST /tickets/create (tickets.py lines 71-90) inserts tickets without an interrupt gate and is a separate, non-agent surface.",
+          "The gate does not cover the follow-on background AI processing spawned after insertion (tools.py lines 93-94).",
+          "created_by identity falls back to an arbitrary Patient.find_one() when config lacks user_id (tools.py lines 77-83), which is outside the approval gate's protection.",
+          "Approval semantics depend on how the compiled LangGraph graph delivers and resumes the interrupt; graph wiring is not in the supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await ticket.save() at tickets.py line 189.",
+        "contract_id": "ecological-contract:bf2bc43919e5559f02f07e79cc8b2acb",
+        "declared_mechanism": "Depends(require_user) authentication (HTTP 401 if unauthenticated) plus an inline assignee-identity check raising HTTPException 403 for non-assignees.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 73,
+            "line_start": 66,
+            "path": "backend/app/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "643957024c8fd7729bee15137833701f1797c37079a776a5c398c62c2de921f9"
+          },
+          {
+            "line_end": 179,
+            "line_start": 178,
+            "path": "backend/app/routers/tickets.py",
+            "role": "guard_registration",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          },
+          {
+            "line_end": 182,
+            "line_start": 180,
+            "path": "backend/app/routers/tickets.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          },
+          {
+            "line_end": 194,
+            "line_start": 184,
+            "path": "backend/app/routers/tickets.py",
+            "role": "protected_operation",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          },
+          {
+            "line_end": 189,
+            "line_start": 189,
+            "path": "backend/app/routers/tickets.py",
+            "role": "commit_point",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          }
+        ],
+        "forbidden_condition": "A request for a nonexistent ticket, or from a user who is not the assigned doctor, mutating the ticket \u2014 tickets.py lines 181-182 raise HTTP 403 'Not authorized' before any state change.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool or lifecycle path can invoke this endpoint or mutate channel_id/connection_status through another route."
+        ],
+        "protected_operation": "POST /tickets/{id}/accept-connection: setting ticket.channel_id = f'ticket-{ticket.id}' and connection_status = 'accepted', then saving, when connection_status == 'requested' (tickets.py lines 184-189).",
+        "protected_resource": "Ticket document's channel_id and connection_status fields (persistent Ticket record).",
+        "protection_obligation": "Only the assigned doctor (ticket.assigned_to == user.id) may accept a requested connection; the ticket's channel_id and connection_status may be moved to 'accepted' only by that assignee.",
+        "scope_limits": [
+          "Ordinary HTTP identity check; no supplied source binds this endpoint to an agent tool, lifecycle hook, or agent-generated input.",
+          "Mutation is conditional on connection_status == 'requested' (tickets.py line 184); acceptance of non-requested tickets changes nothing."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await ticket.save() at tickets.py line 173.",
+        "contract_id": "ecological-contract:c64e362ca6264057d1874f2b33fb69fb",
+        "declared_mechanism": "Depends(require_user) authentication (HTTP 401 if unauthenticated, dependencies.py lines 66-73) plus an inline ownership check raising HTTPException 403 for non-creators.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 73,
+            "line_start": 66,
+            "path": "backend/app/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "643957024c8fd7729bee15137833701f1797c37079a776a5c398c62c2de921f9"
+          },
+          {
+            "line_end": 166,
+            "line_start": 165,
+            "path": "backend/app/routers/tickets.py",
+            "role": "guard_registration",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          },
+          {
+            "line_end": 169,
+            "line_start": 167,
+            "path": "backend/app/routers/tickets.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          },
+          {
+            "line_end": 175,
+            "line_start": 171,
+            "path": "backend/app/routers/tickets.py",
+            "role": "protected_operation",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          },
+          {
+            "line_end": 173,
+            "line_start": 173,
+            "path": "backend/app/routers/tickets.py",
+            "role": "commit_point",
+            "source_sha256": "5b7f8eb4a414c08423220ede2cc84de21b99d3a49a896ea8b742b4cb0b6f6d1d"
+          }
+        ],
+        "forbidden_condition": "A request for a nonexistent ticket, or from a user who is not the creator, mutating the ticket \u2014 tickets.py lines 168-169 raise HTTP 403 'Not authorized' before any state change.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the chatbot agent or any tool in tools.py can invoke this endpoint or mutate connection_status through another path."
+        ],
+        "protected_operation": "POST /tickets/{id}/request-connection: setting ticket.connection_status = 'requested' and saving when the ticket has an assignee and no prior connection_status (tickets.py lines 171-173).",
+        "protected_resource": "Ticket document's connection_status field (persistent Ticket record).",
+        "protection_obligation": "Only the user recorded as the ticket's creator (ticket.created_by == user.id) may request a doctor connection; the ticket's connection_status may be moved to 'requested' only by that creator.",
+        "scope_limits": [
+          "Ordinary HTTP ownership check; no supplied source binds this endpoint to an agent tool, lifecycle hook, or agent-generated input.",
+          "Mutation is additionally conditioned on ticket.assigned_to being set and connection_status not already set (tickets.py line 171); requests for unassigned or already-connected tickets change nothing."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Source of app.utils.ai_utils.process_medical_pdf is not supplied; the internal MongoDB and Pinecone commit points behind /admin/upload-medical-pdf cannot be bound beyond the call site at admin.py line 51.",
+      "LangGraph graph construction that binds the tools list (tools.py line 253) to a compiled agent, and the client-side mechanism that resumes interrupt() with an approval payload, are not in the supplied source.",
+      "app.utils.auth_utils (decode_access_token, decode_token, create_access_token) is not supplied; how 'role' values are minted into tokens is unverifiable from the supplied views.",
+      "Application entrypoint wiring that mounts the admin and tickets routers is not supplied; endpoint liveness is assumed from route decorators and reviewer opinion.",
+      "Repository enumeration is not complete and behavior labels are unavailable (per stated scope); runtime enforcement behavior and prevalence cannot be assessed from the supplied views.",
+      "Additional guarded surfaces visible in source but not raised as reviewer obligations, and therefore not compiled as contracts: agent tools close_ticket (tools.py lines 303-335, assigned_to identity check before ticket.save() at line 331) and generate_report (tools.py lines 337-386, status check before report.insert() at line 375); POST /tickets/create (tickets.py lines 71-90) inserts tickets with require_user only and no ownership or approval gate."
+    ],
+    "repository": "kiran20052002/AI-Medical-Triage-Hub",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:937db9baa9e97a99ea9cd8cc7067e200"
+  },
+  "request_sha256": "7d57ff79bc89cdddd9559be34fe564e73df4a9416329fcd38f5b5006c2930daf",
+  "response_sha256": "6bec5e96370111ec8d84df9fe1f0025a9acb514f598d009cc0da9b2a2fcf8172",
+  "state": "completed",
+  "tokens": 29271,
+  "unit": "v24-screen:937db9baa9e97a99ea9cd8cc7067e200"
+}

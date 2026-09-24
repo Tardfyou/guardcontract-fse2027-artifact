@@ -1,0 +1,2065 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file_field.delete(save=False) at express_query/signals.py:41, executed post-commit (line 26).",
+        "contract_id": "ecological-contract:00621166ce383969a3bb6f78dafb2684",
+        "declared_mechanism": "@receiver(post_delete, sender=ExpressQueryTask) handler scheduling _do_cleanup via transaction.on_commit; _safe_delete_file_field performs FieldFile.delete(save=False).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 26,
+            "line_start": 16,
+            "path": "backend/apps/express_query/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "bae48b37f34a708fcfb4e0b45852e8c4f272eaf7c2dcbdd0e09b5f7bae6b036c"
+          },
+          {
+            "line_end": 41,
+            "line_start": 40,
+            "path": "backend/apps/express_query/signals.py",
+            "role": "commit_point",
+            "source_sha256": "bae48b37f34a708fcfb4e0b45852e8c4f272eaf7c2dcbdd0e09b5f7bae6b036c"
+          }
+        ],
+        "forbidden_condition": "Orphaned waybill_image/result_pdf files after task deletion (and premature deletion on rollback).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Post-delete cleanup of ExpressQueryTask files.",
+        "protected_resource": "ExpressQueryTask.waybill_image and ExpressQueryTask.result_pdf.",
+        "protection_obligation": "Deleting an ExpressQueryTask record must trigger cleanup of its waybill image and result PDF only after the deletion transaction commits via transaction.on_commit.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "extract_document_content(file_path.as_posix(), ...) at auto_namer_api.py:82-84, which reads the validated path and feeds the naming response.",
+        "contract_id": "ecological-contract:049e5afd968fa4b0874014449a9fcb98",
+        "declared_mechanism": "Path(payload.file_path).resolve() must be is_relative_to(Path(settings.MEDIA_ROOT).resolve()); otherwise the handler returns an error result before extraction.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 49,
+            "path": "backend/apps/automation/api/auto_namer_api.py",
+            "role": "protected_operation",
+            "source_sha256": "bc618b97337d4fbebf86255efdf94d56507d8bc621873a2cab794ba81a21955e"
+          },
+          {
+            "line_end": 71,
+            "line_start": 61,
+            "path": "backend/apps/automation/api/auto_namer_api.py",
+            "role": "forbidden_condition",
+            "source_sha256": "bc618b97337d4fbebf86255efdf94d56507d8bc621873a2cab794ba81a21955e"
+          },
+          {
+            "line_end": 84,
+            "line_start": 82,
+            "path": "backend/apps/automation/api/auto_namer_api.py",
+            "role": "commit_point",
+            "source_sha256": "bc618b97337d4fbebf86255efdf94d56507d8bc621873a2cab794ba81a21955e"
+          }
+        ],
+        "forbidden_condition": "Reading and disclosing the text content of a file whose resolved path is outside MEDIA_ROOT (path traversal) via the process-by-path endpoint.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "extract_document_content implementation is not in the supplied views."
+        ],
+        "protected_operation": "auto_namer_process_by_path extraction and naming flow.",
+        "protected_resource": "Files under settings.MEDIA_ROOT reachable via payload.file_path.",
+        "protection_obligation": "File reads through POST /automation/auto-namer/process-by-path must be confined to MEDIA_ROOT: a requested file_path that resolves outside MEDIA_ROOT must be rejected before document content is extracted and disclosed.",
+        "scope_limits": [
+          "The underlying filesystem read is not a mutation; the guarded effect is disclosure of file content in the HTTP response.",
+          "Applies to the path-based endpoint only; the upload-based /process endpoint is out of scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "project_service.py:30 return of the guarded project and chat_records_api.py:345-350 FileResponse of task.output_file.",
+        "contract_id": "ecological-contract:079cb2abc5b81de5f44f1f47c5710507",
+        "declared_mechanism": "ensure_can_access_project (admin bypass; authenticated owner match; otherwise PermissionDenied) invoked before returning the object; Router(auth=JWTOrSessionAuth()).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 18,
+            "line_start": 11,
+            "path": "backend/apps/chat_records/services/core/access_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7949e95749da81f1966da1b9de1b231ffe01ba37c8f829f7e3afd95e2052f006"
+          },
+          {
+            "line_end": 34,
+            "line_start": 31,
+            "path": "backend/apps/chat_records/api/chat_records_api.py",
+            "role": "guard_registration",
+            "source_sha256": "ae16145e9f06335dd43d5e0dc676c24afbe3bbebc766cff04d561aaa6e22646b"
+          },
+          {
+            "line_end": 30,
+            "line_start": 24,
+            "path": "backend/apps/chat_records/services/core/project_service.py",
+            "role": "protected_operation",
+            "source_sha256": "99f159bc7037ce0e6dd929cb3f16d7e5182d442a76644c744a5dd1bf324d2f64"
+          },
+          {
+            "line_end": 33,
+            "line_start": 27,
+            "path": "backend/apps/chat_records/services/export/export_task_service.py",
+            "role": "protected_operation",
+            "source_sha256": "1389e37da1c87dc409f5e533351b2074921399f0d329333fe935ee7f8e392bc9"
+          },
+          {
+            "line_end": 350,
+            "line_start": 339,
+            "path": "backend/apps/chat_records/api/chat_records_api.py",
+            "role": "commit_point",
+            "source_sha256": "ae16145e9f06335dd43d5e0dc676c24afbe3bbebc766cff04d561aaa6e22646b"
+          }
+        ],
+        "forbidden_condition": "A request from a user who is neither an admin nor the project owner obtaining project/recording/screenshot/export data or the export FileResponse.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Project/recording/screenshot/export service fetches and the export download endpoint (GET /exports/{task_id}/download).",
+        "protected_resource": "ChatRecordProject and its recordings, screenshots, and ChatRecordExportTask output files.",
+        "protection_obligation": "Unauthenticated or non-owner (non-admin) users are forbidden from accessing chat-record projects, recordings, screenshots, and export tasks \u2014 including downloading the export file; ensure_can_access_project raises PermissionDenied inside ProjectService.get_project and ExportTaskService.get_task before the protected object is returned, backed by router-level JWTOrSessionAuth on all chat_records API endpoints.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Response-producing calls after the guard: HealthChecker.get_system_health(include_details=True) at api.py:379 and get_resource_status()/siblings at api.py:418-419 (through 480).",
+        "contract_id": "ecological-contract:164ed4604b571adbfc3b939edc01d815",
+        "declared_mechanism": "auth=JWTOrSessionAuth() declared on each @api_v1.get operation; ensure_admin_request (via _require_admin) executed as the first statement of each handler.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 380,
+            "line_start": 371,
+            "path": "backend/apiSystem/apiSystem/api.py",
+            "role": "guard_registration",
+            "source_sha256": "4e347effd3586bc886a1babc5276543c97b3087965c8327d40187683ccd55421"
+          },
+          {
+            "line_end": 409,
+            "line_start": 407,
+            "path": "backend/apiSystem/apiSystem/api.py",
+            "role": "guard_registration",
+            "source_sha256": "4e347effd3586bc886a1babc5276543c97b3087965c8327d40187683ccd55421"
+          },
+          {
+            "line_end": 417,
+            "line_start": 412,
+            "path": "backend/apiSystem/apiSystem/api.py",
+            "role": "protected_operation",
+            "source_sha256": "4e347effd3586bc886a1babc5276543c97b3087965c8327d40187683ccd55421"
+          },
+          {
+            "line_end": 419,
+            "line_start": 418,
+            "path": "backend/apiSystem/apiSystem/api.py",
+            "role": "commit_point",
+            "source_sha256": "4e347effd3586bc886a1babc5276543c97b3087965c8327d40187683ccd55421"
+          },
+          {
+            "line_end": 470,
+            "line_start": 464,
+            "path": "backend/apiSystem/apiSystem/api.py",
+            "role": "protected_operation",
+            "source_sha256": "4e347effd3586bc886a1babc5276543c97b3087965c8327d40187683ccd55421"
+          }
+        ],
+        "forbidden_condition": "A non-admin or unauthenticated request receiving detailed health or resource status/usage/recommendations/metrics payloads.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Implementations of ensure_admin_request and JWTOrSessionAuth are not in the supplied views; deny semantics are cited from call sites only."
+        ],
+        "protected_operation": "health_check_detail, resource_status, resource_usage, resource_recommendations, resource_health, resource_metrics, and resource_metrics_prometheus endpoint responses.",
+        "protected_resource": "System health detail (disk space etc.) and server resource metrics exposed via apps.core.infrastructure.",
+        "protection_obligation": "Unauthenticated or non-admin requests must be forbidden from reading detailed system health data (/api/v1/health/detail) and resource-monitoring data (/api/v1/resource/*); each operation requires auth=JWTOrSessionAuth() plus an ensure_admin_request check before any sensitive payload is computed or returned.",
+        "scope_limits": [
+          "Plain /health, /health/live, and /health/ready are intentionally unguarded and out of scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Django admin model save/delete for CaseChat, reachable only if these permission hooks returned True; they return False at case_chat_admin.py:107-113 and 180-186.",
+        "contract_id": "ecological-contract:17a05904693f394623be1d3d5e1b46a5",
+        "declared_mechanism": "has_add_permission/has_delete_permission returning False on CaseChatAdmin and CaseChatInline (docstrings: Direct addition/deletion of group chat records is prohibited).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 18,
+            "line_start": 17,
+            "path": "backend/apps/cases/admin/case_chat_admin.py",
+            "role": "guard_registration",
+            "source_sha256": "2de8df014fef3536db203a31cdc33c7ea1b561c9b7423a281a752e85a01e8d72"
+          },
+          {
+            "line_end": 113,
+            "line_start": 107,
+            "path": "backend/apps/cases/admin/case_chat_admin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2de8df014fef3536db203a31cdc33c7ea1b561c9b7423a281a752e85a01e8d72"
+          },
+          {
+            "line_end": 186,
+            "line_start": 180,
+            "path": "backend/apps/cases/admin/case_chat_admin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2de8df014fef3536db203a31cdc33c7ea1b561c9b7423a281a752e85a01e8d72"
+          }
+        ],
+        "forbidden_condition": "Admin add/delete persistence for CaseChat records.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Django admin add/delete flows for CaseChat.",
+        "protected_resource": "CaseChat records.",
+        "protection_obligation": "Manual creation and deletion of CaseChat records through the Django admin is forbidden: CaseChatAdmin (and CaseChatInline) override has_add_permission/has_delete_permission to return False.",
+        "scope_limits": [
+          "Unbind actions (response_change/unbind_selected_chats) are separate operations and outside this lockout obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Batch delete WorkbenchMessage.objects.filter(...).delete() at message_service.py:83-86 and the metadata save msg.save(update_fields=['metadata']) at :125, each behind the guard.",
+        "contract_id": "ecological-contract:1b598a560023333fec11e04ee5c13530",
+        "declared_mechanism": "get_user_session ownership filter (user=user) raising NotFoundError.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 172,
+            "line_start": 167,
+            "path": "backend/apps/workbench/services/session_service.py",
+            "role": "guard_registration",
+            "source_sha256": "39b114b9704c6ee45934ab2f6d968155ffb10abf91c3ecaab9ab845719ba58f9"
+          },
+          {
+            "line_end": 40,
+            "line_start": 23,
+            "path": "backend/apps/workbench/services/message_service.py",
+            "role": "protected_operation",
+            "source_sha256": "e89fa48f6e9a796b41576027684b0c7350f91b57ddd5bd8bbe7499aea00e1e4f"
+          },
+          {
+            "line_end": 78,
+            "line_start": 78,
+            "path": "backend/apps/workbench/services/message_service.py",
+            "role": "guard_registration",
+            "source_sha256": "e89fa48f6e9a796b41576027684b0c7350f91b57ddd5bd8bbe7499aea00e1e4f"
+          },
+          {
+            "line_end": 86,
+            "line_start": 83,
+            "path": "backend/apps/workbench/services/message_service.py",
+            "role": "commit_point",
+            "source_sha256": "e89fa48f6e9a796b41576027684b0c7350f91b57ddd5bd8bbe7499aea00e1e4f"
+          },
+          {
+            "line_end": 125,
+            "line_start": 119,
+            "path": "backend/apps/workbench/services/message_service.py",
+            "role": "commit_point",
+            "source_sha256": "e89fa48f6e9a796b41576027684b0c7350f91b57ddd5bd8bbe7499aea00e1e4f"
+          }
+        ],
+        "forbidden_condition": "Reading or mutating messages of a session not owned by the requesting user.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "list_messages, truncate_messages, submit_feedback.",
+        "protected_resource": "WorkbenchMessage rows and WorkbenchSession metadata of the owned session.",
+        "protection_obligation": "Workbench message operations (list, truncate, feedback) must be authorized to the owning user via get_user_session \u2014 WorkbenchSession.objects.get(id=session_id, user=user) raising NotFoundError otherwise \u2014 before any message read or mutation.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "JudgmentPdfExtractor().extract(str(file_path)) at views.py:674-675 feeding the JsonResponse at :679-686.",
+        "contract_id": "ecological-contract:1fbda9cb52d519cba7095538822f948d",
+        "declared_mechanism": "Resolved file_path must be is_relative_to(allowed_dir); otherwise the handler returns 400 illegal file path.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 144,
+            "line_start": 140,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "guard_registration",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 666,
+            "line_start": 661,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 656,
+            "line_start": 642,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "protected_operation",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 686,
+            "line_start": 671,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "commit_point",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          }
+        ],
+        "forbidden_condition": "extractor.extract reading a file whose resolved path escapes case_documents/temp and disclosing its content in the response.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "parse_document_view_no_id.",
+        "protected_resource": "Temporary files under MEDIA_ROOT/case_documents/temp.",
+        "protection_obligation": "Temp judgment-document parsing must reject resolved paths outside MEDIA_ROOT/case_documents/temp before reading and extracting the document (parse_document_view_no_id); the route is wrapped in admin_site.admin_view.",
+        "scope_limits": [
+          "The guarded effect is filesystem read + content disclosure via JSON response; no mutation occurs in this handler."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "target.iterdir() enumeration and returned results at browse_policy.py:91-102, surfaced in the browse HTTP response (folder_binding_api.py:256-258, 273-275).",
+        "contract_id": "ecological-contract:224cc5958b0c627a29290d773b4ccfaf",
+        "declared_mechanism": "resolve_under_allowed_roots validation raising BROWSE_FORBIDDEN; list_subdirs delegates to it before iterdir; browse endpoint additionally requires an authenticated user (_require_admin).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 85,
+            "line_start": 62,
+            "path": "backend/apps/core/filesystem/browse_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "702a4c898138c18cb5824de8825ad167759a12cca1e6cc6cda39232d45657782"
+          },
+          {
+            "line_end": 103,
+            "line_start": 87,
+            "path": "backend/apps/core/filesystem/browse_policy.py",
+            "role": "protected_operation",
+            "source_sha256": "702a4c898138c18cb5824de8825ad167759a12cca1e6cc6cda39232d45657782"
+          },
+          {
+            "line_end": 48,
+            "line_start": 45,
+            "path": "backend/apps/contracts/api/folder_binding_api.py",
+            "role": "guard_registration",
+            "source_sha256": "b0ce1da26e3fbfbcf3d224c29219b5b0ecc9330c2c2d609c57bf9950726ff1ad"
+          },
+          {
+            "line_end": 258,
+            "line_start": 244,
+            "path": "backend/apps/contracts/api/folder_binding_api.py",
+            "role": "protected_operation",
+            "source_sha256": "b0ce1da26e3fbfbcf3d224c29219b5b0ecc9330c2c2d609c57bf9950726ff1ad"
+          }
+        ],
+        "forbidden_condition": "Enumerating and returning directory entries for a path outside the configured browse roots (or a network path / non-directory).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "FolderBindingService internals (whether it delegates to FolderBrowsePolicy) are not in the supplied views."
+        ],
+        "protected_operation": "Folder browse listing, e.g., folder-binding API browse_folders \u2192 service.resolve_under_allowed_roots / list_subdirs.",
+        "protected_resource": "Local directories under configured FOLDER_BROWSE_ROOTS / user Downloads.",
+        "protection_obligation": "Directory browsing must be restricted to configured allowed roots: FolderBrowsePolicy.resolve_under_allowed_roots rejects network paths, unconfigured roots, non-directories, and paths outside all allowed roots with BROWSE_* ValidationExceptions (BROWSE_FORBIDDEN), and list_subdirs resolves through this policy before enumerating entries returned to callers.",
+        "scope_limits": [
+          "The wiring from FolderBindingService.resolve_under_allowed_roots/list_subdirs to FolderBrowsePolicy is asserted by naming but the service source is not supplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "default_storage.save(str(rel_path), uploaded_file) at storage_service.py:317.",
+        "contract_id": "ecological-contract:348eecd8ef10175382c94e476921bea9",
+        "declared_mechanism": "_DefaultFileValidator.validate_uploaded_file (extension whitelist, size cap, MIME/extension consistency, executable-magic rejection) invoked before storage.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 114,
+            "line_start": 52,
+            "path": "backend/apps/core/services/storage_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b7849f8d59e4fbb204919a738ac23f09b2951684e8d28de79ba01b6ea62129c1"
+          },
+          {
+            "line_end": 112,
+            "line_start": 103,
+            "path": "backend/apps/core/services/storage_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b7849f8d59e4fbb204919a738ac23f09b2951684e8d28de79ba01b6ea62129c1"
+          },
+          {
+            "line_end": 290,
+            "line_start": 283,
+            "path": "backend/apps/core/services/storage_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b7849f8d59e4fbb204919a738ac23f09b2951684e8d28de79ba01b6ea62129c1"
+          },
+          {
+            "line_end": 282,
+            "line_start": 268,
+            "path": "backend/apps/core/services/storage_service.py",
+            "role": "protected_operation",
+            "source_sha256": "b7849f8d59e4fbb204919a738ac23f09b2951684e8d28de79ba01b6ea62129c1"
+          },
+          {
+            "line_end": 318,
+            "line_start": 316,
+            "path": "backend/apps/core/services/storage_service.py",
+            "role": "commit_point",
+            "source_sha256": "b7849f8d59e4fbb204919a738ac23f09b2951684e8d28de79ba01b6ea62129c1"
+          }
+        ],
+        "forbidden_condition": "default_storage.save persisting a file whose header matches executable magic or whose extension/MIME/size violates validation.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "save_uploaded_file media write flow.",
+        "protected_resource": "Media files written under MEDIA_ROOT/<rel_dir>.",
+        "protection_obligation": "All media file writes must go through storage_service.save_uploaded_file, which forbids executable uploads (PE/ELF/Mach-O magic bytes), non-whitelisted extensions, MIME/extension mismatches, and oversize files before committing via default_storage.save.",
+        "scope_limits": [
+          "The module declares itself the unified media-write entry point (comment lines 17-23); callers outside the supplied views are out of scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "exec(compiled, restricted_globals) inside _exec_in_thread at activities.py:600, after validation at :542-547 and compile at :596.",
+        "contract_id": "ecological-contract:34c7af82590a5a68a42914056680a1fa",
+        "declared_mechanism": "ast.parse + _validate_ast walk raising ValueError before compile; restricted __builtins__ and safe  proxy in restricted_globals; 30s asyncio.wait_for timeout.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 426,
+            "line_start": 415,
+            "path": "backend/apps/workflow/temporal/activities.py",
+            "role": "protected_operation",
+            "source_sha256": "0fe0a12efa63fc68ff6d9e7a097f9b67c159b8cec26e514350213038aa1dae08"
+          },
+          {
+            "line_end": 540,
+            "line_start": 513,
+            "path": "backend/apps/workflow/temporal/activities.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0fe0a12efa63fc68ff6d9e7a097f9b67c159b8cec26e514350213038aa1dae08"
+          },
+          {
+            "line_end": 547,
+            "line_start": 542,
+            "path": "backend/apps/workflow/temporal/activities.py",
+            "role": "guard_registration",
+            "source_sha256": "0fe0a12efa63fc68ff6d9e7a097f9b67c159b8cec26e514350213038aa1dae08"
+          },
+          {
+            "line_end": 593,
+            "line_start": 589,
+            "path": "backend/apps/workflow/temporal/activities.py",
+            "role": "guard_registration",
+            "source_sha256": "0fe0a12efa63fc68ff6d9e7a097f9b67c159b8cec26e514350213038aa1dae08"
+          },
+          {
+            "line_end": 601,
+            "line_start": 598,
+            "path": "backend/apps/workflow/temporal/activities.py",
+            "role": "commit_point",
+            "source_sha256": "0fe0a12efa63fc68ff6d9e7a097f9b67c159b8cec26e514350213038aa1dae08"
+          }
+        ],
+        "forbidden_condition": "exec(compiled, restricted_globals) running code containing any pattern rejected by _validate_ast (imports, exec/eval/compile, dangerous attributes/names, f-strings, global/nonlocal, yield, await).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The authoring pipeline for steps_schema `code` is not in the supplied views; an agent-generated-input binding to this guarded effect is not determinable."
+        ],
+        "protected_operation": "generic_code_exec Temporal activity execution of the `code` argument.",
+        "protected_resource": "Temporal worker process executing workflow 'code' step content.",
+        "protection_obligation": "Arbitrary Python supplied to the workflow 'code' step (generic_code_exec activity) must pass AST static validation rejecting import statements, exec/eval/compile calls, dangerous dunder attribute access (__class__/__globals__ etc.), dangerous builtin/module names (os/subprocess/socket etc.), f-strings, global/nonlocal, yield, and await \u2014 and then run only inside a restricted-builtin sandbox \u2014 before exec().",
+        "scope_limits": [
+          "Whether the `code` argument is agent-generated is not established; it is read from WorkflowTemplate.steps_schema via fetch_template_schema in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await sync_to_async(service.delete_contract)(contract_id) at contract_api.py:224.",
+        "contract_id": "ecological-contract:39b0ba804a945dcbbc5d763ccf159222",
+        "declared_mechanism": "await _get_access_policy().aensure_access(contract_id=..., user=ctx.user, org_access=ctx.org_access, perm_open_access=ctx.perm_open_access).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 217,
+            "line_start": 214,
+            "path": "backend/apps/contracts/api/contract_api.py",
+            "role": "protected_operation",
+            "source_sha256": "897fc2287091461670451c59a8145022274e7996d4ef03d3af0855bbd743600e"
+          },
+          {
+            "line_end": 223,
+            "line_start": 218,
+            "path": "backend/apps/contracts/api/contract_api.py",
+            "role": "guard_registration",
+            "source_sha256": "897fc2287091461670451c59a8145022274e7996d4ef03d3af0855bbd743600e"
+          },
+          {
+            "line_end": 166,
+            "line_start": 147,
+            "path": "backend/apps/contracts/services/contract/domain/access_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b0d764ee11812688fd70ff6fa4494f672cef30d4cbf5af0f05d60f913640631b"
+          },
+          {
+            "line_end": 224,
+            "line_start": 224,
+            "path": "backend/apps/contracts/api/contract_api.py",
+            "role": "commit_point",
+            "source_sha256": "897fc2287091461670451c59a8145022274e7996d4ef03d3af0855bbd743600e"
+          }
+        ],
+        "forbidden_condition": "service.delete_contract executing for a caller without contract access.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "delete_contract endpoint.",
+        "protected_resource": "Contract records.",
+        "protection_obligation": "DELETE /contracts/{contract_id} must reject requests lacking admin/assignment/case-assignment access via ContractAccessPolicy.aensure_access (raising PermissionDenied) immediately before service.delete_contract.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "fav.delete() and ToolFavorite.objects.create(user=request.user, ...) inside tool_favorite_toggle_view (admin_customization.py:465, 468).",
+        "contract_id": "ecological-contract:39d1914692d68c7741a371d340559ff9",
+        "declared_mechanism": "admin.site.get_urls is monkey-patched by _get_urls_with_calculator, which registers tool_favorite_toggle_view wrapped in admin.site.admin_view; the view itself enforces POST-only and JSON validation.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 511,
+            "line_start": 502,
+            "path": "backend/apiSystem/apiSystem/admin_customization.py",
+            "role": "guard_registration",
+            "source_sha256": "4dc744a067ad371aa9332159f8b8835406b332ee36ba650222e3240e78e973bf"
+          },
+          {
+            "line_end": 525,
+            "line_start": 525,
+            "path": "backend/apiSystem/apiSystem/admin_customization.py",
+            "role": "guard_registration",
+            "source_sha256": "4dc744a067ad371aa9332159f8b8835406b332ee36ba650222e3240e78e973bf"
+          },
+          {
+            "line_end": 461,
+            "line_start": 446,
+            "path": "backend/apiSystem/apiSystem/admin_customization.py",
+            "role": "protected_operation",
+            "source_sha256": "4dc744a067ad371aa9332159f8b8835406b332ee36ba650222e3240e78e973bf"
+          },
+          {
+            "line_end": 469,
+            "line_start": 463,
+            "path": "backend/apiSystem/apiSystem/admin_customization.py",
+            "role": "commit_point",
+            "source_sha256": "4dc744a067ad371aa9332159f8b8835406b332ee36ba650222e3240e78e973bf"
+          }
+        ],
+        "forbidden_condition": "A create/delete of ToolFavorite rows via tool_favorite_toggle_view that has not passed the admin.site.admin_view staff-login wrapper.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Whether admin.site.admin_view is the sole access control for this URL depends on AdminSite login/staff configuration, which is framework behavior not present in the supplied views."
+        ],
+        "protected_operation": "POST toggling of tool favorites at the custom admin URL (automation_tool_favorite_toggle).",
+        "protected_resource": "ToolFavorite records owned by request.user (apps.core.models.ToolFavorite).",
+        "protection_obligation": "Unauthenticated or non-staff requests must be forbidden from creating or deleting the requesting user's ToolFavorite records via the custom admin tool-favorite toggle endpoint; the endpoint is only reachable through the admin.site.admin_view wrapper registered when patching admin.site.get_urls.",
+        "scope_limits": [
+          "Only the toggle view's DB effect is named here; sibling hub views share the same admin_view registration but their effects are rendering/redirects.",
+          "Coverage beyond Django admin staff-login (e.g., superuser-only) depends on AdminSite configuration not supplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "field_file.delete(save=False) (documents/signals.py:204) and file_path.unlink() (:194), each scheduled via transaction.on_commit (218, 225, 232, 239, 245).",
+        "contract_id": "ecological-contract:437609b9303301f7cec632419dc2d975",
+        "declared_mechanism": "@receiver(post_delete, dispatch_uid=...) handlers deferring _delete_file_field/_delete_charfield_file to transaction.on_commit.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 218,
+            "line_start": 210,
+            "path": "backend/apps/documents/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "30ecd14cb5913b8a1757257223ec9ba43c9c66404f46a9896b22523b16c3d129"
+          },
+          {
+            "line_end": 246,
+            "line_start": 221,
+            "path": "backend/apps/documents/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "30ecd14cb5913b8a1757257223ec9ba43c9c66404f46a9896b22523b16c3d129"
+          },
+          {
+            "line_end": 207,
+            "line_start": 185,
+            "path": "backend/apps/documents/signals.py",
+            "role": "commit_point",
+            "source_sha256": "30ecd14cb5913b8a1757257223ec9ba43c9c66404f46a9896b22523b16c3d129"
+          }
+        ],
+        "forbidden_condition": "Orphaned template/result/ZIP files remaining after record deletion.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Post-delete cleanup of documents-app model files.",
+        "protected_resource": "DocumentTemplate.file, GenerationTask.result_file, ExternalTemplate.file_path, FillRecord.file_path, BatchFillTask.zip_file_path.",
+        "protection_obligation": "Deleting DocumentTemplate (file), GenerationTask (result_file), ExternalTemplate (file_path), FillRecord (file_path), or BatchFillTask (zip_file_path) must remove the bound physical file only after the deletion transaction commits via transaction.on_commit (dispatch_uid-registered receivers).",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "subprocess.Popen(['open'|'explorer'|'xdg-open', str(folder)]) at views.py:784-788.",
+        "contract_id": "ecological-contract:4470a23d701f31e34866f9092d2b0d6c",
+        "declared_mechanism": "POST-only check, has_view_permission check, and folder.is_relative_to(home)/is_relative_to(/Volumes)/is_relative_to(MEDIA_ROOT) allowlist returning 403; route wrapped in admin_site.admin_view.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 159,
+            "line_start": 155,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "guard_registration",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 753,
+            "line_start": 749,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 780,
+            "line_start": 773,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 748,
+            "line_start": 741,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "protected_operation",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 788,
+            "line_start": 782,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "commit_point",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          }
+        ],
+        "forbidden_condition": "subprocess.Popen launching a file manager on a directory that is not relative to home, /Volumes, or MEDIA_ROOT, or by a caller without view permission or using non-POST methods.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "open_folder_view opening the case's bound local folder.",
+        "protected_resource": "Local filesystem directories (CaseFolderBinding.resolved_folder_path).",
+        "protection_obligation": "The case-admin open-folder endpoint must refuse to launch the OS file-manager subprocess (open/explorer/xdg-open) for any case folder path outside the user home directory, MEDIA_ROOT, or /Volumes, enforcing POST-method, view-permission, and path-allowlist checks immediately before subprocess.Popen.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Django admin model save/delete for LPRRate, reachable only if these hooks returned True; they return False at lpr_admin.py:64-74.",
+        "contract_id": "ecological-contract:4c553310fab6292537b893318d678ea2",
+        "declared_mechanism": "Permission overrides returning False (docstrings: Manual addition/modification/deletion of LPR data is prohibited); all data fields are readonly.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 34,
+            "line_start": 29,
+            "path": "backend/apps/finance/admin/lpr_admin.py",
+            "role": "guard_registration",
+            "source_sha256": "18426efdcddb731b65583219e7c18c34cf66416ac8c6691197cd9d345a8a75d1"
+          },
+          {
+            "line_end": 74,
+            "line_start": 64,
+            "path": "backend/apps/finance/admin/lpr_admin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "18426efdcddb731b65583219e7c18c34cf66416ac8c6691197cd9d345a8a75d1"
+          }
+        ],
+        "forbidden_condition": "Admin add/change/delete persistence for LPRRate rows.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Django admin add/change/delete flows for LPRRate.",
+        "protected_resource": "LPRRate rows.",
+        "protection_obligation": "Manual creation, modification, or deletion of LPRRate records through the Django admin is forbidden: LPRRateAdmin (registered via @admin.register(LPRRate)) overrides has_add_permission/has_change_permission/has_delete_permission to return False for the auto-sync-managed dataset.",
+        "scope_limits": [
+          "The admin sync_view (LPRSyncService.sync_latest) is a separate sanctioned mutation behind admin_view registration and is out of this lockout obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "McpWorkbenchExecution.objects.create(...) at service.py:357-372; the model save triggers the hooks.",
+        "contract_id": "ecological-contract:4cfa6ea92fc766d81e809f7d5556658e",
+        "declared_mechanism": "@hook(BEFORE_CREATE)/@hook(BEFORE_UPDATE) on_save_sanitize__fields applying scrub_for_storage and scrub_text.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 66,
+            "line_start": 65,
+            "path": "backend/apps/enterprise_data/models/workbench.py",
+            "role": "guard_registration",
+            "source_sha256": "e4cdf704b2a0521de8490827847ecf216ae6a1a9a91529a3a2e1d52fcb35e621"
+          },
+          {
+            "line_end": 74,
+            "line_start": 67,
+            "path": "backend/apps/enterprise_data/models/workbench.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e4cdf704b2a0521de8490827847ecf216ae6a1a9a91529a3a2e1d52fcb35e621"
+          },
+          {
+            "line_end": 89,
+            "line_start": 76,
+            "path": "backend/apps/enterprise_data/models/workbench.py",
+            "role": "guard_registration",
+            "source_sha256": "e4cdf704b2a0521de8490827847ecf216ae6a1a9a91529a3a2e1d52fcb35e621"
+          },
+          {
+            "line_end": 372,
+            "line_start": 357,
+            "path": "backend/apps/enterprise_data/services/workbench/service.py",
+            "role": "commit_point",
+            "source_sha256": "f1a6d81ec58c1fbc5d4f6e45cc3c66ef98fa995a4b240ed55d716e6afd559ec5"
+          }
+        ],
+        "forbidden_condition": "Persisting unsanitized arguments/responses or unredacted error text into McpWorkbenchExecution.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "MCP workbench execution-history persistence.",
+        "protected_resource": "McpWorkbenchExecution JSON and error_message fields.",
+        "protection_obligation": "McpWorkbenchExecution rows must be persisted only after django-lifecycle BEFORE_CREATE/BEFORE_UPDATE hooks scrub JSON fields (arguments, response_data, response_raw, response_meta) and redact error_message.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Config/metrics responses and recorded mutations after the guard: service.get_automation_config() at main_api.py:105 and service.record_performance_metric('cache_clear', 1.0) at performance_monitor_api.py:119.",
+        "contract_id": "ecological-contract:4d98bde4b4b20cebee4bd04b0bb30f2c",
+        "declared_mechanism": "api_v1.add_router('/automation', automation_router, auth=JWTOrSessionAuth()) plus ensure_admin_request(request) as the first statement in each handler.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 222,
+            "line_start": 222,
+            "path": "backend/apiSystem/apiSystem/api.py",
+            "role": "guard_registration",
+            "source_sha256": "4e347effd3586bc886a1babc5276543c97b3087965c8327d40187683ccd55421"
+          },
+          {
+            "line_end": 107,
+            "line_start": 94,
+            "path": "backend/apps/automation/api/main_api.py",
+            "role": "guard_registration",
+            "source_sha256": "ab8081fa09177e1c64de069470293d52f983ebfe856d159d8b1069b49ee5d104"
+          },
+          {
+            "line_end": 121,
+            "line_start": 114,
+            "path": "backend/apps/automation/api/performance_monitor_api.py",
+            "role": "guard_registration",
+            "source_sha256": "ef2f8bcf74c8f6484115915e1dde1b1b02c397f200c0572aa5384cba55e33dfe"
+          },
+          {
+            "line_end": 107,
+            "line_start": 101,
+            "path": "backend/apps/automation/api/main_api.py",
+            "role": "commit_point",
+            "source_sha256": "ab8081fa09177e1c64de069470293d52f983ebfe856d159d8b1069b49ee5d104"
+          },
+          {
+            "line_end": 121,
+            "line_start": 117,
+            "path": "backend/apps/automation/api/performance_monitor_api.py",
+            "role": "commit_point",
+            "source_sha256": "ef2f8bcf74c8f6484115915e1dde1b1b02c397f200c0572aa5384cba55e33dfe"
+          },
+          {
+            "line_end": 131,
+            "line_start": 124,
+            "path": "backend/apps/automation/api/performance_monitor_api.py",
+            "role": "protected_operation",
+            "source_sha256": "ef2f8bcf74c8f6484115915e1dde1b1b02c397f200c0572aa5384cba55e33dfe"
+          }
+        ],
+        "forbidden_condition": "Non-admin invocation of automation config disclosure, metrics query, cache clear/warm-up, metrics reset, or resource cleanup handlers.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "ensure_admin_request implementation is not supplied; deny semantics cited from call sites."
+        ],
+        "protected_operation": "get_config and all performance_monitor_api router handlers (metrics, statistics, health, resource-usage, optimize-concurrency, cache-stats, cache/warm-up, cache/clear, metrics/reset, resources/cleanup).",
+        "protected_resource": "Automation configuration payload and performance metrics/cache controls.",
+        "protection_obligation": "Non-admin access to automation performance-monitoring, configuration-disclosure, and cache/metric-mutation endpoints (GET /automation/config, /automation/performance/*, DELETE /automation/performance/cache/clear, POST /automation/performance/metrics/reset, etc.) is forbidden; each handler invokes ensure_admin_request at entry beneath the JWTOrSessionAuth-authenticated automation router.",
+        "scope_limits": [
+          "Endpoints in these routers without ensure_admin_request (e.g., GET /automation/status, /automation/ai/ollama, upload endpoints) are outside this obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "open(str(file_path), 'wb').write(content) at filesystem_service.py:52-53 and the zip_file.open \u2192 copyfileobj write at filesystem_service.py:102-103.",
+        "contract_id": "ecological-contract:518a4ea65bd50ba954639715b4138c06",
+        "declared_mechanism": "sanitize_file_name / sanitize_zip_member_path / ensure_within_base raising ValidationException before mkdir/write.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 138,
+            "line_start": 116,
+            "path": "backend/apps/core/filesystem/path_validator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4a4ef4d99b6fe25d5581df110289750e9b96e48cb3d892fe2227477b387bb848"
+          },
+          {
+            "line_end": 146,
+            "line_start": 140,
+            "path": "backend/apps/core/filesystem/path_validator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4a4ef4d99b6fe25d5581df110289750e9b96e48cb3d892fe2227477b387bb848"
+          },
+          {
+            "line_end": 55,
+            "line_start": 38,
+            "path": "backend/apps/core/filesystem/filesystem_service.py",
+            "role": "protected_operation",
+            "source_sha256": "cdd180d8eb939ecc532555eb0099ec9749cbb51c8dbcf64dfbfdfe1a78df77d3"
+          },
+          {
+            "line_end": 87,
+            "line_start": 80,
+            "path": "backend/apps/core/filesystem/filesystem_service.py",
+            "role": "guard_registration",
+            "source_sha256": "cdd180d8eb939ecc532555eb0099ec9749cbb51c8dbcf64dfbfdfe1a78df77d3"
+          },
+          {
+            "line_end": 53,
+            "line_start": 52,
+            "path": "backend/apps/core/filesystem/filesystem_service.py",
+            "role": "commit_point",
+            "source_sha256": "cdd180d8eb939ecc532555eb0099ec9749cbb51c8dbcf64dfbfdfe1a78df77d3"
+          },
+          {
+            "line_end": 103,
+            "line_start": 102,
+            "path": "backend/apps/core/filesystem/filesystem_service.py",
+            "role": "commit_point",
+            "source_sha256": "cdd180d8eb939ecc532555eb0099ec9749cbb51c8dbcf64dfbfdfe1a78df77d3"
+          }
+        ],
+        "forbidden_condition": "open(...,'wb').write or ZIP-member copy landing at a path outside base_dir (path traversal / zip-slip), including ZIP members with absolute paths, drive colons, or '..' segments.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "save_bytes and extract_zip_bytes writes under a bound base directory.",
+        "protected_resource": "Files and folders under the bound base_path.",
+        "protection_obligation": "File writes and ZIP extraction into bound folders must never resolve outside the bound base directory: FolderFilesystemService.save_bytes and extract_zip_bytes invoke FolderPathValidator.sanitize_zip_member_path (INVALID_ZIP_ENTRY) and ensure_within_base (PATH_TRAVERSAL) on every target before any bytes are written.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "response = selected_provider.execute_tool(tool_name=..., arguments=...) at service.py:153 (replay path re-enters execute_tool at :250-257).",
+        "contract_id": "ecological-contract:53db288b8e98f2cdc6b6a9f78923d635",
+        "declared_mechanism": "self._ensure_superuser(actor_is_superuser=...) with enforce_superuser defaulting to True; raises PermissionDenied('Only super administrators can use the MCP debugging workbench').",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 309,
+            "line_start": 304,
+            "path": "backend/apps/enterprise_data/services/workbench/service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f1a6d81ec58c1fbc5d4f6e45cc3c66ef98fa995a4b240ed55d716e6afd559ec5"
+          },
+          {
+            "line_end": 153,
+            "line_start": 132,
+            "path": "backend/apps/enterprise_data/services/workbench/service.py",
+            "role": "protected_operation",
+            "source_sha256": "f1a6d81ec58c1fbc5d4f6e45cc3c66ef98fa995a4b240ed55d716e6afd559ec5"
+          },
+          {
+            "line_end": 142,
+            "line_start": 142,
+            "path": "backend/apps/enterprise_data/services/workbench/service.py",
+            "role": "guard_registration",
+            "source_sha256": "f1a6d81ec58c1fbc5d4f6e45cc3c66ef98fa995a4b240ed55d716e6afd559ec5"
+          },
+          {
+            "line_end": 153,
+            "line_start": 153,
+            "path": "backend/apps/enterprise_data/services/workbench/service.py",
+            "role": "commit_point",
+            "source_sha256": "f1a6d81ec58c1fbc5d4f6e45cc3c66ef98fa995a4b240ed55d716e6afd559ec5"
+          },
+          {
+            "line_end": 250,
+            "line_start": 232,
+            "path": "backend/apps/enterprise_data/services/workbench/service.py",
+            "role": "protected_operation",
+            "source_sha256": "f1a6d81ec58c1fbc5d4f6e45cc3c66ef98fa995a4b240ed55d716e6afd559ec5"
+          },
+          {
+            "line_end": 23,
+            "line_start": 19,
+            "path": "backend/apps/enterprise_data/admin/mcp_workbench_admin.py",
+            "role": "guard_registration",
+            "source_sha256": "a1889c34c6dfad98f05a260d31c7207c7d1e661bcb4f75e8c280238e85f1b976"
+          }
+        ],
+        "forbidden_condition": "selected_provider.execute_tool(...) running when actor_is_superuser is False.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Provider transport (stdio/http) for the executed MCP tool is not shown; effect class beyond the invocation is not determinable."
+        ],
+        "protected_operation": "MCP workbench tool execution and replay.",
+        "protected_resource": "Enterprise MCP providers/tools (McpWorkbench).",
+        "protection_obligation": "Only superusers may execute or replay MCP tools through the debug workbench: McpWorkbenchService._ensure_superuser raises PermissionDenied at the entry of execute_tool, replay_execution, describe_tools, and list_history before any provider call.",
+        "scope_limits": [
+          "Triggered by Django admin POST (changelist_view), not by agent tool dispatch.",
+          "Admin page itself is additionally restricted to active superusers via has_module_permission/has_view_permission."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Generation/download effect after the guard: generate_contract_document_result at generation_api.py:198-200; folder ZIP at :253-255; supplementary at :303-305.",
+        "contract_id": "ecological-contract:653880344339682c4bce80ed648d9df4",
+        "declared_mechanism": "_require_contract_access \u2192 get_request_access_context + get_contract_service().ensure_contract_access_ctx(contract_id, ctx); Router(auth=JWTOrSessionAuth()).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 23,
+            "line_start": 23,
+            "path": "backend/apps/documents/api/generation_api.py",
+            "role": "guard_registration",
+            "source_sha256": "8b9b18f4d3520d7540709f0703283ff2d9aebd8ae942a1894881e0a29eff8d23"
+          },
+          {
+            "line_end": 37,
+            "line_start": 32,
+            "path": "backend/apps/documents/api/generation_api.py",
+            "role": "guard_registration",
+            "source_sha256": "8b9b18f4d3520d7540709f0703283ff2d9aebd8ae942a1894881e0a29eff8d23"
+          },
+          {
+            "line_end": 193,
+            "line_start": 178,
+            "path": "backend/apps/documents/api/generation_api.py",
+            "role": "protected_operation",
+            "source_sha256": "8b9b18f4d3520d7540709f0703283ff2d9aebd8ae942a1894881e0a29eff8d23"
+          },
+          {
+            "line_end": 200,
+            "line_start": 194,
+            "path": "backend/apps/documents/api/generation_api.py",
+            "role": "commit_point",
+            "source_sha256": "8b9b18f4d3520d7540709f0703283ff2d9aebd8ae942a1894881e0a29eff8d23"
+          },
+          {
+            "line_end": 255,
+            "line_start": 249,
+            "path": "backend/apps/documents/api/generation_api.py",
+            "role": "commit_point",
+            "source_sha256": "8b9b18f4d3520d7540709f0703283ff2d9aebd8ae942a1894881e0a29eff8d23"
+          }
+        ],
+        "forbidden_condition": "A user without contract access obtaining generated document bytes or preview data.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "The backing implementation of get_contract_service().ensure_contract_access_ctx is not in the supplied views; deny semantics cited from the call pattern."
+        ],
+        "protected_operation": "preview_contract_context, preview_supplementary_agreement_context, preview_archive_context, get_archive_overrides, download_contract_document, download_contract_folder, download_supplementary_agreement.",
+        "protected_resource": "Contract documents (DOCX/ZIP) and placeholder previews for contract_id.",
+        "protection_obligation": "Contract-scoped document endpoints (contract/agreement previews, archive previews and override reads, and DOCX/ZIP downloads) must reject requests whose access context fails ensure_contract_access_ctx, executed as the first operation of each endpoint under router JWTOrSessionAuth, before any generation, download, or read effect.",
+        "scope_limits": [
+          "When a contract folder binding exists, generated content is also written to the bound folder (file effect) behind the same entry check."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "p.unlink(missing_ok=True) at storage_service.py:345, reachable only after containment passes.",
+        "contract_id": "ecological-contract:70bc07791ca774fd39bfbca07a51bd67",
+        "declared_mechanism": "resolve + relative_to(root) containment returning False on escape; to_media_abs raising FILE_PATH_OUTSIDE_MEDIA_ROOT.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 342,
+            "line_start": 321,
+            "path": "backend/apps/core/services/storage_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b7849f8d59e4fbb204919a738ac23f09b2951684e8d28de79ba01b6ea62129c1"
+          },
+          {
+            "line_end": 233,
+            "line_start": 205,
+            "path": "backend/apps/core/services/storage_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b7849f8d59e4fbb204919a738ac23f09b2951684e8d28de79ba01b6ea62129c1"
+          },
+          {
+            "line_end": 345,
+            "line_start": 339,
+            "path": "backend/apps/core/services/storage_service.py",
+            "role": "commit_point",
+            "source_sha256": "b7849f8d59e4fbb204919a738ac23f09b2951684e8d28de79ba01b6ea62129c1"
+          }
+        ],
+        "forbidden_condition": "Unlinking a file whose resolved path is outside MEDIA_ROOT via delete_media_file (and resolving media paths outside MEDIA_ROOT via to_media_abs/normalize_to_media_rel).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "delete_media_file deletion of stored media.",
+        "protected_resource": "Files under MEDIA_ROOT.",
+        "protection_obligation": "Media deletions must refuse paths that resolve outside MEDIA_ROOT: delete_media_file returns without unlinking when the resolved path is not relative to MEDIA_ROOT, and to_media_abs raises FILE_PATH_OUTSIDE_MEDIA_ROOT for out-of-root paths.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "await call_tool(name, tool_args) at approval.py:122 (post-approval) and :102 (non-high-risk bypass).",
+        "contract_id": "ecological-contract:7977acbc0b6b84e3c28ae018e694ec46",
+        "declared_mechanism": "HIGH_RISK_TOOLS frozenset; the MCPToolset(process_tool_call=_process_tool_call) callback routes to process_tool_call_with_approval, which pushes an SSE approval_request and awaits user-bound approval.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 28,
+            "line_start": 19,
+            "path": "backend/apps/workbench/agents/approval.py",
+            "role": "guard_registration",
+            "source_sha256": "ec83e3b00bdaf3259cd41350b59417191d67b04e3fafb842c3635ce0fac6ad25"
+          },
+          {
+            "line_end": 122,
+            "line_start": 101,
+            "path": "backend/apps/workbench/agents/approval.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ec83e3b00bdaf3259cd41350b59417191d67b04e3fafb842c3635ce0fac6ad25"
+          },
+          {
+            "line_end": 100,
+            "line_start": 83,
+            "path": "backend/apps/workbench/agents/approval.py",
+            "role": "protected_operation",
+            "source_sha256": "ec83e3b00bdaf3259cd41350b59417191d67b04e3fafb842c3635ce0fac6ad25"
+          },
+          {
+            "line_end": 122,
+            "line_start": 121,
+            "path": "backend/apps/workbench/agents/approval.py",
+            "role": "commit_point",
+            "source_sha256": "ec83e3b00bdaf3259cd41350b59417191d67b04e3fafb842c3635ce0fac6ad25"
+          },
+          {
+            "line_end": 154,
+            "line_start": 135,
+            "path": "backend/apps/workbench/agents/definitions.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "096013fae90ebf9ac39363ec659c1577ee8bcf1df3299053d3430eb986da4919"
+          },
+          {
+            "line_end": 230,
+            "line_start": 227,
+            "path": "backend/apps/workbench/agents/definitions.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "096013fae90ebf9ac39363ec659c1577ee8bcf1df3299053d3430eb986da4919"
+          }
+        ],
+        "forbidden_condition": "await call_tool(name, tool_args) for a HIGH_RISK_TOOLS member before approval_manager.wait_for_approval returns True.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "MCP tool calls dispatched through the shared workbench MCPToolset.",
+        "protected_resource": "High-risk case/client/contract/document/court tools enumerated in HIGH_RISK_TOOLS.",
+        "protection_obligation": "High-risk MCP tool invocations (delete_case, delete_client, delete_contract, send_document, file_lawsuit, submit_court_document) must not execute until the initiating user approves them via the approval flow; deny/timeout returns user_denied and call_tool is only awaited after approval resolves (or immediately for non-high-risk tools).",
+        "scope_limits": [
+          "When no per-request event queue is set, _process_tool_call bypasses approval and calls the tool directly (definitions.py:137-139)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "default_storage.save(rel_path, file) at views.py:724.",
+        "contract_id": "ecological-contract:8670f2c378ce4504fb6b983f748765e5",
+        "declared_mechanism": "POST-only check; extension whitelist ['.pdf']; safe_name = Path(file.name).name; fixed rel_path 'case_documents/temp/{uuid}_{safe_name}'.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 154,
+            "line_start": 150,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "guard_registration",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 716,
+            "line_start": 706,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "guard_registration",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 721,
+            "line_start": 718,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 705,
+            "line_start": 695,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "protected_operation",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 725,
+            "line_start": 723,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "commit_point",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          }
+        ],
+        "forbidden_condition": "default_storage.save persisting an upload outside case_documents/temp or with a path-bearing filename.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "upload_temp_document_view.",
+        "protected_resource": "Temporary uploaded PDF files under MEDIA_ROOT/case_documents/temp.",
+        "protection_obligation": "Temp judgment-document uploads must write only into MEDIA_ROOT/case_documents/temp with a PDF-only extension whitelist and a sanitized (name-only) filename before default_storage.save; the route is wrapped in admin_site.admin_view.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "submit_task(...) at lpr_api.py:142-146.",
+        "contract_id": "ecological-contract:903d7d51b467459e82fe0823d1aa644d",
+        "declared_mechanism": "user.is_staff check raising PermissionDenied ('Administrator permission is required to synchronize LPR data'); auth=JWTOrSessionAuth() on the operation.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 118,
+            "line_start": 114,
+            "path": "backend/apps/finance/api/lpr_api.py",
+            "role": "guard_registration",
+            "source_sha256": "846bb3cacacbe2d33d3343f238cfcb1e15b2fb6a2291f0c1c87f4ef3c8e9d036"
+          },
+          {
+            "line_end": 135,
+            "line_start": 131,
+            "path": "backend/apps/finance/api/lpr_api.py",
+            "role": "forbidden_condition",
+            "source_sha256": "846bb3cacacbe2d33d3343f238cfcb1e15b2fb6a2291f0c1c87f4ef3c8e9d036"
+          },
+          {
+            "line_end": 130,
+            "line_start": 114,
+            "path": "backend/apps/finance/api/lpr_api.py",
+            "role": "protected_operation",
+            "source_sha256": "846bb3cacacbe2d33d3343f238cfcb1e15b2fb6a2291f0c1c87f4ef3c8e9d036"
+          },
+          {
+            "line_end": 146,
+            "line_start": 139,
+            "path": "backend/apps/finance/api/lpr_api.py",
+            "role": "commit_point",
+            "source_sha256": "846bb3cacacbe2d33d3343f238cfcb1e15b2fb6a2291f0c1c87f4ef3c8e9d036"
+          }
+        ],
+        "forbidden_condition": "submit_task('apps.finance.tasks.sync_lpr_rates', ...) executing for a user with is_staff == False.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "apps.finance.tasks.sync_lpr_rates task body is not in the supplied views."
+        ],
+        "protected_operation": "sync_lpr_rates endpoint.",
+        "protected_resource": "LPR rate dataset (updated indirectly by the submitted sync task).",
+        "protection_obligation": "Manual LPR sync must be triggered only by staff: POST /lpr/sync rejects non-staff users with PermissionDenied before submitting the sync task, under operation-level JWTOrSessionAuth.",
+        "scope_limits": [
+          "The guarded commit is the task-queue submission; the downstream LPRRate writes occur in the task body, which is not supplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "subprocess.Popen(['open'|'explorer'|'xdg-open', str(folder)]) at display_mixin.py:300-304.",
+        "contract_id": "ecological-contract:a055c46b942182a774e4bc52994a344b",
+        "declared_mechanism": "POST-only check, has_view_permission check, and is_relative_to allowlist returning 403; route wrapped in admin_site.admin_view.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 139,
+            "line_start": 135,
+            "path": "backend/apps/contracts/admin/mixins/display_mixin.py",
+            "role": "guard_registration",
+            "source_sha256": "dfa59b48e89209b4fefba04069104dd9e8a5456ea28f0ef368d2cff93ea201ca"
+          },
+          {
+            "line_end": 269,
+            "line_start": 265,
+            "path": "backend/apps/contracts/admin/mixins/display_mixin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dfa59b48e89209b4fefba04069104dd9e8a5456ea28f0ef368d2cff93ea201ca"
+          },
+          {
+            "line_end": 296,
+            "line_start": 289,
+            "path": "backend/apps/contracts/admin/mixins/display_mixin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dfa59b48e89209b4fefba04069104dd9e8a5456ea28f0ef368d2cff93ea201ca"
+          },
+          {
+            "line_end": 264,
+            "line_start": 257,
+            "path": "backend/apps/contracts/admin/mixins/display_mixin.py",
+            "role": "protected_operation",
+            "source_sha256": "dfa59b48e89209b4fefba04069104dd9e8a5456ea28f0ef368d2cff93ea201ca"
+          },
+          {
+            "line_end": 304,
+            "line_start": 298,
+            "path": "backend/apps/contracts/admin/mixins/display_mixin.py",
+            "role": "commit_point",
+            "source_sha256": "dfa59b48e89209b4fefba04069104dd9e8a5456ea28f0ef368d2cff93ea201ca"
+          }
+        ],
+        "forbidden_condition": "subprocess.Popen launching a file manager on a directory outside home//Volumes/MEDIA_ROOT, or by a caller without view permission or using non-POST methods.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "ContractAdmin open_folder_view opening the contract's bound local folder.",
+        "protected_resource": "Local filesystem directories (ContractFolderBinding.folder_path).",
+        "protection_obligation": "The contract-admin open-folder endpoint must refuse to launch the OS file-manager subprocess (open/explorer/xdg-open) for any contract folder path outside the user home directory, MEDIA_ROOT, or /Volumes, enforcing POST-method, view-permission, and path-allowlist checks immediately before subprocess.Popen.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "save_override(contract_id, template_subtype, overrides) at generation_api.py:148 and delete_override at :173.",
+        "contract_id": "ecological-contract:a570ac3d5346b5e1f242e76be3d955e0",
+        "declared_mechanism": "await _require_contract_access(request, contract_id) as the first operation; router JWTOrSessionAuth.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 139,
+            "line_start": 128,
+            "path": "backend/apps/documents/api/generation_api.py",
+            "role": "protected_operation",
+            "source_sha256": "8b9b18f4d3520d7540709f0703283ff2d9aebd8ae942a1894881e0a29eff8d23"
+          },
+          {
+            "line_end": 139,
+            "line_start": 139,
+            "path": "backend/apps/documents/api/generation_api.py",
+            "role": "guard_registration",
+            "source_sha256": "8b9b18f4d3520d7540709f0703283ff2d9aebd8ae942a1894881e0a29eff8d23"
+          },
+          {
+            "line_end": 148,
+            "line_start": 146,
+            "path": "backend/apps/documents/api/generation_api.py",
+            "role": "commit_point",
+            "source_sha256": "8b9b18f4d3520d7540709f0703283ff2d9aebd8ae942a1894881e0a29eff8d23"
+          },
+          {
+            "line_end": 173,
+            "line_start": 166,
+            "path": "backend/apps/documents/api/generation_api.py",
+            "role": "commit_point",
+            "source_sha256": "8b9b18f4d3520d7540709f0703283ff2d9aebd8ae942a1894881e0a29eff8d23"
+          }
+        ],
+        "forbidden_condition": "Unauthorized save_override/delete_override execution for a contract the user cannot access.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "save_archive_overrides (POST) and delete_archive_overrides (DELETE).",
+        "protected_resource": "ArchivePlaceholderOverride records for contract_id/template_subtype.",
+        "protection_obligation": "Archive placeholder-override create/delete endpoints must verify contract access via _require_contract_access before persisting or removing ArchivePlaceholderOverride rows.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "CaseLog creation via mutation_service.create_log and CaseLogAttachment.objects.create inside transaction.atomic (email_folder_scan_service.py:101-136, 305-325).",
+        "contract_id": "ecological-contract:a62f25c4c89cd7d9f773184964496bcd",
+        "declared_mechanism": "_resolve_subfolder validation raising ValidationException; relative-to-root resolution with is_relative_to(case_root).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 164,
+            "line_start": 160,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "guard_registration",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 803,
+            "line_start": 802,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "guard_registration",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 201,
+            "line_start": 171,
+            "path": "backend/apps/cases/services/log/email_folder_scan_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "381132eb9ae6d28989277e026d23ecfecf3c852d904d5cfa1cb7ad6092845531"
+          },
+          {
+            "line_end": 812,
+            "line_start": 796,
+            "path": "backend/apps/cases/admin/mixins/views.py",
+            "role": "protected_operation",
+            "source_sha256": "0e1a90aa7f90c601703a430af382a199835b4e799f5acd79884c1fdd94123203"
+          },
+          {
+            "line_end": 136,
+            "line_start": 101,
+            "path": "backend/apps/cases/services/log/email_folder_scan_service.py",
+            "role": "commit_point",
+            "source_sha256": "381132eb9ae6d28989277e026d23ecfecf3c852d904d5cfa1cb7ad6092845531"
+          }
+        ],
+        "forbidden_condition": "Ingesting files from outside the case-bound folder (or via traversal/hidden segments) into CaseLog/CaseLogAttachment.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "EmailFolderScanService.import_email_folder, entered from email_folder_import_view behind has_view_permission.",
+        "protected_resource": "Case-bound folder contents; CaseLog/CaseLogAttachment rows.",
+        "protection_obligation": "Email-folder import must reject subfolder paths that are absolute, start with '~', contain '..' or hidden segments, or resolve outside the case-bound root (is_relative_to check) before any log/attachment ingestion inside the import transaction.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file_path.unlink() inside _unlink_court_doc (automation/signals.py:51), scheduled at transaction.on_commit (line 41).",
+        "contract_id": "ecological-contract:adfedcf532216252f1953fc24ab29f2a",
+        "declared_mechanism": "@receiver(post_delete, dispatch_uid=...) cleanup_court_document_local_file scheduling transaction.on_commit(_unlink_court_doc).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 30,
+            "line_start": 19,
+            "path": "backend/apps/automation/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "8de788de43a8bfae642bac352bb0958019aa051f8c11df2e444763822674d6d1"
+          },
+          {
+            "line_end": 41,
+            "line_start": 36,
+            "path": "backend/apps/automation/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "8de788de43a8bfae642bac352bb0958019aa051f8c11df2e444763822674d6d1"
+          },
+          {
+            "line_end": 51,
+            "line_start": 49,
+            "path": "backend/apps/automation/signals.py",
+            "role": "commit_point",
+            "source_sha256": "8de788de43a8bfae642bac352bb0958019aa051f8c11df2e444763822674d6d1"
+          }
+        ],
+        "forbidden_condition": "An orphaned local_file_path file remaining after CourtDocument deletion, and premature physical deletion on transaction rollback.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Post-delete cleanup of the CourtDocument local file.",
+        "protected_resource": "Physical court-document file at instance.local_file_path (MEDIA_ROOT-relative when not absolute).",
+        "protection_obligation": "Deleting a CourtDocument record must not leave its downloaded physical document file on disk; the registered post_delete handler resolves the stored path and defers unlink to transaction.on_commit so the file is removed only after the delete transaction commits.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "material.delete() at archive_mixin.py:587 and :620.",
+        "contract_id": "ecological-contract:b5fca25d34bf1545a2233051097a42cd",
+        "declared_mechanism": "POST-only check plus has_change_permission returning 403 before deletion; admin_view-wrapped URL registration.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 567,
+            "line_start": 566,
+            "path": "backend/apps/contracts/admin/mixins/archive_mixin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a3a359e5291188bfd1633ec73ff9f3f2262ba86385085673e12e07d3476c7cfa"
+          },
+          {
+            "line_end": 587,
+            "line_start": 587,
+            "path": "backend/apps/contracts/admin/mixins/archive_mixin.py",
+            "role": "commit_point",
+            "source_sha256": "a3a359e5291188bfd1633ec73ff9f3f2262ba86385085673e12e07d3476c7cfa"
+          },
+          {
+            "line_end": 620,
+            "line_start": 620,
+            "path": "backend/apps/contracts/admin/mixins/archive_mixin.py",
+            "role": "commit_point",
+            "source_sha256": "a3a359e5291188bfd1633ec73ff9f3f2262ba86385085673e12e07d3476c7cfa"
+          }
+        ],
+        "forbidden_condition": "material.delete() executing for a user without has_change_permission or via a non-POST request.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "guard_registration",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "delete_archive_material_view and clear_all_archive_materials_view record deletion.",
+        "protected_resource": "FinalizedMaterial records for the contract.",
+        "protection_obligation": "The same contract-admin archive-material deletion views must reject requests lacking change permission (and non-POST requests) before destroying FinalizedMaterial records via material.delete().",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "client.delete() at client_mutation_service.py:154 (with cleanup_files_on_commit at :155).",
+        "contract_id": "ecological-contract:b68788e591a2653643a69925e359d213",
+        "declared_mechanism": "access_policy.ensure_can_delete_client(user) with ForbiddenError propagation under transaction.atomic.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 150,
+            "line_start": 141,
+            "path": "backend/apps/client/services/client_mutation_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cc74c7d0475acc009cb1d1601c1fb1982c6c16e5da76ffa8a4d8db9720b82ca3"
+          },
+          {
+            "line_end": 144,
+            "line_start": 141,
+            "path": "backend/apps/client/services/client_mutation_service.py",
+            "role": "protected_operation",
+            "source_sha256": "cc74c7d0475acc009cb1d1601c1fb1982c6c16e5da76ffa8a4d8db9720b82ca3"
+          },
+          {
+            "line_end": 155,
+            "line_start": 152,
+            "path": "backend/apps/client/services/client_mutation_service.py",
+            "role": "commit_point",
+            "source_sha256": "cc74c7d0475acc009cb1d1601c1fb1982c6c16e5da76ffa8a4d8db9720b82ca3"
+          }
+        ],
+        "forbidden_condition": "client.delete() executing for a user denied by ClientAccessPolicy.ensure_can_delete_client.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "ClientAccessPolicy implementation is not in the supplied views (TYPE_CHECKING import only); deny semantics cited from the call pattern."
+        ],
+        "protected_operation": "delete_client mutation.",
+        "protected_resource": "Client records and their collected file paths.",
+        "protection_obligation": "Non-authorized users are forbidden from deleting clients: ClientMutationService.delete_client invokes access_policy.ensure_can_delete_client(user) (raising ForbiddenError, logged with action context) before fetching and deleting the client.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "f.delete(save=False) via on_commit at image_rotation/signals.py:20; flat_path.unlink / shutil.rmtree in _do_cleanup scheduled at on_commit (lines 31-48).",
+        "contract_id": "ecological-contract:bb0132d49f6dfada216cb68527d7bbdf",
+        "declared_mechanism": "@receiver(post_delete, sender=...) handlers in apps.image_rotation.signals imported by AppConfig.ready.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 13,
+            "path": "backend/apps/image_rotation/apps.py",
+            "role": "guard_registration",
+            "source_sha256": "b277e50087d14a4c78d025c1cb9251886e816d185d31c0ba24ec7da20fa3401a"
+          },
+          {
+            "line_end": 22,
+            "line_start": 16,
+            "path": "backend/apps/image_rotation/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "79133a54f9c88376e422ab4d361359da7ff767ac69d528d5d2eb9380018a5046"
+          },
+          {
+            "line_end": 48,
+            "line_start": 25,
+            "path": "backend/apps/image_rotation/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "79133a54f9c88376e422ab4d361359da7ff767ac69d528d5d2eb9380018a5046"
+          },
+          {
+            "line_end": 46,
+            "line_start": 31,
+            "path": "backend/apps/image_rotation/signals.py",
+            "role": "commit_point",
+            "source_sha256": "79133a54f9c88376e422ab4d361359da7ff767ac69d528d5d2eb9380018a5046"
+          }
+        ],
+        "forbidden_condition": "Orphaned source/export files remaining after record deletion (and premature deletion on rollback).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Post-delete media cleanup for image-rotation models.",
+        "protected_resource": "ImageRotationPage.source_image and ImageRotationJob export_zip_url/export_pdf_url files under MEDIA_ROOT/image_rotation.",
+        "protection_obligation": "Deleting ImageRotationPage/ImageRotationJob records must remove their media (source_image via FieldFile.delete; export ZIP/PDF via unlink plus job-directory removal) only after the deletion transaction commits (transaction.on_commit); receivers are registered via ImageRotationConfig.ready.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "field_file.delete(save=False) in _delete_file (evidence/signals.py:20), executed post-commit (lines 32, 41).",
+        "contract_id": "ecological-contract:c2a095263115e88e4900b33b1208f9a9",
+        "declared_mechanism": "@receiver(post_delete, dispatch_uid=...) handlers scheduling _delete_file via transaction.on_commit.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 32,
+            "line_start": 26,
+            "path": "backend/apps/evidence/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "652dc74014109cc634ad8a5c52dfdfe932d9946260970b664a5b79b4b1d5f039"
+          },
+          {
+            "line_end": 41,
+            "line_start": 35,
+            "path": "backend/apps/evidence/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "652dc74014109cc634ad8a5c52dfdfe932d9946260970b664a5b79b4b1d5f039"
+          },
+          {
+            "line_end": 23,
+            "line_start": 16,
+            "path": "backend/apps/evidence/signals.py",
+            "role": "commit_point",
+            "source_sha256": "652dc74014109cc634ad8a5c52dfdfe932d9946260970b664a5b79b4b1d5f039"
+          }
+        ],
+        "forbidden_condition": "Orphaned evidence files after row deletion, and premature file deletion on transaction rollback.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Post-delete cleanup of evidence files.",
+        "protected_resource": "EvidenceItem.file and EvidenceList.merged_pdf stored files.",
+        "protection_obligation": "Deleting EvidenceItem or EvidenceList rows must remove the physical file (EvidenceItem.file / EvidenceList.merged_pdf) from storage only after the delete transaction commits via transaction.on_commit (dispatch_uid-registered receivers).",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "zip_ref.extract(member, extract_dir) at gdems_scraper.py:319.",
+        "contract_id": "ecological-contract:c4714b6231ba4331e3117297fb5a26d2",
+        "declared_mechanism": "target = (extract_dir / member.filename).resolve(); if not target.is_relative_to(extract_dir.resolve()), log a warning and skip the member.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 318,
+            "line_start": 296,
+            "path": "backend/apps/automation/services/scraper/scrapers/court_document/gdems_scraper.py",
+            "role": "guard_registration",
+            "source_sha256": "0387f1f975f8703b2d9f48ed8ba2f78fd9a8517c8cf58b7d62c729ae52898df3"
+          },
+          {
+            "line_end": 318,
+            "line_start": 313,
+            "path": "backend/apps/automation/services/scraper/scrapers/court_document/gdems_scraper.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0387f1f975f8703b2d9f48ed8ba2f78fd9a8517c8cf58b7d62c729ae52898df3"
+          },
+          {
+            "line_end": 85,
+            "line_start": 82,
+            "path": "backend/apps/automation/services/scraper/scrapers/court_document/gdems_scraper.py",
+            "role": "protected_operation",
+            "source_sha256": "0387f1f975f8703b2d9f48ed8ba2f78fd9a8517c8cf58b7d62c729ae52898df3"
+          },
+          {
+            "line_end": 319,
+            "line_start": 319,
+            "path": "backend/apps/automation/services/scraper/scrapers/court_document/gdems_scraper.py",
+            "role": "commit_point",
+            "source_sha256": "0387f1f975f8703b2d9f48ed8ba2f78fd9a8517c8cf58b7d62c729ae52898df3"
+          }
+        ],
+        "forbidden_condition": "zip_ref.extract writing a ZIP member whose resolved target is not relative to extract_dir (zip-slip).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "_extract_zip_file extraction of the downloaded court-document archive.",
+        "protected_resource": "Files written under download_dir/extracted.",
+        "protection_obligation": "Extraction of downloaded sd.gdems.com ZIP archives must reject any member whose resolved target path escapes the extraction directory; unsafe entries are skipped so zip_ref.extract cannot write outside extract_dir, in both the sync and async flows.",
+        "scope_limits": [
+          "The async flow (_arun) reuses the same guarded method (line 374)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "field_file.delete(save=False) in _delete_field_file (chat_records/signals.py:65), executed post-commit (lines 91, 96, 101).",
+        "contract_id": "ecological-contract:d2fded9108eeeaf04a61b9e05844b1fa",
+        "declared_mechanism": "@receiver(post_delete, sender=...) handlers scheduling _delete_field_file via transaction.on_commit.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 101,
+            "line_start": 89,
+            "path": "backend/apps/chat_records/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "ebb0b161da22e9fa9f6df547e424113fe819026d042749f566663db4f5c5e6f5"
+          },
+          {
+            "line_end": 70,
+            "line_start": 54,
+            "path": "backend/apps/chat_records/signals.py",
+            "role": "commit_point",
+            "source_sha256": "ebb0b161da22e9fa9f6df547e424113fe819026d042749f566663db4f5c5e6f5"
+          }
+        ],
+        "forbidden_condition": "Orphaned media files remaining on disk after record deletion (and premature deletion on rollback).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Post-delete media cleanup for chat-record models.",
+        "protected_resource": "Media files bound to ChatRecordRecording.video, ChatRecordScreenshot.image, ChatRecordExportTask.output_file.",
+        "protection_obligation": "Deleting ChatRecordRecording, ChatRecordScreenshot, or ChatRecordExportTask rows must trigger removal of the associated media files (video, image, output_file) only after the deletion transaction commits, via registered post_delete receivers using transaction.on_commit.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "instance.image.delete(save=False) at labor_arbitration/models/signals.py:22.",
+        "contract_id": "ecological-contract:d891141c2bd45808ed1d8a4ec75440c5",
+        "declared_mechanism": "register_signals() attaching @receiver(post_delete, sender=ArbitrationDocumentImage).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 19,
+            "line_start": 15,
+            "path": "backend/apps/labor_arbitration/models/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "c350bf0e9bdfc3bb2b30e50e5d4a3f24209ed38f1c4ab710ace6bb01a4e290fa"
+          },
+          {
+            "line_end": 24,
+            "line_start": 20,
+            "path": "backend/apps/labor_arbitration/models/signals.py",
+            "role": "commit_point",
+            "source_sha256": "c350bf0e9bdfc3bb2b30e50e5d4a3f24209ed38f1c4ab710ace6bb01a4e290fa"
+          }
+        ],
+        "forbidden_condition": "An orphaned image file remaining after ArbitrationDocumentImage deletion.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Unlike sibling cleanups, this handler deletes synchronously without transaction.on_commit; the reviewer's on_commit claim is unsupported for this handler in the supplied source.",
+          "The AppConfig.ready wiring that calls register_signals is not in the supplied views."
+        ],
+        "protected_operation": "Post-delete cleanup of ArbitrationDocumentImage.image.",
+        "protected_resource": "ArbitrationDocumentImage.image stored file.",
+        "protection_obligation": "Deleting an ArbitrationDocumentImage record must remove its stored image file via the registered post_delete receiver (instance.image.delete(save=False)), registered by register_signals().",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "f.delete(save=False) at legal_research/signals.py:23 and legal_solution/signals.py:23, executed post-commit.",
+        "contract_id": "ecological-contract:dc41cd4986841be384095a2b71633cf0",
+        "declared_mechanism": "@receiver(post_delete, sender=..., dispatch_uid=...) handlers deferring FieldFile.delete to transaction.on_commit.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 23,
+            "line_start": 18,
+            "path": "backend/apps/legal_research/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "e993edab0d53d70e2dd13a2a2093a9388afd47df4c8bccb72a2b3eaf9bbf90af"
+          },
+          {
+            "line_end": 23,
+            "line_start": 18,
+            "path": "backend/apps/legal_solution/signals.py",
+            "role": "guard_registration",
+            "source_sha256": "17c34746f7fa62cc08ad4b28157c4f8cfadc9fbb6dc3bd0434f5c555c1bef645"
+          },
+          {
+            "line_end": 9,
+            "line_start": 8,
+            "path": "backend/apps/legal_solution/apps.py",
+            "role": "guard_registration",
+            "source_sha256": "df6e1df9d0def9fac1b1fbbf2370e8dfad233e3169c112932c11b031dde7b14d"
+          },
+          {
+            "line_end": 27,
+            "line_start": 21,
+            "path": "backend/apps/legal_research/signals.py",
+            "role": "commit_point",
+            "source_sha256": "e993edab0d53d70e2dd13a2a2093a9388afd47df4c8bccb72a2b3eaf9bbf90af"
+          },
+          {
+            "line_end": 27,
+            "line_start": 21,
+            "path": "backend/apps/legal_solution/signals.py",
+            "role": "commit_point",
+            "source_sha256": "17c34746f7fa62cc08ad4b28157c4f8cfadc9fbb6dc3bd0434f5c555c1bef645"
+          }
+        ],
+        "forbidden_condition": "Orphaned PDF files remaining after row deletion (and premature deletion on rollback).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "AppConfig.ready wiring for apps.legal_research signals is not in the supplied views (legal_solution's is)."
+        ],
+        "protected_operation": "Post-delete cleanup of research/solution result PDFs.",
+        "protected_resource": "LegalResearchResult.pdf_file and SolutionTask.pdf_file.",
+        "protection_obligation": "Deleting legal_research.LegalResearchResult or legal_solution.SolutionTask must not leave its stored PDF on disk: dispatch_uid-registered post_delete receivers schedule pdf_file.delete(save=False) through transaction.on_commit (the legal_solution receiver is wired via AppConfig.ready).",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "First wkinfo HTTP request after the guard: _request_get_with_retry at document.py:152-158 (detail meta) and downloadLimit POST at :353-360.",
+        "contract_id": "ecological-contract:e3834425944cf91a5d12e03308f928d8",
+        "declared_mechanism": "_raise_if_session_restricted entry check raising RuntimeError; _mark_session_restricted sets restricted_until_epoch on C_001_009 responses.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 138,
+            "line_start": 137,
+            "path": "backend/apps/legal_research/services/sources/weike/document.py",
+            "role": "guard_registration",
+            "source_sha256": "c5780df3886984dd3361fc25a6f5b26b2be0bfc8408e0c80187286d86528fee7"
+          },
+          {
+            "line_end": 322,
+            "line_start": 321,
+            "path": "backend/apps/legal_research/services/sources/weike/document.py",
+            "role": "guard_registration",
+            "source_sha256": "c5780df3886984dd3361fc25a6f5b26b2be0bfc8408e0c80187286d86528fee7"
+          },
+          {
+            "line_end": 447,
+            "line_start": 445,
+            "path": "backend/apps/legal_research/services/sources/weike/document.py",
+            "role": "guard_registration",
+            "source_sha256": "c5780df3886984dd3361fc25a6f5b26b2be0bfc8408e0c80187286d86528fee7"
+          },
+          {
+            "line_end": 615,
+            "line_start": 602,
+            "path": "backend/apps/legal_research/services/sources/weike/document.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c5780df3886984dd3361fc25a6f5b26b2be0bfc8408e0c80187286d86528fee7"
+          },
+          {
+            "line_end": 600,
+            "line_start": 582,
+            "path": "backend/apps/legal_research/services/sources/weike/document.py",
+            "role": "guard_registration",
+            "source_sha256": "c5780df3886984dd3361fc25a6f5b26b2be0bfc8408e0c80187286d86528fee7"
+          },
+          {
+            "line_end": 158,
+            "line_start": 150,
+            "path": "backend/apps/legal_research/services/sources/weike/document.py",
+            "role": "commit_point",
+            "source_sha256": "c5780df3886984dd3361fc25a6f5b26b2be0bfc8408e0c80187286d86528fee7"
+          }
+        ],
+        "forbidden_condition": "Any wkinfo HTTP request issued while session.restricted_until_epoch is in the future.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "fetch_case_detail, download_pdf, and download_doc external requests to law.wkinfo.com.cn.",
+        "protected_resource": "wkinfo session quota/access (WeikeSession).",
+        "protection_obligation": "While a WeikeSession is flagged restricted (restricted_until_epoch set to now+cooldown after a C_001_009 response), the client must refuse to issue wkinfo HTTP operations: fetch_case_detail, download_pdf, and download_doc call _raise_if_session_restricted at method entry, raising RuntimeError before any request is sent.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "abs_file.unlink() at archive_mixin.py:582 and :617.",
+        "contract_id": "ecological-contract:e5c2195c14a440443c2ca11b94dd717b",
+        "declared_mechanism": "POST-only check plus has_change_permission returning 403 before deletion; admin_view-wrapped URL registration in ContractDisplayMixin.get_urls.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 129,
+            "line_start": 120,
+            "path": "backend/apps/contracts/admin/mixins/display_mixin.py",
+            "role": "guard_registration",
+            "source_sha256": "dfa59b48e89209b4fefba04069104dd9e8a5456ea28f0ef368d2cff93ea201ca"
+          },
+          {
+            "line_end": 567,
+            "line_start": 563,
+            "path": "backend/apps/contracts/admin/mixins/archive_mixin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a3a359e5291188bfd1633ec73ff9f3f2262ba86385085673e12e07d3476c7cfa"
+          },
+          {
+            "line_end": 562,
+            "line_start": 554,
+            "path": "backend/apps/contracts/admin/mixins/archive_mixin.py",
+            "role": "protected_operation",
+            "source_sha256": "a3a359e5291188bfd1633ec73ff9f3f2262ba86385085673e12e07d3476c7cfa"
+          },
+          {
+            "line_end": 583,
+            "line_start": 578,
+            "path": "backend/apps/contracts/admin/mixins/archive_mixin.py",
+            "role": "commit_point",
+            "source_sha256": "a3a359e5291188bfd1633ec73ff9f3f2262ba86385085673e12e07d3476c7cfa"
+          },
+          {
+            "line_end": 607,
+            "line_start": 606,
+            "path": "backend/apps/contracts/admin/mixins/archive_mixin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a3a359e5291188bfd1633ec73ff9f3f2262ba86385085673e12e07d3476c7cfa"
+          },
+          {
+            "line_end": 620,
+            "line_start": 613,
+            "path": "backend/apps/contracts/admin/mixins/archive_mixin.py",
+            "role": "commit_point",
+            "source_sha256": "a3a359e5291188bfd1633ec73ff9f3f2262ba86385085673e12e07d3476c7cfa"
+          }
+        ],
+        "forbidden_condition": "abs_file.unlink() executing for a user without has_change_permission or via a non-POST request.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "delete_archive_material_view and clear_all_archive_materials_view file deletion.",
+        "protected_resource": "FinalizedMaterial file_path files under MEDIA_ROOT.",
+        "protection_obligation": "Contract-admin archive-material deletion views must reject requests lacking change permission (and non-POST requests) before unlinking the material's physical file (delete_archive_material_view, clear_all_archive_materials_view); the routes are wrapped in admin_site.admin_view.",
+        "scope_limits": [],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "generate_preservation_application at preservation_materials_api.py:100; generate_delay_delivery_application at :127; generate_full_package at :154; folder save via extract_zip_for_contract at :161-163.",
+        "contract_id": "ecological-contract:f47af42cf8dc4e6320a639f1b64cd259",
+        "declared_mechanism": "ctx = get_request_access_context(request); await CaseAccessPolicy().ensure_access_ctx(case_id=case_id, ctx=ctx) before generation.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 19,
+            "line_start": 19,
+            "path": "backend/apps/documents/api/preservation_materials_api.py",
+            "role": "guard_registration",
+            "source_sha256": "55e8aa8404dedebeb518c127fc42b0fb1b6d88a501ec3721b870f2fd94768af4"
+          },
+          {
+            "line_end": 49,
+            "line_start": 37,
+            "path": "backend/apps/documents/api/preservation_materials_api.py",
+            "role": "guard_registration",
+            "source_sha256": "55e8aa8404dedebeb518c127fc42b0fb1b6d88a501ec3721b870f2fd94768af4"
+          },
+          {
+            "line_end": 96,
+            "line_start": 86,
+            "path": "backend/apps/documents/api/preservation_materials_api.py",
+            "role": "protected_operation",
+            "source_sha256": "55e8aa8404dedebeb518c127fc42b0fb1b6d88a501ec3721b870f2fd94768af4"
+          },
+          {
+            "line_end": 100,
+            "line_start": 96,
+            "path": "backend/apps/documents/api/preservation_materials_api.py",
+            "role": "commit_point",
+            "source_sha256": "55e8aa8404dedebeb518c127fc42b0fb1b6d88a501ec3721b870f2fd94768af4"
+          },
+          {
+            "line_end": 154,
+            "line_start": 150,
+            "path": "backend/apps/documents/api/preservation_materials_api.py",
+            "role": "commit_point",
+            "source_sha256": "55e8aa8404dedebeb518c127fc42b0fb1b6d88a501ec3721b870f2fd94768af4"
+          }
+        ],
+        "forbidden_condition": "Users without case access generating or downloading preservation materials for a case_id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "CaseAccessPolicy.ensure_access_ctx implementation is not in the supplied views."
+        ],
+        "protected_operation": "download_preservation_application, download_delay_delivery_application, download_full_package.",
+        "protected_resource": "Preservation-material documents for case_id (DOCX/ZIP), optionally saved into the bound contract folder.",
+        "protection_obligation": "Case-scoped preservation-material endpoints must verify the user's case access via CaseAccessPolicy.ensure_access_ctx (through _require_case_contract) before generating or downloading preservation application, delay-delivery, or full-package documents; router JWTOrSessionAuth applies.",
+        "scope_limits": [
+          "When a contract folder binding exists, generated content is also written to the bound folder (file effect) behind the same entry check."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "service.reorder_items(list_id, data.item_ids) at evidence_api.py:67 (internal persistence not shown).",
+        "contract_id": "ecological-contract:fd6e0fde5bfc01dcc6cfe7715adbec48",
+        "declared_mechanism": "ensure_evidence_list_access(list_id, ctx) raising NotFoundError/Forbidden before the service call; router auth=JWTOrSessionAuth().",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 19,
+            "line_start": 19,
+            "path": "backend/apps/evidence/api/evidence_api.py",
+            "role": "guard_registration",
+            "source_sha256": "a7b42a50ef776c519c7c4d6cae444696bf122fd478bc7f146139b4a4b602a26c"
+          },
+          {
+            "line_end": 38,
+            "line_start": 27,
+            "path": "backend/apps/evidence/services/core/access_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "bd00e145aea0bd7e5a44345df7447b32cdbe7f2e9b90822f95f3c3be15634bd6"
+          },
+          {
+            "line_end": 64,
+            "line_start": 42,
+            "path": "backend/apps/evidence/api/evidence_api.py",
+            "role": "protected_operation",
+            "source_sha256": "a7b42a50ef776c519c7c4d6cae444696bf122fd478bc7f146139b4a4b602a26c"
+          },
+          {
+            "line_end": 67,
+            "line_start": 66,
+            "path": "backend/apps/evidence/api/evidence_api.py",
+            "role": "commit_point",
+            "source_sha256": "a7b42a50ef776c519c7c4d6cae444696bf122fd478bc7f146139b4a4b602a26c"
+          }
+        ],
+        "forbidden_condition": "service.reorder_items persisting a new item order for a caller lacking access to the evidence list's associated case.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "EvidenceService.reorder_items internal persistence code is not in the supplied views; commit point cited at the guarded invocation."
+        ],
+        "protected_operation": "POST /evidence-lists/{list_id}/reorder (reorder_evidence_items).",
+        "protected_resource": "EvidenceList item ordering.",
+        "protection_obligation": "Non-authorized users are forbidden from reordering evidence lists: the reorder endpoint resolves the request access context and runs ensure_evidence_list_access (EvidenceList \u2192 Case \u2192 CaseAccessPolicy.ensure_access_ctx) before dispatching service.reorder_items.",
+        "scope_limits": [],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Implementations of apps.core.security.admin_access.ensure_admin_request / is_admin_user and apps.core.security.auth.JWTOrSessionAuth are not in the supplied views; deny semantics are cited from call sites only.",
+      "apps.core.security.access_context.get_request_access_context and the documents wiring get_contract_service().ensure_contract_access_ctx implementations are not supplied.",
+      "apps.cases.services.case.case_access_policy.CaseAccessPolicy (ensure_access_ctx) implementation is not supplied.",
+      "apps.client ClientAccessPolicy (ensure_can_delete_client) implementation is not supplied (TYPE_CHECKING import only).",
+      "EvidenceService.reorder_items persistence internals are not supplied; the commit point is cited at the guarded service invocation.",
+      "FolderBindingService.resolve_under_allowed_roots / list_subdirs wiring to FolderBrowsePolicy is not shown in the supplied views.",
+      "The ArbitrationDocumentImage post_delete handler deletes synchronously without transaction.on_commit, contradicting the reviewer's on_commit claim; its AppConfig.ready registration wiring is also not supplied.",
+      "AppConfig.ready signal wiring for apps.legal_research is not supplied (legal_solution's is).",
+      "The MCP provider transport (stdio/http) used by McpWorkbenchService.execute_tool is not shown; the external effect class beyond tool invocation is not determinable.",
+      "The authoring pipeline for the generic_code_exec `code` argument (WorkflowTemplate.steps_schema) is not supplied; agent-generated-input mediation is not determinable.",
+      "apps.finance.tasks.sync_lpr_rates task body is not supplied (downstream LPRRate writes).",
+      "Django admin model save/delete internals are framework behavior; commit points for permission-gated admin CRUD (CaseChat, LPRRate) are described at the permission-hook level.",
+      "The AdminSite login/staff configuration that backs admin.site.admin_view / admin_view-wrapped routes is framework configuration not present in the supplied views."
+    ],
+    "repository": "Lawyer-ray/FachuanHybridSystem",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:2709dc54b65b7ffc1619df5c03a1a8cf"
+  },
+  "request_sha256": "5ece5f6b238534bd02f4fbf05e29aff548e704b415407ba1b9510d86e2711257",
+  "response_sha256": "6040bcd71ed829738775a0181c35f165f33a9d6dada4510213a5ed44d48f7912",
+  "state": "completed",
+  "tokens": 209884,
+  "unit": "v24-screen:2709dc54b65b7ffc1619df5c03a1a8cf"
+}

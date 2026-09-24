@@ -1,0 +1,242 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The early return at rag_engine/api/app.py:1489, following the refusal history yield (line 1477) and the diagnostics AgentContext yield (line 1488), which prevents _build_agent_messages_from_gradio_history (line 1559) and agent.astream() (lines 1844-1850) from executing for the blocked message.",
+        "contract_id": "ecological-contract:6075fab817080efdfa6a7a392d45aebf",
+        "declared_mechanism": "Guardian content-moderation gate at the top of agent_chat_handler: 'await guard_client.classify(message)' before prompt assembly, 'guard_client.should_block(moderation_result)' threshold decision, and when 'should_block and guard_mode == \"enforce\"' marking the user message metadata log='blocked_by_guardian', appending a generic localized refusal, yielding, and returning early.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 1425,
+            "line_start": 1412,
+            "path": "rag_engine/api/app.py",
+            "role": "guard_registration",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 203,
+            "line_start": 184,
+            "path": "rag_engine/core/guard_client.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6b629c581220728ba96a25420491fee23c31941c8dae4431875e158aa540629f"
+          },
+          {
+            "line_end": 1440,
+            "line_start": 1436,
+            "path": "rag_engine/api/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 1850,
+            "line_start": 1837,
+            "path": "rag_engine/api/app.py",
+            "role": "protected_operation",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 1489,
+            "line_start": 1467,
+            "path": "rag_engine/api/app.py",
+            "role": "commit_point",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 3472,
+            "line_start": 3464,
+            "path": "rag_engine/api/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 4402,
+            "line_start": 4396,
+            "path": "rag_engine/api/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 4035,
+            "line_start": 4033,
+            "path": "rag_engine/api/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 4332,
+            "line_start": 4320,
+            "path": "rag_engine/api/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 3725,
+            "line_start": 3719,
+            "path": "rag_engine/api/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          }
+        ],
+        "forbidden_condition": "A user message whose moderation result satisfies guard_client.should_block being assembled into agent messages and executed by agent.astream() while guard_mode == 'enforce'; equivalently, unsafe user content reaching the LangChain agent prompt/stream pipeline.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Default values and semantics of settings.guard_enabled, settings.guard_mode, and settings.guard_block_threshold are defined in rag_engine/config/settings.py, which is not among the supplied sources.",
+          "Whether the 'report' mode safety_validation context injection (app.py:1502-1538) constitutes a separate enforceable obligation is not decided by the supplied source.",
+          "Whether classify failures are intended to fail open (current behavior) or fail closed is a policy not stated in the supplied source."
+        ],
+        "protected_operation": "Agent chat turn processing in agent_chat_handler: building agent messages (_build_agent_messages_from_gradio_history) and streaming agent execution via agent.astream() (LangChain agent created by _create_rag_agent).",
+        "protected_resource": "The RAG LLM agent pipeline in rag_engine/api/app.py (agent_chat_handler's message assembly and the agent.astream() inference stream).",
+        "protection_obligation": "Unsafe user messages (guard_client.should_block true under the configured guard_block_threshold, i.e. safety_level 'Unsafe' by default and additionally 'Controversial' under threshold 'controversial') must be prevented from reaching the RAG LLM agent pipeline whenever settings.guard_enabled is true and settings.guard_mode == 'enforce'. Merged from phase-1 and phase-2 reviewer wording: agent_chat_handler classifies each incoming message via guard_client.classify before prompt assembly and, on block, marks the message and returns early with a generic refusal.",
+        "scope_limits": [
+          "Gate is active only when settings.guard_enabled is true; when disabled the handler logs 'Guardian is disabled, skipping moderation' and skips classification entirely (app.py:1421-1422).",
+          "Blocking occurs only in guard_mode == 'enforce'; in 'report' mode unsafe messages are not blocked but a <safety_validation> context string is injected into the prompt instead (app.py:1509-1538).",
+          "Fail-open on classifier failure: if guard_client.classify raises, moderation_result is set to None and should_block(None) returns False, so the message proceeds to the agent (app.py:1424-1433 and 1437; guard_client.py:193-194).",
+          "Threshold semantics: default settings.guard_block_threshold blocks only safety_level 'Unsafe'; threshold 'controversial' also blocks 'Controversial' (guard_client.py:198-203).",
+          "The user message is appended to the in-memory conversation store (llm_manager._conversations.append) before the guardian check, so a blocked message persists in the conversation store; the gate prevents agent processing, not the earlier store append (app.py:1407-1410 precede 1412-1489).",
+          "Blocked messages are additionally neutralized in later turns: _build_agent_messages_from_gradio_history replaces content of user messages marked metadata log='blocked_by_guardian' with a localized placeholder (app.py:753-757).",
+          "The gate protects the chat pipeline only; the MCP tool get_knowledge_base_articles (raw knowledge-base search) is exposed without any moderation guard (app.py:4391-4395).",
+          "The gate fires inside agent_chat_handler and therefore covers all callers, including the Gradio chat chain and the MCP ask_comindware wrapper; the http stratum reflects the outbound LLM inference requests performed by agent.astream() (OpenAI-compatible API errors handled at app.py:2609-2635)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The early invalid-key return at rag_engine/api/app.py:4635, which precedes the guarded effect invocation 'result = connector.start_request(str(request_id))' at line 4640.",
+        "contract_id": "ecological-contract:74f71989a1cbd613421067290207bbd6",
+        "declared_mechanism": "Static API-key authentication: settings.cmw_api_key compared against the request's X-API-Key header; on mismatch the handler returns {'success': False, 'message': None, 'error': 'Invalid API key'} before the connector is constructed.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 4633,
+            "line_start": 4630,
+            "path": "rag_engine/api/app.py",
+            "role": "guard_registration",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 4635,
+            "line_start": 4634,
+            "path": "rag_engine/api/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 4628,
+            "line_start": 4621,
+            "path": "rag_engine/api/app.py",
+            "role": "protected_operation",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 4707,
+            "line_start": 4701,
+            "path": "rag_engine/api/app.py",
+            "role": "protected_operation",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 4640,
+            "line_start": 4637,
+            "path": "rag_engine/api/app.py",
+            "role": "commit_point",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          }
+        ],
+        "forbidden_condition": "Invocation of PlatformConnector.start_request (processing a CMW support request) for an HTTP request whose X-API-Key header does not equal settings.cmw_api_key when settings.cmw_api_key is configured.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "PlatformConnector.start_request implementation (rag_engine/cmw_platform/connector.py) is not supplied; its external effect type (per the endpoint docstring, 'Process CMW Platform support request via API') cannot be confirmed, so the tool_execution (invocation-only) stratum may need reclassification (e.g., http) once connector source is available.",
+          "The concrete POST path of the support-request route is redacted in the supplied source (app.py:4704 shows '<REDACTED>'); the actual route path is unverified.",
+          "Default value and configuration source of settings.cmw_api_key (settings module not supplied).",
+          "Whether any agent tool or lifecycle path invokes this endpoint (none found in the supplied source)."
+        ],
+        "protected_operation": "Processing of a CMW Platform support request: the POST REST route registered on the FastAPI app that delegates to cmw_process_support_request, which instantiates PlatformConnector and calls start_request(request_id).",
+        "protected_resource": "The CMW Platform integration connector (rag_engine.cmw_platform.connector.PlatformConnector.start_request) reachable through the CMW support-request REST endpoint.",
+        "protection_obligation": "Requests to the CMW Platform support-request REST endpoint must carry an X-API-Key header matching settings.cmw_api_key before the platform connector is invoked; requests failing the check must be rejected with an error response and must not trigger PlatformConnector.start_request (from both reviewers' obligation text; agent mediation not established).",
+        "scope_limits": [
+          "Authentication is conditional: the key check runs only if settings.cmw_api_key is truthy; if unset, requests reach the connector without any key validation (app.py:4631).",
+          "The check is plain header string equality (app.py:4632-4633); the supplied source does not bind this REST endpoint to any agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect, so under DEC scope rules this is an ordinary web-authentication guard unless such a binding is found.",
+          "Guard covers only this endpoint's connector invocation; MCP-exposed tools (get_knowledge_base_articles, ask_comindware) and the guardian moderation gate are separate surfaces.",
+          "request_id presence is validated before the key check (app.py:4627-4628), which is generic input validation, not part of the protection contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The early invalid-key return at rag_engine/api/app.py:4730, which precedes the guarded effect invocation 'result = connector.start(req.request_id)' at line 4736.",
+        "contract_id": "ecological-contract:a87c9db37975fbc1884d4df62126068e",
+        "declared_mechanism": "Static API-key authentication: settings.cmw2_api_key compared against the request's X-API-Key header; on mismatch the endpoint returns {'success': False, 'message': None, 'error': 'Invalid API key'} before the connector is constructed.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 4728,
+            "line_start": 4725,
+            "path": "rag_engine/api/app.py",
+            "role": "guard_registration",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 4730,
+            "line_start": 4729,
+            "path": "rag_engine/api/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 4724,
+            "line_start": 4709,
+            "path": "rag_engine/api/app.py",
+            "role": "protected_operation",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          },
+          {
+            "line_end": 4736,
+            "line_start": 4732,
+            "path": "rag_engine/api/app.py",
+            "role": "commit_point",
+            "source_sha256": "3d8f0cf3f78415ab0c09c4c65878fbd87c1fbe3098447d6a6f2c341b2bcd213b"
+          }
+        ],
+        "forbidden_condition": "Starting document summarization for a CMW Platform record (DocumentSummaryConnector(platform='secondary').start(request_id)) for an HTTP request whose X-API-Key header does not equal settings.cmw2_api_key when settings.cmw2_api_key is configured.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "DocumentSummaryConnector.start implementation (rag_engine/cmw_platform/summary_connector.py) is not supplied; the stratum of the background record write (described as 'writes result to record via API') is unconfirmed, so the invocation-only tool_execution stratum may need reclassification (e.g., http or other_external).",
+          "Default value and configuration source of settings.cmw2_api_key (settings module not supplied).",
+          "Whether any agent path invokes this endpoint (none found in the supplied source)."
+        ],
+        "protected_operation": "The summarize-document REST route (POST /api/v1/cmw/summarize-document) that starts fire-and-forget summarization of a document attached to a CMW Platform record, processing in a background thread and writing the result back to the record via API per its docstring.",
+        "protected_resource": "The secondary-platform document summary connector (rag_engine.cmw_platform.summary_connector.DocumentSummaryConnector.start) and the CMW record it processes/writes.",
+        "protection_obligation": "Requests to the /api/v1/cmw/summarize-document REST endpoint must carry an X-API-Key header matching settings.cmw2_api_key before document summarization is started; failing requests must be rejected with an error response and must not trigger DocumentSummaryConnector.start (named by both reviewers; agent mediation not established).",
+        "scope_limits": [
+          "Key check is conditional on settings.cmw2_api_key being truthy; if unset, requests reach the connector without key validation (app.py:4726).",
+          "The connector runs fire-and-forget in a background thread and the endpoint returns an ACK before completion (docstring, app.py:4714-4717); the guard gates only the start of processing, not the subsequent record write.",
+          "No agent tool, agent lifecycle hook, or agent-generated input binding to this endpoint exists in the supplied source; the ordinary web-authentication scope caveat applies."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "rag_engine/config/settings.py is not among the supplied sources: defaults and types for guard_enabled, guard_mode, guard_block_threshold, guard_provider_type, cmw_api_key, and cmw2_api_key are unverified.",
+      "rag_engine/cmw_platform/connector.py (PlatformConnector.start_request) and rag_engine/cmw_platform/summary_connector.py (DocumentSummaryConnector.start) are not supplied; the external effect types (e.g., network writes to the CMW Platform) and therefore the final effect strata of the guarded connector invocations are unconfirmed.",
+      "The POST path of the CMW support-request route is redacted in the supplied source (app.py:4704 shows '<REDACTED>'); the actual route path string is unknown.",
+      "Behavior labels and runtime prevalence data are unavailable (per unit scope); no supplied source states a required fail-open vs fail-closed policy for guard_client.classify exceptions (current code fails open at app.py:1431-1433 combined with guard_client.py:193-194).",
+      "VLLMGuardAdapter and the guard provider endpoints (settings.guard_mosec_endpoint) are outside the supplied views; the classifier's own transport details are only partially visible (guard_client.py:80-101)."
+    ],
+    "repository": "arterm-sedov/cmw-rag",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:6f4ef6c629ce5458e0f7fc9002e6e026"
+  },
+  "request_sha256": "9fdfa4c960f179fe9ff0bcc2f43a68a83e99a081964660cf941219cd46f62005",
+  "response_sha256": "e8257039b2ec3177ecc6dbfc95e2ee13bc8867c9764d48b2bf66f56fa0e1eea6",
+  "state": "completed",
+  "tokens": 84991,
+  "unit": "v24-screen:6f4ef6c629ce5458e0f7fc9002e6e026"
+}

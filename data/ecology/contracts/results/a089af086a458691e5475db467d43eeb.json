@@ -1,0 +1,244 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The user_id filter and result construction in list_user_orders (agent/core/order/repository.py lines 27-45) and the joint match test plus uniform None return in get_order_detail (repository.py lines 48-62).",
+        "contract_id": "ecological-contract:2c7d72c9f6ddbfceff79d5a0922bea18",
+        "declared_mechanism": "Joint identity scoping in the order repository: list_user_orders filters order['user_id'] == user_id before building results; get_order_detail requires both user_id and the normalized order_id to match and returns None uniformly for unauthorized and nonexistent orders.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 5,
+            "line_start": 1,
+            "path": "agent/core/order/repository.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c9402886d4f5f8b7931541b15788c1a02b75482d5d9669e03b50edbb137942de"
+          },
+          {
+            "line_end": 45,
+            "line_start": 27,
+            "path": "agent/core/order/repository.py",
+            "role": "commit_point",
+            "source_sha256": "c9402886d4f5f8b7931541b15788c1a02b75482d5d9669e03b50edbb137942de"
+          },
+          {
+            "line_end": 62,
+            "line_start": 48,
+            "path": "agent/core/order/repository.py",
+            "role": "commit_point",
+            "source_sha256": "c9402886d4f5f8b7931541b15788c1a02b75482d5d9669e03b50edbb137942de"
+          },
+          {
+            "line_end": 429,
+            "line_start": 418,
+            "path": "agent/mcp_servers/digital_commerce_server.py",
+            "role": "protected_operation",
+            "source_sha256": "c7174525bf0111896b631a2926f4747697e951319f9404c3ec73526803f96e64"
+          },
+          {
+            "line_end": 441,
+            "line_start": 432,
+            "path": "agent/mcp_servers/digital_commerce_server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c7174525bf0111896b631a2926f4747697e951319f9404c3ec73526803f96e64"
+          },
+          {
+            "line_end": 444,
+            "line_start": 442,
+            "path": "agent/mcp_servers/digital_commerce_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c7174525bf0111896b631a2926f4747697e951319f9404c3ec73526803f96e64"
+          }
+        ],
+        "forbidden_condition": "Returning order data on the basis of order_id alone (cross-user order read, including under model prompt injection per repository.py lines 1-5), or emitting responses that let a caller distinguish 'order does not exist' from 'order belongs to another user' (order enumeration).",
+        "missing_evidence_roles": [
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "Whether core.logistics.get_shipment_timeline applies equivalent user_id + order_id joint scoping (source not supplied).",
+          "Whether core.ticket operations provide equivalent joint scoping and anti-enumeration behavior (source not supplied)."
+        ],
+        "protected_operation": "Order list and detail reads served to the user-private order tools: list_user_orders and get_order_detail.",
+        "protected_resource": "Order records in the local order snapshot data/digital_orders. backing query_user_orders and query_order_detail.",
+        "protection_obligation": "Order reads must be scoped to the trusted user: list_user_orders and get_order_detail may return order records only when the stored order user_id equals the caller's user_id (joint user_id + order_id filtering), and unauthorized lookups must be indistinguishable from nonexistent ones (uniform empty result).",
+        "scope_limits": [
+          "Covers only the order snapshot repository; shipment reads (core.logistics) and ticket operations (core.ticket) are separate modules whose sources are not supplied.",
+          "Defense-in-depth layer behind the interceptor: it assumes the user_id argument it receives, which the interceptor forces to the trusted value; the repository does not itself authenticate identity.",
+          "The snapshot is a demo read-only data file ('Replaced by the order center API after the real mall is connected', repository.py line 22); no filesystem mutation is guarded, so no separate file-stratum commit point is asserted."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The middleware decision ahead of call_next(request) at app_main.py lines 36-41: failing requests receive the 403 response and never proceed to route handlers.",
+        "contract_id": "ecological-contract:90cd991f57eed53845cc926335e9a431",
+        "declared_mechanism": "FastAPI HTTP middleware same_origin_api registered via @app.middleware(\"http\") in app/app_main.py, returning a 403 JSONResponse for failing requests before call_next.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 33,
+            "line_start": 32,
+            "path": "app/app_main.py",
+            "role": "guard_registration",
+            "source_sha256": "32541dcf8436cba5afe9d8dd50bb464c63c2a5c4b5b326e07d5f9b6fd6267bcd"
+          },
+          {
+            "line_end": 40,
+            "line_start": 36,
+            "path": "app/app_main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "32541dcf8436cba5afe9d8dd50bb464c63c2a5c4b5b326e07d5f9b6fd6267bcd"
+          },
+          {
+            "line_end": 44,
+            "line_start": 40,
+            "path": "app/app_main.py",
+            "role": "commit_point",
+            "source_sha256": "32541dcf8436cba5afe9d8dd50bb464c63c2a5c4b5b326e07d5f9b6fd6267bcd"
+          },
+          {
+            "line_end": 57,
+            "line_start": 55,
+            "path": "app/app_main.py",
+            "role": "protected_operation",
+            "source_sha256": "32541dcf8436cba5afe9d8dd50bb464c63c2a5c4b5b326e07d5f9b6fd6267bcd"
+          }
+        ],
+        "forbidden_condition": "A cross-site or marker-less write: request path starts with '/api/', method not in {GET, HEAD, OPTIONS}, and either x-requested-with != 'SupportAgent' or (Origin present and urlsplit(origin).netloc != Host header).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether /api/chat, /api/workspace, or /api/auth handlers dispatch agent tools or lifecycle hooks (app/router/chat.py, app/router/workspace.py, app/router/auth.py and app/service/chat_service.py not supplied).",
+          "Whether any agent-mediated effect commits downstream of these /api writes, which would bind this middleware to agent mediation."
+        ],
+        "protected_operation": "State-changing HTTP writes to the /api/* route surface (chat, workspace, and auth routers mounted under the /api prefix).",
+        "protected_resource": "The /api/* endpoints of the FastAPI application (chat.router, workspace.router, auth.router).",
+        "protection_obligation": "State-changing requests to /api/* must be same-origin and carry a non-simple request marker: non-GET/HEAD/OPTIONS writes without x-requested-with: SupportAgent, or with an Origin header whose netloc does not match the Host header, must be rejected with 403 before reaching route handlers.",
+        "scope_limits": [
+          "Applies only to paths starting with '/api/' and methods outside {GET, HEAD, OPTIONS}; safe methods bypass the check entirely.",
+          "Requests without an Origin header pass if the x-requested-with marker matches; the check relies on the deployment preserving the browser Host header (comment at app_main.py lines 34-35).",
+          "No supplied source binds these /api writes to an agent tool, agent lifecycle hook, or agent-generated input reaching a guarded effect; per study scope rules this obligation is recorded without an agent-mediation claim until such a dataflow is shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Inside inject_user_id at each MCP tool-call dispatch, immediately before handler(request): PermissionError raised at user_context.py lines 41-43 on missing identity; the sanitized request is committed via handler(request.override(args=new_args)) at user_context.py lines 45-47.",
+        "contract_id": "ecological-contract:93a6654662581d759d6118e05bddc7b3",
+        "declared_mechanism": "inject_user_id async MCP tool interceptor (agent/core/security/user_context.py) registered as tool_interceptors=[inject_user_id] on each MultiServerMCPClient in BillingAgentNode and AfterSalesAgentNode; it rewrites request.args so user_id equals request.runtime.context.user_id before invoking the handler, and raises PermissionError when the trusted identity is missing.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 26,
+            "line_start": 18,
+            "path": "agent/core/security/user_context.py",
+            "role": "guard_registration",
+            "source_sha256": "e365d86b7d246abe85d633b5c84dd182e3b49972b890b40b63c2ce78e6bd257a"
+          },
+          {
+            "line_end": 35,
+            "line_start": 27,
+            "path": "agent/core/security/user_context.py",
+            "role": "protected_operation",
+            "source_sha256": "e365d86b7d246abe85d633b5c84dd182e3b49972b890b40b63c2ce78e6bd257a"
+          },
+          {
+            "line_end": 43,
+            "line_start": 36,
+            "path": "agent/core/security/user_context.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e365d86b7d246abe85d633b5c84dd182e3b49972b890b40b63c2ce78e6bd257a"
+          },
+          {
+            "line_end": 47,
+            "line_start": 45,
+            "path": "agent/core/security/user_context.py",
+            "role": "commit_point",
+            "source_sha256": "e365d86b7d246abe85d633b5c84dd182e3b49972b890b40b63c2ce78e6bd257a"
+          },
+          {
+            "line_end": 65,
+            "line_start": 62,
+            "path": "agent/agents/billing_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ebe12813c52df6263f30c37f369342f3922e4bf7179326b8abcfa2e727e049c7"
+          },
+          {
+            "line_end": 131,
+            "line_start": 113,
+            "path": "agent/agents/billing_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ebe12813c52df6263f30c37f369342f3922e4bf7179326b8abcfa2e727e049c7"
+          },
+          {
+            "line_end": 45,
+            "line_start": 42,
+            "path": "agent/agents/after_sales_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ee1122b127a91bee33b5cdc70ac3a6dc8ffd56ed58995e4074117b8aaf2737f1"
+          },
+          {
+            "line_end": 98,
+            "line_start": 87,
+            "path": "agent/agents/after_sales_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ee1122b127a91bee33b5cdc70ac3a6dc8ffd56ed58995e4074117b8aaf2737f1"
+          },
+          {
+            "line_end": 412,
+            "line_start": 342,
+            "path": "agent/mcp_servers/digital_commerce_server.py",
+            "role": "protected_operation",
+            "source_sha256": "c7174525bf0111896b631a2926f4747697e951319f9404c3ec73526803f96e64"
+          },
+          {
+            "line_end": 458,
+            "line_start": 418,
+            "path": "agent/mcp_servers/digital_commerce_server.py",
+            "role": "protected_operation",
+            "source_sha256": "c7174525bf0111896b631a2926f4747697e951319f9404c3ec73526803f96e64"
+          }
+        ],
+        "forbidden_condition": "A user-private MCP tool call reaching the MCP handler with a user_id argument originating from the model rather than the trusted runtime context, or any dispatch of a protected tool when the runtime context carries no truthy user_id (PermissionError refusal path).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which MCP connections load_mcp_connections returns (agent/core/mcp/config source not supplied), i.e., confirmation that the protected tools are reachable only through interceptor-wrapped clients.",
+          "Whether core.ticket create_ticket/list_user_tickets/get_ticket_detail/escalate_ticket independently enforce user_id scoping, and whether ticket creation commits to a database or file (source not supplied; downstream stratum beyond the dispatch commit point unverified).",
+          "Whether core.logistics.get_shipment_timeline scopes reads by user_id (source not supplied).",
+          "Where state['user_id'] is produced and authenticated (session/login flow not supplied)."
+        ],
+        "protected_operation": "MCP tool-call dispatch of query_user_orders, query_order_detail, query_shipment_timeline, create_after_sales_ticket, query_user_tickets, query_ticket_detail, and escalate_ticket_to_human.",
+        "protected_resource": "The current login user's private order, shipment-timeline, and after-sales ticket records exposed through the Digital Commerce MCP server.",
+        "protection_obligation": "Every dispatch of a user-private MCP tool (query_user_orders, query_order_detail, query_shipment_timeline, create_after_sales_ticket, query_user_tickets, query_ticket_detail, escalate_ticket_to_human) must execute only with the trusted UserContext identity: the inject_user_id interceptor overrides any model-supplied user_id with the runtime-context identity and refuses the call with PermissionError when no trusted identity exists.",
+        "scope_limits": [
+          "Only the seven tool names in protected_tools are guarded; public catalog/knowledge tools pass through unmodified (user_context.py lines 36-37).",
+          "Guarding is per-client: only agent nodes that construct MultiServerMCPClient with tool_interceptors=[inject_user_id] are covered; supplied source shows registrations only in BillingAgentNode and AfterSalesAgentNode.",
+          "Agents build UserContext from state.get('user_id', 'unknown') (billing_agent.py line 34; after_sales_agent.py line 41); supplied source does not show upstream authentication of state['user_id'], and a literal 'unknown' default would satisfy the interceptor's truthiness check instead of triggering the PermissionError path.",
+          "In-process tools appended outside the MCP client (e.g., search_after_sales_policies and search_technical_documents at after_sales_agent.py line 101) are not intercepted.",
+          "Interceptor behavior depends on langchain_mcp_adapters MCPToolCallRequest.runtime/override semantics, whose implementation is not in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "agent/core/mcp/config (load_mcp_connections) is not supplied: the concrete set of MCP servers/connections wrapped by interceptor-registered clients is unverified.",
+      "core.ticket (create_ticket, list_user_tickets, get_ticket_detail, escalate_ticket) is not supplied: user scoping, anti-enumeration behavior, and the persistence stratum (database vs file) of ticket writes are unverified.",
+      "core.logistics (get_shipment_timeline) is not supplied: whether shipment reads are jointly scoped by user_id and order_id is unverified.",
+      "app/router/chat.py, app/router/workspace.py, app/router/auth.py, and app/service/chat_service.py are not supplied: no dataflow from /api writes to agent tool dispatch or agent lifecycle hooks can be confirmed, so the same-origin middleware's agent mediation is not_established.",
+      "langchain_mcp_adapters (MultiServerMCPClient, MCPToolCallRequest.override/runtime) implementation is not supplied: interceptor invocation ordering and override propagation are taken from in-repository usage only.",
+      "No supplied source shows where state['user_id'] is authenticated (session/login flow), so the provenance of the trusted UserContext identity is unverified."
+    ],
+    "repository": "gyang-a/support-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a089af086a458691e5475db467d43eeb"
+  },
+  "request_sha256": "319f121cf9dc62d8b5bee2064ca0427c6393957ec5337c5b396a6c9ac0a009d6",
+  "response_sha256": "f82b078ba86a137f7a16395a21de67ac3876bc7724cb61280a4e46156be4cc95",
+  "state": "completed",
+  "tokens": 31316,
+  "unit": "v24-screen:a089af086a458691e5475db467d43eeb"
+}

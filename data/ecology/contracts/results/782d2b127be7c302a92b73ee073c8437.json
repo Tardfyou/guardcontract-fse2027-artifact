@@ -1,0 +1,208 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guard's commit boundary is the handler invocation inside wrap_tool_call / awrap_tool_call (src/agent_triage/agent.py:126 and 136): blocked calls short-circuit with an error ToolMessage and never invoke the tool. The underlying effect commit points of the ticket tools themselves are not in supplied source (src/agent_triage/tools.py absent).",
+        "contract_id": "ecological-contract:0d9824925ad1ccb468e407fbfefd797b",
+        "declared_mechanism": "RequireWorkspaceForTriageToolsMiddleware: wrap_tool_call / awrap_tool_call check the tool-call name against ALLOWED_WITHOUT_WORKSPACE and workspace selection from runtime.context, returning ToolMessage(status=\"error\") instead of invoking handler when blocked (src/agent_triage/agent.py:78-136); registered in the root graph middleware list at src/agent_triage/agent.py:235.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 237,
+            "line_start": 233,
+            "path": "src/agent_triage/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "5c0c294e6083c52275e7e3b00677d2ded4cd493ce5219e3c2efb1afc921de49f"
+          },
+          {
+            "line_end": 136,
+            "line_start": 118,
+            "path": "src/agent_triage/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5c0c294e6083c52275e7e3b00677d2ded4cd493ce5219e3c2efb1afc921de49f"
+          },
+          {
+            "line_end": 136,
+            "line_start": 128,
+            "path": "src/agent_triage/agent.py",
+            "role": "commit_point",
+            "source_sha256": "5c0c294e6083c52275e7e3b00677d2ded4cd493ce5219e3c2efb1afc921de49f"
+          },
+          {
+            "line_end": 193,
+            "line_start": 181,
+            "path": "src/agent_triage/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "5c0c294e6083c52275e7e3b00677d2ded4cd493ce5219e3c2efb1afc921de49f"
+          },
+          {
+            "line_end": 122,
+            "line_start": 118,
+            "path": "src/agent_triage/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5c0c294e6083c52275e7e3b00677d2ded4cd493ce5219e3c2efb1afc921de49f"
+          }
+        ],
+        "forbidden_condition": "Tool execution (handler invocation) of a registered triage tool whose name is not in ALLOWED_WITHOUT_WORKSPACE while the runtime context lacks workspace_id (condition checked at src/agent_triage/agent.py:124-125 and 134-135).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Obtain src/agent_triage/tools.py to classify the underlying effects of the gated ticket tools and confirm whether they perform persistent mutations.",
+          "Confirm whether subagent tool calls in the triage graph pass through this root-graph middleware or only the root agent's own tool node."
+        ],
+        "protected_operation": "Agent tool execution in the triage graph for ticket-scoped tools registered on the root agent \u2014 leer_ticket, patch_ticket, merge_tickets, descartar_evento, gmail_download_attachments_list, outlook_download_attachments \u2014 per the tools list at src/agent_triage/agent.py:181-193.",
+        "protected_resource": "Ticket/workspace-scoped triage state: the ticket data operations performed by the gated tools within the selected workspace.",
+        "protection_obligation": "Ticket-scoped triage tools must not execute until a workspace (ticket) is selected: in the triage deep agent, any tool call whose name is outside {crear_ticket, seleccionar_ticket, buscar_tickets} must be blocked with an error ToolMessage while the runtime context has no workspace_id, instead of reaching the tool handler. (Second-phase reviewer observation, preserved as a distinct obligation; this is a workspace-precondition gate, not a human-approval gate.)",
+        "scope_limits": [
+          "Gate is a workspace-precondition check on agent tool dispatch, not a human-approval gate; ALLOWED_WITHOUT_WORKSPACE = {crear_ticket, seleccionar_ticket, buscar_tickets} (src/agent_triage/agent.py:84).",
+          "Underlying ticket tool implementations (src/agent_triage/tools.py) are not supplied; the true effect class of tools like patch_ticket/merge_tickets (e.g., database mutation) is unverified, hence the conservative tool_execution stratum for the guarded invocation.",
+          "Whether this root-graph middleware also wraps nested subagent tool dispatch (asistente_correo \u2192 asistente_gmail/asistente_outlook, src/agent_triage/agent.py:194-231) is not established by supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "gmail_send_email executes the send via execute_composio_tool(GMAIL.tools.SEND_EMAIL, arguments, runtime) at src/agent_email/gmail_tools.py:239 (try block at 238-240); this is where the outbound email effect commits after the tool body runs.",
+        "contract_id": "ecological-contract:d50fa503a9ce31791d87182df59085bb",
+        "declared_mechanism": "SubAgent human-in-the-loop gate: interrupt_on={\"GMAIL_SEND_EMAIL\": {\"allowed_decisions\": [\"approve\", \"edit\", \"reject\"]}} declared on the asistente_gmail subagent in two registration sites \u2014 the main deep agent graph (src/agent/deep_agent.py:368, nested under the asistente_correo CompiledSubAgent) and the standalone email coordinator (src/agent_email/agent.py:48, gmail_subagent passed into create_deep_agent subagents at agent.py:69).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 369,
+            "line_start": 359,
+            "path": "src/agent/deep_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "9bd802bce502971b6535a86dbd6ca470a501cf94c93ec71e9ec172b0e0a4f258"
+          },
+          {
+            "line_end": 49,
+            "line_start": 42,
+            "path": "src/agent_email/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "c664952f8d63656ce5d1b5c911193457d6a0956eac9b948ce24a0c3a6d5d8a6f"
+          },
+          {
+            "line_end": 109,
+            "line_start": 95,
+            "path": "src/agent_email/gmail_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b963aa7880084a92d07530aebfcb07c613ccd36edbf4710be607ae68f394e0b3"
+          },
+          {
+            "line_end": 240,
+            "line_start": 238,
+            "path": "src/agent_email/gmail_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b963aa7880084a92d07530aebfcb07c613ccd36edbf4710be607ae68f394e0b3"
+          },
+          {
+            "line_end": 1061,
+            "line_start": 1056,
+            "path": "src/agent_email/gmail_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b963aa7880084a92d07530aebfcb07c613ccd36edbf4710be607ae68f394e0b3"
+          }
+        ],
+        "forbidden_condition": "Execution of the GMAIL_SEND_EMAIL send effect without a prior human decision \u2014 i.e., the gmail_send_email tool body proceeding to execute_composio_tool(GMAIL.tools.SEND_EMAIL, ...) with no human approve/edit/reject decision recorded for that agent tool call.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Confirm the constant GMAIL.tools.SEND_EMAIL (src/composio/types/gmail.py, not supplied) resolves to the literal tool name 'GMAIL_SEND_EMAIL' so the interrupt_on key binds to the name registered via @tool(...).",
+          "Confirm that the deepagents SubAgentMiddleware enforces interrupt_on before tool execution (interrupt raised prior to running gmail_send_email's body) and how approve/edit/reject resume decisions are delivered back into the graph.",
+          "Confirm interrupt propagation through the nested CompiledSubAgent(asistente_correo) path (src/agent/deep_agent.py:342-383) reaches the human client in deployment (server/UI resume wiring not in supplied views)."
+        ],
+        "protected_operation": "Agent tool call to gmail_send_email (registered via @tool(GMAIL.tools.SEND_EMAIL)) that sends an email, optionally with attachment, through the user's connected Gmail account.",
+        "protected_resource": "Outbound email of the user's connected Gmail account (Composio GMAIL.tools.SEND_EMAIL action).",
+        "protection_obligation": "Outbound Gmail email sending must not execute without an explicit human decision: every agent invocation of the GMAIL_SEND_EMAIL tool must pause for a human approve/edit/reject decision before the Composio send effect is committed. (Merges the first- and second-phase reviewer wording, which describe the same obligation for both the deep_agent graph and the standalone email coordinator agent.)",
+        "scope_limits": [
+          "Only the GMAIL_SEND_EMAIL key is gated. Other Gmail tools in the same exported toolset with send-side effects \u2014 gmail_reply_to_thread (src/agent_email/gmail_tools.py:289-375), gmail_forward_message (381-396), gmail_send_draft (468-478) \u2014 appear in the gmail_tools export (1056-1108) with no corresponding interrupt_on key shown at either registration site.",
+          "The in-tool confirmation interrupt previously implemented inside gmail_send_email is fully commented out (src/agent_email/gmail_tools.py:212-236); the active declared mechanism is only the subagent-level interrupt_on registration.",
+          "Registrations only: enforcement semantics (that interrupt_on pauses pre-execution and routes approve/edit/reject decisions back before the tool body runs) reside in the deepagents SubAgentMiddleware implementation, which is not part of the supplied source.",
+          "Triage-graph email subagents use different toolsets (gmail_tools_triage / outlook_tools_triage at src/agent_triage/agent.py:203, 216, 226) whose email-send coverage is unknown from supplied source and which carry no interrupt_on registration."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Declared commit point is execution of the OUTLOOK_SEND_EMAIL action inside src/agent_email/outlook_tools.py (mirroring the gmail pattern at gmail_tools.py:239); however outlook_tools.py is not among the supplied sources, so the commit point cannot be cited from source and is recorded as pending.",
+        "contract_id": "ecological-contract:e8fd13f90f5ea8c10569bf70c0ae0fa5",
+        "declared_mechanism": "SubAgent human-in-the-loop gate: interrupt_on={\"OUTLOOK_SEND_EMAIL\": {\"allowed_decisions\": [\"approve\", \"edit\", \"reject\"]}} declared on the asistente_outlook subagent in two registration sites \u2014 the main deep agent graph (src/agent/deep_agent.py:379) and the standalone email coordinator (src/agent_email/agent.py:57, outlook_subagent passed into create_deep_agent subagents at agent.py:69).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 380,
+            "line_start": 370,
+            "path": "src/agent/deep_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "9bd802bce502971b6535a86dbd6ca470a501cf94c93ec71e9ec172b0e0a4f258"
+          },
+          {
+            "line_end": 58,
+            "line_start": 51,
+            "path": "src/agent_email/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "c664952f8d63656ce5d1b5c911193457d6a0956eac9b948ce24a0c3a6d5d8a6f"
+          },
+          {
+            "line_end": 372,
+            "line_start": 371,
+            "path": "src/agent/deep_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "9bd802bce502971b6535a86dbd6ca470a501cf94c93ec71e9ec172b0e0a4f258"
+          },
+          {
+            "line_end": 378,
+            "line_start": 378,
+            "path": "src/agent/deep_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9bd802bce502971b6535a86dbd6ca470a501cf94c93ec71e9ec172b0e0a4f258"
+          },
+          {
+            "line_end": 56,
+            "line_start": 56,
+            "path": "src/agent_email/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c664952f8d63656ce5d1b5c911193457d6a0956eac9b948ce24a0c3a6d5d8a6f"
+          }
+        ],
+        "forbidden_condition": "Execution of the OUTLOOK_SEND_EMAIL send effect without a prior human approve/edit/reject decision for the corresponding agent tool call.",
+        "missing_evidence_roles": [
+          "commit_point",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Obtain src/agent_email/outlook_tools.py to locate the OUTLOOK_SEND_EMAIL tool implementation, its Composio send execution commit point, and verify its registered tool name equals 'OUTLOOK_SEND_EMAIL' (e.g., via an OUTLOOK.tools.SEND_EMAIL constant).",
+          "Confirm that deepagents interrupt_on enforcement is pre-execution and how approve/edit/reject resume decisions reach the graph.",
+          "Confirm interrupt propagation to the human client through the nested CompiledSubAgent(asistente_correo) path in src/agent/deep_agent.py:342-383."
+        ],
+        "protected_operation": "Agent tool call to the Outlook send-email tool from the outlook_tools toolset (imported from src.agent_email.outlook_tools) that sends an email through the user's Outlook account; the tool implementation itself is not contained in the supplied views.",
+        "protected_resource": "Outbound email of the user's connected Outlook account.",
+        "protection_obligation": "Outbound Outlook email sending must not execute without an explicit human decision: every agent invocation of the OUTLOOK_SEND_EMAIL tool must pause for a human approve/edit/reject decision before the send effect is committed. (Merged from both reviewer phases.)",
+        "scope_limits": [
+          "Only the OUTLOOK_SEND_EMAIL key is gated; the composition of outlook_tools (which send-side tools it exports, e.g., reply/forward/draft-send analogues) is unknown because src/agent_email/outlook_tools.py is not supplied.",
+          "Enforcement semantics of interrupt_on reside in the deepagents SubAgentMiddleware implementation, which is not supplied.",
+          "Triage-graph outlook subagents use outlook_tools_triage (src/agent_triage/agent.py:226) with no interrupt_on registration; whether that toolset can send email is unsupported by supplied source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "src/agent_email/outlook_tools.py is not among the supplied sources: the OUTLOOK_SEND_EMAIL tool implementation, its send commit point, the exported outlook_tools composition, and its registered tool name are unverifiable.",
+      "src/composio/types/gmail.py (GMAIL.tools constants) is not supplied: equality between GMAIL.tools.SEND_EMAIL and the interrupt_on key 'GMAIL_SEND_EMAIL' cannot be confirmed from source.",
+      "The deepagents library implementation (deepagents.graph / deepagents.middleware.subagents) that consumes SubAgent.interrupt_on is not supplied: pre-execution interrupt semantics and approve/edit/reject resume handling are unverifiable from the supplied views.",
+      "src/agent_triage/tools.py is not supplied: underlying effects of ticket tools, and whether the triage toolsets (gmail_tools_triage / outlook_tools_triage) include email-send effects lacking any interrupt_on gate, are unknown.",
+      "Deployment wiring that presents interrupts to a human (server/UI resume path for LangGraph interrupts) is not present in the supplied views, so end-to-end human-in-the-loop enforcement cannot be confirmed."
+    ],
+    "repository": "metalossAI/solven-agentserver-langgraph",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:782d2b127be7c302a92b73ee073c8437"
+  },
+  "request_sha256": "27efd85b1e14ac3fe0b8dc102b71e48e263619dc928a48b2b351053a20be4eb1",
+  "response_sha256": "b2a040af83ba0a75736053c199af4a20a7f141b12371efee2a5a76775cc4c59b",
+  "state": "completed",
+  "tokens": 38322,
+  "unit": "v24-screen:782d2b127be7c302a92b73ee073c8437"
+}

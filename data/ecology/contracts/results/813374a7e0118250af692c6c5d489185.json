@@ -1,0 +1,128 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The model-call wrap point: the request.override(tools=[], tool_choice='none') applied at backend/agents/middleware.py line 18 immediately before handler(request) at line 19 \u2014 i.e., before the model can emit any further dispatchable tool call. The guarded tool-invocation effect itself would commit at agent tool dispatch following the model response, which the emptied tool list prevents.",
+        "contract_id": "ecological-contract:336df6b6e464a824a4e108ac6c627ae9",
+        "declared_mechanism": "Custom ToolCallLimitMiddleware(AgentMiddleware) (backend/agents/middleware.py, lines 4-25): wrap_model_call computes tool_call_count from request.state['messages']; if count >= max_tool_calls it rewrites the request via request.override(tools=[], tool_choice='none') before returning handler(request); after_model additionally appends the SystemMessage 'Tool limit reached \u2014 answer now using only the data already gathered.' once the cap is reached. Instances are registered as the sole middleware in create_agent for both analyst nodes.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 19,
+            "line_start": 15,
+            "path": "backend/agents/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ef0d6440b970255cd5369797047ec95ca817333f9add75f389b8223bd3255f23"
+          },
+          {
+            "line_end": 19,
+            "line_start": 18,
+            "path": "backend/agents/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "ef0d6440b970255cd5369797047ec95ca817333f9add75f389b8223bd3255f23"
+          },
+          {
+            "line_end": 25,
+            "line_start": 21,
+            "path": "backend/agents/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ef0d6440b970255cd5369797047ec95ca817333f9add75f389b8223bd3255f23"
+          },
+          {
+            "line_end": 19,
+            "line_start": 15,
+            "path": "backend/agents/economist.py",
+            "role": "protected_operation",
+            "source_sha256": "c4c9e65e340baae9a8164e4126756f62ad952c99a3ff7c2c8c40da26b3b5578b"
+          },
+          {
+            "line_end": 21,
+            "line_start": 21,
+            "path": "backend/agents/economist.py",
+            "role": "guard_registration",
+            "source_sha256": "c4c9e65e340baae9a8164e4126756f62ad952c99a3ff7c2c8c40da26b3b5578b"
+          },
+          {
+            "line_end": 61,
+            "line_start": 61,
+            "path": "backend/agents/economist.py",
+            "role": "guard_registration",
+            "source_sha256": "c4c9e65e340baae9a8164e4126756f62ad952c99a3ff7c2c8c40da26b3b5578b"
+          },
+          {
+            "line_end": 61,
+            "line_start": 61,
+            "path": "backend/agents/economist.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c4c9e65e340baae9a8164e4126756f62ad952c99a3ff7c2c8c40da26b3b5578b"
+          },
+          {
+            "line_end": 22,
+            "line_start": 15,
+            "path": "backend/agents/fundamental_analyst.py",
+            "role": "protected_operation",
+            "source_sha256": "d032c3a4789f865907fa1430dedcd5d0c72f863e8bdf791707ba2a6dcd541f27"
+          },
+          {
+            "line_end": 24,
+            "line_start": 24,
+            "path": "backend/agents/fundamental_analyst.py",
+            "role": "guard_registration",
+            "source_sha256": "d032c3a4789f865907fa1430dedcd5d0c72f863e8bdf791707ba2a6dcd541f27"
+          },
+          {
+            "line_end": 63,
+            "line_start": 63,
+            "path": "backend/agents/fundamental_analyst.py",
+            "role": "guard_registration",
+            "source_sha256": "d032c3a4789f865907fa1430dedcd5d0c72f863e8bdf791707ba2a6dcd541f27"
+          },
+          {
+            "line_end": 63,
+            "line_start": 63,
+            "path": "backend/agents/fundamental_analyst.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d032c3a4789f865907fa1430dedcd5d0c72f863e8bdf791707ba2a6dcd541f27"
+          }
+        ],
+        "forbidden_condition": "Any model call inside an agent run proceeding with tools available once the cumulative tool-call count in the agent state's message history has reached self.max_tool_calls (self.tool_call_count(state) >= self.max_tool_calls), and consequently any further agent tool call being dispatched or executed after the cap has been reached.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "LangChain create_agent middleware semantics \u2014 that wrap_model_call's override is applied before the model handler and that an empty tools list blocks dispatch of subsequently emitted tool calls \u2014 are framework internals not included in the supplied source.",
+          "The underlying side effects of the bound tools (tools/tavily_tools.py, tools/yfinance_tools.py, tools/screener_tools.py) are not supplied, so the concrete effect stratum (e.g., HTTP to external APIs) of each tool execution cannot be bound; tool_execution is asserted only at the invocation level evidenced here.",
+          "Whether after_model's returned SystemMessage is injected before the next model call in every code path (e.g., when the cap is crossed by a single model message containing multiple tool calls) is not determinable from the supplied source.",
+          "Whether the repository contains additional analyst agents that also require this middleware registration cannot be confirmed (repository enumeration incomplete)."
+        ],
+        "protected_operation": "Agent-loop invocation of the tool callables bound via create_agent: for the economist \u2014 search_sector_outlook, search_india_marco_news (tools.tavily_tools) and get_company_profile (tools.yfinance_tools) under max_tool_calls=3; for the fundamental_analyst \u2014 get_company_profile, get_fundamental_data, get_income_statement, get_balance_sheet (tools.yfinance_tools) and get_screener_fundamentals, get_peer_comparision (tools.screener_tools) under max_tool_calls=6.",
+        "protected_resource": "The per-run tool-call budget of each analyst agent's tool loop \u2014 i.e., the tool schemas exposed to the model and the dispatch of the bound TOOLS (backend/agents/economist.py TOOLS, lines 15-19; backend/agents/fundamental_analyst.py TOOLS, lines 15-22).",
+        "protection_obligation": "Each analyst agent's tool calls executed through the create_agent tool loop (economist: Tavily/yfinance tools; fundamental_analyst: yfinance/screener tools) must be capped at the configured max_tool_calls per agent run (economist: max_tool_calls=3; fundamental_analyst: max_tool_calls=6) by registering a ToolCallLimitMiddleware instance in create_agent(middleware=[tool_limit_guard]); once the cap is reached, no further agent-dispatched tool call may occur because the middleware strips all tools and forces tool_choice='none' at the model-call wrap point. (Merged from the two duplicate reviewer opinions.)",
+        "scope_limits": [
+          "backend/agents/economist.py line 64 calls get_company_profile.invoke({'ticker': ticker}) directly, outside the create_agent loop; ToolCallLimitMiddleware's hooks operate only on agent-run state, so this direct pre-loop tool invocation is NOT covered by the cap.",
+          "The cap is per agent run: each node invocation constructs a fresh agent with fresh message state (economist.py lines 57-78; fundamental_analyst.py lines 58-75), so the count resets on every run even though tool_limit_guard is a shared module-level instance.",
+          "Only the economist and fundamental_analyst nodes appear in the supplied sources; the obligation cannot be extended to other agents that may exist in the repository.",
+          "The middleware enforces only an aggregate call count; it does not validate tool inputs, restrict which tool may run, or code-enforce the per-tool 'call each tool exactly once' rule, which exists only as prompt text (economist.py lines 39-41; fundamental_analyst.py lines 41-43).",
+          "Counting derives from the tool_calls attribute of messages in state; behavior under framework-specific message shapes or parallel multi-tool-call batches is not determined by the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Implementations of tools/tavily_tools.py, tools/yfinance_tools.py, and tools/screener_tools.py were not supplied; the actual external endpoints, protocols, and side-effect strata of each tool call are unverified.",
+      "The reviewer opinions reference Reddit API tools, but no Reddit tool appears anywhere in the supplied sources; its existence and any guard coverage cannot be evaluated.",
+      "No other agent nodes (beyond economist and fundamental_analyst) appear in the supplied sources; whether they exist and whether they register the middleware cannot be determined.",
+      "Both agent files contain a commented-out framework import 'from langchain.agents.middleware.tool_call_limit import ToolCallLimitMiddleware' (economist.py line 5; fundamental_analyst.py line 5) replaced by the local middleware; behavioral differences between the framework variant and the local implementation are unknown.",
+      "LangChain agents framework internals (middleware hook ordering, request.override behavior, structured_response handling) are not part of the supplied source, so enforcement ordering claims rest on the local code alone."
+    ],
+    "repository": "Naga-Aditya-Anand/AI-Investment-Team",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:813374a7e0118250af692c6c5d489185"
+  },
+  "request_sha256": "84b3323a745f03598c30539a87a27e07957d626130d9e097ffcbdae46ddb70e7",
+  "response_sha256": "6158fc8c43bb4bc714fb76b6b540a6837febc38075c5a50a38154b02be704921",
+  "state": "completed",
+  "tokens": 15879,
+  "unit": "v24-screen:813374a7e0118250af692c6c5d489185"
+}

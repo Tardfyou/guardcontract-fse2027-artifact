@@ -1,0 +1,181 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Line 37: set_customer(session_id, created[\"Id\"], is_guest=True), which mutates the session's customer binding to a guest binding; line 38 logs that 'app state updated'.",
+        "contract_id": "ecological-contract:42a918d284289a81a6c197645187a707",
+        "declared_mechanism": "The same entry guard (lines 18-25): early return of {\"status\": \"skipped\", \"reason\": \"already_real_customer\", \"id\": state.customer_id} prevents control flow from reaching the set_customer(is_guest=True) call at line 37.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 19,
+            "line_start": 18,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 25,
+            "line_start": 18,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 14,
+            "line_start": 9,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 5,
+            "line_start": 5,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 38,
+            "line_start": 37,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "commit_point",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 2,
+            "line_start": 2,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 10,
+            "line_start": 9,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 27,
+            "line_start": 27,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          }
+        ],
+        "forbidden_condition": "Overwriting a real customer's session customer binding with is_guest=True (guest downgrade of session state) in a session whose state satisfies state.customer_id and not state.is_guest.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm persistence semantics of set_customer in state/session.py (in-memory vs persistent) and whether the mutation at line 37 is atomic with the QuickBooks creation at line 36.",
+          "Confirm the partial-failure case: if create_guest_customer succeeds but set_customer throws, whether the session can remain bound to the real customer while a QuickBooks guest record exists, and whether that residual state is acceptable under this obligation.",
+          "Confirm whether state/session.py enforces any independent no-downgrade invariant, or whether the guard at lines 18-25 is the only barrier against overwriting a real-customer binding."
+        ],
+        "protected_operation": "The session-state customer-binding update performed by create_guest_tool after guest creation (set_customer(session_id, created[\"Id\"], is_guest=True) at line 37), reached only via the guarded tool flow.",
+        "protected_resource": "Session state customer binding (customer_id and is_guest fields) managed through state.session get_state/set_customer for the session.",
+        "protection_obligation": "When a session is already bound to a real (non-guest) customer, the create_guest_tool must skip before overwriting the session's customer binding with a guest binding: set_customer(session_id, ..., is_guest=True) must never execute for a session whose state already shows a real customer, preserving the real customer's session association.",
+        "scope_limits": [
+          "Derived only from the supplied view backend/tools/customer/create_guest_tool.py lines 1-49; the state/session.py implementation is not supplied and is not covered by this contract.",
+          "Covers only the set_customer call reachable from create_guest_tool; any other callers of set_customer are out of scope (not supplied).",
+          "This contract covers only the session-state mutation effect at line 37; the external QuickBooks record creation at line 36 is covered by a separate http-stratum contract.",
+          "Guard correctness is evaluated only at tool entry against state returned by get_state(session_id); downstream state-store behavior is out of scope."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Line 36: created = qb.create_guest_customer(guest_name), executed after qb = QuickBooksWrapper() (line 34) inside the try block; this is where the external QuickBooks guest-record creation is requested.",
+        "contract_id": "ecological-contract:87b333af2b4e8575544acffa6123bd07",
+        "declared_mechanism": "Early-return guard at tool entry (lines 18-25): the commented check '\ud83d\udeab Don't downgrade an existing real customer to guest' tests state.customer_id and not state.is_guest (state loaded via get_state at line 16) and, if true, returns .dumps({\"status\": \"skipped\", \"reason\": \"already_real_customer\", \"id\": state.customer_id}) before QuickBooksWrapper() is constructed or create_guest_customer is called.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 19,
+            "line_start": 18,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 25,
+            "line_start": 18,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 14,
+            "line_start": 9,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 36,
+            "line_start": 34,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "commit_point",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 2,
+            "line_start": 2,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 10,
+            "line_start": 9,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          },
+          {
+            "line_end": 27,
+            "line_start": 27,
+            "path": "backend/tools/customer/create_guest_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "da33863dcf9f1c636f17a4d4c4fddf4f3cf8341dd5258880292367a6aa636ce6"
+          }
+        ],
+        "forbidden_condition": "Downgrading a session bound to a real customer to a guest by creating a QuickBooks guest customer record for a session whose state satisfies state.customer_id and not state.is_guest.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm that QuickBooksWrapper.create_guest_customer performs the external QuickBooks API (network) creation at the point of call; quickbooks_wrapper.py was not supplied, so transport, retries, and commit semantics are unverified.",
+          "Confirm whether state.customer_id/is_guest can change between the guard check (lines 16-19) and the creation call (line 36), i.e., whether a TOCTOU window exists (state/session.py not supplied).",
+          "Confirm behavior of the error path (lines 44-49): if create_guest_customer succeeds server-side but raises before returning, whether a guest record can be created without the guard or state reflecting it."
+        ],
+        "protected_operation": "Agent invocation of the @tool-decorated create_guest_tool(session_id, name), whose guarded flow creates a guest customer profile in QuickBooks.",
+        "protected_resource": "External QuickBooks customer records for the session (no guest customer profile may be created when a real customer is already bound) and the session's real-customer identity.",
+        "protection_obligation": "When a session is already bound to a real (non-guest) customer (state.customer_id set with is_guest false), the create_guest_tool must short-circuit with status 'skipped' and must not create any external QuickBooks guest customer record for that session, so the bound real customer is never downgraded to a guest. (Merges the first- and second-phase reviewer wording, which describe the same no-downgrade short-circuit obligation.)",
+        "scope_limits": [
+          "Derived only from the supplied view backend/tools/customer/create_guest_tool.py lines 1-49; the QuickBooksWrapper implementation is not supplied and is not covered by this contract.",
+          "Guard correctness is evaluated only at tool entry against the state returned by get_state(session_id); session-store persistence and concurrency semantics are out of scope (state/session.py not supplied).",
+          "Applies only to the create_guest_tool code path; no other tools, callers, or agent-executor wiring were supplied for evaluation.",
+          "This contract covers only the external QuickBooks record-creation effect at line 36; the session-binding overwrite at line 37 is covered by a separate state-stratum contract.",
+          "The reviewer-cited _escape_qbo_literal support in quickbooks_wrapper.py is not evaluated because that source was not supplied."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "quickbooks_wrapper.py (including QuickBooksWrapper.create_guest_customer and the reviewer-cited _escape_qbo_literal) was not supplied as line-numbered source; transport, commit semantics, retries, and any secondary guards around the QuickBooks effect are unverified, and no contract or evidence is derived from the wrapper.",
+      "The second reviewer's citation of quickbooks_wrapper.py _escape_qbo_literal as supporting protection cannot be evaluated or cited because that file is absent from the supplied sources; it is recorded here rather than emitted as a contract.",
+      "state/session.py (get_state, set_customer) was not supplied; session-state persistence, atomicity relative to the QuickBooks call, and any independent downgrade protections are unverified.",
+      "No agent-executor/graph wiring (e.g., tool binding to a specific agent or dispatch configuration beyond the @tool registration) was supplied; direct_tool mediation is grounded in the langchain_core.tools import (line 2), the @tool decorator (line 9), and the explicit agent-input dataflow comment (line 27), but the live dispatch path is unverified.",
+      "Behavior labels and prevalence data are unavailable; no runtime-behavior or prevalence determination is made for these contracts."
+    ],
+    "repository": "bhavanabayya/Chai_ChatBot",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1810757a272291a8b71e73b61b9ee418"
+  },
+  "request_sha256": "518455d694d998fad68073318a5b06cec8dc1e16d69b627dc5bdf99be40fef07",
+  "response_sha256": "8cd2dbcc6dd106fa6d12c91b4c0a2776accde362eea05beac59e3f5e578f0fc9",
+  "state": "completed",
+  "tokens": 12007,
+  "unit": "v24-screen:1810757a272291a8b71e73b61b9ee418"
+}

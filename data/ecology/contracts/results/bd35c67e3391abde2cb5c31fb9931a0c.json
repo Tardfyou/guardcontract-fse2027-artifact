@@ -1,0 +1,116 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Runner.run_streamed(rag_agent, agent_input, context=agent_ctx) at backend/app.py:400 \u2014 initiation of the guarded agent run whose output streams at lines 408-413; on tripwire, the InputGuardrailTripwireTriggered handler at lines 415-434 commits the refusal ThreadItemDoneEvent instead of agent output.",
+        "contract_id": "ecological-contract:b4f0af13554aa0ce2fab273c4efb2341",
+        "declared_mechanism": "@input_guardrail(run_in_parallel=False) relevancy_guard (lines 90-100), which runs guardrail_agent and returns GuardrailFunctionOutput(tripwire_triggered=not analysis.is_relevant); registered on the agent via input_guardrails=[relevancy_guard] (line 121); the SDK raises InputGuardrailTripwireTriggered, which respond() catches (line 415) to suppress agent output and yield the fixed-refusal AssistantMessageItem (lines 422-434).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 100,
+            "line_start": 90,
+            "path": "backend/app.py",
+            "role": "guard_registration",
+            "source_sha256": "28b54004a477b34ca7c735f10962ebed6283a0c31fadfe23cbe1589be35d4dae"
+          },
+          {
+            "line_end": 121,
+            "line_start": 114,
+            "path": "backend/app.py",
+            "role": "guard_registration",
+            "source_sha256": "28b54004a477b34ca7c735f10962ebed6283a0c31fadfe23cbe1589be35d4dae"
+          },
+          {
+            "line_end": 88,
+            "line_start": 77,
+            "path": "backend/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "28b54004a477b34ca7c735f10962ebed6283a0c31fadfe23cbe1589be35d4dae"
+          },
+          {
+            "line_end": 99,
+            "line_start": 97,
+            "path": "backend/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "28b54004a477b34ca7c735f10962ebed6283a0c31fadfe23cbe1589be35d4dae"
+          },
+          {
+            "line_end": 414,
+            "line_start": 397,
+            "path": "backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "28b54004a477b34ca7c735f10962ebed6283a0c31fadfe23cbe1589be35d4dae"
+          },
+          {
+            "line_end": 400,
+            "line_start": 399,
+            "path": "backend/app.py",
+            "role": "commit_point",
+            "source_sha256": "28b54004a477b34ca7c735f10962ebed6283a0c31fadfe23cbe1589be35d4dae"
+          },
+          {
+            "line_end": 434,
+            "line_start": 415,
+            "path": "backend/app.py",
+            "role": "commit_point",
+            "source_sha256": "28b54004a477b34ca7c735f10962ebed6283a0c31fadfe23cbe1589be35d4dae"
+          },
+          {
+            "line_end": 464,
+            "line_start": 456,
+            "path": "backend/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "28b54004a477b34ca7c735f10962ebed6283a0c31fadfe23cbe1589be35d4dae"
+          },
+          {
+            "line_end": 397,
+            "line_start": 376,
+            "path": "backend/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "28b54004a477b34ca7c735f10962ebed6283a0c31fadfe23cbe1589be35d4dae"
+          }
+        ],
+        "forbidden_condition": "A rag_agent run whose input is classified out-of-scope by the relevancy guard \u2014 RelevancyCheck.is_relevant == False per guardrail_agent's active scope instructions (customer support, technology product questions, general technology troubleshooting, agent capabilities) \u2014 proceeds to initiate and stream model/file-search agent output instead of being replaced by the fixed refusal message.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "chatkit library source is not supplied: whether ChatKitServer.process (called at line 464) dispatches user-message turns to the DemoChatKitServer.respond override (line 376) is inferred from the override's signature and return type, not directly evidenced.",
+          "Whether the OpenAI Agents SDK strictly completes input guardrails before any model call under Runner.run_streamed cannot be confirmed from supplied source; only the line 90 comment supports it.",
+          "guardrail_agent's model is unspecified (lines 77-88), so the guard's classification behavior cannot be characterized from source."
+        ],
+        "protected_operation": "Initiation and streaming of the rag_agent run in DemoChatKitServer.respond: Runner.run_streamed(rag_agent, agent_input) over thread history converted via simple_to_agent_input, followed by stream_agent_response emitting the agent's answer (model call plus FileSearchTool vector-store search) back to the /chatkit caller.",
+        "protected_resource": "rag_agent (OpenAI Agents SDK agent 'RAG assistant', model gpt-5-nano, FileSearchTool over VECTOR_STORE_ID) and its streamed responses served through POST /chatkit.",
+        "protection_obligation": "Every rag_agent run serving POST /chatkit must be gated by the registered relevancy input guardrail: relevancy_guard (declared run_in_parallel=False so it finishes before streaming starts) must complete before the agent run streams any output, and when the guard's relevancy tripwire fires, the run must not produce agent output \u2014 DemoChatKitServer.respond must instead suppress the agent response and yield the fixed scope-refusal message ('Sorry, this falls outside of the scope I am able to assist with.') to the client. (Merges the phase-first and phase-second reviewer wordings of the same obligation.)",
+        "scope_limits": [
+          "Applies only to rag_agent as constructed at lines 103-128 with input_guardrails=[relevancy_guard]; guardrail_agent (lines 77-88) itself carries no guardrails, and no other agent invocation appears in supplied source.",
+          "Enforced topical scope is the active guardrail_agent instructions at lines 83-86; the earlier Yext-specific wording is commented out (lines 79-82) and not in force.",
+          "Only InputGuardrailTripwireTriggered is handled (line 415); supplied source specifies no behavior for guardrail errors or other exceptions during the run (lines 399-414).",
+          "Refusal text is the fixed string at line 422; the dynamic output_info-based variant is commented out (lines 417-421).",
+          "Guard input is agent_input built from up to 1000 loaded thread items (lines 390-397), i.e., the guard sees thread history, not solely the latest user message.",
+          "The ordering guarantee ('finishes before streaming starts' via run_in_parallel=False) is a declared mechanism supported only by the line 90 comment; no runtime evidence of execution order exists in supplied source.",
+          "Effect stratum http reflects that the guarded run commits network/API effects (model request and hosted FileSearchTool query) and delivers the agent stream as an HTTP/SSE response (lines 467-468); the source does not decompose these sub-effects.",
+          "CORS middleware (lines 443-449), /health (lines 561-564), and the commented-out session endpoints (lines 475-558) are outside this obligation."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Behavior labels and runtime traces are unavailable (per scope statement), so guard-before-streaming ordering and actual refusal behavior can only be reported as declared, not verified.",
+      "chatkit package internals (ChatKitServer.process dispatch to respond, simple_to_agent_input, stream_agent_response, and input-guardrail execution semantics) are not present in supplied source.",
+      "VECTOR_STORE_ID is redacted (line 71); the identity and policy of the target vector store are unknown.",
+      "guardrail_agent's model identifier is not specified (lines 77-88).",
+      "No other invocation sites of rag_agent appear in supplied source; completeness of the 'every run' scope across the repository cannot be confirmed from the single supplied view."
+    ],
+    "repository": "k-gerner/chat-kit-testing",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:bd35c67e3391abde2cb5c31fb9931a0c"
+  },
+  "request_sha256": "55ff1dcf07ea5b3a1c2db26b65b4e2c3f9d6ea69e644abaa0096d383f3cef68c",
+  "response_sha256": "b551b7febfc08417505e665e6dd20561504224d21b15357f3d72144f4f3ae43e",
+  "state": "completed",
+  "tokens": 19810,
+  "unit": "v24-screen:bd35c67e3391abde2cb5c31fb9931a0c"
+}

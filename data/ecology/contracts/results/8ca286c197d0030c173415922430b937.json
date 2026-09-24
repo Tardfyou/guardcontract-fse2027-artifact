@@ -1,0 +1,377 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "file_loc_agent_eval.py:3514-3521 \u2014 the guard returns the error before _resolve_agent_endpoints (3640-3646) and the job-execution loop (3655-3663); the downstream effect would commit at ChatOllama(base_url=ollama_base_url) construction and agent.invoke inside run_deep_agent_task (2147-2154, 2178-2188).",
+        "contract_id": "ecological-contract:013da49e20101e10ab35e8060a1f071e",
+        "declared_mechanism": "Loopback-prefix allowlist check in agentic_eval_run_matrix returning an error payload ('Privacy guard: ollama_base_url is non-local. Set a localhost Ollama URL or pass allow_nonlocal_backend=true.') when force_local_ollama && !allow_nonlocal_backend; defaults force_local_ollama=True and allow_nonlocal_backend=False in AGENTIC_RUN_DEFAULTS.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 3513,
+            "line_start": 3505,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "forbidden_condition",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 3521,
+            "line_start": 3514,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "commit_point",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 2343,
+            "line_start": 2342,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "guard_registration",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 3450,
+            "line_start": 3449,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "guard_registration",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 3663,
+            "line_start": 3639,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "protected_operation",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 2580,
+            "line_start": 2570,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "protected_operation",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 2188,
+            "line_start": 2142,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          }
+        ],
+        "forbidden_condition": "A configured ollama_base_url that does not start with an allowlisted loopback prefix (http://localhost:, http://127.0.0.1:, http://[::1]: and the https equivalents) while force_local_ollama is true and allow_nonlocal_backend is false (default).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The wire-level composition of analysis data inside model HTTP request payloads is evidenced only at the run_deep_agent_task level shown; no supplied view shows the ChatOllama request body itself."
+        ],
+        "protected_operation": "Provisioning of agent model endpoints (_resolve_agent_endpoints / OllamaManager.launch) and execution of deep-agent jobs (ThreadPoolExecutor submission of _run_agentic_job leading to run_deep_agent_task) whose ChatOllama model calls target the configured base_url.",
+        "protected_resource": "The run's ollama_base_url model endpoint configuration and the off-host HTTP channel that would carry the agents' binary-analysis prompts/results.",
+        "protection_obligation": "agentic_eval_run_matrix must refuse to launch deep-agent evaluation jobs against a non-localhost Ollama base URL \u2014 preventing model traffic carrying binary-analysis prompts/results from being sent off-host \u2014 unless the caller explicitly passes allow_nonlocal_backend=true while force_local_ollama is enabled; the check must fire before agent endpoints are provisioned and before agent jobs are launched.",
+        "scope_limits": [
+          "Guard is active only when force_local_ollama is true (default) and is bypassed by an explicit allow_nonlocal_backend=true.",
+          "The guard checks the configured base_url string prefix only; the explicit endpoints option and multi-worker endpoint resolution run after the guard.",
+          "Https loopback prefixes are allowlisted alongside http."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "scoped.py:146 `return await underlying.ainvoke(payload)` \u2014 reached only after the strip/rebind in _call; the construction-time leak check at scoped.py:120-125 rejects unscoped tools before they are exposed.",
+        "contract_id": "ecological-contract:5dd6dede9931aaa31506ebb49226c5ef",
+        "declared_mechanism": "scope_tools/_scope_one wrap each allowed MCP tool in a StructuredTool whose derived schema deletes the OID parameters and substitutes Bind (fixed value) or Choose (enum limited to target/baseline) rules; _scope_one raises ValueError if an OID selector leaks into the derived schema; at call time _call flattens wrapped kwargs, drops every agent-emitted _OID_PARAMS key, re-applies the Bind/Choose rules last, rejects out-of-enum choices, and only then invokes the underlying tool.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 44,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/tools/scoped.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0f42712365c4f59af1956f9a4a3d2b9b7221b724854e48c7d12899348a8ee3fd"
+          },
+          {
+            "line_end": 125,
+            "line_start": 115,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/tools/scoped.py",
+            "role": "guard_registration",
+            "source_sha256": "0f42712365c4f59af1956f9a4a3d2b9b7221b724854e48c7d12899348a8ee3fd"
+          },
+          {
+            "line_end": 134,
+            "line_start": 129,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/tools/scoped.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0f42712365c4f59af1956f9a4a3d2b9b7221b724854e48c7d12899348a8ee3fd"
+          },
+          {
+            "line_end": 146,
+            "line_start": 134,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/tools/scoped.py",
+            "role": "commit_point",
+            "source_sha256": "0f42712365c4f59af1956f9a4a3d2b9b7221b724854e48c7d12899348a8ee3fd"
+          },
+          {
+            "line_end": 155,
+            "line_start": 148,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/tools/scoped.py",
+            "role": "guard_registration",
+            "source_sha256": "0f42712365c4f59af1956f9a4a3d2b9b7221b724854e48c7d12899348a8ee3fd"
+          },
+          {
+            "line_end": 5,
+            "line_start": 1,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/tools/binary_pair.py",
+            "role": "forbidden_condition",
+            "source_sha256": "788cc21dc24e0748201f0a8f307b05157f124d690e4fadb3093e55e9430eff3d"
+          },
+          {
+            "line_end": 34,
+            "line_start": 19,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/tools/binary_pair.py",
+            "role": "protected_operation",
+            "source_sha256": "788cc21dc24e0748201f0a8f307b05157f124d690e4fadb3093e55e9430eff3d"
+          },
+          {
+            "line_end": 63,
+            "line_start": 37,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/tools/binary_pair.py",
+            "role": "guard_registration",
+            "source_sha256": "788cc21dc24e0748201f0a8f307b05157f124d690e4fadb3093e55e9430eff3d"
+          }
+        ],
+        "forbidden_condition": "Any of the OID selector parameters (oid_or_name, target_oid_or_name, baseline_oid_or_name, source_oid_or_name, destination_oid_or_name) surviving into the payload passed to underlying.ainvoke \u2014 including values the model emits after reading OIDs from its input files \u2014 or an OID selector remaining exposed in a scoped tool's derived schema (construction-time ValueError), or a Choose value outside the bound {target, baseline} options.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied view shows build_scoped_pair_tools' output being registered into a specific agent runtime (e.g., as extra_tools to build_triage_agent); the agent-facing role is established by the BaseTool/StructuredTool construction and the documented model-argument dataflow.",
+          "The oxide MCP server's downstream behavior (what the underlying tools read or return) is not in supplied source."
+        ],
+        "protected_operation": "Agent tool-call invocation of the scoped binary-analysis tools (get_binary_metadata, get_function_list, search_symbols_by_name, search_strings, decompile_function, disassemble, get_call_graph, list_xrefs, list_imports, list_exports, get_control_flow_graph, function_decomp_diff, function_call_diff, get_matched_function) as wrapped by _scope_one/scope_tools.",
+        "protected_resource": "The current update pair's target/baseline binaries fixed by build_scoped_pair_tools, and the underlying oxide MCP binary-analysis tools those wrappers invoke.",
+        "protection_obligation": "Agent-invoked scoped MCP binary-analysis tools must never be directed at a binary outside the run's bound target/baseline pair: agent/model-supplied binary-selector (OID) parameters must be dropped or rebound to the fixed pair values before the underlying MCP tool is invoked, and no scoped tool may expose an OID selector in its agent-facing schema.",
+        "scope_limits": [
+          "Only the five named OID selector parameters are stripped/rebound; all other agent-supplied arguments pass through unchanged.",
+          "Choose-rule failures return an error string to the agent rather than raising.",
+          "Applies only to tools listed in `allow` that the MCP server publishes; remaining parameter shapes come from the server's own schema.",
+          "The guarded commit is the wrapper-to-underlying tool invocation; effects performed inside the MCP server are not in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Each `with OXIDE_API_LOCK:` acquisition wrapping the api call: 1637-1652 (search_functions), 1735-1751 (search_binaries variants), 1870-1880 (get_function_list), 1904-1915 (get_call_graph), 1948-1961 (grep_strings), 1997-2006 (decompile_function), 2028-2038 (get_strings), 3380-3398 (prewarm).",
+        "contract_id": "ecological-contract:b17dadd2c695b7dcd527584e24ee01ee",
+        "declared_mechanism": "Module-level threading.RLock OXIDE_API_LOCK (file_loc_agent_eval.py:1070) acquired with `with OXIDE_API_LOCK:` around every api-issuing call in the agent tool wrappers (with transient-lock retry inside the lock) and around the prewarm api.retrieve.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 1070,
+            "line_start": 1070,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "guard_registration",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 1102,
+            "line_start": 1095,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "forbidden_condition",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 1619,
+            "line_start": 1609,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 1635,
+            "line_start": 1609,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "protected_operation",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 1652,
+            "line_start": 1637,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "commit_point",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 1751,
+            "line_start": 1735,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "commit_point",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 1880,
+            "line_start": 1870,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "commit_point",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 1915,
+            "line_start": 1904,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "commit_point",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 1961,
+            "line_start": 1948,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "commit_point",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 2006,
+            "line_start": 1997,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "commit_point",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 2038,
+            "line_start": 2028,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "commit_point",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 2138,
+            "line_start": 2133,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 2166,
+            "line_start": 2156,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          },
+          {
+            "line_end": 3398,
+            "line_start": 3380,
+            "path": "src/oxide/plugins/file_loc_agent_eval.py",
+            "role": "commit_point",
+            "source_sha256": "22db42ec66f2644a69b94e50f510603ba127dd1d3853061c358a9115148f8978"
+          }
+        ],
+        "forbidden_condition": "Two or more threads executing Oxide datastore api calls (api.retrieve/api.get_field) without each holding OXIDE_API_LOCK \u2014 the concurrency that manifests as transient lockfile errors (__collections.lock, __src_type.lock, __file_meta.lock, 'unexpected os error trying to get lockfile').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "oxide.core api internals are not supplied; whether the guarded calls mutate persistent datastore state (e.g., query-index cache writes implied by the use_cache/rebuild options) is not established, so a file-vs-database stratum cannot be resolved.",
+          "Cross-process locking behavior (if the datastore is shared across processes) is not evidenced in supplied source."
+        ],
+        "protected_operation": "Datastore query paths of the deep-agent analysis tools (search_functions, search_binaries/search_binaries_lexical/search_binaries_pack, get_function_list, get_call_graph, grep_strings, decompile_function, get_strings) and the _prewarm_base_query_function_indexes query_function call.",
+        "protected_resource": "The shared, file-locked Oxide datastore accessed through oxide.core api (collections and per-OID module data such as strings, ghidra_disasm, and query indexes).",
+        "protection_obligation": "All Oxide datastore API invocations (api.retrieve / api.get_field) issued by the deep-agent tool wrappers and by the prewarm routine must execute while holding the process-wide OXIDE_API_LOCK re-entrant lock; concurrent ThreadPoolExecutor worker threads are forbidden from simultaneously accessing the shared, file-locked Oxide datastore.",
+        "scope_limits": [
+          "The lock is process-wide and re-entrant; transient-lock retry delays elapse while the lock is held.",
+          "The prewarm acquisition (3380-3398) is an orchestrator-side commit point that is not itself agent-mediated; it is covered by the same lock obligation as the agent tool wrappers.",
+          "Other api uses outside _build_tools and prewarm (e.g., ground-truth loading in _create_ground_truth) appear in single-threaded orchestrator paths in the supplied views and are not shown lock-guarded."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The early error return before super().write (agent_runtime.py:44; deepagent_runtime.py:104) and before super().edit (agent_runtime.py:52; deepagent_runtime.py:112).",
+        "contract_id": "ecological-contract:fd6e9b719c07060ba488feaa36751c11",
+        "declared_mechanism": "GuardedStateBackend subclasses StateBackend and overrides write/edit to return WriteResult/EditResult(error='Read-only: /inputs/') for any path starting with /inputs/ before delegating to super(); build_triage_agent installs it as the agent backend via backend=GuardedStateBackend(mirror=file_mirror) in create_deep_agent.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 43,
+            "line_start": 41,
+            "path": "src/oxide/modules/analyzers/delt/pipeline/agent/agent_runtime.py",
+            "role": "forbidden_condition",
+            "source_sha256": "90ea55f4e8f7256beee18394abe280de41154ad9c884b7ea013e24316b42cfc5"
+          },
+          {
+            "line_end": 47,
+            "line_start": 44,
+            "path": "src/oxide/modules/analyzers/delt/pipeline/agent/agent_runtime.py",
+            "role": "commit_point",
+            "source_sha256": "90ea55f4e8f7256beee18394abe280de41154ad9c884b7ea013e24316b42cfc5"
+          },
+          {
+            "line_end": 52,
+            "line_start": 49,
+            "path": "src/oxide/modules/analyzers/delt/pipeline/agent/agent_runtime.py",
+            "role": "commit_point",
+            "source_sha256": "90ea55f4e8f7256beee18394abe280de41154ad9c884b7ea013e24316b42cfc5"
+          },
+          {
+            "line_end": 122,
+            "line_start": 103,
+            "path": "src/oxide/modules/analyzers/delt/pipeline/agent/agent_runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "90ea55f4e8f7256beee18394abe280de41154ad9c884b7ea013e24316b42cfc5"
+          },
+          {
+            "line_end": 112,
+            "line_start": 94,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/agents/deepagent_runtime.py",
+            "role": "forbidden_condition",
+            "source_sha256": "514a9445c3ae2cbe87a6547635568348489defdbe707def97d692e72d0975aef"
+          },
+          {
+            "line_end": 104,
+            "line_start": 101,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/agents/deepagent_runtime.py",
+            "role": "commit_point",
+            "source_sha256": "514a9445c3ae2cbe87a6547635568348489defdbe707def97d692e72d0975aef"
+          },
+          {
+            "line_end": 284,
+            "line_start": 274,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/agents/deepagent_runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "514a9445c3ae2cbe87a6547635568348489defdbe707def97d692e72d0975aef"
+          },
+          {
+            "line_end": 295,
+            "line_start": 287,
+            "path": "src/oxide/modules/analyzers/delt_verification/pipeline/agents/deepagent_runtime.py",
+            "role": "protected_operation",
+            "source_sha256": "514a9445c3ae2cbe87a6547635568348489defdbe707def97d692e72d0975aef"
+          }
+        ],
+        "forbidden_condition": "A GuardedStateBackend.write or .edit call whose file_path starts with /inputs/ reaching StateBackend.write/StateBackend.edit \u2014 i.e., mutating seeded evidence such as /inputs/unified_diff.txt or /inputs/added_functions/*.c.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The deepagents-internal file tools that dispatch to backend.write/edit are upstream of the supplied views; the agent binding rests on the backend=GuardedStateBackend registration in create_deep_agent."
+        ],
+        "protected_operation": "Agent-initiated file write/edit operations on the agent session's virtual file state, dispatched through the backend registered into create_deep_agent.",
+        "protected_resource": "Seeded evidence files under /inputs/ in the agent's file state (the payload seeded by build_agent_payload).",
+        "protection_obligation": "Agent file writes/edits against the deepagents session backend must never modify the seeded evidence files under /inputs/: any write() or edit() whose path starts with /inputs/ must be rejected with a read-only error before the underlying StateBackend commit, in both the delt and delt_verification agent runtimes.",
+        "scope_limits": [
+          "Guard is a case-sensitive startswith('/inputs/') prefix check; all other paths are written normally and mirrored into file_mirror.",
+          "Protects the deepagents session file state (and its mirror dict), not the host filesystem.",
+          "Both runtimes (delt agent_runtime.py and delt_verification deepagent_runtime.py) implement the identical guard; the delt_verification runtime additionally registers _ToolExclusionMiddleware, which is not part of this obligation."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied view registers build_scoped_pair_tools' scoped tools into a specific agent runtime; the tool-to-agent binding is inferred only from the BaseTool/StructuredTool construction and the documented model-argument dataflow in scoped.py.",
+      "The deepagents-internal file tools that dispatch to StateBackend/GuardedStateBackend.write/edit are upstream of the supplied views; the /inputs/ guard's agent binding rests on the backend= registration in create_deep_agent.",
+      "The oxide.core api (datastore) implementation is not supplied; the persistent-mutation stratum of api.retrieve/api.get_field (file vs database) and its internal locking behavior are unestablished, hence effect_stratum=other_external for the OXIDE_API_LOCK contract.",
+      "CORS-based cross-origin restriction obligations proposed for web_interface/Oxide-Formula (main.py CORSMiddleware over the /api routers, including imports.py upload/delete routes) are excluded from contracts per scope rules: no supplied source binds those web routes to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect, and the web-interface views contain no agent mediation. Supplying such a binding would be required to emit those contracts.",
+      "The wire-level composition of model HTTP payloads (which analysis prompts/results are transmitted to ollama_base_url) is only partially evidenced at the run_deep_agent_task level; ChatOllama/langchain_ollama internals are not supplied."
+    ],
+    "repository": "Program-Understanding/oxide",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:8ca286c197d0030c173415922430b937"
+  },
+  "request_sha256": "634182bbe0769c81bb8873e3ce56a3704409a0b2e8c552173752b406231605df",
+  "response_sha256": "1405ae78f52a6998b59dc87eb39bcda238280d18b69b5710a73c1d0df20285d5",
+  "state": "completed",
+  "tokens": 119107,
+  "unit": "v24-screen:8ca286c197d0030c173415922430b937"
+}

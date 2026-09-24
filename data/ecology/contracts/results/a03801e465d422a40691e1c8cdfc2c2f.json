@@ -1,0 +1,127 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The ADK before_tool_callback invocation immediately before the MCP write tool executes \u2014 the point at which returning the cancellation dict substitutes for the tool result and prevents the write from being dispatched to the MCP server (mechanism declared at confirmation.py:9-13; hook wired at agent.py:89-91).",
+        "contract_id": "ecological-contract:3c8872cd5012419300482c33178ee2c2",
+        "declared_mechanism": "LlmAgent(root_agent) registers confirm_before_write as before_tool_callback (agent.py:89-91). The callback classifies tools via is_write_tool \u2014 substring match on WRITE_TOOL_MARKERS minus SAFE_TOOL_NAMES (confirmation.py:28-38, 41-56, 59-64) \u2014 prints a plain-English summary of the pending write (confirmation.py:96-98, 67-84), and per the declared ADK contract (return None -> tool runs; return dict -> tool skipped with that dict as result, confirmation.py:9-13) returns None only on 'y'/'yes', otherwise returns {\"status\": \"cancelled\", \"reason\": ...}; EOFError is treated as 'n' (confirmation.py:107-120). OUTREACH_AUTO_CONFIRM=1/true/yes auto-confirms and bypasses the prompt, off by default (confirmation.py:101-105).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 88,
+            "line_start": 73,
+            "path": "outreach_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "20abaf12402081d6c3dc7a27c351ac09bf2e8d11089309467b588aabd9c745bc"
+          },
+          {
+            "line_end": 91,
+            "line_start": 89,
+            "path": "outreach_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "20abaf12402081d6c3dc7a27c351ac09bf2e8d11089309467b588aabd9c745bc"
+          },
+          {
+            "line_end": 10,
+            "line_start": 6,
+            "path": "outreach_agent/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "20abaf12402081d6c3dc7a27c351ac09bf2e8d11089309467b588aabd9c745bc"
+          },
+          {
+            "line_end": 16,
+            "line_start": 15,
+            "path": "outreach_agent/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "20abaf12402081d6c3dc7a27c351ac09bf2e8d11089309467b588aabd9c745bc"
+          },
+          {
+            "line_end": 69,
+            "line_start": 46,
+            "path": "outreach_agent/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "20abaf12402081d6c3dc7a27c351ac09bf2e8d11089309467b588aabd9c745bc"
+          },
+          {
+            "line_end": 7,
+            "line_start": 1,
+            "path": "outreach_agent/confirmation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1a7825c01d9c2fd209d83a3017debeb3b4be183a9551b13827a4a859e499d377"
+          },
+          {
+            "line_end": 13,
+            "line_start": 9,
+            "path": "outreach_agent/confirmation.py",
+            "role": "commit_point",
+            "source_sha256": "1a7825c01d9c2fd209d83a3017debeb3b4be183a9551b13827a4a859e499d377"
+          },
+          {
+            "line_end": 38,
+            "line_start": 28,
+            "path": "outreach_agent/confirmation.py",
+            "role": "protected_operation",
+            "source_sha256": "1a7825c01d9c2fd209d83a3017debeb3b4be183a9551b13827a4a859e499d377"
+          },
+          {
+            "line_end": 64,
+            "line_start": 59,
+            "path": "outreach_agent/confirmation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1a7825c01d9c2fd209d83a3017debeb3b4be183a9551b13827a4a859e499d377"
+          },
+          {
+            "line_end": 105,
+            "line_start": 101,
+            "path": "outreach_agent/confirmation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1a7825c01d9c2fd209d83a3017debeb3b4be183a9551b13827a4a859e499d377"
+          },
+          {
+            "line_end": 120,
+            "line_start": 107,
+            "path": "outreach_agent/confirmation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1a7825c01d9c2fd209d83a3017debeb3b4be183a9551b13827a4a859e499d377"
+          }
+        ],
+        "forbidden_condition": "A tool call classified as a MongoDB write (lowercased name matching a WRITE_TOOL_MARKER and not exempted by SAFE_TOOL_NAMES) proceeding to execution at the agent's tool dispatch without an explicit interactive 'y'/'yes' answer \u2014 i.e., the callback returning None for a classified write without user consent, or the write proceeding after the user declined or input hit EOF.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The concrete tool names exposed by mongodb-mcp-server@latest are not in the supplied source; whether every write tool name matches a marker (and no write name is exempted by SAFE_TOOL_NAMES or lacks a marker) cannot be confirmed from the supplied views.",
+          "The ADK framework source implementing before_tool_callback (None proceeds / dict skips) is not supplied; the skip semantics rests on the docstring declaration at confirmation.py:9-13.",
+          "Entry-point wiring for 'adk run', 'adk web', and main.py is not supplied; whether input() at confirmation.py:108 is connected to a human in every launch mode is unverified.",
+          "Deployment/CI configuration for OUTREACH_AUTO_CONFIRM is not supplied."
+        ],
+        "protected_operation": "Agent-dispatched invocations of MongoDB MCP write tools against the Atlas cluster reached via settings.mongo_connection_string (passed as MDB_MCP_CONNECTION_STRING to the npx-launched mongodb-mcp-server).",
+        "protected_resource": "MongoDB databases and collections on the configured Atlas cluster (the database/collection/payload arguments of the write tool call).",
+        "protection_obligation": "Merged from both reviewers: MongoDB write tool calls (insert/update/delete/drop/rename/create-collection/create-index/bulk/replace, and any tool name matching a write marker) routed through the root_agent LlmAgent's MongoDB MCP toolset must be blocked from executing until the human user explicitly confirms with 'y'/'yes' in the registered before_tool_callback confirm_before_write, which runs immediately before tool execution; unconfirmed writes are skipped via a cancellation dict result instead of None, with EOF fail-closing to denial.",
+        "scope_limits": [
+          "Gating is keyed on tool-name substrings (confirmation.py:28-38, 59-64); reads (find, aggregate, count, list-databases, list-collections, collection-schema, collection-indexes, db-stats, explain) and the four custom Python tools (load_seed_leads, fetch_live_leads, score_lead, draft_message) are explicitly exempt via SAFE_TOOL_NAMES (confirmation.py:41-56).",
+          "OUTREACH_AUTO_CONFIRM set to 1/true/yes auto-confirms every gated write, bypassing the interactive prompt (confirmation.py:101-105); the default is empty/off (confirmation.py:103). Per the second reviewer this is an explicit, off-by-default automation mode that does not negate the default guard.",
+          "The gate is a blocking interactive stdin prompt inside the callback process (confirmation.py:108); only entry points that attach a human to that stdin provide the confirmation channel.",
+          "The dict-return-skips-tool semantics is the ADK contract as documented in the module docstring (confirmation.py:9-13); the ADK framework itself is not in the supplied source views.",
+          "The two reviewer opinions describe the same obligation and mechanism and have been merged into this single contract; no obligation here covers non-MongoDB effects (e.g., the npx child-process launch or the custom function tools)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "ADK framework implementation source confirming the before_tool_callback contract (return None proceeds; return dict skips the tool) asserted at confirmation.py:9-13.",
+      "mongodb-mcp-server tool catalog or server source confirming the exact set of write tool names covered by WRITE_TOOL_MARKERS.",
+      "Entry-point sources (adk CLI runner, adk web server, main.py) showing whether interactive stdin is attached to the callback's input() prompt in every launch mode.",
+      "Any deployment or CI configuration determining whether OUTREACH_AUTO_CONFIRM is set in practice."
+    ],
+    "repository": "Ham12-3/outreach",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a03801e465d422a40691e1c8cdfc2c2f"
+  },
+  "request_sha256": "2fd29245b5d1782975fb27347641c84d87a2eec239085bb5ee6491a6f47e963b",
+  "response_sha256": "17c9845adef9ec7eed178df8683c725ea8c74f5338fa5679ef9a731eddf42a48",
+  "state": "completed",
+  "tokens": 14693,
+  "unit": "v24-screen:a03801e465d422a40691e1c8cdfc2c2f"
+}

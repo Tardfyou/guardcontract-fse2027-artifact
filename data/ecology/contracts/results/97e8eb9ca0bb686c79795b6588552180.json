@@ -1,0 +1,128 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "self.service.events().insert(calendarId=calendar_id, body=event).execute() inside GoogleCalendarService.create_event (lines 122-125) \u2014 the executed Google Calendar API insert request that persists the event.",
+        "contract_id": "ecological-contract:38413f3417b23a9405ee92d59134af62",
+        "declared_mechanism": "In-tool fail-closed precondition guard: book_appointment calls calendar_service.check_availability(start_dt, end_dt) and, if the check fails, returns 'Cannot book appointment: Time slot is no longer available' before create_event is reached (lines 229-231). check_availability queries events().list over [start_time, end_time] with singleEvents=True on the configured calendarId and returns True only when the returned items list is empty (lines 84-98), returning False on any exception (lines 100-102).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 231,
+            "line_start": 229,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          },
+          {
+            "line_end": 98,
+            "line_start": 84,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          },
+          {
+            "line_end": 102,
+            "line_start": 100,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          },
+          {
+            "line_end": 98,
+            "line_start": 97,
+            "path": "backend/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          },
+          {
+            "line_end": 224,
+            "line_start": 216,
+            "path": "backend/main.py",
+            "role": "protected_operation",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          },
+          {
+            "line_end": 234,
+            "line_start": 233,
+            "path": "backend/main.py",
+            "role": "protected_operation",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          },
+          {
+            "line_end": 125,
+            "line_start": 122,
+            "path": "backend/main.py",
+            "role": "commit_point",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          },
+          {
+            "line_end": 216,
+            "line_start": 215,
+            "path": "backend/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          },
+          {
+            "line_end": 244,
+            "line_start": 243,
+            "path": "backend/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          },
+          {
+            "line_end": 284,
+            "line_start": 280,
+            "path": "backend/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          },
+          {
+            "line_end": 303,
+            "line_start": 293,
+            "path": "backend/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d9f53d425a5d9222caeb01e02a52b6bd8b812a77682a02a5a8f2585e4a74fe64"
+          }
+        ],
+        "forbidden_condition": "Committing the events().insert(...).execute() write for a slot in which check_availability detected conflicting events (non-empty items list at lines 97-98), i.e., double-booking an occupied time window. The guard as written also prohibits booking whenever the precondition does not pass, because check_availability returns False on any exception (lines 100-102).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Conflict semantics: whether the events().list query (timeMin/timeMax, singleEvents=True, lines 89-95) captures every overlapping-event shape (events spanning the requested window, all-day events, partially overlapping events) is not established by the supplied source.",
+          "Deployment binding of GOOGLE_CALENDAR_ID: supplied source shows only the default 'primary' (line 81); the actual configured calendar in the study environment is unknown.",
+          "Whether tool_node's tool.invoke dispatch (lines 293-303) is the sole invocation path for book_appointment in the deployed system; supplied source shows no other callers, but repository enumeration is incomplete.",
+          "Whether any agent lifecycle hooks or middleware outside the supplied view additionally enforce or bypass this precondition is unknown."
+        ],
+        "protected_operation": "Agent-invoked appointment booking: the book_appointment LangChain tool (declared via @tool) calling calendar_service.create_event(title, start_dt, end_dt, description) to create an event (lines 233-234).",
+        "protected_resource": "The configured Google Calendar and its events, identified by GoogleCalendarService.get_calendar_id() (GOOGLE_CALENDAR_ID environment variable, default 'primary'; lines 79-82), which is used as calendarId in both the availability query (line 90) and the insert (line 123).",
+        "protection_obligation": "The book_appointment agent tool must not create a Google Calendar event for a time slot that already contains a conflicting event: calendar_service.check_availability must pass (return True, i.e., no conflicting events found on the configured calendar) before calendar_service.create_event commits the events().insert write to the configured Google Calendar. This consolidates both reviewer phrasings (phase-one 'refuse create_event when check_availability reports a conflict' and phase-two 'check must pass before create_event commits the insert') into one obligation, since both name the same forbidden condition, guard, and commit point.",
+        "scope_limits": [
+          "The check-then-insert sequence is not atomic: no lock, transaction, or optimistic-concurrency control spans check_availability (line 230) and create_event (line 234), so concurrent bookings can still double-book; the obligation covers only the sequential precondition.",
+          "The guard exists only inside book_appointment; create_event itself performs no availability check, so any other caller of create_event would be unguarded (no other callers of create_event appear in the supplied source besides book_appointment).",
+          "The obligation is bound to the calendarId returned by get_calendar_id() (GOOGLE_CALENDAR_ID, default 'primary'); bookings against other calendars are outside the stated guard.",
+          "Because check_availability returns False on exception (lines 100-102), the guard also blocks booking on Calendar API errors; the obligation as stated prohibits booking whenever the check does not affirmatively pass.",
+          "Ordinary web-facing concerns (CORS middleware at lines 24-30, the /chat HTTP endpoint and in-memory session dict at lines 357-414) are outside this contract; the obligation attaches to the agent tool effect, not to HTTP request validation.",
+          "Scope is limited to the supplied source view (backend/main.py); repository enumeration is incomplete and behavior labels are unavailable."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Overlap/conflict semantics of the events().list query (singleEvents, timeMin/timeMax) with respect to partially overlapping or spanning events are not established by the supplied source; only the empty-items check (line 98) is visible.",
+      "The concrete GOOGLE_CALENDAR_ID value bound in the deployment environment is unknown; supplied source shows only the default 'primary' (line 81).",
+      "No repository evidence of concurrency controls (locks, ETags, transactions) around the check-then-insert sequence; whether any external mechanism serializes bookings is unknown.",
+      "Whether book_appointment or create_event is invoked from modules outside the supplied view is unknown (repository enumeration is not complete)."
+    ],
+    "repository": "Manyruumpus/course-frontend-application",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:97e8eb9ca0bb686c79795b6588552180"
+  },
+  "request_sha256": "72a94b8dd4aa8628b0fe599f5f4fb512879f2f942b4f3e2645bbd388f34101f1",
+  "response_sha256": "af8198162b2f2cba901d9875c00069cea34e4dba87caf66a3aefd5287a07cb2d",
+  "state": "completed",
+  "tokens": 12025,
+  "unit": "v24-screen:97e8eb9ca0bb686c79795b6588552180"
+}

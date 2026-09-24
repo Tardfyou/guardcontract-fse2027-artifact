@@ -1,0 +1,201 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "target.read_text(encoding='utf-8') in read_file (native.py:97) and target.parent.mkdir(...)/target.write_text(...) in write_file (native.py:121-122), each reached only after resolve_under succeeds. Both commit points share the same stratum, so one contract covers them.",
+        "contract_id": "ecological-contract:abbfd6e62279019f05d4af4e25b95abc",
+        "declared_mechanism": "resolve_under(root, user_path) (native.py:16-24) resolves the candidate against the resolved root and raises ValueError unless the candidate equals the root or has the root among its resolved parents; each tool calls resolve_under on the agent-supplied path before its effect (read_file at native.py:90, write_file at native.py:120, _list_files_result at native.py:36) and converts exceptions into tool_error payloads.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 24,
+            "line_start": 16,
+            "path": "lllars_core/tools/native.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9c96b7c8809c534df72a5fece2a3bc6f365cef60763eb74714204f70d88cb501"
+          },
+          {
+            "line_end": 47,
+            "line_start": 31,
+            "path": "lllars_core/tools/native.py",
+            "role": "protected_operation",
+            "source_sha256": "9c96b7c8809c534df72a5fece2a3bc6f365cef60763eb74714204f70d88cb501"
+          },
+          {
+            "line_end": 68,
+            "line_start": 55,
+            "path": "lllars_core/tools/native.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9c96b7c8809c534df72a5fece2a3bc6f365cef60763eb74714204f70d88cb501"
+          },
+          {
+            "line_end": 90,
+            "line_start": 85,
+            "path": "lllars_core/tools/native.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9c96b7c8809c534df72a5fece2a3bc6f365cef60763eb74714204f70d88cb501"
+          },
+          {
+            "line_end": 97,
+            "line_start": 91,
+            "path": "lllars_core/tools/native.py",
+            "role": "commit_point",
+            "source_sha256": "9c96b7c8809c534df72a5fece2a3bc6f365cef60763eb74714204f70d88cb501"
+          },
+          {
+            "line_end": 120,
+            "line_start": 111,
+            "path": "lllars_core/tools/native.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9c96b7c8809c534df72a5fece2a3bc6f365cef60763eb74714204f70d88cb501"
+          },
+          {
+            "line_end": 124,
+            "line_start": 121,
+            "path": "lllars_core/tools/native.py",
+            "role": "commit_point",
+            "source_sha256": "9c96b7c8809c534df72a5fece2a3bc6f365cef60763eb74714204f70d88cb501"
+          },
+          {
+            "line_end": 140,
+            "line_start": 133,
+            "path": "lllars_core/tools/native.py",
+            "role": "guard_registration",
+            "source_sha256": "9c96b7c8809c534df72a5fece2a3bc6f365cef60763eb74714204f70d88cb501"
+          }
+        ],
+        "forbidden_condition": "A filesystem effect (directory listing, read_text, mkdir/write_text) on a candidate path whose resolved form is neither equal to the resolved project root nor contained within it \u2014 resolve_under raises ValueError('Path is outside configured project-root').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The body of register_runtime_tools and the lllars_core.tools package re-exports are not supplied, so invocation of register_file_tools / register_file_read_tools / register_file_write_tools (native.py:133-157) in the runtime wiring is unconfirmed.",
+          "Runtime type of cfg.project_root: native.py applies Path operations such as root.resolve() and root / candidate, while AgentDeps carries a string form (agent_builder.py:34).",
+          "Whether any registered MCP toolsets (agent_builder.py:140) expose file effects outside this guard."
+        ],
+        "protected_operation": "Directory enumeration and file read/write performed by the @agent.tool functions list_files, read_file, and write_file with agent-supplied path (and content) arguments.",
+        "protected_resource": "Files and directories under cfg.project_root.",
+        "protection_obligation": "Agent file tools (list_files, read_file, write_file) must only enumerate, read, or write paths that resolve to cfg.project_root or inside it; any resolved path outside the project root must raise before the filesystem effect occurs. (Preserved from the phase-two reviewer rationale: 'resolve_under similarly confines file tools to project_root'; the reviewer did not state it as a standalone obligation.)",
+        "scope_limits": [
+          "Containment-only guard: once the resolved path is inside the root, no constraints on file size, content, or overwriting existing files; write_file creates parent directories after the guard passes.",
+          "Registration of these file tools into the studied runtime depends on register_runtime_tools wiring that is not shown in the supplied views.",
+          "The list_files effect (rglob/iterdir enumeration) is read-only; only write_file mutates the filesystem."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The run_shell_fn(command=..., cwd=cfg.project_root, timeout_sec=..., shell_mode=..., shell_override=...) call inside _run_allowed_shell (lllars_core/tools/shell_runtime_policy.py:121-127); the canonicalize/match/reject decision at lines 114-120 strictly precedes and gates it.",
+        "contract_id": "ecological-contract:e72a39e27bee32920350e6a78022c9f8",
+        "declared_mechanism": "make_allowed_shell_runner (lllars_core/tools/shell_runtime_policy.py:108-132) constructs _run_allowed_shell, which canonicalizes the requested command via the injected canonicalize_shell_command, matches it against cfg.allowed_shell_commands via _match_allowlist_pattern, and, when no pattern matches, returns .dumps(_rejected_allowlist_payload()) \u2014 returncode 126, empty stdout, '[lllars] rejected shell command: not in allowlist.' stderr \u2014 without calling run_shell_fn; build_agent constructs the runner with the canonicalizer and run_shell injection (agent_builder.py:158-165) and wires it into tool registration as run_allowed_shell (agent_builder.py:199-208).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 165,
+            "line_start": 158,
+            "path": "lllars_core/agent_builder.py",
+            "role": "guard_registration",
+            "source_sha256": "9dd750444e49d4528ea9142743856c8c7ecd04c60601a79a5bb9f6f6762cbbe7"
+          },
+          {
+            "line_end": 208,
+            "line_start": 199,
+            "path": "lllars_core/agent_builder.py",
+            "role": "guard_registration",
+            "source_sha256": "9dd750444e49d4528ea9142743856c8c7ecd04c60601a79a5bb9f6f6762cbbe7"
+          },
+          {
+            "line_end": 94,
+            "line_start": 82,
+            "path": "lllars_core/tools/shell_runtime_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ec2cb13dc9bc7b34874f46fb6ad132c06adf39a165da5c35792c46672f16c9b8"
+          },
+          {
+            "line_end": 105,
+            "line_start": 97,
+            "path": "lllars_core/tools/shell_runtime_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ec2cb13dc9bc7b34874f46fb6ad132c06adf39a165da5c35792c46672f16c9b8"
+          },
+          {
+            "line_end": 120,
+            "line_start": 113,
+            "path": "lllars_core/tools/shell_runtime_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ec2cb13dc9bc7b34874f46fb6ad132c06adf39a165da5c35792c46672f16c9b8"
+          },
+          {
+            "line_end": 130,
+            "line_start": 121,
+            "path": "lllars_core/tools/shell_runtime_policy.py",
+            "role": "commit_point",
+            "source_sha256": "ec2cb13dc9bc7b34874f46fb6ad132c06adf39a165da5c35792c46672f16c9b8"
+          },
+          {
+            "line_end": 93,
+            "line_start": 77,
+            "path": "lllars_core/tools/shell_policy.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "799510a762d5b6f310ecbd31f97ada6b444c3ca8a7e8f06c69049ed8b89fe24f"
+          },
+          {
+            "line_end": 154,
+            "line_start": 144,
+            "path": "lllars_core/tools/shell_policy.py",
+            "role": "protected_operation",
+            "source_sha256": "799510a762d5b6f310ecbd31f97ada6b444c3ca8a7e8f06c69049ed8b89fe24f"
+          },
+          {
+            "line_end": 174,
+            "line_start": 164,
+            "path": "lllars_core/tools/shell_policy.py",
+            "role": "protected_operation",
+            "source_sha256": "799510a762d5b6f310ecbd31f97ada6b444c3ca8a7e8f06c69049ed8b89fe24f"
+          },
+          {
+            "line_end": 204,
+            "line_start": 177,
+            "path": "lllars_core/tools/shell_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "799510a762d5b6f310ecbd31f97ada6b444c3ca8a7e8f06c69049ed8b89fe24f"
+          }
+        ],
+        "forbidden_condition": "Invocation of run_shell for a command whose canonicalized form neither equals an allowlist pattern nor starts with the text preceding the first '*' wildcard in any pattern of cfg.allowed_shell_commands, i.e. _match_allowlist_pattern returning None.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether register_runtime_tools (agent_builder.py:21, 201-208) is the same function as register_shell_tools (shell_policy.py:177-204): signatures match, but the package re-export / function body is not in the supplied views.",
+          "Whether cfg.test_command and cfg.eval_command are members of cfg.allowed_shell_commands; if not, run_test_command / run_eval_command would be rejected on every call.",
+          "Behavior of canonicalize_shell_command (lllars_core.config), which determines canonicalization strength, is not supplied.",
+          "Whether enabled_tool_groups (native_shell / native_shell_yolo, referenced in runtime_tooling_instructions) additionally gate registration of these tools at a layer not shown."
+        ],
+        "protected_operation": "Shell command execution requested by the model via the registered agent tools run_allowlisted_shell (agent-supplied command text or allowlist command_id) and run_test_command / run_eval_command (cfg.test_command / cfg.eval_command).",
+        "protected_resource": "The OS shell execution channel reached through run_shell (lllars_core.shell), invoked with cwd=cfg.project_root and the configured shell_mode / shell_override.",
+        "protection_obligation": "Agent-initiated shell execution through the allowlisted runner tools (run_allowlisted_shell, run_test_command, run_eval_command) must not reach the run_shell effect unless the canonicalized command matches an entry in cfg.allowed_shell_commands; unmatched commands must be denied with a returncode-126 rejection payload before any process is spawned. (Merges the phase-one and phase-two reviewer wordings, which describe the same guard and commit point.)",
+        "scope_limits": [
+          "The guard protects only the allowed runner: make_unrestricted_shell_runner (shell_runtime_policy.py:135-149) performs no allowlist check, build_agent constructs and passes run_unrestricted_shell unconditionally (agent_builder.py:199-208), and register_shell_tools registers run_unrestricted_shell whenever a runner is supplied (shell_policy.py:190-196).",
+          "Matching semantics are exact equality or wildcard-prefix (text before the first '*'); a '*' pattern authorizes every command sharing that prefix (shell_runtime_policy.py:82-94).",
+          "Rejection is a returned JSON payload to the model (returncode 126), not an exception or harness-level block; registration is gated only on cfg.allowed_shell_commands being non-empty and cfg.test_command / cfg.eval_command being non-null (shell_policy.py:185-203).",
+          "No claim is made about post-execution behavior, output sanitization, or timeout enforcement inside run_shell itself.",
+          "Assessment limited to supplied source views; no behavior labels or runtime/prevalence data were available."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Implementations of canonicalize_shell_command (lllars_core.config) and run_shell (lllars_core.shell) are not in the supplied views, so canonicalization strength and the concrete process-spawn behavior cannot be verified.",
+      "The body of register_runtime_tools and the lllars_core.tools package re-exports are not supplied; its identity with register_shell_tools (matching signature in shell_policy.py:177-204) and its invocation of the native.py file-tool registrations are inferred from signatures only.",
+      "HarnessConfig field definitions (allowed_shell_commands, test_command, eval_command, shell_mode, shell_override, enabled_tool_groups, project_root, network_policy) are not supplied; membership of test/eval commands in the allowlist and any tool-group gating of registration cannot be confirmed from source.",
+      "No behavior labels, runtime traces, or prevalence data are available for this unit, per the stated scope."
+    ],
+    "repository": "gandie/LLLars",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:386b578ba7c90f0502ed5d1e5db1ea1d"
+  },
+  "request_sha256": "fad1ccb8eed34b67fbc7d771021ee5d7281e452483512cebbe249429c620c9e7",
+  "response_sha256": "acf80d9c6ce83c45d4579e039839399631617c680953a5075d4b1718e377bfb7",
+  "state": "completed",
+  "tokens": 22087,
+  "unit": "v24-screen:386b578ba7c90f0502ed5d1e5db1ea1d"
+}

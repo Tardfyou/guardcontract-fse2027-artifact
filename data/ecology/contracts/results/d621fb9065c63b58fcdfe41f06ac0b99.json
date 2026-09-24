@@ -1,0 +1,249 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "ADK before_tool interception immediately prior to tool execution; per guardrails.py:307-311 the returned synthetic dict blocks the call without firing the tool ('sem disparar a ferramenta').",
+        "contract_id": "ecological-contract:626216761d7d1316c6e1c53f0cd5896d",
+        "declared_mechanism": "before_tool_guard_callback (projects/code_intelligence_agent/app/guardrails.py:302-354), registered as root_agent's before_tool_callback, validates each PATH_ARGUMENT_KEYS value via validate_path_boundary (guardrails.py:176-231) and returns {'status':'BLOCKED_BY_GUARDRAIL','error':'BOUNDARY_VIOLATION'|..., ...} on violation.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 101,
+            "line_start": 101,
+            "path": "projects/code_intelligence_agent/app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "28b0e39304dc06346c9d400ee103b441be9153d58d624be30c67d009fbae2fa7"
+          },
+          {
+            "line_end": 102,
+            "line_start": 92,
+            "path": "projects/code_intelligence_agent/app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "28b0e39304dc06346c9d400ee103b441be9153d58d624be30c67d009fbae2fa7"
+          },
+          {
+            "line_end": 97,
+            "line_start": 92,
+            "path": "projects/code_intelligence_agent/app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "28b0e39304dc06346c9d400ee103b441be9153d58d624be30c67d009fbae2fa7"
+          },
+          {
+            "line_end": 320,
+            "line_start": 302,
+            "path": "projects/code_intelligence_agent/app/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "e66a910934b82201258dbbd1b1087b1454a691d00965d95899dfc0c1b331ad80"
+          },
+          {
+            "line_end": 338,
+            "line_start": 327,
+            "path": "projects/code_intelligence_agent/app/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "e66a910934b82201258dbbd1b1087b1454a691d00965d95899dfc0c1b331ad80"
+          },
+          {
+            "line_end": 147,
+            "line_start": 135,
+            "path": "projects/code_intelligence_agent/app/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66a910934b82201258dbbd1b1087b1454a691d00965d95899dfc0c1b331ad80"
+          },
+          {
+            "line_end": 229,
+            "line_start": 206,
+            "path": "projects/code_intelligence_agent/app/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66a910934b82201258dbbd1b1087b1454a691d00965d95899dfc0c1b331ad80"
+          }
+        ],
+        "forbidden_condition": "A tool invocation whose path-typed argument (any of file_path, directory_path, target_path, target_file, path, source_path, dest_path, destination_path) resolves outside the allowed root (BOUNDARY_VIOLATION) or hits a protected file: .env/.env.*, credentials., token., service_account*., id_rsa*/id_ed25519*, or a .pem/.key/.pfx/.p12 extension (PROTECTED_FILE).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "projects/code_intelligence_agent/app/tools.py is not supplied; whether the registered tools accept PATH_ARGUMENT_KEYS, and what downstream file effects (read vs mutation) an unblocked call would commit, are unconfirmed.",
+          "The deployed agent's working directory, which serves as the default allowed root, is unknown."
+        ],
+        "protected_operation": "Model-initiated invocation of the code_intelligence_agent root_agent's registered ADK tools: inspect_directory, read_code_file, analyze_ast_anomalies, generate_unified_patch.",
+        "protected_resource": "Filesystem containment within the allowed root (default: the agent process working directory) and protected credential/secret files, including environment files and private keys.",
+        "protection_obligation": "Merged from both reviewer phases: code_intelligence_agent (Google ADK root_agent) tool invocations must be intercepted at the pre-execution before_tool commit point and blocked whenever a path argument resolves outside the allowed root or names a protected credential/key file; the registered before_tool_guard_callback short-circuits the invocation with BLOCKED_BY_GUARDRAIL before the tool executes.",
+        "scope_limits": [
+          "before_tool_guard_callback invokes validate_path_boundary without an allowed_root argument, so the boundary defaults to Path.cwd(); the effective allowed root is runtime-dependent (guardrails.py:192-195 and 329).",
+          "Only string values under PATH_ARGUMENT_KEYS are inspected; non-dict argument payloads and other keys pass unguarded (guardrails.py:321-328).",
+          "Enforcement is confined to the tool-invocation interception; no standalone file-write effect for generate_unified_patch is established in the supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "ADK before_tool_callback interception immediately prior to tool execution; returning the non-None error dict replaces tool execution so the guarded tool never runs.",
+        "contract_id": "ecological-contract:6dccc049f30ea8e2958ab90ba2ee6bac",
+        "declared_mechanism": "before_tool_guard (audit_agent/callbacks.py:55-74), registered as root_agent's before_tool_callback, delegates to SecurityGuardAgent.validate_audit_target -> ProjectBoundaryGuardrail.validate_audit_target (agents/specialized/security_guard.py:77-145) and returns {'status':'error','code':'TARGET_PROHIBITED', ...} on violation.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 52,
+            "line_start": 50,
+            "path": "audit_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "c4af88b4e17111bc411cd89fd68f6023354e6c38b2afd1dd8149e9608fd99852"
+          },
+          {
+            "line_end": 52,
+            "line_start": 44,
+            "path": "audit_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c4af88b4e17111bc411cd89fd68f6023354e6c38b2afd1dd8149e9608fd99852"
+          },
+          {
+            "line_end": 49,
+            "line_start": 44,
+            "path": "audit_agent/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "c4af88b4e17111bc411cd89fd68f6023354e6c38b2afd1dd8149e9608fd99852"
+          },
+          {
+            "line_end": 74,
+            "line_start": 55,
+            "path": "audit_agent/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "194c23722dfd0e9aa29015e353160abd4e1bd93f0e24af08c1d6b5d6fc4a0fdf"
+          },
+          {
+            "line_end": 43,
+            "line_start": 35,
+            "path": "agents/specialized/security_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a819cc01a15c60cdd60e0cd10ae8080b8552d30afc7235227b7fd0ad538add3b"
+          },
+          {
+            "line_end": 118,
+            "line_start": 100,
+            "path": "agents/specialized/security_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a819cc01a15c60cdd60e0cd10ae8080b8552d30afc7235227b7fd0ad538add3b"
+          },
+          {
+            "line_end": 145,
+            "line_start": 141,
+            "path": "agents/specialized/security_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a819cc01a15c60cdd60e0cd10ae8080b8552d30afc7235227b7fd0ad538add3b"
+          }
+        ],
+        "forbidden_condition": "A tool invocation whose target argument (first present of project_name_or_path | target_path | file_path) resolves to the workspace root ('.', './', 'meu-workspace-global', or the resolved root path), lies under agents/ or skills/, matches a policy-prohibited pattern, or falls outside projects/* and the known-project allowlist (AUDIT_TARGET_PROHIBITED / AUDIT_TARGET_OUT_OF_BOUNDS).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Implementations of the four guarded tools (audit_agent/tools.py) are not supplied, so the downstream effect stratum of an unblocked invocation (file/process/etc.) cannot be confirmed; the contract binds at the invocation-only commit point.",
+          "configs/guardrails.yaml content (allowed_audit_roots, prohibited_audit_targets) is unknown; the effective runtime policy may differ from the class defaults.",
+          "That a non-None before_tool_callback return suppresses tool execution is documented in supplied source only via the code_intelligence_agent guardrail docstring (projects/code_intelligence_agent/app/guardrails.py:307-311); equivalent explicit framework-semantics documentation for audit_agent's callback is absent."
+        ],
+        "protected_operation": "Model-initiated invocation of the audit_agent root_agent's registered ADK tools: list_available_projects, scan_project_structure, inspect_code_contracts, check_code_drift.",
+        "protected_resource": "Audit-scan target paths of the meta-workspace - specifically the workspace root and the agents/ and skills/ directories - and confinement of audit targets to projects/*.",
+        "protection_obligation": "Merged from both reviewer phases: audit_agent (Google ADK root_agent) tool invocations must be intercepted at the pre-execution before_tool commit point and blocked whenever their target argument designates a prohibited audit target - the meta-workspace root, agents/, skills/, or any target outside the allowed projects/* audit scope - to prevent self-audit loops; the registered before_tool_guard short-circuits the invocation with a TARGET_PROHIBITED error before the tool executes.",
+        "scope_limits": [
+          "Only string args under keys 'project_name_or_path', 'target_path', or 'file_path' are evaluated; invocations lacking these keys pass through unguarded (audit_agent/callbacks.py:59-65).",
+          "This guard performs audit-target scope validation only; it does not itself check protected files or destructive commands.",
+          "Effective allowed roots and prohibited targets may be overridden by configs/guardrails.yaml audit_scope_policy, which is not among the supplied views (agents/specialized/security_guard.py:58-75)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "ADK before_tool interception immediately prior to tool execution; per guardrails.py:307-311 the returned synthetic dict blocks the call without firing the tool.",
+        "contract_id": "ecological-contract:7b97238abdef0f2c51a38df5dc4ab8de",
+        "declared_mechanism": "before_tool_guard_callback inspects COMMAND_ARGUMENT_KEYS with is_destructive_command (guardrails.py:234-255) over the precompiled DESTRUCTIVE_PATTERNS list (guardrails.py:19-91) and returns {'status':'BLOCKED_BY_GUARDRAIL','error':'DESTRUCTIVE_COMMAND_BLOCKED', ...} on match (guardrails.py:340-352).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 101,
+            "line_start": 101,
+            "path": "projects/code_intelligence_agent/app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "28b0e39304dc06346c9d400ee103b441be9153d58d624be30c67d009fbae2fa7"
+          },
+          {
+            "line_end": 102,
+            "line_start": 92,
+            "path": "projects/code_intelligence_agent/app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "28b0e39304dc06346c9d400ee103b441be9153d58d624be30c67d009fbae2fa7"
+          },
+          {
+            "line_end": 97,
+            "line_start": 92,
+            "path": "projects/code_intelligence_agent/app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "28b0e39304dc06346c9d400ee103b441be9153d58d624be30c67d009fbae2fa7"
+          },
+          {
+            "line_end": 91,
+            "line_start": 19,
+            "path": "projects/code_intelligence_agent/app/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66a910934b82201258dbbd1b1087b1454a691d00965d95899dfc0c1b331ad80"
+          },
+          {
+            "line_end": 168,
+            "line_start": 161,
+            "path": "projects/code_intelligence_agent/app/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66a910934b82201258dbbd1b1087b1454a691d00965d95899dfc0c1b331ad80"
+          },
+          {
+            "line_end": 255,
+            "line_start": 234,
+            "path": "projects/code_intelligence_agent/app/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66a910934b82201258dbbd1b1087b1454a691d00965d95899dfc0c1b331ad80"
+          },
+          {
+            "line_end": 352,
+            "line_start": 340,
+            "path": "projects/code_intelligence_agent/app/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "e66a910934b82201258dbbd1b1087b1454a691d00965d95899dfc0c1b331ad80"
+          },
+          {
+            "line_end": 320,
+            "line_start": 302,
+            "path": "projects/code_intelligence_agent/app/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "e66a910934b82201258dbbd1b1087b1454a691d00965d95899dfc0c1b331ad80"
+          }
+        ],
+        "forbidden_condition": "A tool invocation whose command-typed argument (command, command_line, cmd, CommandLine, script, shell_command) matches any DESTRUCTIVE_PATTERNS rule: recursive rm, Remove-Item -Recurse, del/erase /s, rmdir/rd /s, git reset --hard, git clean -f, git push --force/-f/--force-with-lease, git branch -d/-D, DROP DATABASE/SCHEMA/TABLE/VIEW, TRUNCATE, format <drive>:, or dd of=/dev/ (or a drive letter).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied tool signature shows any registered code_intelligence_agent tool accepting COMMAND_ARGUMENT_KEYS (app/tools.py absent), so the live trigger surface of this branch among registered tools is unconfirmed.",
+          "If a command-bearing tool exists and executes, the would-be downstream effect stratum would be process/database/file, but that stratum is not established from supplied source; the contract binds at the invocation-only commit point."
+        ],
+        "protected_operation": "Model-initiated invocation of the code_intelligence_agent root_agent's registered ADK tools: inspect_directory, read_code_file, analyze_ast_anomalies, generate_unified_patch.",
+        "protected_resource": "Host OS filesystem, git repository state, database schemas/data, and block devices that a command-typed tool argument could destroy.",
+        "protection_obligation": "Merged from both reviewer phases: code_intelligence_agent (Google ADK root_agent) tool invocations must be intercepted at the pre-execution before_tool commit point and blocked whenever a command-typed argument matches a destructive OS, git, SQL, or disk operation; the registered before_tool_guard_callback short-circuits the invocation with BLOCKED_BY_GUARDRAIL (DESTRUCTIVE_COMMAND_BLOCKED) before the tool executes.",
+        "scope_limits": [
+          "Only string values under COMMAND_ARGUMENT_KEYS are inspected (guardrails.py:161-168, 340-343).",
+          "Detection is lexical over a fixed pattern list applied at the before_tool interception; audit_agent's before_tool_guard performs no destructive-command check."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "audit_agent/tools.py and projects/code_intelligence_agent/app/tools.py are absent from the supplied views; the implementations and downstream effect strata of all guarded tools are unconfirmed.",
+      "configs/guardrails.yaml is absent; the effective audit_scope_policy (allowed_audit_roots, prohibited_audit_targets) and the SecurityGuardAgent blocked-pattern list are config-dependent and unknown.",
+      "Reviewer wording attributes destructive-command blocking to before_tool guards on both agents; supplied source supports before_tool destructive-command blocking only for code_intelligence_agent. For audit_agent, a destructive pattern ('sudo rm -rf', agents/specialized/security_guard.py:160) exists only among default prompt-injection patterns enforced via audit_input in before_model_guard (audit_agent/callbacks.py:23-52), and applies only when the default pattern set is in effect.",
+      "The runtime working directory of the code_intelligence_agent, which serves as the default allowed root for validate_path_boundary, is not determinable from supplied source.",
+      "No registered tool signature in supplied source demonstrates acceptance of PATH_ARGUMENT_KEYS or COMMAND_ARGUMENT_KEYS among the tools registered on either root_agent."
+    ],
+    "repository": "melkidonadonmed-lgtm/meu-workspace-global",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d621fb9065c63b58fcdfe41f06ac0b99"
+  },
+  "request_sha256": "b2f779707c46ff40255528c56318daa7d7282d89c26aae459f2ad5ef02404fdb",
+  "response_sha256": "2b72f864e2b7f7f234e6f676562ea22cac91cc69cf0a99b12aa898b7a45d397d",
+  "state": "completed",
+  "tokens": 33491,
+  "unit": "v24-screen:d621fb9065c63b58fcdfe41f06ac0b99"
+}

@@ -1,0 +1,243 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "session.run(cypher, parameters=...) at langchain-agent/tools/neo4j_client.py:44, executed within the session created at line 43 \u2014 the point where a Cypher statement would commit against the database.",
+        "contract_id": "ecological-contract:1bb70ddd555f171e8ebf3ffd56a0d6df",
+        "declared_mechanism": "run_read() opens the session with driver.session(database=get_database(), default_access_mode='READ') (neo4j_client.py:43) and executes Cypher via session.run inside that read-only session (neo4j_client.py:44), serializing and capping returned rows at the limit parameter.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1,
+            "line_start": 1,
+            "path": "langchain-agent/tools/neo4j_client.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8fb4b507c0bef238add85c1a7d842aba433a4c79ef96667a008568b6c8368360"
+          },
+          {
+            "line_end": 41,
+            "line_start": 37,
+            "path": "langchain-agent/tools/neo4j_client.py",
+            "role": "protected_operation",
+            "source_sha256": "8fb4b507c0bef238add85c1a7d842aba433a4c79ef96667a008568b6c8368360"
+          },
+          {
+            "line_end": 43,
+            "line_start": 43,
+            "path": "langchain-agent/tools/neo4j_client.py",
+            "role": "guard_registration",
+            "source_sha256": "8fb4b507c0bef238add85c1a7d842aba433a4c79ef96667a008568b6c8368360"
+          },
+          {
+            "line_end": 44,
+            "line_start": 43,
+            "path": "langchain-agent/tools/neo4j_client.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8fb4b507c0bef238add85c1a7d842aba433a4c79ef96667a008568b6c8368360"
+          },
+          {
+            "line_end": 44,
+            "line_start": 44,
+            "path": "langchain-agent/tools/neo4j_client.py",
+            "role": "commit_point",
+            "source_sha256": "8fb4b507c0bef238add85c1a7d842aba433a4c79ef96667a008568b6c8368360"
+          }
+        ],
+        "forbidden_condition": "Any database write (graph mutation) attempted through the tool query path \u2014 i.e., a session created by run_read() operating in a write-capable access mode, or a mutating Cypher statement committed via run_read()'s session.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which @tool-decorated functions invoke run_read() and whether all agent-initiated Neo4j queries funnel exclusively through it (graph tool implementations such as vector_search_paragraph, get_sections, shortest_path are not supplied).",
+          "Whether any agent-reachable code path creates a Neo4j session without default_access_mode='READ' or issues write transactions outside run_read()."
+        ],
+        "protected_operation": "Execution of Cypher statements (with parameters and result-row limit) against the Neo4j database via run_read().",
+        "protected_resource": "The Neo4j database resolved by get_database() (default 'neo4j') holding the Wikipedia snapshot graph.",
+        "protection_obligation": "Agent-initiated queries against the Neo4j Wikipedia snapshot graph must execute only inside read-only database sessions: every session opened by run_read() is created with default_access_mode='READ', so no database write may commit through the tool query path.",
+        "scope_limits": [
+          "The guard is anchored only in run_read() in the supplied langchain-agent/tools/neo4j_client.py; the supplied source does not show that agent tool implementations exclusively route Neo4j access through run_read().",
+          "The row cap (limit=100 default) bounds result size; it is not the write-forbidding mechanism.",
+          "The read-only guarantee applies only to sessions created by run_read(); get_driver()/get_database() connection setup itself imposes no access mode."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The eval() call at langchain-agent/tools/calculate.py:34 \u2014 the in-process point where the expression string is executed.",
+        "contract_id": "ecological-contract:6f65ff41716990abb654b444b5751bbb",
+        "declared_mechanism": "eval(expression, {'__builtins__': {}}, _ALLOWED_NAMES) at calculate.py:34, where _ALLOWED_NAMES (calculate.py:10-18) maps every public attribute of the math module plus abs, round, min, max; non-string/empty expressions are rejected at calculate.py:31-32 and evaluation errors are returned as JSON error payloads (calculate.py:35-36).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 18,
+            "line_start": 10,
+            "path": "langchain-agent/tools/calculate.py",
+            "role": "guard_registration",
+            "source_sha256": "71daa521dc375e20c3f356dc9de679a937b9674b5b7236e23a0e224159df9f21"
+          },
+          {
+            "line_end": 32,
+            "line_start": 31,
+            "path": "langchain-agent/tools/calculate.py",
+            "role": "guard_registration",
+            "source_sha256": "71daa521dc375e20c3f356dc9de679a937b9674b5b7236e23a0e224159df9f21"
+          },
+          {
+            "line_end": 34,
+            "line_start": 34,
+            "path": "langchain-agent/tools/calculate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "71daa521dc375e20c3f356dc9de679a937b9674b5b7236e23a0e224159df9f21"
+          },
+          {
+            "line_end": 34,
+            "line_start": 34,
+            "path": "langchain-agent/tools/calculate.py",
+            "role": "commit_point",
+            "source_sha256": "71daa521dc375e20c3f356dc9de679a937b9674b5b7236e23a0e224159df9f21"
+          },
+          {
+            "line_end": 22,
+            "line_start": 21,
+            "path": "langchain-agent/tools/calculate.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "71daa521dc375e20c3f356dc9de679a937b9674b5b7236e23a0e224159df9f21"
+          },
+          {
+            "line_end": 30,
+            "line_start": 22,
+            "path": "langchain-agent/tools/calculate.py",
+            "role": "protected_operation",
+            "source_sha256": "71daa521dc375e20c3f356dc9de679a937b9674b5b7236e23a0e224159df9f21"
+          },
+          {
+            "line_end": 124,
+            "line_start": 122,
+            "path": "langchain-agent/neo4j_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "dc688183ad219081c87fe32f4a049094edd116639f82f69a0fd66bc0339554b9"
+          },
+          {
+            "line_end": 66,
+            "line_start": 64,
+            "path": "eval/run_experiment.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d0a9ec43bd801fb2684174224a59cb5e048893e520bad7ebfeb2d4068503d575"
+          }
+        ],
+        "forbidden_condition": "Arbitrary code execution during evaluation of the expression string \u2014 i.e., the evaluated expression reaching Python builtins, dunder attributes, or any name outside _ALLOWED_NAMES.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirmation that deployments exposing 'calculate' always use this supplied implementation (tool selection is per-deployment, e.g., run_experiment.py:64-76)."
+        ],
+        "protected_operation": "Evaluation of the model-supplied 'expression' string argument inside the calculate tool (arithmetic operators, parentheses, and math-module functions per the tool docstring).",
+        "protected_resource": "The Python interpreter/process executing the agent tool (the host execution environment reachable from eval).",
+        "protection_obligation": "The calculate agent tool must evaluate its expression argument only via a sandboxed eval call constructed with empty builtins and a fixed name allowlist, forbidding arbitrary code execution at the eval commit point.",
+        "scope_limits": [
+          "The sandbox is declared only at the eval call in langchain-agent/tools/calculate.py; resistance of this construction to specific escape techniques is a runtime property not adjudicated here.",
+          "Covers only the 'calculate' tool; no other tool's execution path is in scope.",
+          "Expression content originates from model tool-call arguments; the guard constrains the eval environment, not the syntactic content of expressions."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The middleware wrap of each tool call wired at agent construction (langchain-agent/neo4j_agent.py:131) \u2014 over-limit calls are intercepted at the wrap point before tool execution.",
+        "contract_id": "ecological-contract:b5b89d4f4fd1bd75193ee85487ccfbba",
+        "declared_mechanism": "ToolCallLimitMiddleware(run_limit=run_limit) placed in create_agent's middleware list (neo4j_agent.py:125-131); run_limit is threaded from create_neo4j_agent (signature default 5, neo4j_agent.py:95-101) and set to 10 in the supplied eval deployment (run_experiment.py:226-230).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 101,
+            "line_start": 95,
+            "path": "langchain-agent/neo4j_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "dc688183ad219081c87fe32f4a049094edd116639f82f69a0fd66bc0339554b9"
+          },
+          {
+            "line_end": 131,
+            "line_start": 121,
+            "path": "langchain-agent/neo4j_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "dc688183ad219081c87fe32f4a049094edd116639f82f69a0fd66bc0339554b9"
+          },
+          {
+            "line_end": 130,
+            "line_start": 128,
+            "path": "langchain-agent/neo4j_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dc688183ad219081c87fe32f4a049094edd116639f82f69a0fd66bc0339554b9"
+          },
+          {
+            "line_end": 131,
+            "line_start": 131,
+            "path": "langchain-agent/neo4j_agent.py",
+            "role": "commit_point",
+            "source_sha256": "dc688183ad219081c87fe32f4a049094edd116639f82f69a0fd66bc0339554b9"
+          },
+          {
+            "line_end": 125,
+            "line_start": 122,
+            "path": "langchain-agent/neo4j_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "dc688183ad219081c87fe32f4a049094edd116639f82f69a0fd66bc0339554b9"
+          },
+          {
+            "line_end": 230,
+            "line_start": 226,
+            "path": "eval/run_experiment.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d0a9ec43bd801fb2684174224a59cb5e048893e520bad7ebfeb2d4068503d575"
+          },
+          {
+            "line_end": 63,
+            "line_start": 62,
+            "path": "langchain-agent/prompts.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3c105a5ddc6c5bb5363dbeb48fde789d6e424f73a9e3329c64587885cf8df5e1"
+          },
+          {
+            "line_end": 256,
+            "line_start": 255,
+            "path": "eval/run_experiment.py",
+            "role": "protected_operation",
+            "source_sha256": "d0a9ec43bd801fb2684174224a59cb5e048893e520bad7ebfeb2d4068503d575"
+          }
+        ],
+        "forbidden_condition": "A tool call attempted beyond run_limit within a single agent invocation (a runaway or infinite tool-call loop); prompts.py:62-63 states the corresponding maximum of 10 tool call rounds and that excess tool calls 'will be stopped by a tool call limit middleware'.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Runtime blocking behavior of ToolCallLimitMiddleware when the cap is exceeded (library source not supplied).",
+          "Whether deployment entry points other than the supplied eval script configure different run_limit values; note the no-tools agent branch (neo4j_agent.py:145-164) registers no ToolCallLimitMiddleware and reports run_limit 0 in settings."
+        ],
+        "protected_operation": "Each agent tool invocation during a run \u2014 every dispatched tool call whose execution produces downstream Neo4j/LLM/eval effects.",
+        "protected_resource": "The agent run's tool-call budget and the downstream external resources tool calls reach (Neo4j database queries and LLM API endpoints).",
+        "protection_obligation": "The neo4j agent's tool invocations per run must not exceed the configured budget: ToolCallLimitMiddleware(run_limit=run_limit), registered in create_agent's middleware list, must block any tool call beyond the cap, preventing runaway/infinite agent tool-call loops that would otherwise drive repeated Neo4j database queries and LLM API effects.",
+        "scope_limits": [
+          "Cap is per-run only: thread_limit is deliberately unset per comment at neo4j_agent.py:129-130, so no cross-invocation/conversation cap is asserted.",
+          "Effective cap value is deployment-dependent: default 5 at the create_neo4j_agent signature (neo4j_agent.py:95) versus 10 in the supplied eval configuration (run_experiment.py:229).",
+          "The prompt text (prompts.py:62) is advisory model guidance; the enforced guard is the middleware registration.",
+          "Concrete blocking semantics (raised exception vs. synthetic tool message) are LangChain library internals not present in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Implementations of the Neo4j graph-query tools named in eval/run_experiment.py:65-76 and prompts.py (e.g., vector_search_article, vector_search_paragraph, get_sections, get_article_text, get_backlinks, articles_within_distance, shortest_path, window_paragraphs, window_sections) are not supplied; whether they invoke run_read() and only run_read() cannot be verified from the supplied views.",
+      "No supplied source shows whether any agent-reachable path creates a Neo4j session with write access mode or performs write transactions outside run_read().",
+      "ToolCallLimitMiddleware's internal enforcement semantics (how over-limit calls are rejected) are library-internal and not represented in the supplied source.",
+      "Deployment configurations beyond the supplied eval script (which sets run_limit=10 against a signature default of 5) are not represented in the supplied views."
+    ],
+    "repository": "NICD-UK/graph-based-rag-qa",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:f32c103477636b9ac6ad4d45c5994b1c"
+  },
+  "request_sha256": "fc49b3ba39e27dd646518d2a1e1378eb0648dacf28510aefd5311016ca1d1beb",
+  "response_sha256": "7cbc1bc58770099abbb94f490e6781e010f3713e37cabb6f3a3aae473def4f6d",
+  "state": "completed",
+  "tokens": 33045,
+  "unit": "v24-screen:f32c103477636b9ac6ad4d45c5994b1c"
+}

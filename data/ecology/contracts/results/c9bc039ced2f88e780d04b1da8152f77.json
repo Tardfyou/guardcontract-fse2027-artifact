@@ -1,0 +1,113 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Tool-call execution inside the shared BigQueryToolset: the blocked-write configuration is bound to the toolset that dispatches agent tool calls, so a mutating call is rejected at tool-execution time before any BigQuery mutation commits. Note: the ADK library's internal rejection point relative to BigQuery job submission is not visible in the supplied source (see pending_binding_information); lines 19-27 are the visible registration binding the guard to the executing toolset.",
+        "contract_id": "ecological-contract:9c9d4a7e6beb666cfec2b0b053bce45d",
+        "declared_mechanism": "Code-level guard registration: BigQueryToolConfig(write_mode=WriteMode.BLOCKED, max_query_result_rows=80) combined with tool_filter=[ADK_BUILTIN_BQ_DATA_INSIGHTS_TOOL ('ask_data_insights')] supplied to BigQueryToolset(insight_toolset), which is then bound as a tool of each LlmAgent via tools=[insight_toolset].",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 22,
+            "line_start": 19,
+            "path": "app/sub_agents/execute_sql/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b8290b2345f6cb419c4217dcaac87f034a40ea3b03cf3bf874eb5d32a863b0e4"
+          },
+          {
+            "line_end": 27,
+            "line_start": 23,
+            "path": "app/sub_agents/execute_sql/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "b8290b2345f6cb419c4217dcaac87f034a40ea3b03cf3bf874eb5d32a863b0e4"
+          },
+          {
+            "line_end": 27,
+            "line_start": 18,
+            "path": "app/sub_agents/execute_sql/agent.py",
+            "role": "commit_point",
+            "source_sha256": "b8290b2345f6cb419c4217dcaac87f034a40ea3b03cf3bf874eb5d32a863b0e4"
+          },
+          {
+            "line_end": 8,
+            "line_start": 8,
+            "path": "app/sub_agents/execute_sql/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "b8290b2345f6cb419c4217dcaac87f034a40ea3b03cf3bf874eb5d32a863b0e4"
+          },
+          {
+            "line_end": 38,
+            "line_start": 36,
+            "path": "app/sub_agents/execute_sql/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "b8290b2345f6cb419c4217dcaac87f034a40ea3b03cf3bf874eb5d32a863b0e4"
+          },
+          {
+            "line_end": 54,
+            "line_start": 54,
+            "path": "app/sub_agents/execute_sql/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b8290b2345f6cb419c4217dcaac87f034a40ea3b03cf3bf874eb5d32a863b0e4"
+          },
+          {
+            "line_end": 85,
+            "line_start": 85,
+            "path": "app/sub_agents/execute_sql/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b8290b2345f6cb419c4217dcaac87f034a40ea3b03cf3bf874eb5d32a863b0e4"
+          },
+          {
+            "line_end": 113,
+            "line_start": 113,
+            "path": "app/sub_agents/execute_sql/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b8290b2345f6cb419c4217dcaac87f034a40ea3b03cf3bf874eb5d32a863b0e4"
+          },
+          {
+            "line_end": 150,
+            "line_start": 150,
+            "path": "app/sub_agents/execute_sql/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b8290b2345f6cb419c4217dcaac87f034a40ea3b03cf3bf874eb5d32a863b0e4"
+          }
+        ],
+        "forbidden_condition": "Execution of a BigQuery write/mutating operation through the shared insight_toolset by any of the four LlmAgents (DataInsightsAgent, CompetitionAnalysisAgent, GapIdentificationAgent, RegionalReportAgent); WriteMode.BLOCKED in the toolset config declares such mutating effects forbidden at the tool layer.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "app/agent.py (root_agent) is not supplied: whether the four LlmAgents in app/sub_agents/execute_sql/agent.py are wired into the root agent that is deployed via AgentEngineApp is unconfirmed from supplied source.",
+          "Whether any other code path constructs a BigQueryToolset or BigQuery client without WriteMode.BLOCKED for these agents is unknown.",
+          "The in-library enforcement point of WriteMode.BLOCKED and tool_filter (where a mutating call is rejected relative to BigQuery job submission/commit) is not visible in the supplied source.",
+          "Whether the tool_filter alone (only 'ask_data_insights' exposed) independently precludes write tools, independent of WriteMode.BLOCKED, depends on library behavior not shown."
+        ],
+        "protected_operation": "Agent tool invocation of the BigQueryToolset \u2014 effectively only the 'ask_data_insights' tool per the tool_filter \u2014 issuing queries against BigQuery, including the geo_intent tables named in the agent instructions.",
+        "protected_resource": "BigQuery data reachable under the configured application-default credentials, specifically the geo_intent dataset tables referenced in the instructions: kaggle-hackathon-project.geo_intent.demographic_data and kaggle-hackathon-project.geo_intent.us_places.",
+        "protection_obligation": "Agent-invoked BigQuery data mutation is forbidden for the four data-analysis LlmAgents: the shared BigQueryToolset (insight_toolset) handed to every agent is code-registered with write_mode=WriteMode.BLOCKED (plus max_query_result_rows=80) and a tool_filter exposing only 'ask_data_insights', so any write/mutating BigQuery effect requested by those agents is rejected at tool-call execution rather than relying only on prompt instructions. (Merges the duplicate first-phase and second-phase reviewer wordings of the same registration-bound obligation.)",
+        "scope_limits": [
+          "Compiled only from the two supplied source views; the google.adk.tools.bigquery library implementation that enforces WriteMode.BLOCKED and tool_filter is not supplied, so enforcement semantics are taken from the registration, not verified against library code.",
+          "Prompt/instruction constraints in the agent definitions (specific tables, spatial filters, LIMIT 10, aggregation rules) are not the guard and are not treated as enforceable protections.",
+          "max_query_result_rows=80 constrains read-result size and is recorded as part of the same registration; the obligation compiled here is the write-block.",
+          "The wiring path from the deployed root_agent (AgentEngineApp(agent=root_agent) at app/agent_engine_app.py lines 102-107) to these four sub-agents is not shown in supplied source, so production reachability of the sub-agents is not established here.",
+          "Any other BigQuery client or toolset constructed elsewhere in the repository without this config is outside the visible guard."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "app/agent.py is not supplied, so the composition chain from the deployed root_agent (bound in app/agent_engine_app.py lines 102-107) to the four LlmAgents carrying the guarded toolset is not established from source.",
+      "The google.adk.tools.bigquery library source is not supplied, so the runtime enforcement semantics and exact rejection/commit point of WriteMode.BLOCKED and tool_filter within BigQueryToolset tool-call execution cannot be confirmed.",
+      "No supplied source shows whether any alternative BigQuery access path (other toolsets or direct clients) exists for these agents.",
+      "Behavioral labels and runtime evidence (e.g., observed blocked tool calls) are unavailable per the stated scope; this compilation rests solely on the code-level registration."
+    ],
+    "repository": "reubenrows-ui/geo-intent-proc",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:c9bc039ced2f88e780d04b1da8152f77"
+  },
+  "request_sha256": "2835281d190a6b54e9bbe869c38a5e816c692ab36590fde33743967f55ecd349",
+  "response_sha256": "b76f0220b5cfe0515a922ba68eb526b6c58dd91f15fbd3bd776df2b8a3885921",
+  "state": "completed",
+  "tokens": 12647,
+  "unit": "v24-screen:c9bc039ced2f88e780d04b1da8152f77"
+}

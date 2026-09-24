@@ -1,0 +1,114 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "destination.open(\"wb\") plus shutil.copyfileobj inside the zip extraction loop (media.py lines 104-105) and inside the tar extraction loop (media.py lines 128-129).",
+        "contract_id": "ecological-contract:c842ac4ba05f1ba36dea81cc64682b0c",
+        "declared_mechanism": "_safe_target resolved-path containment check (raises ValueError on escape) applied to every member; _is_zip_symlink rejection for zip members; member.isfile() rejection for tar members; _reject_oversized per-member byte cap; _track_expanded_member total-expanded-bytes and member-count caps; all invoked before each member write, with caps configured at the call site from settings.media_max_upload_bytes (default max_total_bytes falls back to max_member_bytes).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 35,
+            "line_start": 30,
+            "path": "templates/langchain/agentic-rag-hybrid/{{cookiecutter.project_slug}}/src/{{cookiecutter.project_slug}}/media.py",
+            "role": "forbidden_condition",
+            "source_sha256": "807655df287cadefcab73331950d98861c25c51885a2d5ab626f1770bf4df288"
+          },
+          {
+            "line_end": 70,
+            "line_start": 47,
+            "path": "templates/langchain/agentic-rag-hybrid/{{cookiecutter.project_slug}}/src/{{cookiecutter.project_slug}}/media.py",
+            "role": "forbidden_condition",
+            "source_sha256": "807655df287cadefcab73331950d98861c25c51885a2d5ab626f1770bf4df288"
+          },
+          {
+            "line_end": 93,
+            "line_start": 92,
+            "path": "templates/langchain/agentic-rag-hybrid/{{cookiecutter.project_slug}}/src/{{cookiecutter.project_slug}}/media.py",
+            "role": "forbidden_condition",
+            "source_sha256": "807655df287cadefcab73331950d98861c25c51885a2d5ab626f1770bf4df288"
+          },
+          {
+            "line_end": 114,
+            "line_start": 113,
+            "path": "templates/langchain/agentic-rag-hybrid/{{cookiecutter.project_slug}}/src/{{cookiecutter.project_slug}}/media.py",
+            "role": "forbidden_condition",
+            "source_sha256": "807655df287cadefcab73331950d98861c25c51885a2d5ab626f1770bf4df288"
+          },
+          {
+            "line_end": 131,
+            "line_start": 73,
+            "path": "templates/langchain/agentic-rag-hybrid/{{cookiecutter.project_slug}}/src/{{cookiecutter.project_slug}}/media.py",
+            "role": "guard_registration",
+            "source_sha256": "807655df287cadefcab73331950d98861c25c51885a2d5ab626f1770bf4df288"
+          },
+          {
+            "line_end": 145,
+            "line_start": 139,
+            "path": "templates/langchain/agentic-rag-hybrid/{{cookiecutter.project_slug}}/src/{{cookiecutter.project_slug}}/routes.py",
+            "role": "guard_registration",
+            "source_sha256": "773f623f4648b8cb77454cbce94ae4303a9c4a851f8222b5c5ba995719732464"
+          },
+          {
+            "line_end": 105,
+            "line_start": 104,
+            "path": "templates/langchain/agentic-rag-hybrid/{{cookiecutter.project_slug}}/src/{{cookiecutter.project_slug}}/media.py",
+            "role": "commit_point",
+            "source_sha256": "807655df287cadefcab73331950d98861c25c51885a2d5ab626f1770bf4df288"
+          },
+          {
+            "line_end": 129,
+            "line_start": 128,
+            "path": "templates/langchain/agentic-rag-hybrid/{{cookiecutter.project_slug}}/src/{{cookiecutter.project_slug}}/media.py",
+            "role": "commit_point",
+            "source_sha256": "807655df287cadefcab73331950d98861c25c51885a2d5ab626f1770bf4df288"
+          },
+          {
+            "line_end": 147,
+            "line_start": 130,
+            "path": "templates/langchain/agentic-rag-hybrid/{{cookiecutter.project_slug}}/src/{{cookiecutter.project_slug}}/routes.py",
+            "role": "protected_operation",
+            "source_sha256": "773f623f4648b8cb77454cbce94ae4303a9c4a851f8222b5c5ba995719732464"
+          }
+        ],
+        "forbidden_condition": "Any archive member that (a) resolves to a path outside the resolved extraction root, (b) is a zip symlink (stat.S_ISLNK on external_attr) or a tar member that is not a regular file, (c) has a declared size exceeding max_member_bytes, (d) would push cumulative expanded size beyond max_total_bytes, or (e) would push member count beyond max_members.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied evidence binds extract_archive_safely or the /custom/upload-archive route to an agent tool registration, agent lifecycle hook, or agent-generated input dataflow; the agent_mediation value remains not_established pending such evidence.",
+          "The reviewer obligation references archives 'ingested via the CLI', but no CLI source view was supplied to confirm such a caller of extract_archive_safely.",
+          "Definitions and constraints of settings.media_max_upload_bytes and settings.media_data_dir reside in a settings module not included in the supplied source."
+        ],
+        "protected_operation": "Writing extracted archive member contents to disk during extraction of an uploaded archive in extract_archive_safely (zip and tar branches).",
+        "protected_resource": "Filesystem paths under the extraction target directory (settings.media_data_dir / 'extracted' / <archive stem>) derived from archive member names.",
+        "protection_obligation": "extract_archive_safely must refuse to write any archive member whose resolved destination escapes the extraction target root (zip-slip/path traversal), refuse zip symlink members and tar non-regular-file members, and enforce per-member size, total-expanded-size, and member-count caps before any bytes are written, for archives uploaded through the /custom/upload-archive flow (merged from duplicate first-phase and second-phase reviewer wording).",
+        "scope_limits": [
+          "Contract covers only member writes inside extract_archive_safely; the raw-archive upload size limit (_save_upload_with_limit) and error-path cleanup (unlink/rmtree) in routes.py are separate mechanisms not covered here.",
+          "Path-containment check runs for every member before filtering; symlink, size, total-bytes, and count checks run only for non-directory members that pass _is_supported_member (supported image suffixes and manifest filenames); other members are skipped, not written.",
+          "Tar branch rejects any non-regular-file member (member.isfile() check) rather than a symlink-specific check; zip branch rejects only symlink-encoded members.",
+          "Post-extraction ingestion effects (archive_ingest_runnable.invoke in routes.py) are outside this contract.",
+          "Agent mediation is not established from supplied source: /custom/upload-archive is a plain FastAPI HTTP handler and no agent tool decorator, tool dispatch, or agent lifecycle hook appears in the supplied views."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source shows an agent tool decorator, tool registry entry, tool dispatch path, or agent lifecycle hook binding extract_archive_safely or the /custom/upload-archive route to agent execution; per scope rules, agent mediation must not be inferred from the repository's agentic-RAG topic or LangChain framework metadata, so agent_mediation is recorded as not_established.",
+      "The reviewer opinion claims a CLI ingestion path for archives; no CLI source view was supplied to support or reject this claim.",
+      "The settings module defining media_max_upload_bytes and media_data_dir was not supplied, so the concrete cap values bound at the guard call site (routes.py lines 143-144) are unknown.",
+      "Repository enumeration is not complete per the stated scope, so other callers of extract_archive_safely (if any) cannot be confirmed from supplied views."
+    ],
+    "repository": "agentseek-ai/agentseek-templates",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:f857895ceffbb8041dc666a5d9c28273"
+  },
+  "request_sha256": "d6123a664ebffaa7ef144f79ef97b7f989ed1684feec8f4a66090f2b367a3037",
+  "response_sha256": "cf59bccd6178f06cdc44f1795d2af24c2b1bc6ee89e9500acca3d8e64eb6d70a",
+  "state": "completed",
+  "tokens": 10930,
+  "unit": "v24-screen:f857895ceffbb8041dc666a5d9c28273"
+}

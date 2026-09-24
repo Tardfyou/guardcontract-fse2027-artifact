@@ -1,0 +1,151 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "pipeline._execute_sql_plan issues result = await db.execute(plan.sql, limit=..., timeout_seconds=...) (pipeline.py:387); the effect lands at the engine when _execute_cursor calls cursor.execute(rendered_sql) on the pooled read-only cursor (db.py:208-210).",
+        "contract_id": "ecological-contract:0a3b641ccc82c52425b438eb19d350e5",
+        "declared_mechanism": "Layered governed-SQL gate: (1) sqlgate.validate_select_sql parses with sqlglot (read='duckdb'), requires exactly one exp.Select, scans the AST for _FORBIDDEN node types and _DANGEROUS_TVFS function names, and enforces the live approved-table set built by build_live_schema (approved prefixes dim_/fact_/mart_/analytics_ plus ALLOWED_TABLES_FOR_AGENT); (2) sqlglot optimizer.optimize against the live schema catches unknown/ambiguous references; (3) catalog-scoped _detect_fan_chasm flags one_to_many joins with additive SUM lacking a collapsing GROUP BY. The gate is bound as a mandatory precondition in pipeline._prepare_sql_plan, invoked on the initial plan (pipeline.py:291) and again on repaired SQL (pipeline.py:364); gate failure yields _SqlPreparation.error with ChatError(_ERR_GATE_FAILED), preventing _execute_sql_plan from running. Complementary declared layer: the singleton connection is opened read_only=True so DuckDB itself refuses DDL/DML.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 303,
+            "line_start": 283,
+            "path": "chat/chat_server/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "0efa4b5fc56504ccccbbe39fe45492f0eb7a3a4112f91055118493c0f744aed0"
+          },
+          {
+            "line_end": 377,
+            "line_start": 363,
+            "path": "chat/chat_server/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "0efa4b5fc56504ccccbbe39fe45492f0eb7a3a4112f91055118493c0f744aed0"
+          },
+          {
+            "line_end": 168,
+            "line_start": 149,
+            "path": "chat/chat_server/sqlgate.py",
+            "role": "guard_registration",
+            "source_sha256": "f3138e57a84d196b4c8f2df094153c696a314dd4ef4c3745c7743831c243cef9"
+          },
+          {
+            "line_end": 338,
+            "line_start": 268,
+            "path": "chat/chat_server/sqlgate.py",
+            "role": "guard_registration",
+            "source_sha256": "f3138e57a84d196b4c8f2df094153c696a314dd4ef4c3745c7743831c243cef9"
+          },
+          {
+            "line_end": 272,
+            "line_start": 251,
+            "path": "chat/chat_server/db.py",
+            "role": "guard_registration",
+            "source_sha256": "f1ce64d95f3e865ab43a7a3df239359cce241af105a0aeca45994cc3e07dd7f3"
+          },
+          {
+            "line_end": 92,
+            "line_start": 77,
+            "path": "chat/chat_server/sqlgate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f3138e57a84d196b4c8f2df094153c696a314dd4ef4c3745c7743831c243cef9"
+          },
+          {
+            "line_end": 76,
+            "line_start": 54,
+            "path": "chat/chat_server/sqlgate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f3138e57a84d196b4c8f2df094153c696a314dd4ef4c3745c7743831c243cef9"
+          },
+          {
+            "line_end": 134,
+            "line_start": 117,
+            "path": "chat/chat_server/sqlgate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f3138e57a84d196b4c8f2df094153c696a314dd4ef4c3745c7743831c243cef9"
+          },
+          {
+            "line_end": 480,
+            "line_start": 444,
+            "path": "chat/chat_server/sqlgate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f3138e57a84d196b4c8f2df094153c696a314dd4ef4c3745c7743831c243cef9"
+          },
+          {
+            "line_end": 317,
+            "line_start": 284,
+            "path": "chat/chat_server/db.py",
+            "role": "protected_operation",
+            "source_sha256": "f1ce64d95f3e865ab43a7a3df239359cce241af105a0aeca45994cc3e07dd7f3"
+          },
+          {
+            "line_end": 392,
+            "line_start": 385,
+            "path": "chat/chat_server/pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "0efa4b5fc56504ccccbbe39fe45492f0eb7a3a4112f91055118493c0f744aed0"
+          },
+          {
+            "line_end": 222,
+            "line_start": 195,
+            "path": "chat/chat_server/db.py",
+            "role": "commit_point",
+            "source_sha256": "f1ce64d95f3e865ab43a7a3df239359cce241af105a0aeca45994cc3e07dd7f3"
+          },
+          {
+            "line_end": 232,
+            "line_start": 219,
+            "path": "chat/chat_server/pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0efa4b5fc56504ccccbbe39fe45492f0eb7a3a4112f91055118493c0f744aed0"
+          },
+          {
+            "line_end": 618,
+            "line_start": 609,
+            "path": "chat/chat_server/pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0efa4b5fc56504ccccbbe39fe45492f0eb7a3a4112f91055118493c0f744aed0"
+          }
+        ],
+        "forbidden_condition": "Agent-supplied SQL reaching DuckDB execution without passing the governed gate: SQL that is not exactly one SELECT statement, that contains any _FORBIDDEN AST node type (Attach/Copy/Create/Delete/Drop/Insert/Update/Merge/Alter/AlterColumn/Pragma/Set/SetItem/Command), that calls a _DANGEROUS_TVFS function, that references tables outside the approved warehouse set or uses catalog/schema-qualified references, that references no warehouse table, or that trips the one-to-many additive-SUM fan/chasm detector without a collapsing GROUP BY.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether chat_server.agent enforces SqlPlan as the pydantic-ai structured output type (guaranteeing plan.sql is model-generated) cannot be verified; agent.py is not supplied, and the binding here rests on the concrete dataflow agent.run -> plan = agent_result.output (pipeline.py:230-231) plus the isinstance(plan, SqlPlan) dispatch into the gated execution flow (pipeline.py:609-618).",
+          "Contents of schema_context.ALLOWED_TABLES_FOR_AGENT, which completes the approved table allowlist union in build_live_schema, are not in supplied views.",
+          "Whether repair_sql (chat_server.repair, not supplied) executes candidate SQL against db during the repair loop before the post-repair validate_governed_sql re-check at pipeline.py:364 is unknown.",
+          "Whether any other code path can execute agent-generated SQL without passing _prepare_sql_plan (e.g., alternate routes or future DuckDBSingleton.execute callers) cannot be determined from the supplied views."
+        ],
+        "protected_operation": "Execution of the agent-produced SQL string (plan.sql) against the process-wide read-only DuckDB connection via DuckDBSingleton.execute (reached through pipeline._execute_sql_plan).",
+        "protected_resource": "The DuckDB analytics warehouse database opened read-only by DuckDBSingleton (duckdb.connect(db_path, read_only=True)); per the module docstring, multiple read-only processes share data/nba.duckdb and the engine refuses DDL/DML on read-only handles.",
+        "protection_obligation": "Every agent-generated SQL statement (SqlPlan.sql, including post-repair SQL produced via repair_sql) must pass validate_governed_sql before it is executed against the read-only DuckDB warehouse: the gate accepts only a single read-only SELECT, rejects forbidden statements (Attach, Copy, Create, Delete, Drop, Insert, Update, Merge, Alter, AlterColumn, Pragma, Set, SetItem, Command), rejects dangerous table-valued functions (read_csv/read_parquet/read_ family and pragma_*/duckdb_* introspection TVFs), restricts table references to the approved live-schema allowlist, rejects catalog/schema-qualified references and FROM-less SELECTs, and applies live-schema optimizer checks plus catalog-scoped fan/chasm detection; a failed or unrepaired gate blocks execution and surfaces ChatError(_ERR_GATE_FAILED) instead of running db.execute. (Merged from both reviewer opinions, which describe the same gate-before-execution obligation.)",
+        "scope_limits": [
+          "Contract covers only the chat-turn SQL path shown in supplied source (run_turn -> _stream_sql_plan -> _prepare_sql_plan/_execute_sql_plan); no claim is made about unseen entry points or callers.",
+          "Other db.execute / db.dry_run call sites in supplied source run operator-fixed SQL (build_live_schema information-schema introspection at sqlgate.py:182-186, check_connection SELECT 1 at db.py:459-476, dry_run EXPLAIN at db.py:357-372) and are not shown to be agent-mediated.",
+          "dry_run (EXPLAIN) touches plan/bind only and never row data; it is part of post-gate preparation, not an independently guarded commit.",
+          "Fan/chasm detection is deliberately conservative: it skips ambiguous alias cases and does not unravel CTEs/subqueries (sqlgate.py:405-443), so it is a partial, declared-only protection layer.",
+          "Row caps, the timeout watchdog, and memory_limit are runtime/cost controls (db.py:176-222, db.py:264-267), not part of this forbidden-condition contract.",
+          "Repository enumeration is incomplete and behavior labels are unavailable; only the cited line ranges support this contract. No DEC violation, safety, or prevalence determination is made."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "chat/chat_server/agent.py is not supplied: SqlPlan/ResultContract/ClarifyPlan definitions, pydantic-ai output-type validation, and any tool registration are unverifiable from supplied views; agent generation of plan.sql is supported only by the dataflow at pipeline.py:230-231 and the isinstance dispatch at pipeline.py:609.",
+      "chat/chat_server/schema_context.py is not supplied: membership of ALLOWED_TABLES_FOR_AGENT (part of the gate's approved-table allowlist) is unknown.",
+      "chat/chat_server/repair.py is not supplied: whether the repair loop executes SQL against db before the post-repair validate_governed_sql call at pipeline.py:364 is unknown.",
+      "chat/chat_server/config.py is not supplied: values for duckdb_path, chat_log_dir, chat_memory_limit, and query_timeout_seconds are unknown.",
+      "Route modules (e.g., routes/chat.py) are not supplied: only pipeline.run_turn is shown, so route-level wiring and the absence of alternate SQL paths bypassing the gate cannot be confirmed.",
+      "No runtime behavior, test results, or prevalence data are supplied; whether the declared gate holds under execution is not determinable from the provided source views."
+    ],
+    "repository": "nickth3man/basketball-data-emporium",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:31275f53b5e32f4de566cf9aceb978ce"
+  },
+  "request_sha256": "c804bf64d1960726705669e039ae5924899276dbc614559f531d2d2230d2bb37",
+  "response_sha256": "6902f2dd43494756f572017afe368687032f9bf95ad18149e251df5ce405f6bd",
+  "state": "completed",
+  "tokens": 35832,
+  "unit": "v24-screen:31275f53b5e32f4de566cf9aceb978ce"
+}

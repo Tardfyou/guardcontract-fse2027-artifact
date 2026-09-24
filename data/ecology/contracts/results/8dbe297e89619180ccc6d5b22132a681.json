@@ -1,0 +1,140 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Responder.run raises ValueError at agents/responder.py:133-137 before the safe_invoke call at lines 146-148, which commits dispatch into TravelExecutor.invoke at line 92.",
+        "contract_id": "ecological-contract:939493e9c8ef07a313a22b79a2091cf2",
+        "declared_mechanism": "Inline validation in Responder.run: required_keys = {\"id\", \"description\", \"depends_on\"}; ValueError raised when query is not a dict or when required keys are missing (agents/responder.py:132-137).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 137,
+            "line_start": 132,
+            "path": "agents/responder.py",
+            "role": "guard_registration",
+            "source_sha256": "9aaafd9fc1722fb01199ab99e947e744adff99cdfd0348a51eeeab119ed6e50a"
+          },
+          {
+            "line_end": 137,
+            "line_start": 133,
+            "path": "agents/responder.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9aaafd9fc1722fb01199ab99e947e744adff99cdfd0348a51eeeab119ed6e50a"
+          },
+          {
+            "line_end": 148,
+            "line_start": 146,
+            "path": "agents/responder.py",
+            "role": "protected_operation",
+            "source_sha256": "9aaafd9fc1722fb01199ab99e947e744adff99cdfd0348a51eeeab119ed6e50a"
+          },
+          {
+            "line_end": 92,
+            "line_start": 89,
+            "path": "agents/responder.py",
+            "role": "commit_point",
+            "source_sha256": "9aaafd9fc1722fb01199ab99e947e744adff99cdfd0348a51eeeab119ed6e50a"
+          }
+        ],
+        "forbidden_condition": "A task input reaching Responder.run that is not an instance of dict, or a dict missing one or more of the required keys {\"id\", \"description\", \"depends_on\"}, being allowed past validation into executor dispatch.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Caller identity of Responder.run: if Orchestrator (agents/orchestrator.py, not supplied) generates the task dicts and invokes Responder as a sub-agent or tool in the deployed path, agent_mediation would be reclassifiable (e.g., agent_generated_input_to_guarded_effect or direct_tool) with an agent_entry_binding citing that dataflow.",
+          "Whether the validated task dict is agent-generated (orchestrator task decomposition) in the production path; supplied source shows only a hardcoded example in main()."
+        ],
+        "protected_operation": "Dispatch of the validated task input into the tool-calling agent executor: extraction of query[\"description\"] and its delivery via safe_invoke into TravelExecutor.invoke (agents/responder.py:140-148, 92).",
+        "protected_resource": "Responder agent execution path \u2014 TravelExecutor, the AgentExecutor built from create_tool_calling_agent with the eight registered tools search_travel_info, get_weather, web_search, search_hotels, search_planes, search_coaches, search_food, search_events_api (agents/responder.py:66-87).",
+        "protection_obligation": "Responder.run must reject with ValueError any task input that is not a dict or that lacks any of the required keys id, description, or depends_on, and this rejection must fire before the input is dispatched to the LLM tool-calling executor via safe_invoke/TravelExecutor.",
+        "scope_limits": [
+          "The validation fires only inside Responder.run before dispatch; the only supplied call site is main() with a well-formed literal (agents/responder.py:164-172).",
+          "Downstream effects of TravelExecutor (LLM calls and the eight registered tools) are implemented in unsupplied modules; this contract covers only the pre-dispatch validation commit point in agents/responder.py.",
+          "The safe_invoke retry loops (agents/responder.py:89-127) and the server-side quota handling (backend/server.py:110-139) are resilience behavior, not part of the forbidden condition."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "CORSMiddleware request interception on the app middleware stack, which runs ahead of endpoint handler dispatch; disallowed-origin requests are stopped at that layer before the /chat handler invokes the agent (backend/server.py:81) or the /conversation handler performs deletions (backend/server.py:171-173).",
+        "contract_id": "ecological-contract:c2824e4457afba280975e922d6d502b6",
+        "declared_mechanism": "app.add_middleware(CORSMiddleware, allow_origins=[\"http://localhost:5173\"], allow_credentials=True, allow_methods=[\"*\"], allow_headers=[\"*\"]) registered on the app (backend/server.py:28-34).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 34,
+            "line_start": 28,
+            "path": "backend/server.py",
+            "role": "guard_registration",
+            "source_sha256": "e6d35af83045458826826a4d751a80e3c063da6615d86fd1316c1e8168fb38ce"
+          },
+          {
+            "line_end": 30,
+            "line_start": 30,
+            "path": "backend/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e6d35af83045458826826a4d751a80e3c063da6615d86fd1316c1e8168fb38ce"
+          },
+          {
+            "line_end": 81,
+            "line_start": 71,
+            "path": "backend/server.py",
+            "role": "protected_operation",
+            "source_sha256": "e6d35af83045458826826a4d751a80e3c063da6615d86fd1316c1e8168fb38ce"
+          },
+          {
+            "line_end": 174,
+            "line_start": 169,
+            "path": "backend/server.py",
+            "role": "protected_operation",
+            "source_sha256": "e6d35af83045458826826a4d751a80e3c063da6615d86fd1316c1e8168fb38ce"
+          },
+          {
+            "line_end": 34,
+            "line_start": 25,
+            "path": "backend/server.py",
+            "role": "commit_point",
+            "source_sha256": "e6d35af83045458826826a4d751a80e3c063da6615d86fd1316c1e8168fb38ce"
+          }
+        ],
+        "forbidden_condition": "An HTTP request carrying an Origin value other than exactly \"http://localhost:5173\" being processed by the FastAPI app such that cross-origin access to any endpoint would be granted.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether Orchestrator (agents/orchestrator.py, not supplied) dispatches POST /chat work to agent tools, which would supply an agent_entry_binding and a positive agent_mediation classification.",
+          "Whether the obligation should be narrowed from all app endpoints to the agent-invoking POST /chat operation for DEC relevance.",
+          "Whether DELETE /conversation (backend/server.py:169-174), which removes the active agent from the active_agent registry at line 173, should be treated as agent-lifecycle-adjacent or as plain HTTP/state mutation."
+        ],
+        "protected_operation": "Serving the API's endpoint operations to cross-origin browser clients, notably POST /chat, which dispatches req.message into the Orchestrator agent (agent.run at backend/server.py:81) and persists the reply via add_message, and DELETE /conversation, which deletes conversation records, messages, and the active agent entry.",
+        "protected_resource": "All routes registered on the FastAPI app in backend/server.py: GET /new_conversation, POST /chat, GET /history, GET /all_conversations, DELETE /conversation.",
+        "protection_obligation": "Cross-origin browser requests to the FastAPI travel API endpoints from any Origin other than http://localhost:5173 are forbidden; the registered CORSMiddleware origin allow-list must reject such requests at the middleware layer before any endpoint handler executes, including the agent-invoking POST /chat and the mutating DELETE /conversation.",
+        "scope_limits": [
+          "The guard is the app-wide CORS middleware; supplied source shows no per-endpoint narrowing and no additional authentication or authorization on these endpoints.",
+          "Only the origin is constrained; allow_methods and allow_headers are wildcards (backend/server.py:32-33).",
+          "Agent mediation of the guarded operations is not established from supplied source: only POST /chat visibly invokes an agent (backend/server.py:81), and the Orchestrator's internals, including any tool dispatch, are in unsupplied files.",
+          "CORS is retained here only because the guarded endpoint set explicitly includes agent-invoking and agent-registry-mutating operations in supplied source; the ordinary browser-CORS character of the guard is unchanged."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "agents/orchestrator.py is not supplied: Orchestrator is imported at backend/server.py:18, instantiated at backend/server.py:43, and invoked via agent.run at backend/server.py:81, so neither the /chat endpoint's agent-tool dispatch nor the provenance of Responder task dicts can be established from supplied source.",
+      "agents/travel_bot.py (imported at backend/server.py:19, currently only in commented-out wiring at backend/server.py:37-38) is not supplied; the alternative agent wiring is unknown.",
+      "conversation.py and message.py (create_conversation, delete_conversation, get_all_conversations, add_message, get_messages, delete_messages used at backend/server.py:67, 103, 143, 156, 171-172) are not supplied; persistence-layer guards on the database mutation effects are unknown.",
+      "Tool implementations registered on the Responder (tools/search_travel_info.py, tools/get_weather.py, tools/web_search.py, tools/traveloka_api.py, tools/shopeefood_api.py, tools/ticketbox_events.py; agents/responder.py:17-22 and 66-75) are not supplied; the external effects reachable through the guarded executor dispatch are not characterized.",
+      "backend/database.py:17-27 enforces presence of MONGO_URL (raise ValueError) before MongoClient creation; supplied source contains no binding of this configuration validation to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded client-creation effect, so it is recorded here as a candidate obligation treated as out-of-scope infrastructure validation pending binding evidence."
+    ],
+    "repository": "lamnd0910/travel-chatbot",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:8dbe297e89619180ccc6d5b22132a681"
+  },
+  "request_sha256": "84c04d4ee2610ea51167d10106aace6023f78f84418941edc7ec7649ae9d7ed9",
+  "response_sha256": "9a88adff3e1566e5034ffc4a299b4dcce7ea4196aabda2d91020c4b79cedba8a",
+  "state": "completed",
+  "tokens": 22013,
+  "unit": "v24-screen:8dbe297e89619180ccc6d5b22132a681"
+}

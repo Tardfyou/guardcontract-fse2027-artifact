@@ -1,0 +1,392 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Delegation to transaction_handler.sign_and_submit at stellar_tools.py:251-257, which per supplied comments either returns unsigned XDR for external-wallet mode or submits the transaction; the actual Horizon submission implementation lies outside the supplied views.",
+        "contract_id": "ecological-contract:1b2e016bd7c497183849025e1a64234b",
+        "declared_mechanism": "Fail-closed 'if not account_manager.user_owns_account(agent_context, account_id)' at _build_sign_submit entry (stellar_tools.py:221), duplicated at trading entry (line 587) and trustline_manager entry (line 813); except PermissionError handler at lines 259-260 converts enforcement failures to error results; user_owns_account delegates to AgentContext.has_permission (backend/account_manager.py:372-384).",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 221,
+            "line_start": 220,
+            "path": "backend/stellar_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "091091ba2f6fe0f3c9ca0f64d300868a1bd70e6a26ca90b78bfedd854b9a04c0"
+          },
+          {
+            "line_end": 225,
+            "line_start": 222,
+            "path": "backend/stellar_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "091091ba2f6fe0f3c9ca0f64d300868a1bd70e6a26ca90b78bfedd854b9a04c0"
+          },
+          {
+            "line_end": 188,
+            "line_start": 178,
+            "path": "backend/stellar_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "091091ba2f6fe0f3c9ca0f64d300868a1bd70e6a26ca90b78bfedd854b9a04c0"
+          },
+          {
+            "line_end": 257,
+            "line_start": 246,
+            "path": "backend/stellar_tools.py",
+            "role": "commit_point",
+            "source_sha256": "091091ba2f6fe0f3c9ca0f64d300868a1bd70e6a26ca90b78bfedd854b9a04c0"
+          },
+          {
+            "line_end": 260,
+            "line_start": 259,
+            "path": "backend/stellar_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "091091ba2f6fe0f3c9ca0f64d300868a1bd70e6a26ca90b78bfedd854b9a04c0"
+          },
+          {
+            "line_end": 587,
+            "line_start": 586,
+            "path": "backend/stellar_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "091091ba2f6fe0f3c9ca0f64d300868a1bd70e6a26ca90b78bfedd854b9a04c0"
+          },
+          {
+            "line_end": 813,
+            "line_start": 812,
+            "path": "backend/stellar_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "091091ba2f6fe0f3c9ca0f64d300868a1bd70e6a26ca90b78bfedd854b9a04c0"
+          },
+          {
+            "line_end": 511,
+            "line_start": 502,
+            "path": "backend/stellar_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "091091ba2f6fe0f3c9ca0f64d300868a1bd70e6a26ca90b78bfedd854b9a04c0"
+          },
+          {
+            "line_end": 384,
+            "line_start": 372,
+            "path": "backend/account_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          }
+        ],
+        "forbidden_condition": "Build, sign, or submit of a Horizon transaction sourced from a managed account whose owning user_id is not authorized for the requesting AgentContext ('Permission denied: account not owned by authorized users'); downstream PermissionError from signing is caught and converted to a failure result.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "backend/agent/transaction_handler.py is not supplied; the exact Horizon submission commit line and any additional permission or keypair handling inside TransactionHandler cannot be cited.",
+          "No MCP/tool registration or dispatch wiring in the supplied views binds the account_manager, trading, or trustline_manager composite tools to agent invocation.",
+          "AgentContext construction/provenance (authenticated principal to user_id/wallet_mode mapping) is absent from supplied views."
+        ],
+        "protected_operation": "Unified transaction build\u2192sign\u2192submit via _build_sign_submit, reached from the account_manager tool 'send' action (XLM payment, stellar_tools.py:502-511), trading 'buy'/'sell'/'cancel_order' (lines 639-642, 748-751), and trustline_manager 'establish'/'remove' (lines 829-832).",
+        "protected_resource": "The managed Stellar account (wallet_accounts row) used as transaction source and signer, and the on-chain ledger state affected by the submitted operations.",
+        "protection_obligation": "The stellar_tools._build_sign_submit unified build\u2192sign\u2192submit flow must not sign and submit a Stellar transaction (XLM payments, SDEX offers, trustline changes) against a managed account unless the requesting AgentContext has ownership of that account, enforced by account_manager.user_owns_account at flow entry with equivalent entry guards in the trading and trustline_manager composite tools (covers the '_build_sign_submit / sign_and_submit' commit point named in the second reviewer wording).",
+        "scope_limits": [
+          "Trading's entry guard (stellar_tools.py:587) also gates the read-only 'get_orders' action; only mutating actions routed to _build_sign_submit are in scope of this contract.",
+          "Read-path permission guards in the account_manager composite tool ('get' at lines 349-350, 'transactions' at lines 385-386) protect read-only Horizon queries and are not compiled as effect contracts.",
+          "Internal behavior of TransactionHandler.sign_and_submit is not visible in supplied source; scope is limited to the delegation boundary cited as commit point.",
+          "External-wallet mode per docstring (lines 210-217) returns unsigned XDR without in-function submission."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.encryption.decrypt(account['encrypted_private_key'], account['user_id']) at backend/account_manager.py:417-420 followed by in-memory keypair construction adapter.import_keypair(private_key) at lines 422-424, returning the live keypair at line 426.",
+        "contract_id": "ecological-contract:2c9f6c50ea4cf26ecd0750418b609e45",
+        "declared_mechanism": "Fail-closed check 'if not agent_context.has_permission(account['user_id'])' placed after account lookup and immediately before self.encryption.decrypt and adapter.import_keypair; violation raises PermissionError instead of returning a keypair.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 410,
+            "line_start": 409,
+            "path": "backend/account_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 414,
+            "line_start": 411,
+            "path": "backend/account_manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 388,
+            "line_start": 386,
+            "path": "backend/account_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 424,
+            "line_start": 416,
+            "path": "backend/account_manager.py",
+            "role": "commit_point",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 384,
+            "line_start": 381,
+            "path": "backend/stellar_soroban.py",
+            "role": "protected_operation",
+            "source_sha256": "557cf3eb71ba63e5450c55206cee7e082774716b5a807852a43e5d72661bb49f"
+          },
+          {
+            "line_end": 86,
+            "line_start": 76,
+            "path": "backend/agent/context.py",
+            "role": "guard_registration",
+            "source_sha256": "39940c0c303748a5763ab7606591b1285a51e3d9a78e8998c53b0c4470d06282"
+          }
+        ],
+        "forbidden_condition": "Provisioning a decrypted signing keypair for an account whose owning user_id is not in the AgentContext's authorized user IDs; declared as 'PermissionError: If agent not authorized for this account' and raised as 'Permission denied: account owned by <user_id>'.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "backend/agent/transaction_handler.py is not supplied; whether it invokes get_keypair_for_signing and under what dispatch is unknown.",
+          "No registration/dispatch wiring binding callers of get_keypair_for_signing to agent tool invocation appears in the supplied views.",
+          "AgentContext construction/provenance (authenticated principal to user_id mapping) is absent from supplied views."
+        ],
+        "protected_operation": "Provisioning a decrypted keypair for transaction signing via AccountManager.get_keypair_for_signing, called from the agent/imported signing branch of soroban_operations 'invoke' (stellar_soroban.py:382).",
+        "protected_resource": "The encrypted private key of a wallet_accounts row, decrypted in memory and converted to a live signing keypair for the account identified by account_id.",
+        "protection_obligation": "AccountManager.get_keypair_for_signing must not decrypt a wallet account's private key and materialize an in-memory signing keypair unless the requesting AgentContext has authority over the account's owning user_id, enforced by a fail-closed has_permission check that raises PermissionError before decryption (merged from both reviewer wordings covering decryption for signing).",
+        "scope_limits": [
+          "Covers only the get_keypair_for_signing path; any other route to EncryptionManager.decrypt is outside this registration.",
+          "In the supplied views the sole visible call site is stellar_soroban.py:382; whether agent/transaction_handler.py (not supplied) also calls it is unverified.",
+          "The decrypted key exists only in memory and is not persisted by this function; key-material leakage via other channels is out of scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.encryption.decrypt(account['encrypted_private_key'], account['user_id']) at backend/account_manager.py:238-241, with disclosure realized when the plaintext private_key is placed in the returned success payload at lines 247-254.",
+        "contract_id": "ecological-contract:4e91ed2c5d9f140a96125c8f2021133d",
+        "declared_mechanism": "Fail-closed permission check 'if not agent_context.has_permission(account['user_id'])' after account lookup and immediately before self.encryption.decrypt(account['encrypted_private_key'], account['user_id']); has_permission is defined in backend/agent/context.py:76-86 as membership of the account owner in get_authorized_user_ids() = [agent_user_id, user_id].",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 231,
+            "line_start": 230,
+            "path": "backend/account_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 235,
+            "line_start": 232,
+            "path": "backend/account_manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 215,
+            "line_start": 208,
+            "path": "backend/account_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 241,
+            "line_start": 237,
+            "path": "backend/account_manager.py",
+            "role": "commit_point",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 254,
+            "line_start": 247,
+            "path": "backend/account_manager.py",
+            "role": "commit_point",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 469,
+            "line_start": 463,
+            "path": "backend/stellar_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "091091ba2f6fe0f3c9ca0f64d300868a1bd70e6a26ca90b78bfedd854b9a04c0"
+          },
+          {
+            "line_end": 86,
+            "line_start": 76,
+            "path": "backend/agent/context.py",
+            "role": "guard_registration",
+            "source_sha256": "39940c0c303748a5763ab7606591b1285a51e3d9a78e8998c53b0c4470d06282"
+          }
+        ],
+        "forbidden_condition": "Export of a wallet account (decryption and disclosure of its plaintext private key in the returned payload) when the account's owning user_id is not in the requesting AgentContext's authorized user IDs; the guard rejects with 'Permission denied: account not owned by authorized users'.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No decorator, MCP/tool registration, or dispatch table in the supplied views binds stellar_tools.account_manager action='export' (lines 463-469) or AccountManager.export_account to agent tool invocation.",
+          "The construction site of AgentContext instances (how user_id and wallet_mode derive from an authenticated principal) is absent from the supplied views.",
+          "Whether any non-agent caller can invoke export_account with an attacker-chosen AgentContext is undeterminable from supplied views."
+        ],
+        "protected_operation": "Exporting a managed wallet account's private key via AccountManager.export_account, reached from the 'export' action of the stellar_tools account_manager composite tool (stellar_tools.py:463-469).",
+        "protected_resource": "The encrypted private key (and its plaintext form) of a wallet_accounts row identified by account_id.",
+        "protection_obligation": "AccountManager.export_account must not decrypt and return a wallet account's plaintext private key unless the requesting AgentContext has authority over the account's owning user_id, enforced by a fail-closed agent_context.has_permission(account['user_id']) check placed immediately before decryption (merged from both reviewer wordings covering private-key export).",
+        "scope_limits": [
+          "Guard exists only inside AccountManager.export_account; direct calls to EncryptionManager.decrypt or other code paths reaching the stored key are not covered by this registration.",
+          "Authority is purely user_id string membership in [system_agent, context user_id]; no richer ACL is declared in supplied source.",
+          "External-wallet accounts (virtual id 'external_wallet' in stellar_tools.py) have no wallet_accounts row and are outside this guard's coverage.",
+          "Broad exception handler at account_manager.py:256-260 swallows errors (including decrypt failures) into a generic error dict; failure-path behavior is out of scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "cursor.execute('DELETE FROM wallet_accounts WHERE id = ?') followed by conn.commit() at backend/account_manager.py:343-348.",
+        "contract_id": "ecological-contract:d311d69f80a7d8c0063bd529647f90f0",
+        "declared_mechanism": "Fail-closed 'if not agent_context.has_permission(account['user_id'])' placed after account lookup and immediately before the DELETE FROM wallet_accounts statement and conn.commit(); has_permission semantics defined in backend/agent/context.py:76-86.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 336,
+            "line_start": 335,
+            "path": "backend/account_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 340,
+            "line_start": 337,
+            "path": "backend/account_manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 318,
+            "line_start": 314,
+            "path": "backend/account_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 348,
+            "line_start": 342,
+            "path": "backend/account_manager.py",
+            "role": "commit_point",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 86,
+            "line_start": 76,
+            "path": "backend/agent/context.py",
+            "role": "guard_registration",
+            "source_sha256": "39940c0c303748a5763ab7606591b1285a51e3d9a78e8998c53b0c4470d06282"
+          }
+        ],
+        "forbidden_condition": "Deletion of a wallet_accounts row whose owning user_id is not in the requesting AgentContext's authorized user IDs ('Permission denied: account not owned by authorized users').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No call site of delete_account appears in the supplied views: the stellar_tools account_manager composite tool's declared action list (create/fund/get/transactions/list/export/import/send, stellar_tools.py:523) contains no delete action, so any tool or dispatch path exposing deletion is unbound.",
+          "AgentContext construction/provenance is absent from supplied views."
+        ],
+        "protected_operation": "Deleting a managed wallet account via AccountManager.delete_account.",
+        "protected_resource": "The wallet_accounts database row identified by account_id, including its stored encrypted private key.",
+        "protection_obligation": "AccountManager.delete_account must not delete a wallet account row unless the requesting AgentContext has authority over the account's owning user_id, enforced by a fail-closed has_permission check immediately before the DELETE commit (merged from both reviewer wordings covering account deletion).",
+        "scope_limits": [
+          "Guard covers only the delete_account method; no supplied view exposes any caller or tool action that reaches it.",
+          "The delete is a hard DELETE with no soft-delete or audit trail declared in supplied source.",
+          "Same user_id-membership authority model as the other AccountManager guards; no additional approval step is declared."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "prepared_tx.sign(keypair) at backend/stellar_soroban.py:387 followed by soroban_server.send_transaction(prepared_tx) at line 388 (irreversible external submission initiated), with result polled at line 397; the whole agent-mode block spans lines 381-388.",
+        "contract_id": "ecological-contract:d83498750a562c4584285b0b7578d675",
+        "declared_mechanism": "Precondition 'if not agent_context: return error' plus fail-closed 'if not account_manager.user_owns_account(agent_context, account_id)' before build/simulate/sign; user_owns_account (backend/account_manager.py:372-384) resolves the account and delegates to AgentContext.has_permission; get_keypair_for_signing re-checks the same permission on the signing path.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 321,
+            "line_start": 317,
+            "path": "backend/stellar_soroban.py",
+            "role": "guard_registration",
+            "source_sha256": "557cf3eb71ba63e5450c55206cee7e082774716b5a807852a43e5d72661bb49f"
+          },
+          {
+            "line_end": 325,
+            "line_start": 322,
+            "path": "backend/stellar_soroban.py",
+            "role": "forbidden_condition",
+            "source_sha256": "557cf3eb71ba63e5450c55206cee7e082774716b5a807852a43e5d72661bb49f"
+          },
+          {
+            "line_end": 315,
+            "line_start": 312,
+            "path": "backend/stellar_soroban.py",
+            "role": "protected_operation",
+            "source_sha256": "557cf3eb71ba63e5450c55206cee7e082774716b5a807852a43e5d72661bb49f"
+          },
+          {
+            "line_end": 388,
+            "line_start": 381,
+            "path": "backend/stellar_soroban.py",
+            "role": "commit_point",
+            "source_sha256": "557cf3eb71ba63e5450c55206cee7e082774716b5a807852a43e5d72661bb49f"
+          },
+          {
+            "line_end": 384,
+            "line_start": 372,
+            "path": "backend/account_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "132d52ebf7c7ad930b3567a0f7287fd6140a4570effe3e2d35fccc61bad353ef"
+          },
+          {
+            "line_end": 86,
+            "line_start": 76,
+            "path": "backend/agent/context.py",
+            "role": "guard_registration",
+            "source_sha256": "39940c0c303748a5763ab7606591b1285a51e3d9a78e8998c53b0c4470d06282"
+          }
+        ],
+        "forbidden_condition": "Signing and submitting a Soroban contract invocation transaction using a managed account whose owning user_id is not authorized for the requesting AgentContext ('Permission denied: account not owned by user'); invocations without any agent_context are rejected outright ('agent_context required for invoke action').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view registers soroban_operations as an agent tool or dispatches the 'invoke' action from an agent runtime; the caller supplying agent_context, contract_id, function_name, and parameters is unknown.",
+          "AgentContext construction/provenance (how user_id relates to an authenticated principal) is absent from supplied views.",
+          "network_passphrase defaults to None (line 176); operational network binding is undeterminable from supplied views."
+        ],
+        "protected_operation": "Executing a Soroban contract function (write) via the 'invoke' action of soroban_operations, including the agent/imported-mode automatic sign-and-submit branch.",
+        "protected_resource": "The managed Stellar account (wallet_accounts row) used as transaction source/signer, and the on-chain ledger state mutated by the submitted contract invocation.",
+        "protection_obligation": "The soroban_operations 'invoke' action must not sign and submit an on-chain Soroban contract invocation with a managed account unless the requesting AgentContext has ownership of that account, enforced by a required-agent_context precondition plus account_manager.user_owns_account before transaction build/sign (merged from both reviewer wordings covering on-chain invocation).",
+        "scope_limits": [
+          "External-wallet mode (agent_context.requires_user_signing(), lines 367-379) returns unsigned XDR instead of signing; in that branch the guard has already run but no on-chain submission occurs inside this function.",
+          "Read-only actions (get_data, get_ledger_entries, simulate, get_events) and the 'simulate' action explicitly skip the ownership check (documented at lines 210-214 and 248); they are outside this obligation.",
+          "Transport to Soroban RPC is a network call, but the protected effect classified here is the irreversible on-chain ledger mutation initiated by send_transaction, not the request/response itself.",
+          "Post-submission failure handling (lines 391-405) addresses status polling only and is out of scope."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied view contains an agent tool registration, MCP server wiring, decorator, or dispatch table that invokes stellar_tools composite functions (account_manager, trading, trustline_manager) or soroban_operations in response to agent tool calls; agent_mediation is therefore not_established for every compiled contract and no agent_entry_binding evidence roles could be cited.",
+      "The construction site of AgentContext (backend/agent/context.py instances) is absent from the supplied views; how user_id and wallet_mode derive from an authenticated principal \u2014 and thus the trustworthiness of the guard's input \u2014 cannot be bound.",
+      "backend/agent/transaction_handler.py is not supplied; the concrete Horizon submission commit point inside _build_sign_submit, its dual-mode signing behavior, and whether it calls AccountManager.get_keypair_for_signing are unverifiable.",
+      "No call site reaching AccountManager.delete_account exists in the supplied views; whether any registered agent tool exposes account deletion is unknown.",
+      "backend/encryption.py (EncryptionManager) is not supplied; the relationship between owner-bound encryption (encrypt/decrypt keyed by user_id) and the permission model cannot be verified beyond call syntax.",
+      "Repository enumeration is incomplete per the stated scope; other files may contain additional tool registrations or guarded effects not visible here."
+    ],
+    "repository": "yusefmosiah/tuxedo",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:dba520c6e5da6383b3e4969bf88af6a7"
+  },
+  "request_sha256": "319d9f03db7c1be655aa66f63220834e698068a88770d7d9593e778a90483dc2",
+  "response_sha256": "e521fe3f5bd52bea3352e4091d81f6a3f764a509ae9c1abd420c3cf16d1c88a1",
+  "state": "completed",
+  "tokens": 46759,
+  "unit": "v24-screen:dba520c6e5da6383b3e4969bf88af6a7"
+}

@@ -1,0 +1,101 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.store.batch(prepared) (src/langmigrate/runtime/store.py:95) and await self.store.abatch(prepared) (src/langmigrate/runtime/store.py:100) \u2014 the wrapped store's persistence of the prepared PutOps; the _prepare check runs immediately before this commit, and its raise under the 'error' policy prevents the colliding value from being committed.",
+        "contract_id": "ecological-contract:5bac9c55180239207ad3fd3d70a2d898",
+        "declared_mechanism": "MigrationStore._prepare reserved-key collision check: for every PutOp with a non-None value, if REVISION_METADATA_KEY ('langmigrate_rev') is present in the copied value dict, apply the on_reserved_key_collision policy set at construction \u2014 'error' raises ReservedKeyCollisionError, 'warn' logs via logger.warning and proceeds with the overwrite. The guard is registered by wiring the wrapper via setup_langmigrate_store, which forwards the policy (default 'warn') into MigrationStore.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 134,
+            "line_start": 108,
+            "path": "src/langmigrate/runtime/store.py",
+            "role": "guard_registration",
+            "source_sha256": "1f3b9cf5da8b2089daf973f99aecf8689645797798e1cb4906cf01ccd294a1b0"
+          },
+          {
+            "line_end": 104,
+            "line_start": 93,
+            "path": "src/langmigrate/runtime/store.py",
+            "role": "commit_point",
+            "source_sha256": "1f3b9cf5da8b2089daf973f99aecf8689645797798e1cb4906cf01ccd294a1b0"
+          },
+          {
+            "line_end": 10,
+            "line_start": 8,
+            "path": "src/langmigrate/runtime/store.py",
+            "role": "protected_operation",
+            "source_sha256": "1f3b9cf5da8b2089daf973f99aecf8689645797798e1cb4906cf01ccd294a1b0"
+          },
+          {
+            "line_end": 164,
+            "line_start": 146,
+            "path": "src/langmigrate/core/exceptions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "787d03eb8f5fae7551efa39f2eda8020b228b9132ad2094d128458c9686794f8"
+          },
+          {
+            "line_end": 30,
+            "line_start": 24,
+            "path": "src/langmigrate/core/types.py",
+            "role": "forbidden_condition",
+            "source_sha256": "53cb30d4905b512b91e3c3b451948e3cd0b36f932af077645d783141e91c1e3f"
+          },
+          {
+            "line_end": 103,
+            "line_start": 92,
+            "path": "src/langmigrate/core/version.py",
+            "role": "protected_operation",
+            "source_sha256": "dee338dee515268d284c06c6998edbe03bcc8971ddc45df0e78325efff62419e"
+          },
+          {
+            "line_end": 98,
+            "line_start": 68,
+            "path": "src/langmigrate/runtime/factory.py",
+            "role": "guard_registration",
+            "source_sha256": "bddbe4fa94490eea91a4eaf928a9f1ad3c381f13304408372c026e148da7de2c"
+          }
+        ],
+        "forbidden_condition": "A PutOp routed through MigrationStore whose value dict already contains the reserved key 'langmigrate_rev' (REVISION_METADATA_KEY) being overwritten by the revision-tag stamp without the collision being surfaced per policy \u2014 i.e., the application's value under that key being silently replaced on every put and stripped from every read (documented as total data loss in ReservedKeyCollisionError and the OnReservedKeyCollision policy docs).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which concrete BaseStore backend persists the items (in-memory, SQLite, Postgres, etc.) is not shown in the supplied views; the 'database' stratum reflects persistent store mutation generally.",
+          "No supplied source shows setup_langmigrate_store or MigrationStore being instantiated in application or agent wiring, so the caller population of the guarded write path is unknown.",
+          "Whether any agent-facing tool dispatch or hook feeds PutOp values into this store is unsupported by the supplied source and must be resolved before upgrading agent_mediation beyond not_established."
+        ],
+        "protected_operation": "Store item writes routed through MigrationStore.batch/abatch (all BaseStore convenience methods, including put/aput, route through these two methods per the module docstring), specifically the stamping of outgoing PutOp values with the resolved target revision in MigrationStore._prepare ahead of persistence.",
+        "protected_resource": "Persisted store item values held in the wrapped BaseStore \u2014 the application payload dicts and, within them, any application data keyed under 'langmigrate_rev'.",
+        "protection_obligation": "Application data stored under the reserved key 'langmigrate_rev' inside store item values must never be silently overwritten when MigrationStore stamps outgoing PutOp values with the schema revision tag: MigrationStore._prepare inspects every PutOp before the wrapped store's write commits and, on collision, must surface it per the configured on_reserved_key_collision policy \u2014 raising ReservedKeyCollisionError under the 'error' policy (blocking the write) or logging a warning under the 'warn' policy (the default) before proceeding \u2014 protecting persisted store-item integrity.",
+        "scope_limits": [
+          "The guard is inert when the migration registry is empty: _prepare returns the ops unchanged and neither stamping nor collision detection occurs (src/langmigrate/runtime/store.py:110-112).",
+          "Only PutOps with a non-None value are inspected; PutOp(value=None) (delete) passes through unchecked (src/langmigrate/runtime/store.py:115, 132-133).",
+          "Under the default 'warn' policy the write still proceeds after the warning \u2014 the overwrite is surfaced, not blocked; only the 'error' policy blocks the commit.",
+          "Collision detection applies only to store item values; the checkpoint-metadata stamping path (stamp_metadata / MigrationInterceptor) deliberately has no collision policy (src/langmigrate/core/version.py:29-33).",
+          "Detection is exact top-level key equality with 'langmigrate_rev' in the item value dict; nested occurrences or differently named keys are not covered.",
+          "Agent mediation is not established from the supplied source: no agent tool registration, lifecycle hook, or concrete agent-generated-input dataflow binds store puts to this guard; the LangGraph framework context alone does not establish mediation."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Raise sites and guarded effects for the analogous guards cited in the second-phase rationale \u2014 MigrationInterceptor._migrate_tuple unknown-revision raise, UnsafeMigrationError on a conflicting rename_field, and ChannelRemovalUnsupportedError on state-level channel drops \u2014 are not present in the supplied source views (only the exception definitions and docstrings are), so no separate contracts can be compiled for them.",
+      "The concrete persistence backend of the wrapped BaseStore is not shown; whether store item writes land in a database, file, or in-memory structure cannot be determined from the supplied views.",
+      "Behavior labels and runtime prevalence data are unavailable per the stated scope; no claim about how often the guard fires or blocks is supported.",
+      "No supplied view demonstrates agent mediation of the guarded store-write effect, so agent_entry_binding evidence is omitted and agent_mediation is set to not_established."
+    ],
+    "repository": "scinfu/langmigrate",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:ac3a707eb5dbd1c3ccc52043b1c69abd"
+  },
+  "request_sha256": "aadd596ed908a9a63f1a1c3a5a4468c218a2694a7d12079a0286edd17149e702",
+  "response_sha256": "02fb18da4526b0857798c92fd698bb6a599dbb42e4274781d1f9de44d2d956e6",
+  "state": "completed",
+  "tokens": 19012,
+  "unit": "v24-screen:ac3a707eb5dbd1c3ccc52043b1c69abd"
+}

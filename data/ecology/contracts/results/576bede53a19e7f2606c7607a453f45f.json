@@ -1,0 +1,150 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "path.write_text(content, encoding='utf-8') at varro/agent/filesystem.py:93 (inside try block lines 92-95).",
+        "contract_id": "ecological-contract:ba37ff18aa56269421aaca0048fe0e83",
+        "declared_mechanism": "Ordered pre-commit guards inside write_file: (1) is_readonly_user_path(file_path) returns an error and aborts (varro/agent/filesystem.py:81-82), implemented as first-segment matching against READONLY_DOCS_DIRS (varro/agent/workspace.py:10-17); (2) resolve_user_path(user_id, file_path) returns an error string for non-absolute paths, any '..' segment, and resolved paths failing relative_to(user_root) containment (varro/agent/workspace.py:39-68), which write_file converts into an error return instead of writing (varro/agent/filesystem.py:83-86).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 85,
+            "line_start": 80,
+            "path": "varro/agent/filesystem.py",
+            "role": "guard_registration",
+            "source_sha256": "06cf6c4e3667dc526c08afd2cda78a56c5670a9f0ba3a201bd4d9e4ef8ba1a7e"
+          },
+          {
+            "line_end": 17,
+            "line_start": 7,
+            "path": "varro/agent/workspace.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fe0f115cfc0ffdec0c6716f0dbfa73740654be9031faa5e64f6dca255aabe264"
+          },
+          {
+            "line_end": 68,
+            "line_start": 39,
+            "path": "varro/agent/workspace.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fe0f115cfc0ffdec0c6716f0dbfa73740654be9031faa5e64f6dca255aabe264"
+          },
+          {
+            "line_end": 86,
+            "line_start": 80,
+            "path": "varro/agent/filesystem.py",
+            "role": "protected_operation",
+            "source_sha256": "06cf6c4e3667dc526c08afd2cda78a56c5670a9f0ba3a201bd4d9e4ef8ba1a7e"
+          },
+          {
+            "line_end": 95,
+            "line_start": 92,
+            "path": "varro/agent/filesystem.py",
+            "role": "commit_point",
+            "source_sha256": "06cf6c4e3667dc526c08afd2cda78a56c5670a9f0ba3a201bd4d9e4ef8ba1a7e"
+          }
+        ],
+        "forbidden_condition": "A write_file call whose file_path is an absolute path whose first segment is in READONLY_DOCS_DIRS {subjects, fact, dim, geo} (varro/agent/workspace.py:7, 10-17), or whose file_path is non-absolute, contains a '..' segment, or resolves (after symlink resolution) to a host path outside user_workspace_root(user_id).resolve() (varro/agent/workspace.py:45-48, 61-66) \u2014 i.e., mutation of read-only doc paths or escape from the sandbox workspace root.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No decorator, tool-registry call, or dispatch wiring in supplied source shows write_file is exposed to an agent runtime; pydantic_ai tool machinery (ToolReturn/BinaryContent) appears only in sibling read_file (varro/agent/filesystem.py:4-5, 48-52).",
+          "The provenance of the user_id argument at agent invocation time (how caller identity is bound in the agent context) is not shown in supplied source.",
+          "Whether any other agent-reachable path (e.g., a shell tool) can reach the filesystem without passing through write_file's guards is unknown from supplied sources."
+        ],
+        "protected_operation": "Agent-invocation-style file content write: write_file(file_path, user_id, content) writing supplied content to a resolved host path (varro/agent/filesystem.py:80-97).",
+        "protected_resource": "Files addressable through the caller's per-user workspace root DATA_DIR/user/{user_id} (varro/agent/workspace.py:20-21), including the read-only doc trees linked into workspaces at creation time (varro/agent/workspace.py:24-37).",
+        "protection_obligation": "File-mutation writes performed by the tool-style function write_file (varro/agent/filesystem.py:80) must be refused for any file_path targeting a read-only docs directory (subjects, fact, dim, geo) or any path that does not resolve inside the caller's per-user workspace root, with the is_readonly_user_path + resolve_user_path guard pair evaluated and rejecting before any content is committed by path.write_text.",
+        "scope_limits": [
+          "Covers only the write_file mutation path in varro/agent/filesystem.py; edit_file is covered by a separate contract.",
+          "Read-path behavior (read_file's resolve_user_path with allow_readonly_symlink_read=True, varro/agent/filesystem.py:28-32) is outside this contract, which addresses mutation only.",
+          "No delete/move/rename or shell-mediated file mutation appears in supplied source; the reviewer-cited bash command allowlist with readonly-delete detection in a sandbox module is not among supplied sources and is not covered by this contract.",
+          "is_readonly_user_path returns False for relative paths (varro/agent/workspace.py:12-13); no claim is made here beyond that the two guards are invoked in the cited order ahead of the write commit.",
+          "No claim of DEC violation, safety, or runtime behavior is made; only the guard-to-commit ordering visible in supplied source is recorded."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "path.write_text(new_content, encoding='utf-8') at varro/agent/filesystem.py:138 (inside try block lines 137-140).",
+        "contract_id": "ecological-contract:ca74fefb912e45b795d4b2e041103ac2",
+        "declared_mechanism": "Ordered pre-commit guards inside edit_file: (1) is_readonly_user_path(file_path) returns an error and aborts (varro/agent/filesystem.py:107-108); (2) resolve_user_path(user_id, file_path) rejects non-absolute paths, '..' segments, and non-contained resolved paths (varro/agent/workspace.py:39-68), converted by edit_file into an error return before the read-modify-write proceeds (varro/agent/filesystem.py:109-111).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 111,
+            "line_start": 100,
+            "path": "varro/agent/filesystem.py",
+            "role": "guard_registration",
+            "source_sha256": "06cf6c4e3667dc526c08afd2cda78a56c5670a9f0ba3a201bd4d9e4ef8ba1a7e"
+          },
+          {
+            "line_end": 17,
+            "line_start": 7,
+            "path": "varro/agent/workspace.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fe0f115cfc0ffdec0c6716f0dbfa73740654be9031faa5e64f6dca255aabe264"
+          },
+          {
+            "line_end": 68,
+            "line_start": 39,
+            "path": "varro/agent/workspace.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fe0f115cfc0ffdec0c6716f0dbfa73740654be9031faa5e64f6dca255aabe264"
+          },
+          {
+            "line_end": 106,
+            "line_start": 100,
+            "path": "varro/agent/filesystem.py",
+            "role": "protected_operation",
+            "source_sha256": "06cf6c4e3667dc526c08afd2cda78a56c5670a9f0ba3a201bd4d9e4ef8ba1a7e"
+          },
+          {
+            "line_end": 140,
+            "line_start": 137,
+            "path": "varro/agent/filesystem.py",
+            "role": "commit_point",
+            "source_sha256": "06cf6c4e3667dc526c08afd2cda78a56c5670a9f0ba3a201bd4d9e4ef8ba1a7e"
+          }
+        ],
+        "forbidden_condition": "An edit_file call whose file_path's first segment is in READONLY_DOCS_DIRS {subjects, fact, dim, geo} (varro/agent/workspace.py:7, 10-17), or whose file_path is non-absolute, contains a '..' segment, or resolves outside user_workspace_root(user_id).resolve() (varro/agent/workspace.py:45-48, 61-66) \u2014 i.e., in-place mutation of read-only doc paths or escape from the sandbox workspace root.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No decorator, registration, or dispatch wiring in supplied source binds edit_file to an agent tool loop; pydantic_ai tool machinery appears only in sibling read_file (varro/agent/filesystem.py:4-5, 48-52).",
+          "The provenance of the user_id argument at agent invocation time is not shown in supplied source."
+        ],
+        "protected_operation": "Agent-invocation-style in-place edit: edit_file(file_path, old_string, new_string, user_id, replace_all) performing read-modify-write string replacement on a resolved host path (varro/agent/filesystem.py:100-141).",
+        "protected_resource": "Files addressable through the caller's per-user workspace root DATA_DIR/user/{user_id} (varro/agent/workspace.py:20-21), including the read-only doc trees linked into workspaces at creation time (varro/agent/workspace.py:24-37).",
+        "protection_obligation": "In-place content replacement performed by the tool-style function edit_file (varro/agent/filesystem.py:100-106) must be refused for any file_path targeting a read-only docs directory (subjects, fact, dim, geo) or any path that does not resolve inside the caller's per-user workspace root, with the is_readonly_user_path + resolve_user_path guard pair evaluated and rejecting before the modified content is committed by path.write_text.",
+        "scope_limits": [
+          "Covers only the edit_file mutation path in varro/agent/filesystem.py; write_file is covered by a separate contract.",
+          "The edit's old_string/new_string payloads are not assessed for indirect path effects; the contract covers only the path-resolution guards ahead of the write commit.",
+          "The reviewer-cited bash command allowlist with readonly-delete detection in a sandbox module is not among supplied sources and is not covered.",
+          "No claim of DEC violation, safety, or runtime behavior is made; only the guard-to-commit ordering visible in supplied source is recorded."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Reviewer opinion cites a bash command allowlist with readonly-delete detection in a sandbox module (sandbox.py); that file is not among supplied sources, so no contract for shell/delete agent file effects can be compiled.",
+      "No supplied source registers write_file/edit_file with an agent tool registry (no decorator, registration call, or dispatch wiring); agent mediation for both emitted contracts is therefore not_established rather than direct_tool.",
+      "app/main.py, cited by a reviewer for the auth beforeware and the exclusion of /payments/webhook from authentication, is not among supplied sources.",
+      "Three reviewer-proposed obligations are excluded from contracts because supplied source does not bind them to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect: (a) PUT /dashboard/{name}/code session-auth + path-containment before write_text (varro/dashboard/routes.py:462-499, 192-204); (b) verify_snapshot_token gating of the /_internal/dashboard/{token}/{name} route family (varro/dashboard/snapshot_auth.py:52-77; varro/dashboard/routes.py:329-336, 414-419, 651-655); (c) Stripe webhook signature verification before the User.balance increment (app/routes/payments.py:155-187, 101-111). In supplied source these are ordinary web authentication/validation.",
+      "RunManager per-user run/stream ownership checks (varro/chat/run_manager.py:66-71, 100-115), cited by a reviewer, are not bound in supplied source to any agent-mediated operation and are excluded from contracts.",
+      "How the user_id parameter is derived and bound for agent tool invocations of write_file/edit_file is not shown in supplied source."
+    ],
+    "repository": "josca42/varro_archive",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:576bede53a19e7f2606c7607a453f45f"
+  },
+  "request_sha256": "cd9b64d53c4313835ade69029bddd41f908a460cc2cae0500b2d5171d46febeb",
+  "response_sha256": "251b9b4b5285c3e9d4f80410d05600ae6e7d6ef1a4540bc60d1315a51a3331d0",
+  "state": "completed",
+  "tokens": 30580,
+  "unit": "v24-screen:576bede53a19e7f2606c7607a453f45f"
+}

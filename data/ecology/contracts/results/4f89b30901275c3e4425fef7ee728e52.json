@@ -1,0 +1,198 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "GuardrailFunctionOutput with tripwire_triggered=True returned at src/bot/main.py:140-141, raised inside Runner.run (src/api/main.py:55-59) so that process_message aborts before any downstream agent effect; the abort is observable at the 'tripwire' exception handler returning a canned refusal (src/api/main.py:79-82).",
+        "contract_id": "ecological-contract:4ca26fd0fb32ba64c4e793dd7c0a2094",
+        "declared_mechanism": "InputGuardrail(guardrail_function=smart_guardrail) registered in triage_agent.input_guardrails (src/bot/main.py:153-155); smart_guardrail (src/bot/main.py:136-146) runs guardrail_agent (defined at src/bot/main.py:31-40 with output_type GuardrailCheck) and returns GuardrailFunctionOutput(output_info=final_output, tripwire_triggered=True) when final_output.is_safe is False.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 155,
+            "line_start": 153,
+            "path": "src/bot/main.py",
+            "role": "guard_registration",
+            "source_sha256": "ad213afa0fcda6e1eef21df298fb530bac07d3363772eaaaff5db48553f492b3"
+          },
+          {
+            "line_end": 146,
+            "line_start": 136,
+            "path": "src/bot/main.py",
+            "role": "guard_registration",
+            "source_sha256": "ad213afa0fcda6e1eef21df298fb530bac07d3363772eaaaff5db48553f492b3"
+          },
+          {
+            "line_end": 36,
+            "line_start": 36,
+            "path": "src/bot/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ad213afa0fcda6e1eef21df298fb530bac07d3363772eaaaff5db48553f492b3"
+          },
+          {
+            "line_end": 141,
+            "line_start": 140,
+            "path": "src/bot/main.py",
+            "role": "commit_point",
+            "source_sha256": "ad213afa0fcda6e1eef21df298fb530bac07d3363772eaaaff5db48553f492b3"
+          },
+          {
+            "line_end": 82,
+            "line_start": 79,
+            "path": "src/api/main.py",
+            "role": "commit_point",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          },
+          {
+            "line_end": 59,
+            "line_start": 55,
+            "path": "src/api/main.py",
+            "role": "protected_operation",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          },
+          {
+            "line_end": 152,
+            "line_start": 148,
+            "path": "src/bot/main.py",
+            "role": "protected_operation",
+            "source_sha256": "ad213afa0fcda6e1eef21df298fb530bac07d3363772eaaaff5db48553f492b3"
+          },
+          {
+            "line_end": 46,
+            "line_start": 43,
+            "path": "src/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          },
+          {
+            "line_end": 173,
+            "line_start": 161,
+            "path": "src/bot/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ad213afa0fcda6e1eef21df298fb530bac07d3363772eaaaff5db48553f492b3"
+          }
+        ],
+        "forbidden_condition": "User input that the guardrail agent classifies as unsafe per its instructions ('Set is_safe to False if the input contains offensive, inappropriate, or dangerous content', src/bot/main.py:36) reaching triage or downstream agent processing instead of being blocked by the tripwire.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Exact raise/abort semantics of InputGuardrail tripwires inside Runner.run (including whether handoffs and tool calls are prevented before commit) depend on the agents SDK, which is not part of the supplied source.",
+          "The GuardrailCheck schema fields (is_safe, is_business, reason) are defined in src/bot/models.py, which was not supplied.",
+          "Whether smart_guardrail evaluates the full conversation history passed as input_data or only the newest message on subsequent turns is not determinable from the supplied source.",
+          "Whether the guardrail agent's own LLM call constitutes an external effect that commits before the tripwire decision is not established by the supplied source."
+        ],
+        "protected_operation": "Runner.run executions of triage_agent on user input (webhook path src/api/main.py:55-59 and re-run at 64-68; CLI path src/bot/main.py:173 and 178), including handoffs to car_sales_agent and customer_success_agent (src/bot/main.py:152).",
+        "protected_resource": "The triage agent pipeline (src/bot/main.py:148-157) and its handoff targets 'Kavak Car Sales Agent' and 'Kavak customer success agent' with their tools (FileSearchTool, create_financial_plan).",
+        "protection_obligation": "The triage agent's registered InputGuardrail (smart_guardrail) must execute on every triage_agent run so that user input classified as unsafe (GuardrailCheck.is_safe == False) triggers a tripwire that aborts the Runner.run before the input is processed by the triage agent or handed off to the sales / customer-success agents.",
+        "scope_limits": [
+          "The guardrail is registered only on triage_agent; protection of the sales / customer-success agents relies on all traffic flowing through triage handoffs (src/bot/main.py:152).",
+          "Only unsafe input trips the guardrail; off-topic input (is_business == False) is merely logged at src/bot/main.py:143-144 and is not blocked.",
+          "The unsafe/safe classification is produced by an LLM guardrail agent; no deterministic content validation exists in the supplied source.",
+          "This contract covers the agent-invocation effect blocked at the tripwire; downstream effects that would follow an unblocked run (LLM API calls, session state updates at src/api/main.py:70-71, WhatsApp reply at src/api/main.py:101) are separate strata not governed by this contract.",
+          "The webhook handler still returns HTTP 200 after the background task catches the tripwire (src/api/main.py:79-82, 139); HTTP response behavior is outside this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Guard decision commits at the HTTP 403 raise (src/api/main.py:124-125), which executes before background_tasks.add_task(handle_message, ...) at src/api/main.py:133-137; the guarded external effect itself later commits at twilio_client.messages.create (src/api/main.py:87) inside the asynchronously scheduled background task.",
+        "contract_id": "ecological-contract:85f735fd80202a0dd4ee890378591556",
+        "declared_mechanism": "validate_twilio_request (src/api/main.py:33-36) constructs twilio.request_validator.RequestValidator(settings.twilio_auth_token) and returns validator.validate(url, request_data, signature); incoming_message enforces it inline at src/api/main.py:124-125 by raising HTTPException(status_code=403, detail='Invalid Twilio signature') prior to background_tasks.add_task.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 36,
+            "line_start": 33,
+            "path": "src/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          },
+          {
+            "line_end": 125,
+            "line_start": 116,
+            "path": "src/api/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          },
+          {
+            "line_end": 112,
+            "line_start": 107,
+            "path": "src/api/main.py",
+            "role": "protected_operation",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          },
+          {
+            "line_end": 137,
+            "line_start": 133,
+            "path": "src/api/main.py",
+            "role": "commit_point",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          },
+          {
+            "line_end": 94,
+            "line_start": 84,
+            "path": "src/api/main.py",
+            "role": "commit_point",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          },
+          {
+            "line_end": 101,
+            "line_start": 96,
+            "path": "src/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          },
+          {
+            "line_end": 77,
+            "line_start": 75,
+            "path": "src/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          },
+          {
+            "line_end": 59,
+            "line_start": 55,
+            "path": "src/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "062685939cd4550deb27d9c125969baf0348b251ba2df1a6b5ee74d4114ca6bb"
+          }
+        ],
+        "forbidden_condition": "Processing or scheduling of the inbound-webhook message pipeline for a request whose X-Twilio-Signature header is missing or fails RequestValidator.validate(url, request_data, signature), where the validated URL is reconstructed from X-Forwarded-Proto / X-Forwarded-Host and the request path.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether twilio RequestValidator.validate fails closed when settings.twilio_auth_token is empty or None (library semantics not present in supplied source).",
+          "Whether a trusted reverse proxy guarantees the X-Forwarded-Proto / X-Forwarded-Host values used to build the signature-validated URL (src/api/main.py:118-120).",
+          "Whether the webhook URL configured on the Twilio side matches the reconstructed full_url at validation time (external configuration not present in supplied source)."
+        ],
+        "protected_operation": "Inbound WhatsApp webhook handling on POST /webhook/incoming (src/api/main.py:107-139), including the scheduling of the handle_message background task that executes the agent pipeline and sends the reply via Twilio.",
+        "protected_resource": "The outbound Twilio WhatsApp send channel (twilio_client.messages.create, with twilio_client bound to settings.twilio_account_sid / settings.twilio_auth_token at src/api/main.py:25-27) reachable from the /webhook/incoming entry point.",
+        "protection_obligation": "Every request to POST /webhook/incoming must carry a valid X-Twilio-Signature verified via twilio RequestValidator against settings.twilio_auth_token, and any request failing validation must be rejected with HTTP 403 before the endpoint schedules the background task that runs the bot agent and dispatches outbound WhatsApp messages via twilio_client.messages.create.",
+        "scope_limits": [
+          "Applies only to POST /webhook/incoming; /webhook/status, /api/send, /api/direct/message, /api/sessions, /api/sessions/{phone_number} and /api/health perform no signature validation in the supplied source (src/api/main.py:141-190), including endpoints that reach send_whatsapp_message or process_message directly.",
+          "The 403 guard commits in the request handler before task scheduling; the actual Twilio send runs asynchronously in a FastAPI background task, so the guard protects the send only transitively and a 200 response is returned at src/api/main.py:139 regardless of later send success.",
+          "The URL used for signature validation is derived from client-suppliable X-Forwarded-Proto / X-Forwarded-Host headers (src/api/main.py:118-120); trusted-proxy assumptions are not established by supplied source.",
+          "Guard depends on settings.twilio_auth_token; the source only conditionally constructs twilio_client when credentials exist (src/api/main.py:25-27) and does not show fail-closed behavior for an empty or missing token.",
+          "This contract covers the message-send chain only; agent-internal LLM calls and in-memory session state mutations are separate effects not governed by it."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Reviewer rationale references a production FastAPI service launched by a Dockerfile; no deployment or container configuration is included in the supplied sources, so deployment context is unverified.",
+      "src/api/models.py (Settings, Message, WhatsAppOutgoingMessage, WhatsAppIncomingMessage) is not supplied; defaults and validation semantics for twilio_auth_token, twilio_account_sid, and twilio_phone_number are unknown.",
+      "src/bot/models.py (GuardrailCheck, AgentOutput, FinancialPlan, CarData, Installment) and src/bot/util.py are not supplied; the guardrail output schema and store initialization are unverified.",
+      "The agents SDK (Runner, Agent, InputGuardrail, GuardrailFunctionOutput, FileSearchTool) and the twilio library are external dependencies; their internal commit/abort semantics are not present in the supplied source.",
+      "Runtime behavior labels and prevalence data are unavailable per the provided scope statement ('Only supplied source views; repository enumeration is not complete; behavior labels are unavailable').",
+      "No source is supplied establishing trusted-proxy guarantees for X-Forwarded-Proto / X-Forwarded-Host or the externally configured Twilio webhook URL used in signature validation."
+    ],
+    "repository": "iamdanie/cs_agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4f89b30901275c3e4425fef7ee728e52"
+  },
+  "request_sha256": "a47aba75cd30feb61507e5e516dd5fa02b10abd2df725c5a42a829bb75fdd0e1",
+  "response_sha256": "8436c3d2ade6e47bb1d9e7d6527dd254d1519b73dae00b0e19fe23fc9f7c38b4",
+  "state": "completed",
+  "tokens": 24198,
+  "unit": "v24-screen:4f89b30901275c3e4425fef7ee728e52"
+}

@@ -1,0 +1,167 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "open(file_path, 'w') followed by f.write(content) in update_file_content (update_file_content.py:14-15).",
+        "contract_id": "ecological-contract:c7daf69919f9eba7ebfb9e069a219909",
+        "declared_mechanism": "Absolute-path precondition inside the @agent.tool-decorated fix_file wrapper: a comprehension flags every non-absolute item.file_path (setup.py:140-144) and ModelRetry is raised before fix_file_operation is called (setup.py:146-148, dispatch at setup.py:150).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 125,
+            "line_start": 124,
+            "path": "src/stackloop/agent/setup.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3290d90c84fbe5083508635ac33869dd0506e65f38af80d2695ec0246ab37261"
+          },
+          {
+            "line_end": 144,
+            "line_start": 140,
+            "path": "src/stackloop/agent/setup.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3290d90c84fbe5083508635ac33869dd0506e65f38af80d2695ec0246ab37261"
+          },
+          {
+            "line_end": 148,
+            "line_start": 146,
+            "path": "src/stackloop/agent/setup.py",
+            "role": "guard_registration",
+            "source_sha256": "3290d90c84fbe5083508635ac33869dd0506e65f38af80d2695ec0246ab37261"
+          },
+          {
+            "line_end": 150,
+            "line_start": 150,
+            "path": "src/stackloop/agent/setup.py",
+            "role": "protected_operation",
+            "source_sha256": "3290d90c84fbe5083508635ac33869dd0506e65f38af80d2695ec0246ab37261"
+          },
+          {
+            "line_end": 17,
+            "line_start": 14,
+            "path": "src/stackloop/agent/tools/fix_file.py",
+            "role": "protected_operation",
+            "source_sha256": "33e5a7181e54b4f450b574299b7ffbdba373e73ffafd7f49f5db912d3573c53b"
+          },
+          {
+            "line_end": 15,
+            "line_start": 14,
+            "path": "src/stackloop/agent/utils/update_file_content.py",
+            "role": "commit_point",
+            "source_sha256": "92acefe87992cfbd35f1ac6866a790366a0ac8bc0342db8215fdbc40fb8d7857"
+          }
+        ],
+        "forbidden_condition": "A fix item whose file_path fails Path.is_absolute() reaching fix_file_operation/update_file_content and being written to disk; the registered tool must intercept such items with ModelRetry before dispatch (setup.py:140-148).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Behavior after ModelRetry retries are exhausted (Agent retries=2 at setup.py:69) - i.e., whether any write can still occur on repeated invalid paths - depends on run_agent_operation, which is not in supplied views.",
+          "Whether the guarded effect should additionally be confined to the session working directory is a policy threshold not declared in source.",
+          "update_file_content swallows write exceptions and returns None (update_file_content.py:17-19) while fix_file_operation records fix_applied=True (fix_file.py:18-21); whether post-commit failures must be surfaced before reporting success is not declared."
+        ],
+        "protected_operation": "Applying agent-proposed code fixes: the fix_file tool's dispatch to fix_file_operation (setup.py:150) and its per-fix write through update_file_content (fix_file.py:14-17).",
+        "protected_resource": "Files addressed by agent-supplied item.file_path values in FixFileParam.fixes, written via update_file_content.",
+        "protection_obligation": "The registered fix_file agent tool must reject (raise ModelRetry) any fix whose file_path is not an absolute path before fix_file_operation/update_file_content writes corrected content to disk.",
+        "scope_limits": [
+          "The guard checks only Path.is_absolute(); absolute paths outside the session working directory (including paths into the root project or elsewhere on the filesystem) pass the guard and reach the write.",
+          "The precondition lives solely in the registered tool wrapper; update_file_content performs no path validation itself (update_file_content.py:5-19).",
+          "The check is all-or-nothing across data.fixes before any write occurs; no partial subset of fixes is written ahead of a failing item.",
+          "The sibling absolute-path check in the read_file tool (setup.py:98-122) and the run_code execution tool (setup.py:86-95) are distinct operations not covered by this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "shutil.copy2(source, dest) overwriting the root project file at debug_session.py:102, with dest.parent.mkdir(parents=True, exist_ok=True) at debug_session.py:101 establishing the target location.",
+        "contract_id": "ecological-contract:cd6245ecadf50c4ec459b89fcf512049",
+        "declared_mechanism": "Interactive consent gate confirm_sync_back() (questionary.confirm in prompts.py:57-72) evaluated at commands.py:132, followed by create_backup_for_root() writing a .bak copy of each modified root file (debug_session.py:121-142), both sequenced before session.sync_back_to_root() at commands.py:133-134.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 137,
+            "line_start": 131,
+            "path": "src/stackloop/cli/commands.py",
+            "role": "guard_registration",
+            "source_sha256": "e6cbb72a77d6f835d6bb147fc81e5f31458d1fe3f071d43b795dc57761045ebb"
+          },
+          {
+            "line_end": 72,
+            "line_start": 57,
+            "path": "src/stackloop/cli/prompts.py",
+            "role": "guard_registration",
+            "source_sha256": "858e3eb0c9196556f56f44dd64e4fb5fdb5c1703b66cc042c60dcd4005d0d006"
+          },
+          {
+            "line_end": 142,
+            "line_start": 121,
+            "path": "src/stackloop/core/debug_session.py",
+            "role": "guard_registration",
+            "source_sha256": "fa72b739a1a107f77b19235ad69301f6e666cf518055cdab145549269cf0c45a"
+          },
+          {
+            "line_end": 99,
+            "line_start": 92,
+            "path": "src/stackloop/core/debug_session.py",
+            "role": "protected_operation",
+            "source_sha256": "fa72b739a1a107f77b19235ad69301f6e666cf518055cdab145549269cf0c45a"
+          },
+          {
+            "line_end": 103,
+            "line_start": 100,
+            "path": "src/stackloop/core/debug_session.py",
+            "role": "commit_point",
+            "source_sha256": "fa72b739a1a107f77b19235ad69301f6e666cf518055cdab145549269cf0c45a"
+          },
+          {
+            "line_end": 106,
+            "line_start": 97,
+            "path": "src/stackloop/cli/commands.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e6cbb72a77d6f835d6bb147fc81e5f31458d1fe3f071d43b795dc57761045ebb"
+          },
+          {
+            "line_end": 118,
+            "line_start": 111,
+            "path": "src/stackloop/cli/commands.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e6cbb72a77d6f835d6bb147fc81e5f31458d1fe3f071d43b795dc57761045ebb"
+          }
+        ],
+        "forbidden_condition": "Overwriting a file in the user's root project directory via sync_back_to_root (shutil.copy2 of a session working copy onto config.root_directory / relative_path) when confirm_sync_back() has not returned True in the same CLI run, or when create_backup_for_root has not first written a .bak copy for that pre-existing target file.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Whether questionary.confirm's default=True (prompts.py:63) satisfies an 'explicit confirmation' requirement is a policy determination not decidable from supplied source.",
+          "create_backup_for_root catches and logs backup failures without aborting (debug_session.py:141-142); whether the sync must be blocked when any backup fails is not declared in source.",
+          "sync_back_to_root reloads the session from stackloop.config. on disk when present (debug_session.py:86-90); whether the reloaded modified_files set is guaranteed to equal the agent-generated fix list cannot be verified from supplied views."
+        ],
+        "protected_operation": "Syncing agent-fixed session files back to the root project directory (DebugSession.sync_back_to_root, invoked only after the confirm_sync_back gate at commands.py:132-134).",
+        "protected_resource": "Files under the user's root project directory (config.root_directory / relative_path for each entry in session.modified_files).",
+        "protection_obligation": "Fixed session files must not be copied back to the user's root project directory unless the user explicitly confirms via confirm_sync_back(), and each target file must have a .bak backup created before the overwrite commit point (shutil.copy2 in sync_back_to_root).",
+        "scope_limits": [
+          "The gate and backup are enforced only at the CLI call site (commands.py:131-134); sync_back_to_root and create_backup_for_root perform no confirmation or backup check internally.",
+          "Applies only to files listed in session.modified_files; other files in the working directory or root project are not covered.",
+          "Backup creation is skipped for root targets that do not already exist (debug_session.py:136-140) while the sync still creates those targets (debug_session.py:101-102); the .bak precondition binds only to pre-existing files.",
+          "Does not govern the agent fix_file tool's writes to session working-directory copies; only the root-overwrite sync effect is in scope for this contract."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "src/stackloop/core/agent_operation.py (run_agent_operation) is not supplied; the agent run loop's handling of ModelRetry retries and OutputResult production cannot be bound from source.",
+      "stackloop/models/session_config.py is not supplied; SessionConfig.modified_files schema, persistence, and from_ reload semantics (debug_session.py:86-90) are only partially evidenced.",
+      "Whether sync_back_to_root's on-disk reload of stackloop.config. (debug_session.py:86-90) is guaranteed to match the in-memory agent-derived modified_files list cannot be verified from supplied views.",
+      "No supplied source declares a policy on whether confirm_sync_back's default=True answer (prompts.py:63) counts as explicit user confirmation, nor whether the sync must abort when create_backup_for_root reports a failure (debug_session.py:141-142)."
+    ],
+    "repository": "bjoxiah/stackloop",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:02041232ff0b9b7652a6a324ca949de0"
+  },
+  "request_sha256": "02145d471d4ef798e69f1dd9ab1680f6ddc2459a66389b9b19a5af230e0f0fb1",
+  "response_sha256": "9f90bbfe9e1554ea6950fa959af34f48f3dd39bebf32453c82a2c20cee148483",
+  "state": "completed",
+  "tokens": 19395,
+  "unit": "v24-screen:02041232ff0b9b7652a6a324ca949de0"
+}

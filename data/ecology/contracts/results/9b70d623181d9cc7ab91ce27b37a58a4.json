@@ -1,0 +1,307 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Atomic temp-file write plus temp_path.replace(full_path): apply_edit exact path (editor.py 561-565), _apply_llm_edit (editor.py 461-463), write_approved_edit (editor.py 657-659), and the verify_and_rollback restore write_text (editor.py 745).",
+        "contract_id": "ecological-contract:97fbd0e982e65e922e1e5e933cc0b214",
+        "declared_mechanism": "_resolve_target_path builds the target (repo-relative or absolute), resolves it, and requires it to fall under the resolved repo root, otherwise raising ValueError('Path traversal blocked: <file_path>'); every write entry point invokes it first (apply_edit, _apply_llm_edit, write_approved_edit, verify_and_rollback), and apply_edit/write_approved_edit convert the ValueError into a non-writing ok=False result.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 75,
+            "line_start": 68,
+            "path": "src/codewalk/review/editor.py",
+            "role": "guard_registration",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          },
+          {
+            "line_end": 74,
+            "line_start": 70,
+            "path": "src/codewalk/review/editor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          },
+          {
+            "line_end": 535,
+            "line_start": 532,
+            "path": "src/codewalk/review/editor.py",
+            "role": "guard_registration",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          },
+          {
+            "line_end": 401,
+            "line_start": 401,
+            "path": "src/codewalk/review/editor.py",
+            "role": "guard_registration",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          },
+          {
+            "line_end": 638,
+            "line_start": 635,
+            "path": "src/codewalk/review/editor.py",
+            "role": "guard_registration",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          },
+          {
+            "line_end": 745,
+            "line_start": 745,
+            "path": "src/codewalk/review/editor.py",
+            "role": "guard_registration",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          },
+          {
+            "line_end": 361,
+            "line_start": 358,
+            "path": "src/codewalk/agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "47002a919ea915cf78364232ec38276bf9366c1e6e2a5b8660d8c0765917d62a"
+          },
+          {
+            "line_end": 361,
+            "line_start": 346,
+            "path": "src/codewalk/agent/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "47002a919ea915cf78364232ec38276bf9366c1e6e2a5b8660d8c0765917d62a"
+          },
+          {
+            "line_end": 124,
+            "line_start": 111,
+            "path": "src/codewalk/agent/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "54459256ec9d543e31422b25d2f66b6fa21a70c8dbd09483db3b422837a62798"
+          },
+          {
+            "line_end": 565,
+            "line_start": 560,
+            "path": "src/codewalk/review/editor.py",
+            "role": "commit_point",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          },
+          {
+            "line_end": 463,
+            "line_start": 457,
+            "path": "src/codewalk/review/editor.py",
+            "role": "commit_point",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          }
+        ],
+        "forbidden_condition": "A path-traversing write: an editor mutation whose file_path resolves outside the repo root, i.e., any target where full_path.resolve() is not relative to Path(repo_path).resolve().",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any agent tool, lifecycle hook, or agent-generated input other than apply_fix reaches write_approved_edit or verify_and_rollback (the only supplied caller is the POST /review/apply-edits handler at main.py 1194-1237)."
+        ],
+        "protected_operation": "Editor disk writes: apply_edit's exact-replacement and LLM-as-editor writes, write_approved_edit's approved-content write, and verify_and_rollback's restore writes \u2014 each resolves its target through _resolve_target_path before touching the file; agent reach is established via apply_fix passing its tool-call file_path argument into apply_edit.",
+        "protected_resource": "Files under the repository root (repo_path) \u2014 the filesystem containment boundary.",
+        "protection_obligation": "Every disk write through the unified editor must resolve to a path inside the repo root: _resolve_target_path must reject any target whose resolved location escapes Path(repo_path).resolve() by raising 'Path traversal blocked' before any mutation occurs, at every write entry point (apply_edit, _apply_llm_edit, write_approved_edit, verify_and_rollback rollback writes).",
+        "scope_limits": [
+          "Agent mediation is established only for the apply_fix tool path (apply_fix's file_path argument \u2192 apply_edit \u2192 _resolve_target_path); the same guard also protects non-agent HTTP review flows (POST /review/preview-edits dry-run via apply_edit; POST /review/apply-edits via write_approved_edit and verify_and_rollback), for which mediation is not established.",
+          "The guard rejects before mutation; the contract makes no claim about time-of-check-to-time-of-use between the resolve check and the later replace.",
+          "Coverage claims extend only to editor writes that route through _resolve_target_path; other filesystem writers in the repository are out of scope."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Resumed execution of the write_tools node: tool.invoke('apply_fix') \u2192 apply_edit \u2192 temp-file write and temp_path.replace(full_path) committing the file mutation (atomic write in apply_edit's exact-replacement path).",
+        "contract_id": "ecological-contract:cccd0394faac1d8daf9f2a624c6216b8",
+        "declared_mechanism": "Compile-time HITL guard: route_after_agent sends AI tool-call batches whose names intersect WRITE_TOOL_NAMES to the 'write_tools' node; compile_with_hitl(graph, interrupt_nodes=['write_tools']) compiles the builder with interrupt_before=['write_tools'] (plus SqliteSaver checkpointing), halting the graph before that node executes; /chat and /chat/stream surface the halt as interrupted=True/'interrupted' with proposed_action, and only POST /chat/approve resumes the checkpoint (action='approve' \u2192 graph.invoke(None)) or replaces the pending tool-call message and discards the action (action='reject').",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 23,
+            "line_start": 22,
+            "path": "src/codewalk/agent/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "47002a919ea915cf78364232ec38276bf9366c1e6e2a5b8660d8c0765917d62a"
+          },
+          {
+            "line_end": 351,
+            "line_start": 348,
+            "path": "src/codewalk/agent/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "47002a919ea915cf78364232ec38276bf9366c1e6e2a5b8660d8c0765917d62a"
+          },
+          {
+            "line_end": 347,
+            "line_start": 345,
+            "path": "src/codewalk/agent/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "47002a919ea915cf78364232ec38276bf9366c1e6e2a5b8660d8c0765917d62a"
+          },
+          {
+            "line_end": 242,
+            "line_start": 229,
+            "path": "src/codewalk/agent/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "54459256ec9d543e31422b25d2f66b6fa21a70c8dbd09483db3b422837a62798"
+          },
+          {
+            "line_end": 124,
+            "line_start": 111,
+            "path": "src/codewalk/agent/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "54459256ec9d543e31422b25d2f66b6fa21a70c8dbd09483db3b422837a62798"
+          },
+          {
+            "line_end": 255,
+            "line_start": 253,
+            "path": "src/codewalk/agent/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "54459256ec9d543e31422b25d2f66b6fa21a70c8dbd09483db3b422837a62798"
+          },
+          {
+            "line_end": 248,
+            "line_start": 244,
+            "path": "src/codewalk/agent/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "54459256ec9d543e31422b25d2f66b6fa21a70c8dbd09483db3b422837a62798"
+          },
+          {
+            "line_end": 272,
+            "line_start": 271,
+            "path": "src/codewalk/agent/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "54459256ec9d543e31422b25d2f66b6fa21a70c8dbd09483db3b422837a62798"
+          },
+          {
+            "line_end": 119,
+            "line_start": 113,
+            "path": "src/codewalk/core/hitl.py",
+            "role": "guard_registration",
+            "source_sha256": "00509086a54a285e0d5080d520089bb203dd0bb63784f8c15e02ead550072ef3"
+          },
+          {
+            "line_end": 482,
+            "line_start": 473,
+            "path": "src/codewalk/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "c815711c8286ff8fa1998660144a508404932f337ee85e3740200a7e7864b4e4"
+          },
+          {
+            "line_end": 454,
+            "line_start": 446,
+            "path": "src/codewalk/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "c815711c8286ff8fa1998660144a508404932f337ee85e3740200a7e7864b4e4"
+          },
+          {
+            "line_end": 1550,
+            "line_start": 1533,
+            "path": "src/codewalk/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "c815711c8286ff8fa1998660144a508404932f337ee85e3740200a7e7864b4e4"
+          },
+          {
+            "line_end": 1585,
+            "line_start": 1560,
+            "path": "src/codewalk/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "c815711c8286ff8fa1998660144a508404932f337ee85e3740200a7e7864b4e4"
+          },
+          {
+            "line_end": 361,
+            "line_start": 358,
+            "path": "src/codewalk/agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "47002a919ea915cf78364232ec38276bf9366c1e6e2a5b8660d8c0765917d62a"
+          },
+          {
+            "line_end": 565,
+            "line_start": 560,
+            "path": "src/codewalk/review/editor.py",
+            "role": "commit_point",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          }
+        ],
+        "forbidden_condition": "Execution of the apply_fix write tool \u2014 and therefore the apply_edit disk mutation it performs \u2014 without prior human approval, i.e., any path where the write_tools node runs without a preceding /chat/approve action='approve' on the interrupted checkpoint (action='reject' must discard the pending action).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Implementation of state.get_agent()/state.require_index() (src/codewalk/api/state.py) is not in supplied views, so the wiring from /chat and /chat/approve to the compile_with_hitl-compiled graph is inferred from imports, docstrings, and proposed_write_action usage rather than directly evidenced.",
+          "Whether compile_with_hitl's async_checkpointer variant (_AsyncGraphContext, hitl.py 52-81, 105-106) is used by any production caller is not shown.",
+          "POST /voice/ask (main.py 1358-1367) invokes the same agent without checking graph_state.next; how a write_tools interrupt raised on a voice thread would be surfaced or approved is not established by supplied views."
+        ],
+        "protected_operation": "Agent-initiated apply_fix tool invocation dispatched through the 'write_tools' graph node via tool.invoke, which calls apply_edit(repo_path, file_path, old_code, new_code) to rewrite repository files.",
+        "protected_resource": "Repository files on disk under repo_path that apply_fix/apply_edit would overwrite.",
+        "protection_obligation": "The agent's sole repo-mutating write tool apply_fix (WRITE_TOOL_NAMES = frozenset({'apply_fix'})) must not execute its body \u2014 the apply_edit call that mutates repository files on disk \u2014 until a human approves; the compiled graph must halt before the 'write_tools' node, and resumption or rejection may occur only through POST /chat/approve.",
+        "scope_limits": [
+          "Interrupt scope is exactly WRITE_TOOL_NAMES = frozenset({'apply_fix'}); read-only tools route to read_tools and execute without interruption.",
+          "When an AI message mixes write and read tool calls, the read subset runs immediately and only still-pending write calls route back to write_tools via route_after_read/_pending_write_tool_calls.",
+          "The guard is graph-level (interrupt_before) plus API-level resume gating; apply_fix's own body contains no approval check.",
+          "This gate covers only the agent tool path; direct HTTP review writes (POST /review/apply-edits via write_approved_edit) are a separate non-agent write path outside this gate.",
+          "No judgment is made here about runtime effectiveness or bypass prevalence; the contract records only the declared registration and gating."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Atomic temp-file write and temp_path.replace(full_path) in write_approved_edit (editor.py 657-659).",
+        "contract_id": "ecological-contract:feaf53121dc6d87f3c5244f7bac0eef2",
+        "declared_mechanism": "write_approved_edit re-reads the file after path containment and compares original_content != expected_original before any write; on mismatch it returns ok=False without mutating, and only on equality does it perform the temp-file/backup/replace write.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 633,
+            "line_start": 627,
+            "path": "src/codewalk/review/editor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          },
+          {
+            "line_end": 652,
+            "line_start": 648,
+            "path": "src/codewalk/review/editor.py",
+            "role": "guard_registration",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          },
+          {
+            "line_end": 1234,
+            "line_start": 1223,
+            "path": "src/codewalk/api/main.py",
+            "role": "protected_operation",
+            "source_sha256": "c815711c8286ff8fa1998660144a508404932f337ee85e3740200a7e7864b4e4"
+          },
+          {
+            "line_end": 661,
+            "line_start": 654,
+            "path": "src/codewalk/review/editor.py",
+            "role": "commit_point",
+            "source_sha256": "abac1891d614e1f8297479844f3ea18cfefbd46f3bbfb930c6f36f20289352cf"
+          }
+        ],
+        "forbidden_condition": "Overwriting a file whose current on-disk content differs from expected_original \u2014 the write is refused with 'File changed since preview \u2014 re-preview before applying' instead of committing.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied evidence establishes agent mediation (agent tool, lifecycle hook, or agent-generated input) for write_approved_edit; confirm whether any agent path feeds edits or findings into POST /review/apply-edits."
+        ],
+        "protected_operation": "write_approved_edit's atomic disk write of modified_content (invoked from POST /review/apply-edits with expected_original=edit.original_content).",
+        "protected_resource": "Repository files under repo_path written by POST /review/apply-edits.",
+        "protection_obligation": "write_approved_edit must refuse to commit a user-approved edit when the on-disk file no longer matches expected_original (the content the user previewed), preventing silent clobbering of changes made between preview and apply.",
+        "scope_limits": [
+          "The check is exact whole-file string equality and guards only the preview\u2192apply interval; it does not detect changes after the check.",
+          "expected_original is optional: when the caller omits it, the stale-preview refusal is skipped (editor.py 648).",
+          "Supplied source binds this operation only to the HTTP review flow; no agent tool or lifecycle wiring to write_approved_edit appears in the supplied views."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "src/codewalk/api/state.py is not supplied: the code binding state.get_agent() to create_agent/compile_with_hitl (and hence to interrupt_before=['write_tools']) is inferred from imports and docstrings, not directly observable.",
+      "src/codewalk/api/models.py is not supplied: ApproveRequest/ChatResponse field semantics (thread_id, action, interrupted, proposed_action) are taken from endpoint usage in main.py only.",
+      "No supplied view shows any caller using compile_with_hitl's async_checkpointer path, so its production relevance is unknown.",
+      "Behavior labels, runtime traces, and prevalence data are unavailable per scope; no DEC-violation, safety, or runtime-behavior determination is made in any contract."
+    ],
+    "repository": "gupta29470/codewalk",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:9b70d623181d9cc7ab91ce27b37a58a4"
+  },
+  "request_sha256": "7bf9a15767e6557e5ee6d58e57fde9b7c71a232906ffe58b9b5cdc0f6f230746",
+  "response_sha256": "4398aa675db8069578f3a8020851522e4d2b7a2427d2c10d38f657e014a91e64",
+  "state": "completed",
+  "tokens": 65031,
+  "unit": "v24-screen:9b70d623181d9cc7ab91ce27b37a58a4"
+}

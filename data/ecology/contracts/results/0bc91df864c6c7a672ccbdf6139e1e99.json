@@ -1,0 +1,280 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "target.write_text(...) at Tools/edit.py 101 (_do_create), Tools/edit.py 105 (_do_overwrite), Tools/edit.py 153 (_do_str_replace), and Tools/edit.py 167 (_do_insert), all reached only after the _resolve gate at Tools/edit.py 182-185.",
+        "contract_id": "ecological-contract:1915484a2c35a89d59754c625e200c5c",
+        "declared_mechanism": "Edit._resolve (Tools/edit.py 86-96) rejects empty and absolute paths, resolves (ws / rel) against ensure_workspace(tid), and enforces is_inside(target, ws) (Tools/utils.py 34-39, resolve().relative_to() containment check); Edit._run gates every mode behind _resolve and reaches the write helpers only when err is empty (Tools/edit.py 182-196); _arun delegates to _run (Tools/edit.py 199-204) so the async path shares the same gate.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 96,
+            "line_start": 86,
+            "path": "Tools/edit.py",
+            "role": "forbidden_condition",
+            "source_sha256": "811e00400b9f713e9a8f3c275aa0d5e93d334a3e95b6bd4ac847079e43472e19"
+          },
+          {
+            "line_end": 196,
+            "line_start": 182,
+            "path": "Tools/edit.py",
+            "role": "guard_registration",
+            "source_sha256": "811e00400b9f713e9a8f3c275aa0d5e93d334a3e95b6bd4ac847079e43472e19"
+          },
+          {
+            "line_end": 194,
+            "line_start": 187,
+            "path": "Tools/edit.py",
+            "role": "protected_operation",
+            "source_sha256": "811e00400b9f713e9a8f3c275aa0d5e93d334a3e95b6bd4ac847079e43472e19"
+          },
+          {
+            "line_end": 101,
+            "line_start": 101,
+            "path": "Tools/edit.py",
+            "role": "commit_point",
+            "source_sha256": "811e00400b9f713e9a8f3c275aa0d5e93d334a3e95b6bd4ac847079e43472e19"
+          },
+          {
+            "line_end": 105,
+            "line_start": 105,
+            "path": "Tools/edit.py",
+            "role": "commit_point",
+            "source_sha256": "811e00400b9f713e9a8f3c275aa0d5e93d334a3e95b6bd4ac847079e43472e19"
+          },
+          {
+            "line_end": 153,
+            "line_start": 153,
+            "path": "Tools/edit.py",
+            "role": "commit_point",
+            "source_sha256": "811e00400b9f713e9a8f3c275aa0d5e93d334a3e95b6bd4ac847079e43472e19"
+          },
+          {
+            "line_end": 167,
+            "line_start": 167,
+            "path": "Tools/edit.py",
+            "role": "commit_point",
+            "source_sha256": "811e00400b9f713e9a8f3c275aa0d5e93d334a3e95b6bd4ac847079e43472e19"
+          },
+          {
+            "line_end": 80,
+            "line_start": 66,
+            "path": "Tools/edit.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "811e00400b9f713e9a8f3c275aa0d5e93d334a3e95b6bd4ac847079e43472e19"
+          },
+          {
+            "line_end": 204,
+            "line_start": 199,
+            "path": "Tools/edit.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "811e00400b9f713e9a8f3c275aa0d5e93d334a3e95b6bd4ac847079e43472e19"
+          },
+          {
+            "line_end": 86,
+            "line_start": 83,
+            "path": "Tools/utils.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "eac80fe541af685727dd949f8ef4ac34f1d67981f112212bc9614b4420b14c74"
+          },
+          {
+            "line_end": 108,
+            "line_start": 99,
+            "path": "Tools/utils.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "eac80fe541af685727dd949f8ef4ac34f1d67981f112212bc9614b4420b14c74"
+          }
+        ],
+        "forbidden_condition": "Executing any of the four write modes (create / overwrite / str_replace / insert) against a target path that is empty, absolute (leading '/' or a Windows drive colon), or whose (workspace / rel).resolve() is not inside the per-thread workspace per is_inside.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Escape-coverage completeness of is_inside (Tools/utils.py 34-39, e.g., outcomes for symlinked paths) is whatever that helper implements; no additional traversal analysis is supplied.",
+          "Agent-side code binding the Edit tool into a specific agent's tool list is not in the supplied views."
+        ],
+        "protected_operation": "File writes performed by Edit._do_create, Edit._do_overwrite, Edit._do_str_replace, and Edit._do_insert for agent-supplied path/content arguments.",
+        "protected_resource": "The per-thread workspace directory tree SessionDB/<thread_id>/workspace (Tools/utils.py 17-31).",
+        "protection_obligation": "The 'edit' tool must not create, overwrite, string-replace, or insert content into any file whose resolved path falls outside the per-thread workspace (SessionDB/<thread_id>/workspace); empty paths, absolute paths, and traversal escapes must be denied unconditionally in Edit._resolve before any write executes, on both the sync and async tool paths.",
+        "scope_limits": [
+          "The gate confines the resolved target path only; it does not restrict content, write volume, or which in-workspace files may be modified.",
+          "target.parent.mkdir(parents=True, exist_ok=True) at Tools/edit.py 186 runs only after _resolve accepts, so directory creation is likewise confined to the accepted target's ancestry.",
+          "Only the Edit tool's write path is covered; shell-based writes through the terminal tool and the automatic requirements.txt bookkeeping write (_record_requirements, Tools/terminal.py 170-200) are separate mechanisms outside this contract.",
+          "The tool-call budget check (Tools/edit.py 175-181) is a separate rate limit, not part of this obligation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "subprocess.run(command, shell=True, capture_output=True, timeout, cwd, env) inside _run_subprocess (Tools/terminal.py 86-93), reached synchronously at Tools/terminal.py 212 and via asyncio.to_thread(_run_subprocess, ...) at Tools/terminal.py 225.",
+        "contract_id": "ecological-contract:34989b8fc520d575ad880fde1bf66821",
+        "declared_mechanism": "check_command (Tools/terminal.py 65-70), built on parse_commands (Tools/terminal.py 45-62: strips $(...) and backtick substitutions, splits on && / || / ; / |, takes the first non-assignment token of each segment), returns not-allowed with a denied list when any base command is absent from shell_permissions; Tools.terminal_agent.checker_agent.check / acheck (imported at Tools/terminal.py 20) adds a second LLM review; both are wired at the top of _execute (Tools/terminal.py 203-214) and _execute_async (Tools/terminal.py 217-227), which return denial strings instead of calling _run_subprocess.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 70,
+            "line_start": 45,
+            "path": "Tools/terminal.py",
+            "role": "forbidden_condition",
+            "source_sha256": "18df9aa1d57e035478eace3d90e48c6081ed15880a358b112ea620129386d86f"
+          },
+          {
+            "line_end": 214,
+            "line_start": 203,
+            "path": "Tools/terminal.py",
+            "role": "guard_registration",
+            "source_sha256": "18df9aa1d57e035478eace3d90e48c6081ed15880a358b112ea620129386d86f"
+          },
+          {
+            "line_end": 227,
+            "line_start": 217,
+            "path": "Tools/terminal.py",
+            "role": "guard_registration",
+            "source_sha256": "18df9aa1d57e035478eace3d90e48c6081ed15880a358b112ea620129386d86f"
+          },
+          {
+            "line_end": 97,
+            "line_start": 83,
+            "path": "Tools/terminal.py",
+            "role": "commit_point",
+            "source_sha256": "18df9aa1d57e035478eace3d90e48c6081ed15880a358b112ea620129386d86f"
+          },
+          {
+            "line_end": 276,
+            "line_start": 252,
+            "path": "Tools/terminal.py",
+            "role": "protected_operation",
+            "source_sha256": "18df9aa1d57e035478eace3d90e48c6081ed15880a358b112ea620129386d86f"
+          },
+          {
+            "line_end": 241,
+            "line_start": 230,
+            "path": "Tools/terminal.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "18df9aa1d57e035478eace3d90e48c6081ed15880a358b112ea620129386d86f"
+          },
+          {
+            "line_end": 86,
+            "line_start": 83,
+            "path": "Tools/utils.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "eac80fe541af685727dd949f8ef4ac34f1d67981f112212bc9614b4420b14c74"
+          },
+          {
+            "line_end": 108,
+            "line_start": 99,
+            "path": "Tools/utils.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "eac80fe541af685727dd949f8ef4ac34f1d67981f112212bc9614b4420b14c74"
+          }
+        ],
+        "forbidden_condition": "Committing execution of a terminal-tool shell command (subprocess.run with shell=True) when shell_restriction is enabled and either (a) check_command finds any parsed base command not present in shell_permissions, or (b) checker_agent.check / checker_agent.acheck returns allowed=False for the command.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Actual config.yaml values for shell_restriction and shell_permissions are not supplied; only the loading code at Tools/terminal.py 22-30 is visible.",
+          "Tools/terminal_agent.py (checker_agent implementation, verdict schema, and model backing check/acheck) is not in the supplied views.",
+          "The agent-side code that instantiates SafeShell and lists it as an agent tool is not in the supplied views."
+        ],
+        "protected_operation": "Execution of agent-supplied shell command strings via SafeShell._run / SafeShell._arun -> _execute / _execute_async -> _run_subprocess (the tool named 'terminal').",
+        "protected_resource": "Host OS shell/process execution surface (subprocess.run with shell=True), executed with cwd locked to the per-thread workspace via ensure_workspace and a workspace_env environment (Tools/terminal.py 252-276).",
+        "protection_obligation": "Shell commands submitted through the SafeShell 'terminal' tool must be denied unless every base command parsed from the command string is in the configured shell_permissions whitelist and, while the shell_restriction flag is enabled, the Tools.terminal_agent.checker_agent LLM reviewer allows the command; both denials must be produced inside _execute/_execute_async before the command reaches _run_subprocess.",
+        "scope_limits": [
+          "Enforcement is conditional on the shell_restriction config flag: when false, check_command allows every command (Tools/terminal.py 66-67) and the checker_agent review is skipped (Tools/terminal.py 208 and 221), so the whitelist/LLM-review obligation does not apply in that configuration.",
+          "The whitelist judges only the base commands extracted by parse_commands (Tools/terminal.py 45-62); its coverage of unusual shell syntax is limited to what that parser implements.",
+          "In the supplied views the guards are wired only in _execute/_execute_async; no other caller of _run_subprocess appears, but repository enumeration is not complete.",
+          "Per-thread tool-call budgeting (bump_budget in SafeShell._run/_arun, Tools/terminal.py 252-276) is a separate rate limit and is not part of this protection obligation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "page.goto(url, wait_until='domcontentloaded') in _navigate (Tools/browser.py 85), followed by status/title reads at Tools/browser.py 86-87.",
+        "contract_id": "ecological-contract:80bdb33f9970398c53456de600b5422f",
+        "declared_mechanism": "check_domain(url) (Tools/browser.py 66-74) compares urlparse(url).hostname against browser_allowed_domains with exact or dot-subdomain matching and returns (False, reason) on a miss; _navigate invokes it first (Tools/browser.py 81-83) and returns 'Navigation denied: <reason>' without acquiring the session page.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 74,
+            "line_start": 66,
+            "path": "Tools/browser.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e5aafb35f73bdcb9234d83b236a1a69e55488b2310305660c185a97677af93b6"
+          },
+          {
+            "line_end": 88,
+            "line_start": 80,
+            "path": "Tools/browser.py",
+            "role": "guard_registration",
+            "source_sha256": "e5aafb35f73bdcb9234d83b236a1a69e55488b2310305660c185a97677af93b6"
+          },
+          {
+            "line_end": 229,
+            "line_start": 215,
+            "path": "Tools/browser.py",
+            "role": "protected_operation",
+            "source_sha256": "e5aafb35f73bdcb9234d83b236a1a69e55488b2310305660c185a97677af93b6"
+          },
+          {
+            "line_end": 86,
+            "line_start": 84,
+            "path": "Tools/browser.py",
+            "role": "commit_point",
+            "source_sha256": "e5aafb35f73bdcb9234d83b236a1a69e55488b2310305660c185a97677af93b6"
+          },
+          {
+            "line_end": 304,
+            "line_start": 289,
+            "path": "Tools/browser.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e5aafb35f73bdcb9234d83b236a1a69e55488b2310305660c185a97677af93b6"
+          },
+          {
+            "line_end": 86,
+            "line_start": 83,
+            "path": "Tools/utils.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "eac80fe541af685727dd949f8ef4ac34f1d67981f112212bc9614b4420b14c74"
+          },
+          {
+            "line_end": 108,
+            "line_start": 99,
+            "path": "Tools/utils.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "eac80fe541af685727dd949f8ef4ac34f1d67981f112212bc9614b4420b14c74"
+          }
+        ],
+        "forbidden_condition": "Calling page.goto(url) for a browser 'navigate' action whose URL hostname is neither equal to nor a dot-suffixed subdomain of any entry in browser_allowed_domains (check_domain returns False with a reason).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Actual browser_allowed_domains values loaded at Tools/browser.py 25 are not supplied.",
+          "Agent-side code binding the Browser tool into a specific agent's tool list is not in the supplied views.",
+          "Whether in-page actions that trigger further network effects (click-driven navigation, eval_js fetches) fall under any guard is not addressed by the supplied source."
+        ],
+        "protected_operation": "The 'navigate' action of the browser tool: ACTIONS['navigate'] -> _navigate resolving a URL into a loaded page in the per-thread BrowserSession.",
+        "protected_resource": "External web servers / pages reached by the headless Chromium session via page.goto (outbound page-load network effect).",
+        "protection_obligation": "Navigation issued through the 'browser' tool's 'navigate' action must be denied when the target URL's host is outside the configured browser_allowed_domains allowlist; the denial must be returned by check_domain inside _navigate before page.goto loads the URL.",
+        "scope_limits": [
+          "When browser_allowed_domains is empty, check_domain allows every domain (Tools/browser.py 67-68); enforcement is config-dependent.",
+          "In the supplied views check_domain is registered only on the 'navigate' action; other actions (click, type, eval_js, get_links, etc.) and any redirects or subresource loads occurring after goto are not re-checked by this mechanism.",
+          "The guard constrains only the hostname of the URL string supplied to navigate; scheme, port, and path are not restricted by check_domain."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "config.yaml values (shell_restriction, shell_permissions, browser_allowed_domains, and limits such as browser_count_limit / edit_count_limit / shell_count_limit) are not supplied; only the loading code is visible (Tools/terminal.py 22-30, Tools/browser.py 19-25, Tools/edit.py 18-21).",
+      "Tools/terminal_agent.py, which defines checker_agent and the verdict semantics of check/acheck, is not in the supplied views (imported at Tools/terminal.py 20).",
+      "Agent-side wiring that instantiates SafeShell / Browser / Edit and lists them as agent tools (e.g., the manager / tasker_coder / retriever agents referenced in the reset_tool_budgets docstring at Tools/utils.py 99-108, and Agents/manager.py imported at Tools/utils.py 191) is not in the supplied views; the direct_tool mediation rests on the BaseTool dispatch surfaces (_run/_arun) and the reset_tool_budgets docstring.",
+      "Repository enumeration is not complete and behavior labels are unavailable (per scope), so the absence of additional call paths into subprocess.run, page.goto, or the edit write helpers cannot be verified beyond the supplied views."
+    ],
+    "repository": "Mruser95/AgentsTemplate",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:0bc91df864c6c7a672ccbdf6139e1e99"
+  },
+  "request_sha256": "e3af910da4ad24a32f25b3b87f64fa98ce6da6e5982f604249a1243629bd04fa",
+  "response_sha256": "871b587be5d992fd902f64b709263bee28586a977779cb05d646b2c5ae2014ac",
+  "state": "completed",
+  "tokens": 38701,
+  "unit": "v24-screen:0bc91df864c6c7a672ccbdf6139e1e99"
+}

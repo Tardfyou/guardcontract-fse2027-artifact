@@ -1,0 +1,253 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The _safe_write_ os.replace of products. executed while the lock is still held: decrement path at catalog_service.py:789-793 (reached from checkout_service.checkout_cart line 154, before the order DB commit at checkout_service.py:214) and increment path at catalog_service.py:879-883; os.replace itself at catalog_service.py:671-674.",
+        "contract_id": "ecological-contract:d58d28e4b6837776bc55d2c651e026dc",
+        "declared_mechanism": "file_lock(LOCK_FILE) context manager (file_lock.py) providing atomic O_CREAT|O_EXCL acquisition, PID+token ownership verification, bounded timeout, and dead-owner-only recovery; inside the lock, a fresh _load_('products.') read, a first validation pass over all requested product/quantity pairs before any change, a second mutation pass, and _safe_write_ performing temp-file write + fsync + os.replace, followed by cache invalidation.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 731,
+            "line_start": 722,
+            "path": "backend/app/services/catalog_service.py",
+            "role": "guard_registration",
+            "source_sha256": "d3eeddecfcb1d8d329467fcd5b2d88e2a2e1985f9c04cdc28b99d37304ed1fb9"
+          },
+          {
+            "line_end": 840,
+            "line_start": 830,
+            "path": "backend/app/services/catalog_service.py",
+            "role": "guard_registration",
+            "source_sha256": "d3eeddecfcb1d8d329467fcd5b2d88e2a2e1985f9c04cdc28b99d37304ed1fb9"
+          },
+          {
+            "line_end": 265,
+            "line_start": 241,
+            "path": "backend/app/services/file_lock.py",
+            "role": "guard_registration",
+            "source_sha256": "ba536e52f684dc8c896402e45fee9906f5fe233ea1290ddb15f27ce94887a8d6"
+          },
+          {
+            "line_end": 352,
+            "line_start": 332,
+            "path": "backend/app/services/file_lock.py",
+            "role": "guard_registration",
+            "source_sha256": "ba536e52f684dc8c896402e45fee9906f5fe233ea1290ddb15f27ce94887a8d6"
+          },
+          {
+            "line_end": 739,
+            "line_start": 724,
+            "path": "backend/app/services/catalog_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d3eeddecfcb1d8d329467fcd5b2d88e2a2e1985f9c04cdc28b99d37304ed1fb9"
+          },
+          {
+            "line_end": 762,
+            "line_start": 740,
+            "path": "backend/app/services/catalog_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d3eeddecfcb1d8d329467fcd5b2d88e2a2e1985f9c04cdc28b99d37304ed1fb9"
+          },
+          {
+            "line_end": 787,
+            "line_start": 764,
+            "path": "backend/app/services/catalog_service.py",
+            "role": "protected_operation",
+            "source_sha256": "d3eeddecfcb1d8d329467fcd5b2d88e2a2e1985f9c04cdc28b99d37304ed1fb9"
+          },
+          {
+            "line_end": 877,
+            "line_start": 854,
+            "path": "backend/app/services/catalog_service.py",
+            "role": "protected_operation",
+            "source_sha256": "d3eeddecfcb1d8d329467fcd5b2d88e2a2e1985f9c04cdc28b99d37304ed1fb9"
+          },
+          {
+            "line_end": 154,
+            "line_start": 147,
+            "path": "backend/app/services/checkout_service.py",
+            "role": "protected_operation",
+            "source_sha256": "4abaf8920a40b127facf6e3a6da2aa4e1685a8397e3e19fd11e077e042c6fcbd"
+          },
+          {
+            "line_end": 688,
+            "line_start": 643,
+            "path": "backend/app/services/catalog_service.py",
+            "role": "commit_point",
+            "source_sha256": "d3eeddecfcb1d8d329467fcd5b2d88e2a2e1985f9c04cdc28b99d37304ed1fb9"
+          },
+          {
+            "line_end": 793,
+            "line_start": 789,
+            "path": "backend/app/services/catalog_service.py",
+            "role": "commit_point",
+            "source_sha256": "d3eeddecfcb1d8d329467fcd5b2d88e2a2e1985f9c04cdc28b99d37304ed1fb9"
+          },
+          {
+            "line_end": 883,
+            "line_start": 879,
+            "path": "backend/app/services/catalog_service.py",
+            "role": "commit_point",
+            "source_sha256": "d3eeddecfcb1d8d329467fcd5b2d88e2a2e1985f9c04cdc28b99d37304ed1fb9"
+          }
+        ],
+        "forbidden_condition": "A partial, stale, or unguarded inventory mutation of products.: mutating some products before others pass validation, reading cached product state instead of the latest file under the lock, or rewriting products. without holding LOCK_FILE - any of which could oversell stock or lose concurrent updates between independent processes.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "app/agents/tools.py is not supplied: the mapping run_tool('checkout_cart') -> checkout_service.checkout_cart cannot be verified from the supplied views, so the concrete dataflow from agent tool dispatch to the locked inventory write is unconfirmed.",
+          "Whether checkout_cart is additionally exposed through HTTP routes outside the agent is unknown (route files not supplied).",
+          "Whether any unsupplied code path writes products. without file_lock cannot be ruled out."
+        ],
+        "protected_operation": "The decrement_inventory and increment_inventory read-validate-mutate-write cycles over inventory_quantity/available fields in products., invoked from checkout_service.checkout_cart (decrement at line 154; compensating increment in the IntegrityError and general exception handlers at lines 224 and 252).",
+        "protected_resource": "The external catalog inventory file data/products., guarded via the AGENTPAY_LOCK_FILE-configurable lock file products..lock.",
+        "protection_obligation": "Every mutation of the catalog inventory store data/products. performed by catalog_service.decrement_inventory or increment_inventory must execute its complete read -> validate -> mutate -> write cycle inside the cross-process file_lock (atomic O_CREAT|O_EXCL acquisition on products..lock): the latest products. must be re-read while holding the lock (never the cached _load_products), every requested quantity change must be validated (existence, and sufficiency for decrements) before any mutation is applied, and the file must be atomically replaced via _safe_write_ (temp file + fsync + os.replace) while the lock is still held. This forbids unguarded, stale-read, or partial multi-product inventory updates that could oversell stock. On the checkout path the locked decrement runs at checkout_service.checkout_cart line 154 before the order database commit at line 214, with compensating locked increment_inventory on rollback.",
+        "scope_limits": [
+          "Applies only to products. inventory mutations via catalog_service.decrement_inventory/increment_inventory and their _safe_write_ writes; database cart/order commits (checkout_service.py:214) are separate effects in other strata and are not covered by this contract.",
+          "Quantity type/positivity validation happens before lock acquisition (catalog_service.py:705-720, 813-828); the authoritative existence and sufficiency validation is inside the lock (740-762); increment_inventory performs existence validation only (843-852) with no sufficiency check by design.",
+          "Lock guarantees are those of the supplied file_lock.py (single-host advisory filesystem lock, PID+token ownership, bounded timeout, recovery only of provably dead owners); cross-host or NFS semantics are not established.",
+          "The lock file location is environment-configurable via AGENTPAY_LOCK_FILE (catalog_service.py:41-45).",
+          "Compensating increment_inventory calls in checkout_service exception handlers (lines 224, 252) inherit the same locked-write guarantee."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The run_tool(tool_name, arguments) invocation in tool_node: the normal execution path at graph.py:1164-1167 and the automatic cart-creation path at graph.py:1086-1112 (run_tool('create_cart') then run_tool of the requested tool with the injected arguments plus the new trusted cart_id).",
+        "contract_id": "ecological-contract:de15d690cd14c8d55675a3b53b72ca6f",
+        "declared_mechanism": "_inject_trusted_tool_arguments (graph.py:588-668), invoked in tool_node at graph.py:1053-1057 before any run_tool execution: customer_id is overwritten from state.customer_id, cart_id is overwritten from state.cart_id when present ('Never allow the LLM to select another customer's cart'), and create_cart's merchant_id is normalized and matched against merchants. with DEFAULT_MERCHANT_ID ('m_urbanrun') as fallback.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 27,
+            "line_start": 25,
+            "path": "backend/app/agents/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 602,
+            "line_start": 588,
+            "path": "backend/app/agents/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 632,
+            "line_start": 604,
+            "path": "backend/app/agents/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 643,
+            "line_start": 634,
+            "path": "backend/app/agents/graph.py",
+            "role": "protected_operation",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 649,
+            "line_start": 644,
+            "path": "backend/app/agents/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 666,
+            "line_start": 651,
+            "path": "backend/app/agents/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 1008,
+            "line_start": 999,
+            "path": "backend/app/agents/graph.py",
+            "role": "protected_operation",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 1040,
+            "line_start": 1013,
+            "path": "backend/app/agents/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 1057,
+            "line_start": 1053,
+            "path": "backend/app/agents/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 1112,
+            "line_start": 1086,
+            "path": "backend/app/agents/graph.py",
+            "role": "commit_point",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 1167,
+            "line_start": 1164,
+            "path": "backend/app/agents/graph.py",
+            "role": "commit_point",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 1334,
+            "line_start": 1317,
+            "path": "backend/app/agents/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d57678dbd7f846d3a05206371170f1f4aa8f54c849649d5058f2b9e78596cab9"
+          },
+          {
+            "line_end": 234,
+            "line_start": 227,
+            "path": "backend/app/services/cart_service.py",
+            "role": "protected_operation",
+            "source_sha256": "7466914f8e76bfe51b5f5342a1863188b6f980a8f8ae5d2fbe6f5156b64a5a21"
+          }
+        ],
+        "forbidden_condition": "A model-generated tool_call carrying attacker-chosen customer_id, cart_id, or merchant_id being executed against an allowlisted cart/order tool via run_tool, enabling cross-tenant cart access (IDOR) or identity spoofing against the customer-scoped cart/order resources.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "app/agents/tools.py (the run_tool registry) is not supplied: the exact service function bound to each tool name and the downstream effect stratum of each allowlisted tool (database mutation vs. read-only) are unverified.",
+          "app/agents/state.py and session setup are not supplied: the provenance and trust anchoring of state.customer_id and state.cart_id (e.g., binding to an authenticated session) are unverified.",
+          "Whether tools other than create_cart accept merchant_id arguments is unknown from the supplied source."
+        ],
+        "protected_operation": "Execution of the allowlisted cart/order agent tools (create_cart, add_to_cart, get_cart, update_cart_item, remove_from_cart, validate_cart, checkout_cart, get_order, get_order_tracking, cancel_order, request_return) through run_tool in the graph's tool_node, including the automatic cart-creation path preceding add_to_cart.",
+        "protected_resource": "Customer-scoped cart and order resources bound to application-owned customer_id/cart_id/merchant_id identity, as enforced by cart_service.get_cart's ownership check (PermissionError on customer mismatch).",
+        "protection_obligation": "Untrusted LLM/model-supplied identity parameters - customer_id, cart_id, and (for create_cart) merchant_id - must never reach allowlisted cart/order tool executions: tool_node must route every model-generated tool_call's arguments through _inject_trusted_tool_arguments, which forcibly overwrites those keys with application-owned trusted values (state.customer_id, state.cart_id, and a merchants.-matched or default merchant_id) before run_tool executes the requested cart/order tool, preventing the model from selecting another customer's cart or forging customer/merchant identity.",
+        "scope_limits": [
+          "cart_id is overwritten only when state.cart_id is truthy (graph.py:646-649); when state.cart_id is empty/None, a model-supplied cart_id passes through to cart tools, though customer_id is still overwritten.",
+          "merchant_id is rewritten only for create_cart (graph.py:613-632); no other tool's merchant argument is normalized by the injection.",
+          "Injection applies only to tool names in the two allowlists (graph.py:634-643 and 652-663); any other tool name receives raw model arguments.",
+          "cancel_order and request_return receive injected customer_id but no cart_id overwrite.",
+          "The commit modeled here is the run_tool dispatch boundary inside the agent graph; downstream per-tool effects (e.g., database commits in cart_service/checkout_service) are separate effects whose mapping is not verifiable from supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "backend/app/agents/tools.py (the run_tool implementation/registry) is not supplied; it is needed to bind agent tool dispatch to checkout_service/catalog_service effects, to confirm per-tool downstream effect strata, and to establish or refute agent mediation of the inventory file mutation.",
+      "backend/app/agents/state.py and any session/authentication setup are not supplied; the origin and trust anchoring of BuyerAgentState.customer_id and state.cart_id are unverified.",
+      "HTTP route/router definitions are not supplied; non-agent entry points into cart, checkout, and inventory operations are unknown.",
+      "Behavior/runtime labels are unavailable; violation adjudication, safety, and prevalence determinations are out of scope for this compilation unit."
+    ],
+    "repository": "amaymishra1104/agentpay-ai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:554fcabc9b52137150e149738d9ebd6e"
+  },
+  "request_sha256": "c44720b95e4188348d8953e680a5104caa9049ec3bee953cc6ff53ee2e712aa3",
+  "response_sha256": "aab420b950434fbd0bedab906149ffb80f0da9c0fc48ef969fbe37feb5a356c9",
+  "state": "completed",
+  "tokens": 48224,
+  "unit": "v24-screen:554fcabc9b52137150e149738d9ebd6e"
+}

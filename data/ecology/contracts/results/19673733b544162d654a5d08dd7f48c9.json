@@ -1,0 +1,346 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tools.py:56-62 (filtered configs are what get resolved and returned as the agent tool list), registry.py:69-70 ('bash' removed from exposed names), and task_tool.py:69-70 (error string returned before SubagentExecutor construction) \u2014 host bash is neither bound into the tool surface nor dispatched to a subagent.",
+        "contract_id": "ecological-contract:526457f02488f3e34ad947f418551774",
+        "declared_mechanism": "Layered exclusion: get_available_tools filters tool_configs with _is_host_bash_tool when not is_host_bash_allowed(config) (tools.py:58-60); get_available_subagent_names drops the 'bash' name when host bash is disallowed (registry.py:62-71); task_tool returns the disabled-subagent error for subagent_type 'bash' (task_tool.py:69-70) before any SubagentExecutor is built (task_tool.py:113-122).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 32,
+            "line_start": 24,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/tools/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2ec9286677093740f3d86b875043d46d32a7c479385f03a313fe9d579bcbb4ef"
+          },
+          {
+            "line_end": 62,
+            "line_start": 55,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/tools/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "2ec9286677093740f3d86b875043d46d32a7c479385f03a313fe9d579bcbb4ef"
+          },
+          {
+            "line_end": 71,
+            "line_start": 56,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/subagents/registry.py",
+            "role": "commit_point",
+            "source_sha256": "8cc4ae8cefe94e84828d17b2588cd2dc3435de2e674ba927ee348a30026fc5f8"
+          },
+          {
+            "line_end": 44,
+            "line_start": 22,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/tools/builtins/task_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "1c578efffec4c248d83ac22b74cedaeb64481cbf7a1335b4bab49d2692fec9a3"
+          },
+          {
+            "line_end": 70,
+            "line_start": 62,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/tools/builtins/task_tool.py",
+            "role": "commit_point",
+            "source_sha256": "1c578efffec4c248d83ac22b74cedaeb64481cbf7a1335b4bab49d2692fec9a3"
+          },
+          {
+            "line_end": 30,
+            "line_start": 22,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/tools/builtins/task_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1c578efffec4c248d83ac22b74cedaeb64481cbf7a1335b4bab49d2692fec9a3"
+          }
+        ],
+        "forbidden_condition": "A host-bash execution surface \u2014 a tool config with group 'bash' or use 'deerflow.sandbox.tools:bash_tool' (tools.py:24-32) \u2014 being resolved into the agent's tool list, or a 'bash' subagent being listed or dispatched via task_tool, while is_host_bash_allowed() is false.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The is_host_bash_allowed implementation (deerflow.sandbox.security) is not supplied; its behavior under isolated sandbox providers is unconfirmed against the task_tool docstring claim that the bash subagent is available 'when using an isolated shell sandbox such as AioSandboxProvider' (task_tool.py:42-44).",
+          "The concrete execution environment of the filtered bash tool (host process vs sandbox) is unconfirmed because the tool implementation is not supplied.",
+          "Call sites binding get_available_tools output into the lead agent runtime (outside the subagent assembly at task_tool.py:106-111) are not in supplied source."
+        ],
+        "protected_operation": "Agent tool-list assembly (get_available_tools), runtime subagent-name exposure (get_available_subagent_names), and task_tool dispatch of subagent work \u2014 the surfaces through which the agent could initiate host shell command execution.",
+        "protected_resource": "Host shell command execution.",
+        "protection_obligation": "When the active sandbox configuration disallows host bash (is_host_bash_allowed() returns false), host-bash execution surfaces must be withheld from the agent: host-bash tool configs must be excluded from get_available_tools, the 'bash' subagent name must be excluded from available subagent names, and task_tool must reject subagent_type 'bash' before any subagent execution is constructed.",
+        "scope_limits": [
+          "registry.get_available_subagent_names fails open: if is_host_bash_allowed() raises, all built-in names including 'bash' are exposed (registry.py:63-67); task_tool's own check is the backstop at dispatch time.",
+          "list_subagents() and get_subagent_names() return unfiltered built-ins (registry.py:38-53); only get_available_subagent_names applies the guard.",
+          "The guard restricts exposure and dispatch surfaces only; no OS-level shell restriction is evidenced in supplied source.",
+          "Filtering keys on tool-config metadata (group == 'bash' or use == 'deerflow.sandbox.tools:bash_tool'); tools not matching those markers are unaffected."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The upload effect commits in the channel layer: Channel._on_outbound iterates msg.attachments into send_file (base.py:102-104) and FeishuChannel.send_file uploads the attachment and sends the platform message (feishu.py:204-237), with the byte transfer occurring in _upload_image/_upload_file (feishu.py:239-267). Only paths that passed _resolve_attachments can appear in msg.attachments.",
+        "contract_id": "ecological-contract:8196973617a3c6dc24b1b5da75be7c2e",
+        "declared_mechanism": "_resolve_attachments (manager.py:268-314): prefix check against _OUTPUTS_VIRTUAL_PREFIX, paths.resolve_virtual_path resolution, resolved.relative_to(outputs_dir) containment re-check (ValueError -> skip with warning), and is_file verification; _prepare_artifact_delivery invokes it on both the runs.wait path (manager.py:568) and the streaming path (manager.py:659) before OutboundMessage publication.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 299,
+            "line_start": 268,
+            "path": "external/deer-flow/backend/app/channels/manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "914d55bf8aedfdffc9b67ba446f3ca4fba563f7abac550cfa58316134d2f0e7b"
+          },
+          {
+            "line_end": 586,
+            "line_start": 568,
+            "path": "external/deer-flow/backend/app/channels/manager.py",
+            "role": "guard_registration",
+            "source_sha256": "914d55bf8aedfdffc9b67ba446f3ca4fba563f7abac550cfa58316134d2f0e7b"
+          },
+          {
+            "line_end": 690,
+            "line_start": 655,
+            "path": "external/deer-flow/backend/app/channels/manager.py",
+            "role": "guard_registration",
+            "source_sha256": "914d55bf8aedfdffc9b67ba446f3ca4fba563f7abac550cfa58316134d2f0e7b"
+          },
+          {
+            "line_end": 108,
+            "line_start": 87,
+            "path": "external/deer-flow/backend/app/channels/base.py",
+            "role": "protected_operation",
+            "source_sha256": "1968c7971f28b4bcd42cb759ad0c63677f69c6299c664a244727c8ea61101a93"
+          },
+          {
+            "line_end": 237,
+            "line_start": 204,
+            "path": "external/deer-flow/backend/app/channels/feishu.py",
+            "role": "commit_point",
+            "source_sha256": "fefe7cb4eb5d5a40133e95f2cb3c5610350d9e4682ab89e95391da19aaacfbfd"
+          },
+          {
+            "line_end": 267,
+            "line_start": 239,
+            "path": "external/deer-flow/backend/app/channels/feishu.py",
+            "role": "commit_point",
+            "source_sha256": "fefe7cb4eb5d5a40133e95f2cb3c5610350d9e4682ab89e95391da19aaacfbfd"
+          },
+          {
+            "line_end": 252,
+            "line_start": 222,
+            "path": "external/deer-flow/backend/app/channels/manager.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "914d55bf8aedfdffc9b67ba446f3ca4fba563f7abac550cfa58316134d2f0e7b"
+          }
+        ],
+        "forbidden_condition": "An attachment whose virtual path lacks the '/mnt/user-data/outputs/' prefix ('rejected non-outputs artifact path', manager.py:285-287) or whose resolved host path escapes the thread outputs directory ('artifact path escapes outputs dir', manager.py:288-296) reaching platform upload \u2014 i.e., exfiltration of uploads or workspace files via IM channels (manager.py:271-273).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "deerflow.config.paths implementations (get_paths, sandbox_outputs_dir, resolve_virtual_path) are not supplied; the virtual-to-host mapping semantics underpinning the containment check are unconfirmed.",
+          "Slack and Telegram channel send_file/upload implementations are not supplied."
+        ],
+        "protected_operation": "Outbound delivery of file attachments: ChannelManager embeds resolved attachments in OutboundMessage, the bus forwards to the matching channel, and Channel._on_outbound uploads each attachment via send_file to the external platform.",
+        "protected_resource": "Host filesystem locations outside the thread's sandbox outputs directory (user uploads and workspace files that must not be sent off-platform).",
+        "protection_obligation": "Outbound IM-channel file attachments must resolve only from the thread's sandbox outputs directory: virtual paths outside '/mnt/user-data/outputs/' must be rejected and resolved paths re-verified to lie under the outputs directory, before any attachment is uploaded to an external messaging platform.",
+        "scope_limits": [
+          "Only the Feishu channel implementation is supplied; Slack and Telegram appear in CHANNEL_CAPABILITIES (manager.py:34-38) but their upload paths are not in source.",
+          "Rejected or unresolvable artifacts are skipped, but their filenames remain disclosed to the user as text fallbacks (_prepare_artifact_delivery, manager.py:329-339); file content is not uploaded.",
+          "The guard filters attachment resolution only; outbound text message content is not path-filtered.",
+          "Base Channel.send_file defaults to False (no upload support) (base.py:54-60); the protection is meaningful only for channels implementing upload."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "coder.py:123-126 triggers the revert when violations exist; the restorative file mutations commit in _revert_constraint_violations at coder.py:290-304 (workspace_path.write_bytes of source bytes, or workspace_path.unlink for files with no source counterpart).",
+        "contract_id": "ecological-contract:992544ab0b134279aef7fecc1f0593a8",
+        "declared_mechanism": "apply_innovation collects modified files via _collect_modified_files (workspace.rglob plus sha256 diff against project_root, excluding runtime artifacts), computes hard-constraint violations via _collect_hard_constraint_violations, and on any violation calls _revert_constraint_violations, restoring each violating file byte-for-byte from project source or deleting files with no source counterpart; the outcome is recorded in .opencat_constraint_check..",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 143,
+            "line_start": 116,
+            "path": "src/opencat_research_assistant/services/coder.py",
+            "role": "guard_registration",
+            "source_sha256": "51e6ec601cfd1c1a010e4f8d15e35ed4283ddf82086a6610ea8482e1ee99ded3"
+          },
+          {
+            "line_end": 288,
+            "line_start": 271,
+            "path": "src/opencat_research_assistant/services/coder.py",
+            "role": "forbidden_condition",
+            "source_sha256": "51e6ec601cfd1c1a010e4f8d15e35ed4283ddf82086a6610ea8482e1ee99ded3"
+          },
+          {
+            "line_end": 221,
+            "line_start": 201,
+            "path": "src/opencat_research_assistant/services/coder.py",
+            "role": "protected_operation",
+            "source_sha256": "51e6ec601cfd1c1a010e4f8d15e35ed4283ddf82086a6610ea8482e1ee99ded3"
+          },
+          {
+            "line_end": 304,
+            "line_start": 290,
+            "path": "src/opencat_research_assistant/services/coder.py",
+            "role": "commit_point",
+            "source_sha256": "51e6ec601cfd1c1a010e4f8d15e35ed4283ddf82086a6610ea8482e1ee99ded3"
+          },
+          {
+            "line_end": 101,
+            "line_start": 82,
+            "path": "src/opencat_research_assistant/services/coder.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "51e6ec601cfd1c1a010e4f8d15e35ed4283ddf82086a6610ea8482e1ee99ded3"
+          }
+        ],
+        "forbidden_condition": "Workspace files modified relative to the project source snapshot (sha256 comparison) that are not in allowed_edit_files or that appear in disallowed_edit_files, while task_constraints.forbid_core_code_changes or prefer_recipe_changes is true (coder.py:271-288).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirmation that the workspace modifications under check are produced by an autonomous agent rests on the coder command wiring (coder.py:82-101); run_command and OpenCodeAdapter internals are not supplied."
+        ],
+        "protected_operation": "Post-run workspace file state produced by the coder agent run inside CodeAdapter.apply_innovation (modified-file collection, violation computation, revert, and .opencat_constraint_check. recording).",
+        "protected_resource": "Files under the experiment workspace, classified by the resolved edit scope (core code vs config/recipe files).",
+        "protection_obligation": "After the coder agent edits the experiment workspace, modifications violating active hard task constraints (forbid_core_code_changes / prefer_recipe_changes: edits outside allowed_edit_files or inside disallowed_edit_files) must be detected and reverted so out-of-scope agent modifications do not persist in the workspace.",
+        "scope_limits": [
+          "Revert is post-hoc: out-of-scope modifications exist on disk transiently before restoration; the mechanism does not prevent the initial write.",
+          "Hard enforcement is active only when forbid_core_code_changes or prefer_recipe_changes is true; otherwise modifications yield soft-scope warnings only (coder.py:279-283, 259-269).",
+          "Detection excludes runtime artifacts (.opencat*, __pycache__, .pyc/.pyo) and files whose hash equals the project source (coder.py:209-221, 243-250).",
+          "Restoration depends on the project_root snapshot (coder.py:290-298); drift between that snapshot and the intended baseline is outside the guard."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "sandbox_audit_middleware.py:172-204 \u2014 in wrap_tool_call, a 'block' verdict returns the error ToolMessage at line 183 before handler(request) at line 184; in awrap_tool_call, the block returns at line 200 before 'await handler(request)' at line 201, so the shell command never reaches execution.",
+        "contract_id": "ecological-contract:a9d45861fbcf67c1b1233f33c0309893",
+        "declared_mechanism": "SandboxAuditMiddleware (AgentMiddleware[ThreadState]) registered into the shared runtime middleware chain: for tool_call name == 'bash', _pre_process runs _classify_command (normalized regex scan of _HIGH_RISK_PATTERNS plus a shlex token re-scan; shlex ValueError -> block), writes a structured audit log entry, and on a 'block' verdict returns _build_block_message (ToolMessage with status='error') instead of calling handler; medium-risk commands pass with an appended warning note.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 66,
+            "line_start": 25,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/agents/middlewares/sandbox_audit_middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "34732b7a07ae4ae2724880a8c3ae3153bf64d26b752800d53d1fd423de3a19d0"
+          },
+          {
+            "line_end": 89,
+            "line_start": 74,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/agents/middlewares/sandbox_audit_middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "34732b7a07ae4ae2724880a8c3ae3153bf64d26b752800d53d1fd423de3a19d0"
+          },
+          {
+            "line_end": 204,
+            "line_start": 172,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/agents/middlewares/sandbox_audit_middleware.py",
+            "role": "commit_point",
+            "source_sha256": "34732b7a07ae4ae2724880a8c3ae3153bf64d26b752800d53d1fd423de3a19d0"
+          },
+          {
+            "line_end": 121,
+            "line_start": 118,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/agents/middlewares/tool_error_handling_middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "aa02a1365c544208a1c608650043c44fa4075288f9038786887d2bd7908ca7ba"
+          },
+          {
+            "line_end": 140,
+            "line_start": 125,
+            "path": "external/deer-flow/backend/packages/harness/deerflow/agents/middlewares/tool_error_handling_middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "aa02a1365c544208a1c608650043c44fa4075288f9038786887d2bd7908ca7ba"
+          }
+        ],
+        "forbidden_condition": "A 'bash' tool call whose command matches a high-risk pattern \u2014 rm with a recursive flag targeting /, /*, ~, /home, or /root; curl/wget piped into (ba)sh; 'dd if='; 'mkfs'; 'cat /etc/shadow'; output redirection into '/etc/' \u2014 or whose command fails shlex parsing (unclosed quotes treated as suspicious), reaching the bash tool handler for execution.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The bash tool handler implementation (e.g. deerflow.sandbox.tools:bash_tool) is not supplied, so whether the blocked effect is a host OS process or a sandbox-mediated shell cannot be confirmed from source.",
+          "Ordering and interaction with SandboxMiddleware and GuardrailMiddleware in the same middleware list is not specified in supplied source."
+        ],
+        "protected_operation": "Invocation of the bash tool handler for agent-issued tool calls named 'bash' dispatched through the lead/subagent agent runtime tool-call chain (sync wrap_tool_call and async awrap_tool_call).",
+        "protected_resource": "The shell execution surface behind the 'bash' tool (sandbox/host shell).",
+        "protection_obligation": "Every agent 'bash' tool call must be security-classified before the bash tool handler runs, and commands graded high-risk ('block' verdict) must be rejected with an error ToolMessage so the shell command is never executed; every bash call is audit-logged.",
+        "scope_limits": [
+          "Only tool calls named exactly 'bash' are inspected (sandbox_audit_middleware.py:178-179, 195-196); other tools and non-tool shell surfaces are out of scope.",
+          "Medium-risk commands (chmod 777, pip/pip3 install, apt install) execute normally with only an appended warning, not blocked (lines 34-39, 185-187, 202-204).",
+          "Detection is regex/shlex pattern matching over the command text; commands not matching the listed patterns are not covered.",
+          "Registration depends on _build_runtime_middlewares being used for lead and subagent runtimes (tool_error_handling_middleware.py:118-140); the graph wiring that instantiates those runtimes is not in supplied source.",
+          "The audit trail is the standard logger only (sandbox_audit_middleware.py:108-115); no persistent policy store is involved."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "workspace_editor.py:35-59 \u2014 target resolution and constraint enforcement (lines 36-37) precede the per-operation mutations (target.write_text / _apply_file_edit at lines 38-56); a write only commits after both checks pass for that operation.",
+        "contract_id": "ecological-contract:f0269c4ef5cddd782793050bded52215",
+        "declared_mechanism": "apply_plan resolves each operation target via _resolve_target ((workspace / relative_path).resolve() with a workspace-parents containment check) and calls _enforce_path_constraints (disallowed-set membership plus allowed-scope match) before dispatching write/file_edit/append/replace; violations raise ValueError and abort the operation before the write.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 60,
+            "line_start": 31,
+            "path": "src/opencat_research_assistant/services/workspace_editor.py",
+            "role": "protected_operation",
+            "source_sha256": "fa363b28beb8dda13932b0da8528d3d5e8e578553796c95167577f07654e7e20"
+          },
+          {
+            "line_end": 116,
+            "line_start": 101,
+            "path": "src/opencat_research_assistant/services/workspace_editor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fa363b28beb8dda13932b0da8528d3d5e8e578553796c95167577f07654e7e20"
+          },
+          {
+            "line_end": 59,
+            "line_start": 35,
+            "path": "src/opencat_research_assistant/services/workspace_editor.py",
+            "role": "commit_point",
+            "source_sha256": "fa363b28beb8dda13932b0da8528d3d5e8e578553796c95167577f07654e7e20"
+          },
+          {
+            "line_end": 107,
+            "line_start": 102,
+            "path": "src/opencat_research_assistant/services/coder.py",
+            "role": "guard_registration",
+            "source_sha256": "51e6ec601cfd1c1a010e4f8d15e35ed4283ddf82086a6610ea8482e1ee99ded3"
+          },
+          {
+            "line_end": 101,
+            "line_start": 82,
+            "path": "src/opencat_research_assistant/services/coder.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "51e6ec601cfd1c1a010e4f8d15e35ed4283ddf82086a6610ea8482e1ee99ded3"
+          }
+        ],
+        "forbidden_condition": "A patch operation whose resolved target escapes the workspace root ('Patch path escapes workspace', workspace_editor.py:101-105), whose relative path is listed in disallowed_edit_files ('violates disallowed edit scope'), or which is not matched by allowed_edit_files when an allowed list is active ('outside allowed edit scope', workspace_editor.py:107-111).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The coder command executed via run_command and the OpenCodeAdapter internals are not supplied; that .opencat_patch_plan. is authored by the external coder agent is inferred from the wiring (plan path passed into coder_command at coder.py:82-92, command run at 93-101, plan applied at 102-107)."
+        ],
+        "protected_operation": "Execution of patch-plan operations (write / file_edit / append / replace) read from the .opencat_patch_plan. plan against workspace files within CodeAdapter.apply_innovation.",
+        "protected_resource": "Files under the resolved experiment workspace directory (WorkspaceEditor resolves self._workspace = workspace.resolve()).",
+        "protection_obligation": "Patch-plan operations applied via WorkspaceEditor.apply_plan must not write outside the experiment workspace root and must not target files outside the configured edit scope: each operation's target is path-resolved (workspace containment) and scope-checked (allowed/disallowed edit files) before any file mutation commits.",
+        "scope_limits": [
+          "Covers only operations routed through WorkspaceEditor.apply_plan; files the coder process writes directly are not intercepted here (a separate post-hoc check/revert path in coder.py addresses those).",
+          "_matches_allowed_scope is exact relative-path string matching (workspace_editor.py:113-116); no directory prefixes or glob patterns are supported.",
+          "Enforcement is per-operation: operations preceding a failing operation remain applied; apply_plan does not roll back earlier operations (lines 35-59).",
+          "The allowed/disallowed edit lists are derived from project report/execution plan payloads via coder._resolve_edit_scope (coder.py:47-53, 154-199); the quality of those lists is outside this guard."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "deerflow.sandbox.security.is_host_bash_allowed implementation is not supplied; host-bash policy semantics, including behavior under isolated sandbox providers, are unconfirmed.",
+      "The bash tool implementation referenced as 'deerflow.sandbox.tools:bash_tool', SandboxMiddleware, and the sandbox provider layers are not supplied; the actual execution environment (host process vs sandbox) of guarded bash commands is unconfirmed.",
+      "opencat runtime.run_command and integrations.opencode.OpenCodeAdapter are not supplied; the coder execution that produces .opencat_patch_plan. and direct workspace edits is evidenced only by coder.py wiring.",
+      "deerflow.config.paths (get_paths, sandbox_outputs_dir, resolve_virtual_path) is not supplied; the virtual-to-host path mapping behind the attachment containment check is unconfirmed.",
+      "Slack and Telegram channel implementations are not supplied; only FeishuChannel is provided.",
+      "LangGraph graph/agent construction wiring that consumes build_lead_runtime_middlewares/build_subagent_runtime_middlewares is not in supplied source.",
+      "Per declared scope: repository enumeration is incomplete and behavior labels are unavailable; contracts are compiled only from the supplied line-numbered views."
+    ],
+    "repository": "yu13130122297/opencat",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:19673733b544162d654a5d08dd7f48c9"
+  },
+  "request_sha256": "479b521243d2ef7a92c58732ead17cda416118c3ac83b35cc3512676774c0f0e",
+  "response_sha256": "859148c4bb9fecf9b0dd9961355dc34964dbdec05870dc217d101ab45c74aed1",
+  "state": "completed",
+  "tokens": 61043,
+  "unit": "v24-screen:19673733b544162d654a5d08dd7f48c9"
+}

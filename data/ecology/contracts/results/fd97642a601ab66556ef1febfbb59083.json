@@ -1,0 +1,169 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "target.write_bytes(content) at backend/app/services/ingestion.py:267.",
+        "contract_id": "ecological-contract:97cc09f4b06952f24492b4c227b98711",
+        "declared_mechanism": "Basename sanitization at target construction: pdf_path is resolved from the pdf_dir argument/settings or default_pdf_dir() (ingestion.py:256-258), the directory is ensured (ingestion.py:265), and the write target is confined via target = pdf_path / Path(file_name).name (ingestion.py:266) before target.write_bytes(content) (ingestion.py:267). No decorator, validator, or policy-check guard is declared for this write in the supplied source.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 254,
+            "line_start": 246,
+            "path": "backend/app/services/ingestion.py",
+            "role": "protected_operation",
+            "source_sha256": "34a26bc181f1e69a53b7eb6b1d20d2211b0a5bd10e60eb6afd3f21fb979d91d4"
+          },
+          {
+            "line_end": 258,
+            "line_start": 256,
+            "path": "backend/app/services/ingestion.py",
+            "role": "forbidden_condition",
+            "source_sha256": "34a26bc181f1e69a53b7eb6b1d20d2211b0a5bd10e60eb6afd3f21fb979d91d4"
+          },
+          {
+            "line_end": 266,
+            "line_start": 265,
+            "path": "backend/app/services/ingestion.py",
+            "role": "guard_registration",
+            "source_sha256": "34a26bc181f1e69a53b7eb6b1d20d2211b0a5bd10e60eb6afd3f21fb979d91d4"
+          },
+          {
+            "line_end": 266,
+            "line_start": 266,
+            "path": "backend/app/services/ingestion.py",
+            "role": "forbidden_condition",
+            "source_sha256": "34a26bc181f1e69a53b7eb6b1d20d2211b0a5bd10e60eb6afd3f21fb979d91d4"
+          },
+          {
+            "line_end": 267,
+            "line_start": 267,
+            "path": "backend/app/services/ingestion.py",
+            "role": "commit_point",
+            "source_sha256": "34a26bc181f1e69a53b7eb6b1d20d2211b0a5bd10e60eb6afd3f21fb979d91d4"
+          }
+        ],
+        "forbidden_condition": "target.write_bytes(content) committing uploaded content bytes to a filesystem path that resolves outside the configured pdf directory, i.e., a file_name whose directory or traversal components (nested paths, absolute paths, '..' segments) would relocate the write target away from pdf_path.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which entry point supplies file_name and content (HTTP upload route, agent tool, CLI) \u2014 no route or tool registration for ingest_uploaded_pdf appears in the supplied views.",
+          "Whether file_name can carry platform-specific forms (Windows drive/UNC prefixes, null bytes, '..' segments) that Path.name does not fully neutralize \u2014 requires platform or test evidence outside supplied source.",
+          "Whether symlinks inside pdf_path could redirect the write outside the directory \u2014 not addressable from supplied source.",
+          "Whether a guard test should expect silent basename rewriting or an explicit rejection for traversal-style file_name values."
+        ],
+        "protected_operation": "Persisting caller-supplied uploaded PDF bytes to disk in ingest_uploaded_pdf in backend/app/services/ingestion.py (the save step preceding single-file ingestion).",
+        "protected_resource": "The configured pdf directory (pdf_path) as the sole permitted write destination, and the filesystem outside pdf_path that this function must not write.",
+        "protection_obligation": "Uploaded PDF bytes passed to ingest_uploaded_pdf may be committed to disk only at a write target confined to the configured pdf directory, derived from the basename of the caller-supplied file_name as target = pdf_path / Path(file_name).name; no byte write performed by this function may land outside pdf_path via directory or traversal components embedded in file_name.",
+        "scope_limits": [
+          "Covers only the byte write at ingestion.py:267; downstream effects of IngestionService.ingest_file (metadata JSON writes at ingestion.py:174-176 and 190-191, vector-store mutations, embedding calls) are separate effects not guarded by this mechanism.",
+          "The declared mechanism silently strips directory components via Path.name; the supplied source declares no rejection or error path for adversarial file_name values, so guard semantics beyond stripping are unsupported by these views.",
+          "pdf_path itself is accepted from the pdf_dir argument/settings and may be absolute (_resolve_backend_relative, ingestion.py:321-327); the contract treats pdf_path as the trusted base directory.",
+          "Agent mediation is not established: no tool decorator, agent registration, lifecycle hook, or agent-generated dataflow binding ingest_uploaded_pdf appears in the supplied views; the obligation applies to whatever caller invokes the function."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Single guarded commit point: acceptance of the guardrail-passed answer Task output at crew kickoff, with the raw text consumed at crew_ai.py:440-442 and committed into RAGFlowResult(answer=answer) at crew_ai.py:242-243 (same stratum, propagated value).",
+        "contract_id": "ecological-contract:c23c0d261244e932ec3b0f5df1e326bc",
+        "declared_mechanism": "CrewAI Task guardrail: the guardrail closure built by _make_answer_guardrail(question) validates task_output.raw against the empty/citation/emergency rules and returns (False, message) to force CrewAI re-prompting (crew_ai.py:124-154, invocation contract documented at 127-128); it is registered on the answer Task via guardrail=_make_answer_guardrail(question) with max_retries=2 (crew_ai.py:437-438).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 72,
+            "line_start": 57,
+            "path": "backend/app/agents/crew_ai.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7fb2080d4467a7ed68fd967fa9810348e12a43451774087c2fcf6204082b62be"
+          },
+          {
+            "line_end": 154,
+            "line_start": 124,
+            "path": "backend/app/agents/crew_ai.py",
+            "role": "guard_registration",
+            "source_sha256": "7fb2080d4467a7ed68fd967fa9810348e12a43451774087c2fcf6204082b62be"
+          },
+          {
+            "line_end": 152,
+            "line_start": 136,
+            "path": "backend/app/agents/crew_ai.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7fb2080d4467a7ed68fd967fa9810348e12a43451774087c2fcf6204082b62be"
+          },
+          {
+            "line_end": 240,
+            "line_start": 238,
+            "path": "backend/app/agents/crew_ai.py",
+            "role": "protected_operation",
+            "source_sha256": "7fb2080d4467a7ed68fd967fa9810348e12a43451774087c2fcf6204082b62be"
+          },
+          {
+            "line_end": 439,
+            "line_start": 433,
+            "path": "backend/app/agents/crew_ai.py",
+            "role": "guard_registration",
+            "source_sha256": "7fb2080d4467a7ed68fd967fa9810348e12a43451774087c2fcf6204082b62be"
+          },
+          {
+            "line_end": 438,
+            "line_start": 437,
+            "path": "backend/app/agents/crew_ai.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7fb2080d4467a7ed68fd967fa9810348e12a43451774087c2fcf6204082b62be"
+          },
+          {
+            "line_end": 442,
+            "line_start": 440,
+            "path": "backend/app/agents/crew_ai.py",
+            "role": "commit_point",
+            "source_sha256": "7fb2080d4467a7ed68fd967fa9810348e12a43451774087c2fcf6204082b62be"
+          },
+          {
+            "line_end": 243,
+            "line_start": 242,
+            "path": "backend/app/agents/crew_ai.py",
+            "role": "commit_point",
+            "source_sha256": "7fb2080d4467a7ed68fd967fa9810348e12a43451774087c2fcf6204082b62be"
+          }
+        ],
+        "forbidden_condition": "Committing an answer-task output that (a) is empty after stripping (crew_ai.py:138-139), (b) contains no [digits] citation marker while not containing the insufficient-evidence marker (crew_ai.py:140-145), or (c) omits both '119' and '\uc751\uae09' when any EMERGENCY_KEYWORDS term appears in the question (crew_ai.py:146-151); each of these yields (False, message) from the registered guardrail and must not be accepted as the final answer.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "CrewAI framework semantics when the guardrail exhausts max_retries=2 (raise, failure value, or last output) \u2014 framework internals are not in the supplied views.",
+          "Whether the deterministic fallback summary (crew_ai.py:447-452) and the insufficient-evidence constant path (crew_ai.py:418-419) should be bound into this guard contract or tracked as separate uncovered effects.",
+          "Whether an upstream HTTP layer re-validates the committed answer before delivery \u2014 no route view is supplied."
+        ],
+        "protected_operation": "Generation and acceptance of the final medical answer by the CrewAI answer agent task (CrewRAGOrchestrator._answer, Stage 3 of _run_crew, crew_ai.py:238-240 and 417-439).",
+        "protected_resource": "The committed answer text returned to callers in RAGFlowResult.answer from CrewRAGOrchestrator.run/_run_crew (crew_ai.py:242-243).",
+        "protection_obligation": "At the CrewAI answer-task commit point, the final answer produced by the answer agent must pass _make_answer_guardrail before being accepted as the committed answer: outputs that are empty, that lack an [n]-style citation marker while not being the explicit insufficient-evidence response, or that omit an explicit 119/emergency-room recommendation when the question contains an EMERGENCY_KEYWORDS term must be rejected with (False, message) and the agent re-prompted (max_retries=2) instead of being committed.",
+        "scope_limits": [
+          "Applies only to the CrewAI answer Task: when evidence_pack.items is empty, _answer returns INSUFFICIENT_EVIDENCE_ANSWER directly without invoking the guardrail (crew_ai.py:417-419).",
+          "Deterministic fallback paths bypass the guardrail: empty crew output yields an unvalidated deterministic summary (crew_ai.py:441-452), answer-stage exceptions fall back likewise (crew_ai.py:444-445), and CrewAI unavailability or any stage exception routes run() to _fallback with no guardrail (crew_ai.py:188-194).",
+          "The citation-marker requirement is waived for text containing the insufficient-evidence marker (crew_ai.py:140-141).",
+          "Behavior of CrewAI after max_retries=2 guardrail failures (exception vs. failed-output propagation) is not determinable from supplied source; crew_ai.py:440-443 only shows that empty raw output triggers the fallback.",
+          "The emergency check is a substring test for '119'/'\uc751\uae09' in the answer text; coverage nuances of keyword or marker matching are behavioral and not decided here."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied view binds ingest_uploaded_pdf (or IngestionService) to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded write; agent mediation for the ingestion contract cannot be established from these sources.",
+      "No HTTP route, controller, or caller of ingest_uploaded_pdf or CrewRAGOrchestrator.run is supplied, so the transport stratum of the committed answer and the origin of file_name/content are not determinable.",
+      "CrewAI framework behavior after guardrail retry exhaustion is not present in the supplied source.",
+      "Coverage of the deterministic fallback and insufficient-evidence answer paths by any other registered guard is not shown in the supplied source."
+    ],
+    "repository": "Deeeplearning-study/RAG_AGENT_STUDY",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:fd97642a601ab66556ef1febfbb59083"
+  },
+  "request_sha256": "bed04816c3d0d7776be590a48ad67cbb467104305912e89ff9978ca93275d2f0",
+  "response_sha256": "0af8b9b7670cc1e2526583703ad31f83253e1dca491918e939ecc892e233e48e",
+  "state": "completed",
+  "tokens": 28521,
+  "unit": "v24-screen:fd97642a601ab66556ef1febfbb59083"
+}

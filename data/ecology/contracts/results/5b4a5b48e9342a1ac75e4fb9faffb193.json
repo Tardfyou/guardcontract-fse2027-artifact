@@ -1,0 +1,116 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file_path.write_bytes(content) at app/api/file.py line 75 (final persistence of uploaded bytes); secondary filesystem commit point file_path.unlink() at line 66 (deletion of an existing file implementing overwrite), which executes after the emptiness/sanitization/extension guards but before the size guard. Both commit points are in the same stratum, so one contract covers them.",
+        "contract_id": "ecological-contract:dd3a0056d1e72222fa30abd63daea5c8",
+        "declared_mechanism": "In-handler guard sequence in upload_file: (1) non-empty filename check raising HTTP 400 (lines 43-44); (2) _sanitize_filename normalization replacing spaces and \\ / : * ? \" < > | with underscore (applied at line 47; defined at lines 156-171); (3) extension extraction and whitelist check against ALLOWED_EXTENSIONS raising HTTP 400 (lines 50-55; list declared at line 23; extractor at lines 140-153); (4) size cap check len(content) > MAX_FILE_SIZE raising HTTP 400 (lines 72-73; constant declared at line 27).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 27,
+            "line_start": 16,
+            "path": "app/api/file.py",
+            "role": "guard_registration",
+            "source_sha256": "e3ad1d44c5edf14e3b49bcb07584b11f373c141d14bec5bbcf6f31409d340f7c"
+          },
+          {
+            "line_end": 50,
+            "line_start": 43,
+            "path": "app/api/file.py",
+            "role": "guard_registration",
+            "source_sha256": "e3ad1d44c5edf14e3b49bcb07584b11f373c141d14bec5bbcf6f31409d340f7c"
+          },
+          {
+            "line_end": 153,
+            "line_start": 140,
+            "path": "app/api/file.py",
+            "role": "guard_registration",
+            "source_sha256": "e3ad1d44c5edf14e3b49bcb07584b11f373c141d14bec5bbcf6f31409d340f7c"
+          },
+          {
+            "line_end": 171,
+            "line_start": 156,
+            "path": "app/api/file.py",
+            "role": "guard_registration",
+            "source_sha256": "e3ad1d44c5edf14e3b49bcb07584b11f373c141d14bec5bbcf6f31409d340f7c"
+          },
+          {
+            "line_end": 55,
+            "line_start": 51,
+            "path": "app/api/file.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e3ad1d44c5edf14e3b49bcb07584b11f373c141d14bec5bbcf6f31409d340f7c"
+          },
+          {
+            "line_end": 73,
+            "line_start": 72,
+            "path": "app/api/file.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e3ad1d44c5edf14e3b49bcb07584b11f373c141d14bec5bbcf6f31409d340f7c"
+          },
+          {
+            "line_end": 61,
+            "line_start": 57,
+            "path": "app/api/file.py",
+            "role": "protected_operation",
+            "source_sha256": "e3ad1d44c5edf14e3b49bcb07584b11f373c141d14bec5bbcf6f31409d340f7c"
+          },
+          {
+            "line_end": 66,
+            "line_start": 66,
+            "path": "app/api/file.py",
+            "role": "commit_point",
+            "source_sha256": "e3ad1d44c5edf14e3b49bcb07584b11f373c141d14bec5bbcf6f31409d340f7c"
+          },
+          {
+            "line_end": 75,
+            "line_start": 75,
+            "path": "app/api/file.py",
+            "role": "commit_point",
+            "source_sha256": "e3ad1d44c5edf14e3b49bcb07584b11f373c141d14bec5bbcf6f31409d340f7c"
+          }
+        ],
+        "forbidden_condition": "Persistence of an uploaded file under UPLOAD_DIR (the file_path.unlink() overwrite deletion at line 66 or the file_path.write_bytes(content) write at line 75) when any of the following holds: (a) file.filename is empty or absent; (b) the sanitized filename's extension (lowercased text after the final '.', per lines 140-153) is not in ALLOWED_EXTENSIONS; (c) len(content) > MAX_FILE_SIZE (50 * 1024 * 1024 bytes); or (d) the write path derives from a filename containing path separators or hostile characters (\\ / : * ? \" < > |) that were not replaced by _sanitize_filename.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source shows this router registered as an agent tool, wired to an agent lifecycle hook, reached via tool dispatch, or receiving agent-generated input; whether deployed upload traffic is agent-mediated is unverified (the repository name/topic alone does not establish mediation).",
+          "Mounting of router (line 13) is not in the supplied view; the reviewers' endpoint path '/api/upload' is unconfirmed \u2014 the supplied source shows only the route path '/upload' (line 30) on a bare APIRouter.",
+          "Whether the per-type size limits described only in comments (lines 24-26) are intended as part of the declared guard remains unresolved against the implemented single 50MB cap.",
+          "Behavior, guarding, and effect stratum of app.services.vector_index_service (imported at line 10; invoked at line 82) are unknown from the supplied source."
+        ],
+        "protected_operation": "Persisting an uploaded file into the uploads directory: UPLOAD_DIR.mkdir(parents=True, exist_ok=True) (line 58), write-path construction file_path = UPLOAD_DIR / safe_filename (line 61), overwrite deletion of an existing file via file_path.unlink() (line 66), and final byte write file_path.write_bytes(content) (line 75).",
+        "protected_resource": "Files under UPLOAD_DIR = Path(\"./uploads\") addressed as UPLOAD_DIR / safe_filename (app/api/file.py lines 16 and 61).",
+        "protection_obligation": "Uploaded files must not be persisted into the uploads directory by the POST /upload route handler unless, before the disk mutation, the request supplies a non-empty filename, the filename has been sanitized of spaces and path/hostile characters (backslash, slash, colon, asterisk, question mark, double quote, angle brackets, pipe), the sanitized filename's extension is in ALLOWED_EXTENSIONS (txt, md, markdown, pdf, docx, doc), and the content length is within MAX_FILE_SIZE (50MB). (Merged obligation: the phase-1 and phase-2 reviewer opinions describe the same guarded filesystem write with the same commit points and are consolidated here.)",
+        "scope_limits": [
+          "Compiled solely from the supplied app/api/file.py view; no other repository files were available and repository enumeration is incomplete.",
+          "Source-ordering fact: UPLOAD_DIR.mkdir (line 58) and file_path.unlink() (line 66) execute after the emptiness/sanitization/extension checks (lines 43-55) but before the size check (lines 72-73); the size cap therefore gates only the write_bytes commit point (line 75), not the unlink commit point.",
+          "Comments at lines 24-26 declare per-type limits (10MB for text files, 50MB for binary files), but the supplied code enforces only the single 50MB MAX_FILE_SIZE cap for all types; no per-type limit is implemented in the supplied source.",
+          "UPLOAD_DIR is a relative path ('./uploads'); its absolute resolution depends on the process working directory, which is not determinable from the supplied view.",
+          "The downstream vector indexing (vector_index_service.index_single_file at line 82) and the unguarded POST /index_directory endpoint (lines 109-137) are outside this contract; their implementations are not supplied.",
+          "Ordinary web authentication, CORS, and framework request-parsing behavior are out of scope; no such mechanisms are declared in the supplied view."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Agent mediation is not established by the supplied source: no tool registration, lifecycle-hook wiring, tool dispatch, or concrete agent-to-endpoint dataflow appears in the provided view, so agent_mediation is 'not_established' and no agent_entry_binding evidence is cited.",
+      "The application entry point that includes this APIRouter (and any URL prefix such as '/api') is not supplied, so the externally visible endpoint path cannot be confirmed.",
+      "The implementation of app.services.vector_index_service is not supplied; the effect stratum of the indexing call (line 82) and any guards upon it cannot be classified or compiled into contracts.",
+      "Runtime deployment context (working directory that resolves './uploads', caller identity for /upload and /index_directory) is not determinable from the supplied view."
+    ],
+    "repository": "wyywangyuyang/OnCall-Agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:5b4a5b48e9342a1ac75e4fb9faffb193"
+  },
+  "request_sha256": "9c6e0dfa38c334b6503c88e459fc121b0b806cfbfae455128d01031189c61e90",
+  "response_sha256": "1251511e3caf30dbe73c4b262df83172a763da5dad498fdd5295dde1d805db28",
+  "state": "completed",
+  "tokens": 15036,
+  "unit": "v24-screen:5b4a5b48e9342a1ac75e4fb9faffb193"
+}

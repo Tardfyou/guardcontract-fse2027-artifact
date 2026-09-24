@@ -1,0 +1,291 @@
+{
+  "attempt": "complete_shard_reconciliation",
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "process.stdin.write(payload) followed by process.stdin.flush() in ClaudeProcess.send_permission_response (claude_code_gui/runtime/claude_process.py:123-125).",
+        "contract_id": "ecological-contract:1841bec089945ae87fff96526b52e6c3",
+        "declared_mechanism": "Pending-request registry _pending_permission_request_ids (claude_process.py:54), populated only by _emit_permission_request from CLI stream payload request IDs (claude_process.py:1855-1860) and cleared at run start (claude_process.py:147); send_permission_response normalizes the action into a fixed payload (allow/deny sentinel or non-empty comment text), snapshots registry, running, and stop state under self._lock, and returns False without writing unless request_id is pending, the process is running and not stop-requested, process and process.stdin are non-None, and process.poll() is None; the matched request id is discarded after the write (single-use, claude_process.py:136-138).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 138,
+            "line_start": 91,
+            "path": "claude_code_gui/runtime/claude_process.py",
+            "role": "guard_registration",
+            "source_sha256": "9f99efbadc00a1b7392670704719c0df6f39ca77c1e0da7bbd8104d4f9a992c9"
+          },
+          {
+            "line_end": 121,
+            "line_start": 113,
+            "path": "claude_code_gui/runtime/claude_process.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9f99efbadc00a1b7392670704719c0df6f39ca77c1e0da7bbd8104d4f9a992c9"
+          },
+          {
+            "line_end": 125,
+            "line_start": 123,
+            "path": "claude_code_gui/runtime/claude_process.py",
+            "role": "commit_point",
+            "source_sha256": "9f99efbadc00a1b7392670704719c0df6f39ca77c1e0da7bbd8104d4f9a992c9"
+          },
+          {
+            "line_end": 1860,
+            "line_start": 1855,
+            "path": "claude_code_gui/runtime/claude_process.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9f99efbadc00a1b7392670704719c0df6f39ca77c1e0da7bbd8104d4f9a992c9"
+          },
+          {
+            "line_end": 8640,
+            "line_start": 8619,
+            "path": "claude_code_gui/assets/chat_template.py",
+            "role": "protected_operation",
+            "source_sha256": "482cf0c447bacc22cda1bd24bc3469cf356ed81cb39bf8048063b8a92cb5b7a7"
+          }
+        ],
+        "forbidden_condition": "Writing an approval/denial/comment payload to the CLI subprocess stdin when the request_id is empty, is not present in _pending_permission_request_ids, the run is not running or stop was requested, the process handle or its stdin is None, or process.poll() is not None (stale, duplicate, or unmatched approval payloads reaching the tool-executing CLI).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The parse-loop caller that invokes _emit_permission_request with CLI stream payloads is not within the supplied views; the derivation of requestId from provider CLI output is evidenced only by the payload-key extraction at claude_process.py:1856.",
+          "The call path from _on_js_permission_response (wired at window.py:1870-1873) into ClaudeProcess.send_permission_response is not present in the supplied views."
+        ],
+        "protected_operation": "Delivery of a human permission decision (allow/deny/comment) to the running provider CLI subprocess in response to a CLI-emitted tool permission request.",
+        "protected_resource": "The stdin stream of the live provider CLI subprocess (claude/codex/gemini) that executes agent tools once approval is delivered.",
+        "protection_obligation": "Permission responses (allow/deny/comment) for provider-CLI tool-execution prompts may only be written to the running provider CLI subprocess's stdin when the response's request_id matches a currently registered pending permission request for that live, un-stopped process; the stdin write in ClaudeProcess.send_permission_response is the guarded commit point.",
+        "scope_limits": [
+          "Governs only the stdin approval channel of the currently running provider CLI process held by ClaudeProcess; responses for other processes, sessions, or already-finished runs are out of scope.",
+          "Comment-action responses are additionally gated on non-empty trimmed text (claude_process.py:99-103); comment content beyond non-emptiness is not constrained by this contract.",
+          "The WebKit 'permissionResponse' UI submission (chat_template.py submitResponse) and its script-message wiring are in scope only as the gated entry; the bridge handler body (_on_js_permission_response) is not in the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The provider CLI subprocess spawn consuming the dialect-built argv; the concrete subprocess.Popen call site is not within the supplied views (ClaudeProcess types self._process as subprocess.Popen at claude_process.py:52 and dispatches attempts through _run_single_attempt at claude_process.py:194-199).",
+        "contract_id": "ecological-contract:29ffa867b2864975e79d4ac3a10e9d41",
+        "declared_mechanism": "_sanitize_cli_token and _sanitize_session_id (claude_code_gui/domain/cli_dialect.py:16-35) strip input and return the empty string for any token that starts with '-' or fails the _SAFE_CLI_TOKEN_RE / _SAFE_SESSION_ID_RE whitelists (cli_dialect.py:10-11); they are declared for the dialect argv builders CliDialect.build_argv / build_resume_argv operating on CliRunConfig fields (cli_dialect.py:88-113).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 13,
+            "line_start": 10,
+            "path": "claude_code_gui/domain/cli_dialect.py",
+            "role": "guard_registration",
+            "source_sha256": "72dda81e3e549ee3f66883d89ee70e95ae77be921fb852164cfd367e8ad41ee0"
+          },
+          {
+            "line_end": 35,
+            "line_start": 16,
+            "path": "claude_code_gui/domain/cli_dialect.py",
+            "role": "guard_registration",
+            "source_sha256": "72dda81e3e549ee3f66883d89ee70e95ae77be921fb852164cfd367e8ad41ee0"
+          },
+          {
+            "line_end": 113,
+            "line_start": 88,
+            "path": "claude_code_gui/domain/cli_dialect.py",
+            "role": "protected_operation",
+            "source_sha256": "72dda81e3e549ee3f66883d89ee70e95ae77be921fb852164cfd367e8ad41ee0"
+          },
+          {
+            "line_end": 60,
+            "line_start": 56,
+            "path": "claude_code_gui/runtime/claude_process.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9f99efbadc00a1b7392670704719c0df6f39ca77c1e0da7bbd8104d4f9a992c9"
+          },
+          {
+            "line_end": 161,
+            "line_start": 140,
+            "path": "claude_code_gui/runtime/claude_process.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9f99efbadc00a1b7392670704719c0df6f39ca77c1e0da7bbd8104d4f9a992c9"
+          }
+        ],
+        "forbidden_condition": "A '-'-prefixed or pattern-violating user-controlled value occupying a model, permission-mode, or session-id argv position of the spawned provider CLI process (flag injection).",
+        "missing_evidence_roles": [
+          "commit_point",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Call sites invoking _sanitize_cli_token/_sanitize_session_id (presumably inside the dialect argv builders) are absent from the supplied views; the binding of these sanitizers to the model/permission-mode/session-id argv positions must be confirmed.",
+          "The subprocess.Popen invocation and the final argv assembly for the agent run are absent from the supplied views."
+        ],
+        "protected_operation": "Construction and spawning of the provider CLI subprocess argv for a fresh or resumed agent run via the dialect builders consuming CliRunConfig (model, permission_mode, session id).",
+        "protected_resource": "The argv of the spawned provider CLI subprocess (claude/codex/gemini agent runtime).",
+        "protection_obligation": "User-controlled provider-CLI argv tokens (model, permission mode, and resume session id) must never be emitted into the provider CLI subprocess argv when they begin with '-' or violate the safe-token whitelists, preventing CLI flag/option injection into the agent CLI invocation.",
+        "scope_limits": [
+          "Covers argv token injection through model/permission-mode/session-id values only; prompt text and other CLI inputs are out of scope.",
+          "The sanitizers fail closed to the empty string; how empty tokens are handled downstream (flag omission versus empty argument) is not determined by the supplied views.",
+          "Per-dialect builder implementations (ClaudeDialect/CodexDialect/GeminiDialect bodies) are not in the supplied views; only the Protocol signatures and shared sanitizers are."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The _publish_host_attachment_payloads_async(window, pane_id, candidate_paths, ...) call in on_js_attach_paths (claude_code_gui/ui/window_js_handlers.py:461-467), after which accepted files are read/encoded and their payloads published to the chat.",
+        "contract_id": "ecological-contract:a8776cf21573c22243315b5938aac4c0",
+        "declared_mechanism": "on_js_attach_paths allowlist (window_js_handlers.py:404-467): entries are trimmed, length-capped at 4096, resolved via _normalize_attachment_path, and accepted only if present in approved_paths (per pane/session scope via _attachment_scope_id and _pane_approved_attachment_paths, window_js_handlers.py:63-101; registry field declared at window.py:226) or if _path_is_within_root(normalized, project_root) holds (window_js_handlers.py:54-60, project root normalized at window_js_handlers.py:431); rejected entries increment skipped_count and, when no candidates remain, a status warning is shown and nothing is published (window_js_handlers.py:453-459); the host file-chooser flow registers chooser selections into the same approved registry (window_js_handlers.py:388-395).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 1865,
+            "line_start": 1862,
+            "path": "claude_code_gui/ui/window.py",
+            "role": "guard_registration",
+            "source_sha256": "8b172f193a1a53bc8f78db1d6840a881a343f9d90bb245b64f55211f776f51cb"
+          },
+          {
+            "line_end": 430,
+            "line_start": 404,
+            "path": "claude_code_gui/ui/window_js_handlers.py",
+            "role": "protected_operation",
+            "source_sha256": "3484bd05f8411591abfbd1d89cdecd3226e262463dfd22337830c7eff7aa1e2d"
+          },
+          {
+            "line_end": 459,
+            "line_start": 431,
+            "path": "claude_code_gui/ui/window_js_handlers.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3484bd05f8411591abfbd1d89cdecd3226e262463dfd22337830c7eff7aa1e2d"
+          },
+          {
+            "line_end": 467,
+            "line_start": 461,
+            "path": "claude_code_gui/ui/window_js_handlers.py",
+            "role": "commit_point",
+            "source_sha256": "3484bd05f8411591abfbd1d89cdecd3226e262463dfd22337830c7eff7aa1e2d"
+          },
+          {
+            "line_end": 395,
+            "line_start": 388,
+            "path": "claude_code_gui/ui/window_js_handlers.py",
+            "role": "guard_registration",
+            "source_sha256": "3484bd05f8411591abfbd1d89cdecd3226e262463dfd22337830c7eff7aa1e2d"
+          },
+          {
+            "line_end": 60,
+            "line_start": 54,
+            "path": "claude_code_gui/ui/window_js_handlers.py",
+            "role": "guard_registration",
+            "source_sha256": "3484bd05f8411591abfbd1d89cdecd3226e262463dfd22337830c7eff7aa1e2d"
+          },
+          {
+            "line_end": 226,
+            "line_start": 226,
+            "path": "claude_code_gui/ui/window.py",
+            "role": "guard_registration",
+            "source_sha256": "8b172f193a1a53bc8f78db1d6840a881a343f9d90bb245b64f55211f776f51cb"
+          }
+        ],
+        "forbidden_condition": "Reading, encoding, or publishing an attachment payload for a pasted path that is neither present in the pane/session approved-path registry (_approved_attachment_paths_by_session, populated by the host file-chooser flow) nor within the normalized project root per _path_is_within_root.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source shows agent-generated input reaching the 'attachPaths' bridge or the attachment pipeline (bridge input originates from WebView UI submissions), so agent mediation is not established.",
+          "The body of _publish_host_attachment_payloads_async's async worker is truncated in the supplied views (window_js_handlers.py:116-140 shown); the exact encode/publish effects and any temp-file materialization are unconfirmed.",
+          "How window._project_folder is set and kept in sync per pane/session is not shown in the supplied ranges."
+        ],
+        "protected_operation": "Attachment of host files to the chat message from pasted paths, handled by on_js_attach_paths up to the encode/publish step _publish_host_attachment_payloads_async.",
+        "protected_resource": "Host filesystem files addressed by WebView-supplied paths, whose content would be exposed as chat attachments.",
+        "protection_obligation": "Host files addressed by paths pasted into the WebView and submitted through the 'attachPaths' JS bridge may only be attached when each resolved path lies within the active project folder or was previously approved through the host file chooser; all other paths must be skipped before any attachment payload is encoded and published.",
+        "scope_limits": [
+          "Covers only the pasted-path 'attachPaths' bridge; the host file-chooser flow is the trust anchor that populates the approved registry and is not itself the guarded target of this contract.",
+          "Path canonicalization is limited to _normalize_attachment_path (expanduser plus resolve(strict=True)) and the os.path.commonpath within-root check; other aliasing/symlink behaviors are out of scope.",
+          "Ultimate delivery of attachment content toward the provider CLI occurs in a later send step not present in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "request.allow() / request.deny() inside _on_webview_permission_request (claude_code_gui/ui/window.py:6990-6993).",
+        "contract_id": "ecological-contract:ac1b2fd2d2701640244744ebcc195f95",
+        "declared_mechanism": "Deny-by-default handler _on_webview_permission_request (window.py:6981-6997), registered per pane via _connect_optional_signal(webview, 'permission-request', ...) (window.py:1942-1946); it calls request.allow() only if _consume_user_media_permission(pane_id) is true and otherwise request.deny(); _consume_user_media_permission (window.py:1164-1172) reads and zeroes the pane's monotonic deadline armed by _arm_user_media_permission (window.py:1151-1156, timeout_ms default 5000) and disarmed by _disarm_user_media_permission (window.py:1158-1162); arming/disarming are driven by the 'armUserMedia'/'disarmUserMedia' script-message handlers (window_js_handlers.py:470-488) wired at window.py:1878-1885.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 1946,
+            "line_start": 1942,
+            "path": "claude_code_gui/ui/window.py",
+            "role": "guard_registration",
+            "source_sha256": "8b172f193a1a53bc8f78db1d6840a881a343f9d90bb245b64f55211f776f51cb"
+          },
+          {
+            "line_end": 6997,
+            "line_start": 6981,
+            "path": "claude_code_gui/ui/window.py",
+            "role": "protected_operation",
+            "source_sha256": "8b172f193a1a53bc8f78db1d6840a881a343f9d90bb245b64f55211f776f51cb"
+          },
+          {
+            "line_end": 6993,
+            "line_start": 6990,
+            "path": "claude_code_gui/ui/window.py",
+            "role": "commit_point",
+            "source_sha256": "8b172f193a1a53bc8f78db1d6840a881a343f9d90bb245b64f55211f776f51cb"
+          },
+          {
+            "line_end": 1172,
+            "line_start": 1151,
+            "path": "claude_code_gui/ui/window.py",
+            "role": "guard_registration",
+            "source_sha256": "8b172f193a1a53bc8f78db1d6840a881a343f9d90bb245b64f55211f776f51cb"
+          },
+          {
+            "line_end": 488,
+            "line_start": 470,
+            "path": "claude_code_gui/ui/window_js_handlers.py",
+            "role": "guard_registration",
+            "source_sha256": "3484bd05f8411591abfbd1d89cdecd3226e262463dfd22337830c7eff7aa1e2d"
+          }
+        ],
+        "forbidden_condition": "Allowing a WebKit UserMediaPermissionRequest when the pane has no live arming deadline, i.e., _consume_user_media_permission returns False because the deadline is 0 (never armed, disarmed, or already consumed) or the monotonic deadline has expired.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds the user-media grant to an agent tool, agent lifecycle hook, or agent-generated input; arming originates from the UI-side 'armUserMedia' bridge (human voice-input flow), so agent mediation is not established.",
+          "Any callers of _arm_user_media_permission beyond the 'armUserMedia' bridge handler are not shown in the supplied views."
+        ],
+        "protected_operation": "Grant or denial of WebView user-media (camera/microphone) device access for a pane, decided in the WebKit 'permission-request' signal handler.",
+        "protected_resource": "Host camera and microphone devices reachable through the pane WebKit WebView.",
+        "protection_obligation": "WebKit user-media (camera/microphone) permission requests raised by a pane's WebView must be denied by default and allowed only when that pane's arming window, set by _arm_user_media_permission with a 5-second default timeout, is still live at the moment the 'permission-request' signal fires.",
+        "scope_limits": [
+          "Only WebKit UserMediaPermissionRequest is gated; any other permission-request type falls through unhandled (returns False) at window.py:6997.",
+          "This contract covers the device-grant gate only; downstream capture, transcription, and submission of granted media (transcribeAudio bridge) are separate flows."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source binds the user-media permission grant or the 'attachPaths' attachment pipeline to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; agent mediation for those contracts is recorded as not_established pending such a binding.",
+      "The handling of empty-string results from the CLI token sanitizers (flag omission versus empty argv entry) is not determinable from the supplied views.",
+      "claude_process.py: the subprocess.Popen call site, the parse-loop caller of _emit_permission_request, and the per-dialect build_argv/build_resume_argv bodies (the presumed call sites of _sanitize_cli_token/_sanitize_session_id) are outside the supplied views.",
+      "window.py / window_js_handlers.py: the body of _on_js_permission_response (wired at window.py:1870-1873) and its call into ClaudeProcess.send_permission_response are outside the supplied views, leaving the UI-bridge-to-guard wiring unverified.",
+      "window_js_handlers.py: _publish_host_attachment_payloads_async's async worker body is truncated in the supplied view; the attachment-service implementations (encode_host_attachment_payloads, compose_message_with_attachments, materialize_attachments) are not supplied."
+    ],
+    "repository": "babafish12/claude-code-gui",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:159be1a4388d4fac506c4d8fe44e8197"
+  },
+  "request_sha256": "bf10d5cab736c8d74c48cb8292416de3ebc74f9e1a9179720c7b68be1028376c",
+  "response_sha256": "fd121888a55afa787fbd731a3b5602926bf6216594092df8edf87e9a43f4c80d",
+  "shard_provenance": [
+    {
+      "attempt": 0,
+      "request_sha256": "b84c3c751c9412669b92d7f2bbd4ce9b18c02b9505e3c00b2bd2a57afa3eec81",
+      "response_sha256": "fb404bac411694c6ff73b8f657ae9eb21399ecf48e2c798bf6e6ef808ba857f0",
+      "result_sha256": "a5d9f4965533efbe079f160e23febb57bc39e88d1b4d87a6963babc46f54657c",
+      "tokens": 44724,
+      "unit": "v24-screen:159be1a4388d4fac506c4d8fe44e8197-p000"
+    }
+  ],
+  "state": "completed",
+  "tokens": 44724,
+  "unit": "v24-screen:159be1a4388d4fac506c4d8fe44e8197"
+}

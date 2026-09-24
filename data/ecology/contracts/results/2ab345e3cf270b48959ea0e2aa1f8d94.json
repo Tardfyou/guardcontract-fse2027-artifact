@@ -1,0 +1,951 @@
+{
+  "attempt": "complete_shard_reconciliation",
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "queries.insert_agent (agents.py lines 153-172) and queries.update_agent (agents.py lines 252-273); the privilege check raises before these writes.",
+        "contract_id": "ecological-contract:2decc7dab3792dbbafd59ecf7b635f80",
+        "declared_mechanism": "enforce_workflow_binding_privilege(model, is_operator=False) \u2014 the single shared runtime check keyed on the owning principal, invoked in create_agent (line 140) and update_agent (line 236) before the DB write; fails closed for self-authoring principals.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 29,
+            "line_start": 19,
+            "path": "src/aios/services/model_binding_authz.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d0adb3d14ad041ea53ae44692d9fa27f4b332b0dbad29c5cee5cad5a4fa318d6"
+          },
+          {
+            "line_end": 65,
+            "line_start": 43,
+            "path": "src/aios/services/model_binding_authz.py",
+            "role": "guard_registration",
+            "source_sha256": "d0adb3d14ad041ea53ae44692d9fa27f4b332b0dbad29c5cee5cad5a4fa318d6"
+          },
+          {
+            "line_end": 57,
+            "line_start": 47,
+            "path": "src/aios/services/model_binding_authz.py",
+            "role": "protected_operation",
+            "source_sha256": "d0adb3d14ad041ea53ae44692d9fa27f4b332b0dbad29c5cee5cad5a4fa318d6"
+          },
+          {
+            "line_end": 140,
+            "line_start": 136,
+            "path": "src/aios/services/agents.py",
+            "role": "guard_registration",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 236,
+            "line_start": 231,
+            "path": "src/aios/services/agents.py",
+            "role": "guard_registration",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 134,
+            "line_start": 126,
+            "path": "src/aios/services/agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 172,
+            "line_start": 153,
+            "path": "src/aios/services/agents.py",
+            "role": "commit_point",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 273,
+            "line_start": 252,
+            "path": "src/aios/services/agents.py",
+            "role": "commit_point",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          }
+        ],
+        "forbidden_condition": "A non-operator principal binding or selecting a workflow: model \u2014 enforce_workflow_binding_privilege raises ForbiddenError('binding or selecting a workflow: model is operator-only...'); no-op for the operator or for raw provider models / None.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The dispatch-seam wiring for the per-call agent(model=...) override and the generic agentless child.",
+          "create_agent/update_agent model-tool registration/dispatch wiring."
+        ],
+        "protected_operation": "Binding/selecting the model string on the create_agent/update_agent authoring paths (the free-form model field), per model_binding_authz.py lines 47-52; the module docstring also names the per-call agent(model=...) override and the generic agentless child as funneled paths.",
+        "protected_resource": "The workflow-model binding axis of agent configuration and inference routing.",
+        "protection_obligation": "A self-authoring (non-operator) principal must not bind or select a 'workflow:' model on any guarded path; on the evidenced create/update agent paths the ForbiddenError must fire before the agent row is committed (the module contract extends the same operator-only privilege to the per-call model override and generic child, whose dispatch code is not supplied).",
+        "scope_limits": [
+          "Only the create/update agent commit path is evidenced; the per-call override (workflows.step) and generic child paths named at model_binding_authz.py lines 15-17 have no supplied dispatch code or commit points.",
+          "is_operator=True (operator/HTTP path) returns without checking by design (lines 58-59).",
+          "The api_base spawn-edge clamp (#823) is explicitly orthogonal and excluded (lines 27-29)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "conn.fetch(wrapped) at line 208 inside conn.transaction(readonly=True) (lines 203-208), reachable only after _validate_sql returns None (lines 376-378).",
+        "contract_id": "ecological-contract:44067d43feee62134c848a6bb8f81972",
+        "declared_mechanism": "_validate_sql \u2014 sqlglot AST parse and structural walks enforcing the read-only root, write-node absence, per-table allowlist/schema resolution, and function denylist \u2014 invoked in search_events_handler before pool acquisition, raising ToolBail('SQL validation: ...') on any violation; _execute_query adds the READ ONLY transaction, statement_timeout, app.session_id binding, and row cap.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 412,
+            "line_start": 402,
+            "path": "src/aios/tools/search_events.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fc9c489baf0e70126f35f55259705a7f11a29a04fda597e746abc058b5d670cc"
+          },
+          {
+            "line_end": 156,
+            "line_start": 82,
+            "path": "src/aios/tools/search_events.py",
+            "role": "guard_registration",
+            "source_sha256": "fc9c489baf0e70126f35f55259705a7f11a29a04fda597e746abc058b5d670cc"
+          },
+          {
+            "line_end": 79,
+            "line_start": 40,
+            "path": "src/aios/tools/search_events.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fc9c489baf0e70126f35f55259705a7f11a29a04fda597e746abc058b5d670cc"
+          },
+          {
+            "line_end": 390,
+            "line_start": 370,
+            "path": "src/aios/tools/search_events.py",
+            "role": "guard_registration",
+            "source_sha256": "fc9c489baf0e70126f35f55259705a7f11a29a04fda597e746abc058b5d670cc"
+          },
+          {
+            "line_end": 213,
+            "line_start": 193,
+            "path": "src/aios/tools/search_events.py",
+            "role": "protected_operation",
+            "source_sha256": "fc9c489baf0e70126f35f55259705a7f11a29a04fda597e746abc058b5d670cc"
+          },
+          {
+            "line_end": 208,
+            "line_start": 203,
+            "path": "src/aios/tools/search_events.py",
+            "role": "commit_point",
+            "source_sha256": "fc9c489baf0e70126f35f55259705a7f11a29a04fda597e746abc058b5d670cc"
+          }
+        ],
+        "forbidden_condition": "Any of: empty query; semicolons (multiple statements); unparseable input; a root that is not SELECT/UNION/INTERSECT/EXCEPT; any Insert/Update/Delete/Merge/Drop/Create/Alter/Command node anywhere in the walked AST (including data-modifying CTEs); any exp.Table whose schema is outside {'', 'public'} or whose name is outside _ALLOWED_RELATIONS (plus local CTE names); any pg_* or set_config function call. Without the gate, reading anything else on the privileged pool returns other accounts' rows (no RLS backstop).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The registry dispatch wiring that supplies the handler's session_id argument and the pool (runtime.require_pool) is outside the supplied views."
+        ],
+        "protected_operation": "Executing the model-supplied SQL against the privileged application pool inside conn.transaction(readonly=True) with SET LOCAL statement_timeout, set_config('app.session_id', $1, true) session scoping, and a LIMIT wrapper.",
+        "protected_resource": "Cross-tenant event-log data in the privileged application database (the session-scoped search views events_search, tool_calls_search, spans_search, lifecycle_search, search_views_help).",
+        "protection_obligation": "The search_events tool must reject, before execution, any model-supplied SQL that is not a single read-only SELECT whose every table reference resolves to the session-scoped allowlisted relations (events_search, tool_calls_search, spans_search, lifecycle_search, search_views_help) in the '' or 'public' schema \u2014 forbidding multiple statements, write/DDL/Command nodes anywhere in the AST, non-public schemas, and pg_*/set_config functions \u2014 with accepted queries executed only inside a READ ONLY transaction scoped by app.session_id on the privileged pool.",
+        "scope_limits": [
+          "The tenant boundary is enforced at the tool layer; the pool has no Postgres RLS backstop (lines 42-44), so protection depends entirely on this gate.",
+          "memories_search is deliberately not allowlisted (lines 49-51).",
+          "CTE names are admitted as local relations; their bodies remain subject to the table walk (lines 127-131)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "queries.insert_agent at lines 153-172 (create) and queries.update_agent at lines 252-273 (update); both guards raise beforehand so an over-privileged surface is never committed.",
+        "contract_id": "ecological-contract:5088bbd295bdabefa1447654757ff39c",
+        "declared_mechanism": "_enforce_surface_attenuation: loads the actor session's agent, computes expected = normalize(declared) and effective = clamp(declared, actor surface) (plus prior_surface preservation at update), and raises ForbiddenError('agent surface exceeds the acting agent's permissions', detail=surface_diff) on any breach; a pure predicate invoked at the top of create_agent (lines 141-149) and update_agent (lines 238-247) before the DB write; the declared surface is stored verbatim when it passes.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 70,
+            "line_start": 50,
+            "path": "src/aios/services/agents.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 100,
+            "line_start": 95,
+            "path": "src/aios/services/agents.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 134,
+            "line_start": 126,
+            "path": "src/aios/services/agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 149,
+            "line_start": 136,
+            "path": "src/aios/services/agents.py",
+            "role": "guard_registration",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 247,
+            "line_start": 231,
+            "path": "src/aios/services/agents.py",
+            "role": "guard_registration",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 125,
+            "line_start": 103,
+            "path": "src/aios/services/agents.py",
+            "role": "protected_operation",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 172,
+            "line_start": 153,
+            "path": "src/aios/services/agents.py",
+            "role": "commit_point",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          },
+          {
+            "line_end": 273,
+            "line_start": 252,
+            "path": "src/aios/services/agents.py",
+            "role": "commit_point",
+            "source_sha256": "d63611d16792eafa263106f50507fe7bb1a42f2fc1b9def8e210c57d985b8149"
+          }
+        ],
+        "forbidden_condition": "A declared agent surface where clamp(declared, actor) (unioned with prior_surface preservation at update) narrows the normalized declaration \u2014 a nonempty surface_diff; i.e. granting a child agent a tool, MCP server, HTTP server, or SSH server capability the editor does not hold (or, at update, that neither the editor nor the target's prior version holds).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Registry registration/dispatch wiring for the create_agent/update_agent model tools (the direct_tool binding rests on the documented path at lines 126-131).",
+          "Confirmation that ssh_servers is covered by normalize/clamp as the signature and Surface(...) construction imply."
+        ],
+        "protected_operation": "Persisting an agent configuration row on the session-authoring path (creator_session_id set in create_agent; editor_session_id set in update_agent) with its declared surface, via queries.insert_agent / queries.update_agent.",
+        "protected_resource": "The agents table row (and agent_versions history) holding the authored agent's declared tool/MCP/HTTP/SSH surface.",
+        "protection_obligation": "A session-authoring agent creating or editing an agent must not be able to declare a tools/mcp_servers/http_servers/ssh_servers surface exceeding what the acting agent holds (at update, also what the target already holds); any excess must raise ForbiddenError before the agent row is inserted/updated, so an over-privileged surface is never persisted.",
+        "scope_limits": [
+          "The HTTP/operator path (no creator/editor session) skips the guard by design (lines 58, 131-132, 229) \u2014 the obligation covers session-authoring paths only.",
+          "The spawn-edge reclamp referenced at lines 132-134 (#794/#823, workflows/step.py) is not supplied.",
+          "attenuation_service.normalize/clamp and surface_diff implementations are outside the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The SandboxBackendError raises at lines 973-977 (apply infra failure re-raised), 986-990 (nonzero apply exit), and 1011-1015 (verification failure) abort the provision before a sandbox is handed back.",
+        "contract_id": "ecological-contract:67457482ce110c5f210f31df677e287c",
+        "declared_mechanism": "apply_network_lockdown: build_iptables_script over the allowed host set executed via backend.run_netns_sidecar, followed by a second verify sidecar (build_lockdown_verify_script); SandboxBackendError is raised (not swallowed) on sidecar error, nonzero exit, or failed verification \u2014 documented in-source as 'Fails closed.'",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 959,
+            "line_start": 944,
+            "path": "src/aios/sandbox/setup.py",
+            "role": "guard_registration",
+            "source_sha256": "e4e990cf0742e77028dea2d7bf5a9f78da2de98963a7e0c3be8733375a22f2f4"
+          },
+          {
+            "line_end": 948,
+            "line_start": 939,
+            "path": "src/aios/sandbox/setup.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e4e990cf0742e77028dea2d7bf5a9f78da2de98963a7e0c3be8733375a22f2f4"
+          },
+          {
+            "line_end": 972,
+            "line_start": 964,
+            "path": "src/aios/sandbox/setup.py",
+            "role": "protected_operation",
+            "source_sha256": "e4e990cf0742e77028dea2d7bf5a9f78da2de98963a7e0c3be8733375a22f2f4"
+          },
+          {
+            "line_end": 990,
+            "line_start": 973,
+            "path": "src/aios/sandbox/setup.py",
+            "role": "commit_point",
+            "source_sha256": "e4e990cf0742e77028dea2d7bf5a9f78da2de98963a7e0c3be8733375a22f2f4"
+          },
+          {
+            "line_end": 1004,
+            "line_start": 992,
+            "path": "src/aios/sandbox/setup.py",
+            "role": "guard_registration",
+            "source_sha256": "e4e990cf0742e77028dea2d7bf5a9f78da2de98963a7e0c3be8733375a22f2f4"
+          },
+          {
+            "line_end": 1015,
+            "line_start": 1005,
+            "path": "src/aios/sandbox/setup.py",
+            "role": "commit_point",
+            "source_sha256": "e4e990cf0742e77028dea2d7bf5a9f78da2de98963a7e0c3be8733375a22f2f4"
+          }
+        ],
+        "forbidden_condition": "Handing back a Limited sandbox whose lockdown sidecar errored, exited nonzero, or whose read-back verify shows the OUTPUT policy is not DROP \u2014 enforcement raises SandboxBackendError and the caller (SandboxRegistry._provision) tears the sandbox down and aborts the provision.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether sandbox provisioning is reached from an agent/session lifecycle path.",
+          "The _provision caller wiring confirming teardown-on-failure."
+        ],
+        "protected_operation": "Provisioning of a networked Limited sandbox (the provision that would hand back the sandbox after lockdown).",
+        "protected_resource": "The sandbox network namespace's netfilter policy (iptables OUTPUT DROP; allowed-host/package-registry egress; DNAT for secret egress).",
+        "protection_obligation": "A Limited-networking sandbox may be handed back by provisioning only when the netns lockdown has been applied AND read-back verified (OUTPUT policy DROP); any apply or verify failure must abort the provision rather than return an open box.",
+        "scope_limits": [
+          "SandboxRegistry._provision itself is not supplied; its teardown/abort behavior is known only via the docstring (lines 944-948).",
+          "The Unrestricted sibling apply_secret_egress_dnat (lines 1027-1055) has deliberately different semantics (DNAT-only, plumbing-failure logs); its refusal code lies beyond the supplied range and was not raised as a distinct reviewer obligation.",
+          "build_iptables_script / build_lockdown_verify_script bodies are outside the supplied range."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The scan at line 956 and the refusal return at lines 957-974 precede build_request/send at lines 980-989; when residual_region is not None the upstream connection is never opened ('NOTHING placeholder-shaped reaches self._client.send').",
+        "contract_id": "ecological-contract:93fa3b4df91438a51e21fa9f79dd773b",
+        "declared_mechanism": "_residual_placeholder_region post-swap scan over fwd_headers (Basic-credential values decoded first), swapped_body, and target using the boundary-anchored placeholder regex; on a hit the handler logs region-only metadata (no request-derived bytes), calls _send_substitution_failure (421 plus x-aios-egress-error: placeholder_substitution_failed), and returns \u2014 self._client.send is never reached.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 243,
+            "line_start": 224,
+            "path": "src/aios/sandbox/secret_egress_proxy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8f96f46a74fa9b1e916e3e851d3975325c2f2ac48a00234be7d38de8d90fc028"
+          },
+          {
+            "line_end": 394,
+            "line_start": 353,
+            "path": "src/aios/sandbox/secret_egress_proxy.py",
+            "role": "guard_registration",
+            "source_sha256": "8f96f46a74fa9b1e916e3e851d3975325c2f2ac48a00234be7d38de8d90fc028"
+          },
+          {
+            "line_end": 938,
+            "line_start": 936,
+            "path": "src/aios/sandbox/secret_egress_proxy.py",
+            "role": "guard_registration",
+            "source_sha256": "8f96f46a74fa9b1e916e3e851d3975325c2f2ac48a00234be7d38de8d90fc028"
+          },
+          {
+            "line_end": 955,
+            "line_start": 939,
+            "path": "src/aios/sandbox/secret_egress_proxy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8f96f46a74fa9b1e916e3e851d3975325c2f2ac48a00234be7d38de8d90fc028"
+          },
+          {
+            "line_end": 974,
+            "line_start": 956,
+            "path": "src/aios/sandbox/secret_egress_proxy.py",
+            "role": "commit_point",
+            "source_sha256": "8f96f46a74fa9b1e916e3e851d3975325c2f2ac48a00234be7d38de8d90fc028"
+          },
+          {
+            "line_end": 989,
+            "line_start": 976,
+            "path": "src/aios/sandbox/secret_egress_proxy.py",
+            "role": "protected_operation",
+            "source_sha256": "8f96f46a74fa9b1e916e3e851d3975325c2f2ac48a00234be7d38de8d90fc028"
+          }
+        ],
+        "forbidden_condition": "Transmitting a residual (unexchangeable) AIOS_SECRET_PLACEHOLDER_ + 32-hex token upstream after the swap \u2014 in any forwarded header (including the decoded Basic credential), the swapped body, or the never-swapped request-target (path+query); a delimited placeholder-shaped token is refused even when it might be legitimate payload data (deliberate fail-closed-on-ambiguity trade).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which agent-facing tool(s) generate the sandbox HTTP requests proxied here (needed to bind agent mediation).",
+          "Whether self._client is configured with PinnedTransport (transport wiring not shown)."
+        ],
+        "protected_operation": "Opening the upstream connection and sending the swapped request from the proxy handler: self._client.build_request / self._client.send (stream=True).",
+        "protected_resource": "The upstream HTTPS request transmitted by SecretEgressProxy (headers, body, request-target) \u2014 the channel over which an unswapped credential stand-in would otherwise reach the remote as literal placeholder text.",
+        "protection_obligation": "After SecretEgressProxy performs the placeholder-to-secret swap on an outbound request, it must refuse to open the upstream connection whenever any residual AIOS_SECRET_PLACEHOLDER_* token remains in the forwarded headers, request body, or request-target \u2014 responding 421 placeholder_substitution_failed so an unexchangeable credential placeholder is never transmitted upstream.",
+        "scope_limits": [
+          "A placeholder in the URL path/query is never substituted and is always refused (lines 260-262).",
+          "Swap-rule construction, placeholder minting, and the inbound entry (_serve_one) are partly outside the cited ranges.",
+          "Refusal logging carries only closed-vocabulary region labels and rule counts \u2014 never request-derived bytes (lines 958-972)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The guard sequence at src/aios/api/routers/connectors.py lines 1004-1021 executing ahead of the sessions_service.append_tool_result write at lines 1022-1029 (followed by defer_wake at line 1033) on the same acquired connection.",
+        "contract_id": "ecological-contract:9699552ea4d44f398fd772342c12dd7f",
+        "declared_mechanism": "RuntimeAuthDep / require_runtime_auth resolves the bearer to (token_id, connector, account_id, connection_ids); the route then applies _check_runtime_scope (connector-type equality), _check_runtime_connection_scope (non-None allowlist membership, #350), and queries.is_session_bound_to_connection, each raising ForbiddenError (403) inside the pooled-connection block before append_tool_result is invoked.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 139,
+            "line_start": 114,
+            "path": "src/aios/api/deps.py",
+            "role": "guard_registration",
+            "source_sha256": "611a8e4f94d6cf3f60b8d5dd8e353e9cccf7723c523f26c10a1896123c331a74"
+          },
+          {
+            "line_end": 427,
+            "line_start": 398,
+            "path": "src/aios/api/routers/connectors.py",
+            "role": "guard_registration",
+            "source_sha256": "6b0f0c80046aa6e57bbbeb0b2619bcc11be23825713e072b57d5130bb7073ed6"
+          },
+          {
+            "line_end": 1003,
+            "line_start": 997,
+            "path": "src/aios/api/routers/connectors.py",
+            "role": "protected_operation",
+            "source_sha256": "6b0f0c80046aa6e57bbbeb0b2619bcc11be23825713e072b57d5130bb7073ed6"
+          },
+          {
+            "line_end": 1021,
+            "line_start": 1004,
+            "path": "src/aios/api/routers/connectors.py",
+            "role": "guard_registration",
+            "source_sha256": "6b0f0c80046aa6e57bbbeb0b2619bcc11be23825713e072b57d5130bb7073ed6"
+          },
+          {
+            "line_end": 1033,
+            "line_start": 1022,
+            "path": "src/aios/api/routers/connectors.py",
+            "role": "commit_point",
+            "source_sha256": "6b0f0c80046aa6e57bbbeb0b2619bcc11be23825713e072b57d5130bb7073ed6"
+          },
+          {
+            "line_end": 1097,
+            "line_start": 1070,
+            "path": "src/aios/api/routers/connectors.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6b0f0c80046aa6e57bbbeb0b2619bcc11be23825713e072b57d5130bb7073ed6"
+          }
+        ],
+        "forbidden_condition": "An out-of-scope runtime bearer (wrong connector type, target connection absent from a non-None connection_ids allowlist, or session not bound to the target connection) causing a custom tool result to be appended to that connection's session event stream.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "The runtime-container internals that execute custom tool calls and mint these results are not in the supplied views; the agent binding rests on the /runtime/calls SSE contract (model-issued arguments keyed by tool_call_id) and the route's tool_call_id echo."
+        ],
+        "protected_operation": "Submission of a custom tool result from a runtime container via POST /v1/connectors/runtime/tool-results, and the resulting sessions_service.append_tool_result event write plus defer_wake for the target session.",
+        "protected_resource": "The target connection (body.connection_id) and the event stream of the session bound to it (tool result events keyed to model-issued tool_call_ids).",
+        "protection_obligation": "POST /v1/connectors/runtime/tool-results must reject (403) a runtime bearer token submitting a custom tool result when the token's connector type mismatches the target connection's connector, the connection is not on the token's connection_ids allowlist, or the session is not bound to that connection \u2014 before the append_tool_result write commits.",
+        "scope_limits": [
+          "The same check family also guards /runtime/inbound, /runtime/lifecycle, /runtime/secrets, and tools_schema/capabilities registration; the supplied source binds only the tool-results route to agent tool execution.",
+          "A None connection_ids allowlist means the token is unscoped and the allowlist check is skipped by design (#350) (connectors.py lines 410-427).",
+          "The connector-type check is deliberately the only scope check on tools_schema (connector-type-wide registration, allowlist not enforced) (connectors.py lines 449-455)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The shutil.rmtree call at src/aios/harness/workspace_reaper.py line 427, executed under the per-target advisory lock (lines 422-429) only after the liveness re-check at lines 424-426 returns not-live.",
+        "contract_id": "ecological-contract:9bc1b6353e18a0c3b20b929cb113569a",
+        "declared_mechanism": "_resolve_reap_target's fail-closed chain: id-shape regex gate; realpath(canonical) == canonical (no symlink at leaf, parent, or root); canonical_real == realpath(workspace_root)/<account_id>/<session_id>; leaf lstat islink check; stored path absolute with realpath equality to canonical_real; live-keep-set realpath overlap check; is_dir plus parent.parent == workspace_root structural belt; full-tree mtime floor. Gated by workspace_reaper_enabled / workspace_reaper_dry_run and fail-closed candidate/live DB reads, then a dedicated-backend pg_advisory_lock on the normalized target with queries.unscoped_workspace_path_is_live re-check before asyncio.to_thread(shutil.rmtree, target).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 238,
+            "line_start": 227,
+            "path": "src/aios/harness/workspace_reaper.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5a6cd1876dc01e1cc6f6f5c2c8adc1cd5c8f2c2d8ad2be970d2a2c121de19c04"
+          },
+          {
+            "line_end": 270,
+            "line_start": 247,
+            "path": "src/aios/harness/workspace_reaper.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5a6cd1876dc01e1cc6f6f5c2c8adc1cd5c8f2c2d8ad2be970d2a2c121de19c04"
+          },
+          {
+            "line_end": 243,
+            "line_start": 240,
+            "path": "src/aios/harness/workspace_reaper.py",
+            "role": "guard_registration",
+            "source_sha256": "5a6cd1876dc01e1cc6f6f5c2c8adc1cd5c8f2c2d8ad2be970d2a2c121de19c04"
+          },
+          {
+            "line_end": 296,
+            "line_start": 275,
+            "path": "src/aios/harness/workspace_reaper.py",
+            "role": "guard_registration",
+            "source_sha256": "5a6cd1876dc01e1cc6f6f5c2c8adc1cd5c8f2c2d8ad2be970d2a2c121de19c04"
+          },
+          {
+            "line_end": 318,
+            "line_start": 298,
+            "path": "src/aios/harness/workspace_reaper.py",
+            "role": "guard_registration",
+            "source_sha256": "5a6cd1876dc01e1cc6f6f5c2c8adc1cd5c8f2c2d8ad2be970d2a2c121de19c04"
+          },
+          {
+            "line_end": 335,
+            "line_start": 320,
+            "path": "src/aios/harness/workspace_reaper.py",
+            "role": "guard_registration",
+            "source_sha256": "5a6cd1876dc01e1cc6f6f5c2c8adc1cd5c8f2c2d8ad2be970d2a2c121de19c04"
+          },
+          {
+            "line_end": 346,
+            "line_start": 338,
+            "path": "src/aios/harness/workspace_reaper.py",
+            "role": "protected_operation",
+            "source_sha256": "5a6cd1876dc01e1cc6f6f5c2c8adc1cd5c8f2c2d8ad2be970d2a2c121de19c04"
+          },
+          {
+            "line_end": 370,
+            "line_start": 347,
+            "path": "src/aios/harness/workspace_reaper.py",
+            "role": "guard_registration",
+            "source_sha256": "5a6cd1876dc01e1cc6f6f5c2c8adc1cd5c8f2c2d8ad2be970d2a2c121de19c04"
+          },
+          {
+            "line_end": 429,
+            "line_start": 417,
+            "path": "src/aios/harness/workspace_reaper.py",
+            "role": "commit_point",
+            "source_sha256": "5a6cd1876dc01e1cc6f6f5c2c8adc1cd5c8f2c2d8ad2be970d2a2c121de19c04"
+          }
+        ],
+        "forbidden_condition": "Deleting any path not positively confirmed as the canonical, symlink-free, stored-path-equal, live-collision-free, age-gated workspace directory of an archived session \u2014 in particular following a symlink at the leaf, account, or root component of the chain (the cross-account live-data delete class) or reaping a directory a live clone is still using.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Implementations of queries.unscoped_reapable_archived_workspaces, unscoped_live_workspace_volume_paths, and unscoped_workspace_path_is_live (archived confirmation, age gates, keep-set semantics) are referenced but not supplied.",
+          "Whether irreversible deletion of archived agent-session workspaces counts as agent-mediated for the study is a classification question the supplied source cannot settle."
+        ],
+        "protected_operation": "sweep_archived_workspaces' irreversible shutil.rmtree of an archived session's host workspace directory.",
+        "protected_resource": "Host filesystem directories under workspace_root \u2014 live sessions' workspace directories, other accounts' session directories, and any non-canonical or symlinked path.",
+        "protection_obligation": "The archived-session workspace reaper may irreversibly delete (shutil.rmtree) only the canonical <workspace_root>/<account_id>/<session_id> directory of a DB-confirmed archived, age-gated session whose stored workspace_volume_path realpaths exactly to that canonical path \u2014 with no symlink anywhere in the chain, no live-clone realpath collision, behind the kill-switch/dry-run flags and fail-closed DB reads \u2014 and only inside a per-path advisory lock after a fresh liveness re-check; every unconfirmed condition skips the candidate.",
+        "scope_limits": [
+          "The sweep is a background maintenance job over archived-session artifacts; no agent tool, lifecycle hook, or agent-generated input reaches the guarded effect in the supplied source.",
+          "Dry-run mode computes and logs the would-reap set without deleting (lines 344-345, 407-416).",
+          "A failure in either the candidate or live keep-set DB read skips the entire sweep fail-closed (lines 365-370).",
+          "The rmtree target deliberately remains the un-resolved canonical path \u2014 never its realpath/.resolve() form \u2014 so a swap cannot redirect the delete (lines 272-274)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The synchronous _gate.admit() check at host.py lines 337-350 \u2014 refusal commits the page-blind takeover_active error_response, admission commits entry into _run_action (with paired release in finally); on the takeover side, close_and_drain completion (host.py lines 737-740) precedes the epoch rotation (line 749), and _finalize rotates the epoch only after input+screencast join (lines 826-834).",
+        "contract_id": "ecological-contract:9f3ba2e3bcdac1bab2cc0f10a64c9ac4",
+        "declared_mechanism": "AdmissionGate in aios_browser_driver/takeover/state.py \u2014 admit() is a synchronous closed-check-then-increment with no await; close_and_drain() sets closed=True synchronously before awaiting the in-flight count to drain (bounded by a drain timeout, on which the caller reopens and fails the open); reopen() clears the flag. Wired in host.py handle() (session-locked admit \u2192 page-blind takeover_active refusal; release in finally) and in _open_fresh/_finalize under the transition lock with a stood-flag/finally reopen point and close-side epoch rotation.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 3,
+            "path": "packages/aios-browser-driver/aios_browser_driver/takeover/state.py",
+            "role": "forbidden_condition",
+            "source_sha256": "29a75b93a3164a530ae4eb3095fcae722100270c3e9028de4da43d757900fce1"
+          },
+          {
+            "line_end": 56,
+            "line_start": 48,
+            "path": "packages/aios-browser-driver/aios_browser_driver/takeover/state.py",
+            "role": "guard_registration",
+            "source_sha256": "29a75b93a3164a530ae4eb3095fcae722100270c3e9028de4da43d757900fce1"
+          },
+          {
+            "line_end": 79,
+            "line_start": 65,
+            "path": "packages/aios-browser-driver/aios_browser_driver/takeover/state.py",
+            "role": "guard_registration",
+            "source_sha256": "29a75b93a3164a530ae4eb3095fcae722100270c3e9028de4da43d757900fce1"
+          },
+          {
+            "line_end": 37,
+            "line_start": 25,
+            "path": "packages/aios-browser-driver/aios_browser_driver/browser_protocol.py",
+            "role": "guard_registration",
+            "source_sha256": "47593f76afa07c467ac1f38d2c1ec288fe811eff9dda0fd8a179dc3a86944ea8"
+          },
+          {
+            "line_end": 350,
+            "line_start": 337,
+            "path": "packages/aios-browser-driver/aios_browser_driver/host.py",
+            "role": "commit_point",
+            "source_sha256": "015cc97da2bcd75730e803b49e23134065b71a8a6bf963f05f3c4d469cd4f52c"
+          },
+          {
+            "line_end": 348,
+            "line_start": 345,
+            "path": "packages/aios-browser-driver/aios_browser_driver/host.py",
+            "role": "protected_operation",
+            "source_sha256": "015cc97da2bcd75730e803b49e23134065b71a8a6bf963f05f3c4d469cd4f52c"
+          },
+          {
+            "line_end": 740,
+            "line_start": 728,
+            "path": "packages/aios-browser-driver/aios_browser_driver/host.py",
+            "role": "guard_registration",
+            "source_sha256": "015cc97da2bcd75730e803b49e23134065b71a8a6bf963f05f3c4d469cd4f52c"
+          },
+          {
+            "line_end": 834,
+            "line_start": 816,
+            "path": "packages/aios-browser-driver/aios_browser_driver/host.py",
+            "role": "guard_registration",
+            "source_sha256": "015cc97da2bcd75730e803b49e23134065b71a8a6bf963f05f3c4d469cd4f52c"
+          },
+          {
+            "line_end": 14,
+            "line_start": 1,
+            "path": "packages/aios-browser-driver/aios_browser_driver/browser_protocol.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "47593f76afa07c467ac1f38d2c1ec288fe811eff9dda0fd8a179dc3a86944ea8"
+          }
+        ],
+        "forbidden_condition": "An agent action being admitted or executed while the gate is closed (a standing takeover), an action slipping in after close_and_drain has begun, or the epoch rotating while any admitted action is still in flight.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied view shows the worker-side agent-tool definitions whose handlers originate these browser requests; the direct_tool classification rests on browser_protocol.py's shared worker\u2194driver contract (worker tool handlers exec browser-cli invoke) and host.py's op dispatch."
+        ],
+        "protected_operation": "BrowserHost.handle dispatch of agent actions (ops carrying a session_id) into _run_action, and the takeover_open close_and_drain \u2192 epoch-rotation \u2192 screencast-start sequence in _open_fresh / _finalize.",
+        "protected_resource": "The shared browser control surface (the account's browser and its live pages) toggled between agent control and human takeover.",
+        "protection_obligation": "While a human takeover stands, agent browser actions must be refused at admission with a page-blind takeover_active error_response; the gate must close synchronously before draining in-flight actions, every exit that leaves no standing takeover must reopen the gate, and the epoch may rotate only after the drain completes \u2014 so no agent action executes under human control and no human input lands under agent control.",
+        "scope_limits": [
+          "'status' is explicitly the one control op the gate does NOT block (browser_protocol.py lines 70-71) and stays page-blind beyond url/title.",
+          "Control ops (takeover_open/close, peek, revoke_site) are governed by the transition lock, standing-takeover/grant checks, and explicit refusals rather than admit() (host.py lines 319-334, 697-716, 795-814).",
+          "Refusal responses must be page-blind \u2014 no snapshot/url/title/tabs \u2014 so the human's live page never leaks into agent context (browser_protocol.py lines 64-71).",
+          "A drain timeout fails the open and reopens the gate without rotating the epoch (state.py lines 13-14; host.py lines 737-740, 791-793).",
+          "The rmtree-style external effect here is browser automation against a live external browser; the guard lives in the driver, not at a worker tool boundary."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The refusal raises inside assert_retirements_admissible \u2014 DatabaseBehindContract (lines 207-212) and fail-closed DatabaseUnavailable (lines 221-227) \u2014 which must clear before readiness is granted; the readiness flip itself is outside the supplied views.",
+        "contract_id": "ecological-contract:afc26a9d04521f2ca612fa5883e52a46",
+        "declared_mechanism": "assert_retirements_admissible: for each contracted descriptor assert alembic_version >= contract_rev, then per-surface/per-token residue counts must total zero; raises RetirementsNotAdmissible subclasses (DatabaseBehindContract, LiveResidueDetected, DatabaseUnavailable) and the caller loops on the exception keeping readiness RED; DB/connection failures fail closed.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 180,
+            "line_start": 164,
+            "path": "src/aios/retirements/boot_gate.py",
+            "role": "guard_registration",
+            "source_sha256": "dbd50cd54fff8ecfaf55860fe3d408e37ebb0119aeec8657d2c69542c2d7b0c5"
+          },
+          {
+            "line_end": 169,
+            "line_start": 165,
+            "path": "src/aios/retirements/boot_gate.py",
+            "role": "protected_operation",
+            "source_sha256": "dbd50cd54fff8ecfaf55860fe3d408e37ebb0119aeec8657d2c69542c2d7b0c5"
+          },
+          {
+            "line_end": 212,
+            "line_start": 197,
+            "path": "src/aios/retirements/boot_gate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dbd50cd54fff8ecfaf55860fe3d408e37ebb0119aeec8657d2c69542c2d7b0c5"
+          },
+          {
+            "line_end": 267,
+            "line_start": 240,
+            "path": "src/aios/retirements/boot_gate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dbd50cd54fff8ecfaf55860fe3d408e37ebb0119aeec8657d2c69542c2d7b0c5"
+          },
+          {
+            "line_end": 212,
+            "line_start": 207,
+            "path": "src/aios/retirements/boot_gate.py",
+            "role": "commit_point",
+            "source_sha256": "dbd50cd54fff8ecfaf55860fe3d408e37ebb0119aeec8657d2c69542c2d7b0c5"
+          },
+          {
+            "line_end": 227,
+            "line_start": 221,
+            "path": "src/aios/retirements/boot_gate.py",
+            "role": "commit_point",
+            "source_sha256": "dbd50cd54fff8ecfaf55860fe3d408e37ebb0119aeec8657d2c69542c2d7b0c5"
+          }
+        ],
+        "forbidden_condition": "Serving/readiness while (1) alembic_version is None or < contract_rev for any contracted descriptor (DatabaseBehindContract), (2) any (surface, token) residue count is nonzero (LiveResidueDetected plus algedonic alert), or (3) DB access fails (DatabaseUnavailable \u2014 'never serve on an unprovable DB').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which api/worker startup path calls assert_retirements_admissible and where readiness flips (the opinion's api/worker-startup claim has no caller wiring in the supplied views).",
+          "Whether the gated serving endpoints are agent-facing (agent tool or lifecycle traffic)."
+        ],
+        "protected_operation": "Boot admission of the application against the live database (the readiness assertion gating commencement of serving).",
+        "protected_resource": "The live database state bound by the retirement REGISTRY contracts (alembic_version and per-surface token predicates) and the serving process's readiness state.",
+        "protection_obligation": "Boot admission must be refused (fail-closed) whenever the live database is behind any contracted retirement's contract_rev, still carries retired-token rows on any registered surface, or admissibility cannot be proven because the database is unavailable; readiness stays RED until the proof passes.",
+        "scope_limits": [
+          "Evidence is limited to the boot_gate.py view (lines 124-267); the LiveResidueDetected raise lies beyond line 267 and is supported by the docstring only.",
+          "Sibling gate assert_at_head (lines 141-161, migration-head assertion) is visible in the same view but was not raised as a distinct reviewer obligation.",
+          "The gate is boot infrastructure; nothing in the supplied source binds the gated serving surface to agent tools or lifecycle hooks."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "raise httpx.ConnectError at lines 136-137 precedes self._inner.handle_async_request (lines 134/145): a blocked host never reaches the inner transport, so no traffic is committed upstream.",
+        "contract_id": "ecological-contract:b0c1ee6b7bd9c9ed63037711ece17a12",
+        "declared_mechanism": "PinnedTransport.handle_async_request calls resolve_pinned_ip(host, port); on blocked resolution raises httpx.ConnectError before the inner transport; rewrites the URL host to the pinned IP and sets extensions['sni_hostname'] to the real host for https; operator-controlled allow_hosts (bare host or host:port) bypasses pinning entirely.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 115,
+            "line_start": 95,
+            "path": "src/aios/pinned_transport.py",
+            "role": "guard_registration",
+            "source_sha256": "5bc0a20bf50238e59765711a6838150a24473cdb2922a8bb56403bb11ad9c7d3"
+          },
+          {
+            "line_end": 134,
+            "line_start": 130,
+            "path": "src/aios/pinned_transport.py",
+            "role": "protected_operation",
+            "source_sha256": "5bc0a20bf50238e59765711a6838150a24473cdb2922a8bb56403bb11ad9c7d3"
+          },
+          {
+            "line_end": 137,
+            "line_start": 135,
+            "path": "src/aios/pinned_transport.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5bc0a20bf50238e59765711a6838150a24473cdb2922a8bb56403bb11ad9c7d3"
+          },
+          {
+            "line_end": 145,
+            "line_start": 135,
+            "path": "src/aios/pinned_transport.py",
+            "role": "commit_point",
+            "source_sha256": "5bc0a20bf50238e59765711a6838150a24473cdb2922a8bb56403bb11ad9c7d3"
+          }
+        ],
+        "forbidden_condition": "Connecting to a host that resolves to a blocked (private/internal) address (DNS-rebinding SSRF), or letting a request reach the inner transport without resolve-and-validate; pooled connections are keepalive-disabled (max_keepalive_connections=0) so a later request cannot ride another host's verified session.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The construction site wiring PinnedTransport into an httpx client and which request paths flow through it (agent tools, worker OAuth, or a proxy upstream client).",
+          "resolve_pinned_ip's blocked-address classification body is outside the supplied range (only its use at lines 135-137 is shown)."
+        ],
+        "protected_operation": "Per-request outbound HTTP/HTTPS connection establishment through PinnedTransport.handle_async_request (dispatch to the inner transport).",
+        "protected_resource": "The outbound network destination (resolved IP) of requests handled by the transport and the keepalive-disabled inner httpx transport.",
+        "protection_obligation": "Every request handled by PinnedTransport must have its destination host resolved and validated against blocked (private/internal) addresses before any traffic is committed, pinning the connect target to the validated IP while keeping SNI and certificate verification on the real hostname; blocked resolutions must fail closed per request.",
+        "scope_limits": [
+          "Only the pinned_transport.py view (lines 90-148) is supplied; where this transport is instantiated or attached is not shown.",
+          "allow_hosts (operator-controlled, e.g. Settings.oauth_allow_insecure_host_set) bypasses pinning entirely (lines 106-109, 133-134).",
+          "The 'worker-originated connect' framing of the obligation is not established by the cited view."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The ALTER TABLE triggers ADD CONSTRAINT execution in upgrade() (migration file lines 100-105), which makes every subsequent violating write fail at the database write boundary for all writers.",
+        "contract_id": "ecological-contract:b2d781811565f92cad9ccf4c14bfdf09",
+        "declared_mechanism": "Migration 0130 registers a validating table CHECK via ALTER TABLE triggers ADD CONSTRAINT ... CHECK (SCHEDULABLE_ENABLED_ARMED_PREDICATE: 'NOT enabled OR source NOT IN ('cron', 'one_shot') OR next_fire IS NOT NULL'), after first auto-disabling pre-existing violator rows (with logged RETURNING audit) so the ACCESS EXCLUSIVE validation scan passes; downgrade() drops the CHECK.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 21,
+            "line_start": 8,
+            "path": "migrations/versions/0130_triggers_schedulable_enabled_armed.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c1b9a6ecf269ed9b391765802aeb6eb48634379afaaf6610d77e1daca2e0d322"
+          },
+          {
+            "line_end": 15,
+            "line_start": 12,
+            "path": "migrations/versions/0130_triggers_schedulable_enabled_armed.py",
+            "role": "protected_operation",
+            "source_sha256": "c1b9a6ecf269ed9b391765802aeb6eb48634379afaaf6610d77e1daca2e0d322"
+          },
+          {
+            "line_end": 70,
+            "line_start": 64,
+            "path": "migrations/versions/0130_triggers_schedulable_enabled_armed.py",
+            "role": "guard_registration",
+            "source_sha256": "c1b9a6ecf269ed9b391765802aeb6eb48634379afaaf6610d77e1daca2e0d322"
+          },
+          {
+            "line_end": 98,
+            "line_start": 76,
+            "path": "migrations/versions/0130_triggers_schedulable_enabled_armed.py",
+            "role": "guard_registration",
+            "source_sha256": "c1b9a6ecf269ed9b391765802aeb6eb48634379afaaf6610d77e1daca2e0d322"
+          },
+          {
+            "line_end": 105,
+            "line_start": 100,
+            "path": "migrations/versions/0130_triggers_schedulable_enabled_armed.py",
+            "role": "commit_point",
+            "source_sha256": "c1b9a6ecf269ed9b391765802aeb6eb48634379afaaf6610d77e1daca2e0d322"
+          }
+        ],
+        "forbidden_condition": "Any triggers row with enabled = true AND source IN ('cron','one_shot') AND next_fire IS NULL (an enabled schedulable trigger with no armed fire time), regardless of which writer produces it \u2014 the migration text enumerates service code, model tool, claim advance, auto-disable, session clone, and manual psql as equally bound writers.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The migration comment lists 'model tool' among the bound writer classes, but no tool dispatch or tool-registration source naming a trigger-writing agent tool is supplied.",
+          "Whether trigger claim/firing should be treated as an agent lifecycle hook for study purposes is not decidable from the supplied views."
+        ],
+        "protected_operation": "INSERT/UPDATE writes to the triggers table, and downstream the scheduler's due-trigger claim and next-event lookups (fetch_and_claim_due_triggers / fetch_next_trigger_event), which filter next_fire IS NOT NULL.",
+        "protected_resource": "Rows of the triggers table (schedulable cron/one_shot triggers) and the trigger scheduler's due-claim query results.",
+        "protection_obligation": "The triggers table must enforce at the database level that an enabled schedulable trigger (source IN ('cron','one_shot')) always carries a non-NULL next_fire, so the enabled-but-unarmed '#925 zombie' state is unwritable to every writer and the scheduler's next_fire IS NOT NULL claim/claim-MIN queries never operate on a permanently dead enabled row.",
+        "scope_limits": [
+          "Blanket schema-level invariant binding every writer equally; the supplied source does not tie any specific write path to an agent tool, lifecycle hook, or agent-generated input.",
+          "Pre-existing violator rows are disabled (not armed) during upgrade, so re-arming still requires an explicit later write (lines 23-36, 76-98).",
+          "The schedulable source set ('cron','one_shot') is pinned as SQL literals mirroring migration 0108; new schedulable sources would require a migration change (lines 64-67).",
+          "downgrade() removes the constraint entirely (lines 108-109)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The guarded UPDATE at src/aios/db/queries/sessions.py lines 1982-1990 \u2014 the archived_at IS NULL predicate on the write plus the no-row ConflictError raise.",
+        "contract_id": "ecological-contract:c1e11009fa0f4129c9592f1d4167dfad",
+        "declared_mechanism": "Pre-check via queries.get_session followed by ConflictError; UPDATE sessions SET ... WHERE id = $1 AND account_id = $n AND archived_at IS NULL RETURNING *; a None row after the upfront read raises ConflictError (an archive committed between read and UPDATE).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1940,
+            "line_start": 1930,
+            "path": "src/aios/db/queries/sessions.py",
+            "role": "protected_operation",
+            "source_sha256": "9a8a323d79c86e86ca1dc999514a910590db3d0d7a7b7ccdf36812852e4901a3"
+          },
+          {
+            "line_end": 1956,
+            "line_start": 1941,
+            "path": "src/aios/db/queries/sessions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9a8a323d79c86e86ca1dc999514a910590db3d0d7a7b7ccdf36812852e4901a3"
+          },
+          {
+            "line_end": 1962,
+            "line_start": 1957,
+            "path": "src/aios/db/queries/sessions.py",
+            "role": "guard_registration",
+            "source_sha256": "9a8a323d79c86e86ca1dc999514a910590db3d0d7a7b7ccdf36812852e4901a3"
+          },
+          {
+            "line_end": 1990,
+            "line_start": 1982,
+            "path": "src/aios/db/queries/sessions.py",
+            "role": "commit_point",
+            "source_sha256": "9a8a323d79c86e86ca1dc999514a910590db3d0d7a7b7ccdf36812852e4901a3"
+          }
+        ],
+        "forbidden_condition": "An UPDATE committing new column values on a sessions row whose archived_at is not NULL \u2014 including the race where an archive commits between the upfront read and the UPDATE \u2014 and, transitively, any rewrite of that archived session's resource attachments.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The callers of services.update_session that perform the vault/memory/github attachment rewrites (API routes, agent tools, lifecycle flows) are not supplied."
+        ],
+        "protected_operation": "Field updates issued via update_session (agent_id, agent_version, title, metadata, outbound_suppression) and the same-transaction resource-attachment writes made by its service-layer callers.",
+        "protected_resource": "Archived rows of the sessions table and the archived sessions' vault/memory/github resource attachments.",
+        "protection_obligation": "update_session must refuse to mutate an already-archived session row: ConflictError on the upfront read when archived_at is set, an UPDATE that commits only under the archived_at IS NULL predicate, and a ConflictError re-raise on the racing no-row case \u2014 the sole synchronous barrier also covering the vault/memory/github attachment rewrites performed inside service.update_session's transaction.",
+        "scope_limits": [
+          "The guard lives in the query layer for update_session only; the source states the attachment-writing query functions do not independently check archived_at, so this raise is the only synchronous barrier (lines 1951-1956).",
+          "A no-op change set returns the current row without issuing an UPDATE (lines 1977-1978).",
+          "No agent tool, lifecycle hook, or agent-generated input path reaching update_session is established by the supplied views; the session store's agent role is topical, not a source binding."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The alert returns at lines 806-810 and 814-816 abort the handshake before sslobj.context is set (line 811) and before any request bytes are processed.",
+        "contract_id": "ecological-contract:d69427a2ac3ab46d9732511be98c96c1",
+        "declared_mechanism": "_sni_callback \u2014 described in-source as 'THE fail-closed enforcement point': returns ALERT_DESCRIPTION_UNRECOGNIZED_NAME for absent SNI or a non-allow-listed host, ALERT_DESCRIPTION_INTERNAL_ERROR on any exception, and only on success assigns the leaf context and records the SNI host.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 816,
+            "line_start": 795,
+            "path": "src/aios/sandbox/secret_egress_proxy.py",
+            "role": "guard_registration",
+            "source_sha256": "8f96f46a74fa9b1e916e3e851d3975325c2f2ac48a00234be7d38de8d90fc028"
+          },
+          {
+            "line_end": 810,
+            "line_start": 800,
+            "path": "src/aios/sandbox/secret_egress_proxy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8f96f46a74fa9b1e916e3e851d3975325c2f2ac48a00234be7d38de8d90fc028"
+          },
+          {
+            "line_end": 816,
+            "line_start": 806,
+            "path": "src/aios/sandbox/secret_egress_proxy.py",
+            "role": "commit_point",
+            "source_sha256": "8f96f46a74fa9b1e916e3e851d3975325c2f2ac48a00234be7d38de8d90fc028"
+          },
+          {
+            "line_end": 825,
+            "line_start": 818,
+            "path": "src/aios/sandbox/secret_egress_proxy.py",
+            "role": "protected_operation",
+            "source_sha256": "8f96f46a74fa9b1e916e3e851d3975325c2f2ac48a00234be7d38de8d90fc028"
+          }
+        ],
+        "forbidden_condition": "Minting/selecting a per-host leaf for an absent server_name or a host not in self._allowed_hosts; any callback error must also yield an OpenSSL alert (ALERT_DESCRIPTION_INTERNAL_ERROR) rather than a terminated session.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The TLS context wiring that registers _sni_callback as the SNI callback.",
+          "Whether handshakes terminated here originate from agent tool execution (needed to move beyond not_established)."
+        ],
+        "protected_operation": "TLS handshake termination in the secret-egress proxy: per-host leaf selection/minting during the handshake (_leaf_context).",
+        "protected_resource": "The proxy's TLS termination surface (per-host leaf contexts keyed to allow-listed SNI hosts).",
+        "protection_obligation": "The credential-egress proxy must refuse to terminate TLS for any handshake whose SNI is absent or names a host outside the allow-set, aborting the handshake before any leaf is minted or session established (fail-closed at the SNI enforcement point).",
+        "scope_limits": [
+          "Population of self._allowed_hosts is outside the supplied ranges.",
+          "How sandbox traffic reaches this proxy (listener wiring) is not in the cited ranges.",
+          "Leaf minting writes a 0600 temp key file and unlinks it (lines 818-844); that filesystem side effect is instrumental to the TLS mechanism, not a separately-guarded effect."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Bodies of resolve_pinned_ip, build_iptables_script, and build_lockdown_verify_script are outside the supplied ranges; their refusal/classification logic is asserted only via call-site docstrings.",
+      "Callers of services.update_session that perform the vault/memory/github attachment rewrites (the load-bearing rationale for the archived-session barrier) are not supplied.",
+      "Implementations of queries.is_session_bound_to_connection and runtime_tokens_service.resolve are not supplied; the tool-results guard analysis relies on the route code and deps.py docstrings.",
+      "Implementations of queries.unscoped_reapable_archived_workspaces, unscoped_live_workspace_volume_paths, and unscoped_workspace_path_is_live (archived confirmation, age gates, keep-set semantics for the reaper) are referenced but not supplied.",
+      "No supplied view shows the api/worker startup wiring that invokes assert_retirements_admissible/assert_at_head or where readiness flips; the opinion's 'at api/worker startup' claim is unsupported by the cited ranges.",
+      "No supplied view shows the tool registry registration/dispatch for the create_agent/update_agent model tools; the direct_tool binding for the surface-attenuation and workflow-privilege contracts rests on documented path statements (src/aios/services/agents.py 126-131; src/aios/services/model_binding_authz.py 14-17).",
+      "No supplied view shows the worker-side agent-tool definitions or handlers whose execution produces browser-cli requests reaching BrowserHost.handle; the direct_tool classification rests on browser_protocol.py's shared worker\u2194driver contract and host.py's op dispatch.",
+      "No supplied view shows where PinnedTransport is instantiated or which clients/paths route through it, so 'every worker-originated connect' cannot be bound to a caller from the cited source.",
+      "Opinions 1-2 (Twilio X-Twilio-Signature verification on POST /twilio/inbound and /twilio/status) are classified out of scope as web-request authentication: the supplied connector source never binds the webhook ingestion to an agent tool, agent lifecycle hook, or agent-generated input (inbound SMS is external input; the only agent reference is the downstream note that the agent replies async via sms_send at webhook.py lines 282-284), so the escape clause in the scope rule is not met.",
+      "Opinions 7-8 (assert_not_shared_in_worktree / db_name_is_shared / AIOS_ALLOW_SHARED_DB=1 and the _resolve_admin_url no-silent-default, issues #349/#824) are classified out of scope as developer/infrastructure policy guarding shared databases from dev processes; no agent mediation appears in the supplied source.",
+      "Per packet scope, behavior labels and prevalence data are unavailable; no DEC violation, safety, runtime-behavior, or prevalence determination is made for any compiled contract.",
+      "Reviewer rationales reference guards with no supplied source views \u2014 ssh host-key/IP pinning, url_safety/web_fetch SSRF pre-flight, host_launcher credential-free env allowlist, trusted-id extra='forbid' in workflow/skill/task tools, http_request route/query/header gates, skills path-traversal rejection, connector tools_schema root-only publication, and connections attach/archive FOR UPDATE gating \u2014 no contracts are compiled for these.",
+      "SandboxRegistry._provision (the lockdown caller that tears down on failure) is not supplied; its abort behavior is known only from the setup.py docstring (lines 944-948).",
+      "The LiveResidueDetected raise in _assert_no_residue lies beyond the supplied boot_gate.py range (view ends at line 267); the residue refusal is supported only by the docstring (lines 176-179).",
+      "The SecretEgressProxy inbound entry (_serve_one), the self._allowed_hosts population, and the self._client transport configuration are outside the supplied ranges; whether proxied requests are agent-generated is not established.",
+      "The other enforcement paths for enforce_workflow_binding_privilege \u2014 the per-call agent(model=...) override (workflows.step) and the generic agentless child \u2014 are named in model_binding_authz.py (lines 11-17) but their dispatch code and commit points are not supplied.",
+      "The remaining routes of the runtime scope-guard family \u2014 POST /v1/connectors/runtime/inbound, /runtime/lifecycle, GET /runtime/secrets, and tools_schema/capabilities \u2014 are omitted as ordinary API bearer authorization without an agent-tool binding in the supplied source; only /runtime/tool-results is agent-bound and is emitted as its own contract.",
+      "fetch_and_claim_due_triggers / fetch_next_trigger_event are referenced only in the migration 0130 docstring; their implementations are not supplied."
+    ],
+    "repository": "eumemic/aios",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:2ab345e3cf270b48959ea0e2aa1f8d94"
+  },
+  "request_sha256": "3388d011517d59eafecb1314643a5cc830f6635620ee96682c25107386187d96",
+  "response_sha256": "21916d36802d33e021e7ef2a85ac0bc8fcaaf85244d9beab2f153f73da4ec9b6",
+  "shard_provenance": [
+    {
+      "attempt": 0,
+      "request_sha256": "7cabf66a9b9c42d2065966aed95e877ad64ffd68a05c95621b440fc897f81cd0",
+      "response_sha256": "6c3850b888079e6248383ddefea466d00d8e6d5b102ee596338ad04eab42d2b4",
+      "result_sha256": "09f1d28de2e4c8500b46bad9797ac5f1306b41aa48a6eab285bac5648c4273a5",
+      "tokens": 67108,
+      "unit": "v24-screen:2ab345e3cf270b48959ea0e2aa1f8d94-p000"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "5cd74e8d9a7c5dd261dfc341f0fa7988050d4a4ac616c5efac3d6a39910410eb",
+      "response_sha256": "bf3285cb797038d34aad919ee4f7ab9984ae1177d43c647fa28d5cf0ca391010",
+      "result_sha256": "23c157a452dad36de92882b84e59a3c2c0e09f9967dd2c71a837d726ec26e03b",
+      "tokens": 62165,
+      "unit": "v24-screen:2ab345e3cf270b48959ea0e2aa1f8d94-p001"
+    }
+  ],
+  "state": "completed",
+  "tokens": 129273,
+  "unit": "v24-screen:2ab345e3cf270b48959ea0e2aa1f8d94"
+}

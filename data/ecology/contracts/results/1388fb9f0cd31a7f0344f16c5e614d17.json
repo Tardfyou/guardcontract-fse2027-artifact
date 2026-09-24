@@ -1,0 +1,120 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "self.sql_db.run(sql) on the LangChain SQLDatabase connection (codes/schema_rag.py:328) and execute_sql(sql) (codes/schema_rag.py:334), which reaches cursor.execute(sql_query) (codes/sql_handler.py:311) on the sqlite3 connection to data/inspection.db (codes/sql_handler.py:10, 17-21). Both commit points are in the database stratum behind the same single guard check.",
+        "contract_id": "ecological-contract:a1d3859b5a6f2b7c8b4dff92717ae11e",
+        "declared_mechanism": "Read-only keyword filter registered in query_with_schema_rag (codes/schema_rag.py:318-321): the generated SQL is lowercased and tested against the forbidden list ['delete','drop','update','insert','truncate','alter']; on a match the function returns an error dict ('Non-read-only hazard detected SQL operate,Execution refused') and skips both execution commit points. Reinforced by an advisory prompt-level constraint instructing the model to output only a single read-only SQLite SELECT and forbidding write operations (codes/schema_rag.py:249-257, especially line 255).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 321,
+            "line_start": 318,
+            "path": "codes/schema_rag.py",
+            "role": "guard_registration",
+            "source_sha256": "693850644a96f97e98a8fdf882c828b6f8da34cacdaa2be083001b06f250f4ac"
+          },
+          {
+            "line_end": 257,
+            "line_start": 249,
+            "path": "codes/schema_rag.py",
+            "role": "guard_registration",
+            "source_sha256": "693850644a96f97e98a8fdf882c828b6f8da34cacdaa2be083001b06f250f4ac"
+          },
+          {
+            "line_end": 321,
+            "line_start": 319,
+            "path": "codes/schema_rag.py",
+            "role": "forbidden_condition",
+            "source_sha256": "693850644a96f97e98a8fdf882c828b6f8da34cacdaa2be083001b06f250f4ac"
+          },
+          {
+            "line_end": 71,
+            "line_start": 65,
+            "path": "agent/tools/agent_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "3c0022114fefd7d67ee2eb89d3949d4959957b8101bda874847c247c8d9fb4e4"
+          },
+          {
+            "line_end": 317,
+            "line_start": 312,
+            "path": "codes/schema_rag.py",
+            "role": "protected_operation",
+            "source_sha256": "693850644a96f97e98a8fdf882c828b6f8da34cacdaa2be083001b06f250f4ac"
+          },
+          {
+            "line_end": 334,
+            "line_start": 323,
+            "path": "codes/schema_rag.py",
+            "role": "commit_point",
+            "source_sha256": "693850644a96f97e98a8fdf882c828b6f8da34cacdaa2be083001b06f250f4ac"
+          },
+          {
+            "line_end": 313,
+            "line_start": 305,
+            "path": "codes/sql_handler.py",
+            "role": "commit_point",
+            "source_sha256": "e32ac31f23ab7368636eabab5c5960eaaff415ac902b05f294a0aef70e521727"
+          },
+          {
+            "line_end": 21,
+            "line_start": 10,
+            "path": "codes/sql_handler.py",
+            "role": "commit_point",
+            "source_sha256": "e32ac31f23ab7368636eabab5c5960eaaff415ac902b05f294a0aef70e521727"
+          },
+          {
+            "line_end": 68,
+            "line_start": 65,
+            "path": "agent/tools/agent_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3c0022114fefd7d67ee2eb89d3949d4959957b8101bda874847c247c8d9fb4e4"
+          },
+          {
+            "line_end": 280,
+            "line_start": 261,
+            "path": "codes/schema_rag.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "693850644a96f97e98a8fdf882c828b6f8da34cacdaa2be083001b06f250f4ac"
+          }
+        ],
+        "forbidden_condition": "Execution of a non-read-only (mutating) SQL statement against the inspection SQLite database: generated SQL containing any forbidden write keyword ('delete', 'drop', 'update', 'insert', 'truncate', 'alter'), matched case-insensitively as a substring of the lowercased SQL string.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether natural_language_sql_query is registered into a concrete agent runtime/executor tool list beyond the @tool decorator is not shown in the supplied source (agent_tools.py shows only the decorator and a __main__ demo).",
+          "The second-phase opinion cites an 'app.py Text-to-SQL console' as a live entry point; no app.py source was supplied, so that binding is unverified.",
+          "Whether the LangChain SQLDatabase.from_uri connection (codes/schema_rag.py:170) or the raw sqlite3 connection (codes/sql_handler.py:19) is configured read-only at the driver level is not shown."
+        ],
+        "protected_operation": "Execution of LLM-generated SQL in the Schema RAG Text-to-SQL path \u2014 query_with_schema_rag (codes/schema_rag.py:312-339) \u2014 as reached via the natural_language_sql_query agent tool (agent/tools/agent_tools.py:65-71).",
+        "protected_resource": "The SQLite inspection database at data/inspection.db (DB_PATH, codes/sql_handler.py:10), including tables defect_inspection and batch_list and the Chinese-column view defect_inspection_cn.",
+        "protection_obligation": "SQL generated from natural language by the Schema RAG Text-to-SQL pipeline (SchemaRAGEngine.query_with_schema_rag) and submitted for execution against the inspection SQLite database (data/inspection.db) must be read-only: mutating SQL (delete, drop, update, insert, truncate, alter \u2014 also enumerated as INSERT/UPDATE/DELETE/DROP/ALTER in the prompt-level constraint) is forbidden and must be rejected before the sql_db.run()/execute_sql() execution commit points. Merges the first-phase and second-phase reviewer obligations, which describe the same guard, path, and commit point.",
+        "scope_limits": [
+          "Applies only to the query_with_schema_rag Text-to-SQL path; the separate execute_sql_query agent tool (agent/tools/agent_tools.py:46-51) invokes execute_sql directly with no read-only keyword filter anywhere in the supplied source.",
+          "Enforcement is a case-insensitive substring keyword check (codes/schema_rag.py:319-320), not SQL parsing; no parse-based validation or driver-level read-only enforcement appears in the supplied source.",
+          "The prompt-level read-only instruction (codes/schema_rag.py:252-256) is advisory; the keyword filter is the only pre-commit rejection point in this path.",
+          "execute_sql itself performs no read-only enforcement in the supplied source: its docstring claims read-only ('Execute general read-only SQL Query', codes/sql_handler.py:306) but the body executes the provided statement directly (codes/sql_handler.py:311).",
+          "If self.sql_db.run(sql) raises (codes/schema_rag.py:330-331), the path still proceeds to execute_sql(sql) at line 334; both executions sit behind the same single guard check and neither is a distinct stratum.",
+          "Application-controlled write paths (init_database, import_custom_csv_data in codes/sql_handler.py) are outside this obligation; they do not execute agent-generated SQL."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied source shows app.py or any UI/console entry point wiring the Schema RAG Text-to-SQL path; the 'app.py Text-to-SQL console' cited in the second-phase opinion is unverified.",
+      "No supplied source shows agent executor/graph registration of the agent_tools module (tool-list wiring or dispatch configuration), so agent mediation beyond the @tool decorator and the LLM-generation dataflow is not established.",
+      "Driver-level read-only configuration of either database connection (SQLDatabase.from_uri at codes/schema_rag.py:170, sqlite3.connect at codes/sql_handler.py:19) is not evidenced in the supplied source.",
+      "Prevalence data and runtime behavior labels are unavailable per the unit scope; only the supplied line-numbered views were used."
+    ],
+    "repository": "Decemviri/Steel-Defect-AgentRAG",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1388fb9f0cd31a7f0344f16c5e614d17"
+  },
+  "request_sha256": "02c231ecb715f9796be8edd3ea013bb3d5da66518600ee0c677234074d2f31f9",
+  "response_sha256": "397cc14ca4b4f46558952b9f2f8e52cccd8049df80a1300aa966a672679819c6",
+  "state": "completed",
+  "tokens": 25339,
+  "unit": "v24-screen:1388fb9f0cd31a7f0344f16c5e614d17"
+}

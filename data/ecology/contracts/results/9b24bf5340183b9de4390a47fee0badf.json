@@ -1,0 +1,347 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "invoke_harness at stream_handler.py 352-358 and agentcore_client.invoke_agent_runtime at stream_handler.py 397-404 \u2014 both reached only after _resolve_caller in _handle (430-444) and the tenant check (345-350).",
+        "contract_id": "ecological-contract:0c70cf9d0b8cfeb3d9556bbdf230b321",
+        "declared_mechanism": "_handle resolves the caller via _resolve_caller before body parsing and invoke, mapping _AuthError to an 'Unauthorized' SSE error and returning without invoking; _verify_cognito_token performs stdlib RS256 PKCS#1 v1.5 verification against the cached pool JWKS plus issuer/token_use/client_id/expiry/sub claim checks and raises when pool config is absent (fail closed); _stream_invoke enforces owner==sub for non-IAM callers, returning an opaque 'Runtime not found' error instead of invoking.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 34,
+            "line_start": 17,
+            "path": "backend/src/app/stream_handler.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fd1630906102cdaf93e78889d3f81e83eacc82feb1f117e2be56a5815e4390ce"
+          },
+          {
+            "line_end": 230,
+            "line_start": 174,
+            "path": "backend/src/app/stream_handler.py",
+            "role": "guard_registration",
+            "source_sha256": "fd1630906102cdaf93e78889d3f81e83eacc82feb1f117e2be56a5815e4390ce"
+          },
+          {
+            "line_end": 271,
+            "line_start": 233,
+            "path": "backend/src/app/stream_handler.py",
+            "role": "guard_registration",
+            "source_sha256": "fd1630906102cdaf93e78889d3f81e83eacc82feb1f117e2be56a5815e4390ce"
+          },
+          {
+            "line_end": 444,
+            "line_start": 430,
+            "path": "backend/src/app/stream_handler.py",
+            "role": "guard_registration",
+            "source_sha256": "fd1630906102cdaf93e78889d3f81e83eacc82feb1f117e2be56a5815e4390ce"
+          },
+          {
+            "line_end": 350,
+            "line_start": 337,
+            "path": "backend/src/app/stream_handler.py",
+            "role": "guard_registration",
+            "source_sha256": "fd1630906102cdaf93e78889d3f81e83eacc82feb1f117e2be56a5815e4390ce"
+          },
+          {
+            "line_end": 306,
+            "line_start": 305,
+            "path": "backend/src/app/stream_handler.py",
+            "role": "protected_operation",
+            "source_sha256": "fd1630906102cdaf93e78889d3f81e83eacc82feb1f117e2be56a5815e4390ce"
+          },
+          {
+            "line_end": 358,
+            "line_start": 352,
+            "path": "backend/src/app/stream_handler.py",
+            "role": "commit_point",
+            "source_sha256": "fd1630906102cdaf93e78889d3f81e83eacc82feb1f117e2be56a5815e4390ce"
+          },
+          {
+            "line_end": 404,
+            "line_start": 397,
+            "path": "backend/src/app/stream_handler.py",
+            "role": "commit_point",
+            "source_sha256": "fd1630906102cdaf93e78889d3f81e83eacc82feb1f117e2be56a5815e4390ce"
+          }
+        ],
+        "forbidden_condition": "Reaching invoke_agent_runtime or invoke_harness from a request with neither an IAM SigV4 identity in requestContext nor a valid Cognito access token (missing/malformed bearer, non-RS256 alg, unknown kid, bad signature, wrong iss, token_use != access, wrong client_id, expired, or unconfigured pool), or a Cognito-caller invocation of a deployment whose stored user_id differs from the caller's sub.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the streaming invoke endpoint is reachable through an agent tool dispatch or agent lifecycle hook (versus direct browser/backend calls) is not established by the supplied views; required to set agent_mediation.",
+          "Whether invoke_harness (app.services.harness_deployer) re-checks caller identity internally is not determinable \u2014 that module is not supplied.",
+          "The actual Lambda Function URL AuthType configuration (NONE vs AWS_IAM) is not in the supplied views."
+        ],
+        "protected_operation": "_stream_invoke's agent invocations on the resolved ARNs: invoke_harness for harness-mode deployments and agentcore_client.invoke_agent_runtime for runtime-mode deployments, including the streamed response delivery.",
+        "protected_resource": "The deployed AgentCore runtime / harness data plane (agent invoked via runtime_arn / harness_arn from the deployment record) and its per-tenant invocation surface.",
+        "protection_obligation": "Every request to the response-streaming runtime-test Lambda Function URL must be authenticated before any agent invocation: either an AWS_IAM SigV4 caller (verified identity from requestContext.authorizer.iam) or a Cognito access token RS256-verified against the pool JWKS with iss, token_use=access, client_id, and exp checks \u2014 failing closed with an 'Unauthorized' SSE error (no invoke), including when COGNITO_USER_POOL_ID/COGNITO_CLIENT_ID are unconfigured \u2014 and, for Cognito-bearer callers, the deployment record's user_id must match the caller's sub before invoke_agent_runtime or invoke_harness is issued.",
+        "scope_limits": [
+          "AWS_IAM (SigV4) callers are identified as 'iam:<principal>' and deliberately bypass the per-Cognito-sub ownership check; the IAM-signed Function URL is treated as the trust boundary for them.",
+          "Legacy deployment records with user_id=None remain accessible to any authenticated Cognito caller (no owner match possible).",
+          "This gate covers only the streaming Function URL entry point (_handle); the buffered handler() and the API-GW /api/test-runtime[-stream] routes rely on other mechanisms not shown in the supplied views.",
+          "The Function URL AuthType is described inconsistently in source (auth_type=NONE at lines 17-19 vs AWS_IAM-only at lines 233-246); the effective transport authentication cannot be confirmed from supplied views.",
+          "Supplied views do not bind the streaming invoke to an agent tool dispatch or lifecycle hook; callers are frontend/backend HTTP clients."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The urlopen calls immediately following validation: gateway_deployer.py 1450-1458 (OIDC discovery), gateway_deployer.py 1873-1887 (_fetch_openapi_spec), litellm_gateway_deployer.py 225-245 (_get_ probe).",
+        "contract_id": "ecological-contract:1435ed4d05f81eafb57c4f8bddce9bcb",
+        "declared_mechanism": "_validate_discovery_url / _validate_outbound_url (scheme check, host extraction, env-driven allowlist lookup with fnmatch globs, getaddrinfo under a 5s socket timeout, per-record IP parsing incl. IPv6 scope-id stripping, membership test against the module-level _DISALLOWED_NETWORKS tuple) invoked at each sink immediately before urlopen; violations raise _DiscoveryUrlInvalid / _DiscoveryUrlBlocked (both ValueError) which callers deliberately do not swallow.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 209,
+            "line_start": 130,
+            "path": "backend/src/app/services/gateway_deployer.py",
+            "role": "guard_registration",
+            "source_sha256": "df6999c444cac17e01589f54e280e58e7e75e01b9005ec9f160f44489ca51858"
+          },
+          {
+            "line_end": 243,
+            "line_start": 212,
+            "path": "backend/src/app/services/gateway_deployer.py",
+            "role": "guard_registration",
+            "source_sha256": "df6999c444cac17e01589f54e280e58e7e75e01b9005ec9f160f44489ca51858"
+          },
+          {
+            "line_end": 93,
+            "line_start": 62,
+            "path": "backend/src/app/services/gateway_deployer.py",
+            "role": "forbidden_condition",
+            "source_sha256": "df6999c444cac17e01589f54e280e58e7e75e01b9005ec9f160f44489ca51858"
+          },
+          {
+            "line_end": 1448,
+            "line_start": 1423,
+            "path": "backend/src/app/services/gateway_deployer.py",
+            "role": "protected_operation",
+            "source_sha256": "df6999c444cac17e01589f54e280e58e7e75e01b9005ec9f160f44489ca51858"
+          },
+          {
+            "line_end": 1458,
+            "line_start": 1450,
+            "path": "backend/src/app/services/gateway_deployer.py",
+            "role": "commit_point",
+            "source_sha256": "df6999c444cac17e01589f54e280e58e7e75e01b9005ec9f160f44489ca51858"
+          },
+          {
+            "line_end": 1887,
+            "line_start": 1873,
+            "path": "backend/src/app/services/gateway_deployer.py",
+            "role": "commit_point",
+            "source_sha256": "df6999c444cac17e01589f54e280e58e7e75e01b9005ec9f160f44489ca51858"
+          },
+          {
+            "line_end": 4017,
+            "line_start": 3996,
+            "path": "backend/src/app/services/gateway_deployer.py",
+            "role": "guard_registration",
+            "source_sha256": "df6999c444cac17e01589f54e280e58e7e75e01b9005ec9f160f44489ca51858"
+          },
+          {
+            "line_end": 224,
+            "line_start": 208,
+            "path": "backend/src/app/services/litellm_gateway_deployer.py",
+            "role": "guard_registration",
+            "source_sha256": "fe11a7dd4bb57e019a4203e7cc920c834c73aca98e89a5fd28c9901deedccba1"
+          },
+          {
+            "line_end": 245,
+            "line_start": 225,
+            "path": "backend/src/app/services/litellm_gateway_deployer.py",
+            "role": "commit_point",
+            "source_sha256": "fe11a7dd4bb57e019a4203e7cc920c834c73aca98e89a5fd28c9901deedccba1"
+          },
+          {
+            "line_end": 426,
+            "line_start": 413,
+            "path": "backend/src/app/services/litellm_gateway_deployer.py",
+            "role": "guard_registration",
+            "source_sha256": "fe11a7dd4bb57e019a4203e7cc920c834c73aca98e89a5fd28c9901deedccba1"
+          }
+        ],
+        "forbidden_condition": "urlopen of a server-side fetch whose URL is non-https, lacks a host, fails the configured host allowlist (including a connector's allowlist_hosts or the catalog-vetted spec host), or resolves \u2014 on any A/AAAA record \u2014 into a _DISALLOWED_NETWORKS range (loopback, RFC1918, CGNAT, link-local incl. IMDS 169.254.169.254 and Lambda credentials 169.254.170.2, TEST-NETs, multicast, reserved, IPv6 loopback/unspecified/v4-mapped/ULA/link-local/multicast/documentation).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any guarded URL can originate from agent-generated content (e.g., a model-produced connector spec URL) rather than operator/config input is not shown; required to set agent_mediation."
+        ],
+        "protected_operation": "urllib.request.urlopen fetches of request-derived URLs: the OIDC discovery GET in _create_external_oauth_config, the OpenAPI spec GET in _fetch_openapi_spec (feeding gateway openApiSchema targets), the LiteLLM probe GETs in _get_ (servers and tools/list probes), and validated custom MCP endpoints that become gateway mcpServer targets.",
+        "protected_resource": "The deployment Lambda's outbound network position and credentials \u2014 the IMDS/Lambda-credentials endpoints and internal/private network space reachable from server-side fetches.",
+        "protection_obligation": "Server-side outbound HTTP fetches of operator/user-supplied URLs \u2014 OIDC discovery documents in _create_external_oauth_config, connector/config OpenAPI spec URLs in _fetch_openapi_spec, custom external MCP endpoints in _deploy_external_mcp_targets, and LiteLLM base/probe URLs in litellm_gateway_deployer \u2014 must first pass _validate_discovery_url/_validate_outbound_url (https-only scheme, non-empty host, optional operator host allowlist via OIDC_DISCOVERY_HOST_ALLOWLIST / OUTBOUND_HOST_ALLOWLIST, and every DNS-resolved A/AAAA record outside the _DISALLOWED_NETWORKS denylist), with the fetch refused (exception raised, deploy aborted or error returned) on any violation, immediately before each urlopen.",
+        "scope_limits": [
+          "Residual TOCTOU/DNS-rebinding window between validation and connect is acknowledged in source (gateway_deployer.py 142-146; litellm_gateway_deployer.py 218-223) and mitigated only by strict urlopen timeouts, not eliminated.",
+          "Allowlists are operator-configured via environment variables; with neither set, https + IP denylist still apply but no host pinning is enforced.",
+          "Only the enumerated sinks are shown to be guarded; other outbound calls in the supplied views (get_cognito_token token-endpoint POST, gateway tools/list probes, stream_handler JWKS fetch) are not shown to pass through this validator.",
+          "Catalog-vetted default spec URLs fall back to their own host as the allowlist; user-supplied custom spec URLs with no allowlist still get https + IP denylist.",
+          "Supplied views do not bind any guarded URL to agent-generated output; URLs come from operator request bodies, persisted settings, or platform catalog entries."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "store.create(state) at deployment_handler.py 636-637 and the pending AgentVersion put at deployment_handler.py 644-657; both occur only after the two 409 checks.",
+        "contract_id": "ecological-contract:255c66bc8f74e48671d4b8aebc92c156",
+        "declared_mechanism": "Pre-persist ownership checks in handle_deploy: get_slots_store().get(friendly_runtime_name) compared against user_id (409 on foreign owner), and get_versions_store().list_for_runtime(friendly_runtime_name) filtered to _LIVE_CLAIM = {pending, succeeded} compared against user_id (409 on foreign live claim). Lookup failures degrade to 'treat as first deploy' with a warning rather than blocking.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 553,
+            "line_start": 546,
+            "path": "backend/src/app/deployment_handler.py",
+            "role": "forbidden_condition",
+            "source_sha256": "05f252948ba90f39eaad9731d626f15d82de4594a68abbc3a08faff50d00979f"
+          },
+          {
+            "line_end": 575,
+            "line_start": 554,
+            "path": "backend/src/app/deployment_handler.py",
+            "role": "guard_registration",
+            "source_sha256": "05f252948ba90f39eaad9731d626f15d82de4594a68abbc3a08faff50d00979f"
+          },
+          {
+            "line_end": 605,
+            "line_start": 577,
+            "path": "backend/src/app/deployment_handler.py",
+            "role": "guard_registration",
+            "source_sha256": "05f252948ba90f39eaad9731d626f15d82de4594a68abbc3a08faff50d00979f"
+          },
+          {
+            "line_end": 543,
+            "line_start": 529,
+            "path": "backend/src/app/deployment_handler.py",
+            "role": "protected_operation",
+            "source_sha256": "05f252948ba90f39eaad9731d626f15d82de4594a68abbc3a08faff50d00979f"
+          },
+          {
+            "line_end": 637,
+            "line_start": 636,
+            "path": "backend/src/app/deployment_handler.py",
+            "role": "commit_point",
+            "source_sha256": "05f252948ba90f39eaad9731d626f15d82de4594a68abbc3a08faff50d00979f"
+          },
+          {
+            "line_end": 657,
+            "line_start": 644,
+            "path": "backend/src/app/deployment_handler.py",
+            "role": "commit_point",
+            "source_sha256": "05f252948ba90f39eaad9731d626f15d82de4594a68abbc3a08faff50d00979f"
+          }
+        ],
+        "forbidden_condition": "Persisting a deployment record or a pending AgentVersion row under a friendly runtime name whose slot row or live (pending/succeeded) version rows carry a non-empty owner_sub different from the deploying caller's sub (cross-tenant name claim / clobber).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether deploy invocations reach this handler through any agent-mediated path is not established by the supplied views; required to set agent_mediation.",
+          "Whether the API Gateway JWT authorizer that populates requestContext claims for these routes is enforced on /api/deploy (i.e., whether user_id can be None for external callers) cannot be determined from the supplied views."
+        ],
+        "protected_operation": "Name acquisition on deploy: store.create(state) for the DeploymentState and get_versions_store().put(AgentVersion(...)) keyed by runtime_name, both executed after the ownership checks.",
+        "protected_resource": "The shared cross-tenant runtime-name namespace held in the RuntimeSlots/AgentVersions tables (rows keyed by runtime_name that function as the cross-tenant name lock, H-1).",
+        "protection_obligation": "POST /api/deploy must refuse with HTTP 409 a sanitized friendly runtime name that is already live-claimed by another tenant \u2014 either via the RuntimeSlots row's owner_sub or via AgentVersion rows in status pending/succeeded owned by a different sub \u2014 and must do so before persisting the deployment state row or any AgentVersion row under that name.",
+        "scope_limits": [
+          "Pre-tenancy rows with empty owner_sub do not block a claim; only non-empty foreign owner_sub blocks.",
+          "Only foreign rows in status pending or succeeded hold the name; failed/superseded rows do not (Bug 192b carve-out).",
+          "Slots-store or versions-store lookup errors are logged and treated as first deploy (non-fatal, deployment_handler.py 573-575 and 601-605), so the guard can be bypassed by a store failure.",
+          "Caller identity comes from _get_user_id (API Gateway JWT authorizer claims); the authorizer wiring itself is not in the supplied views.",
+          "Supplied views do not bind the deploy request to an agent tool call, agent lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "sfn_client.start_execution via _start_sfn_execution inside handle_deploy's try block (deployment_handler.py 835-844; wrapper at 86-91); the gating raises exit the handler before this call.",
+        "contract_id": "ecological-contract:a45ab395e186a531575242a05d83752c",
+        "declared_mechanism": "unapproved_integrations(_idents) called in handle_deploy before the SFN start; internally provider-dispatched, then a strict paginated control-plane listing (list_records_strict, server-side status=APPROVED filter plus per-record status re-check, fail-closed on no matching record) raising RegistryQueryFailed on query failure. handle_deploy translates RegistryQueryFailed into HTTP 503 with an actionable detail and a non-empty blocked list into HTTP 403, both raised before _start_sfn_execution.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 487,
+            "line_start": 466,
+            "path": "backend/src/app/deployment_handler.py",
+            "role": "guard_registration",
+            "source_sha256": "05f252948ba90f39eaad9731d626f15d82de4594a68abbc3a08faff50d00979f"
+          },
+          {
+            "line_end": 514,
+            "line_start": 488,
+            "path": "backend/src/app/deployment_handler.py",
+            "role": "forbidden_condition",
+            "source_sha256": "05f252948ba90f39eaad9731d626f15d82de4594a68abbc3a08faff50d00979f"
+          },
+          {
+            "line_end": 432,
+            "line_start": 426,
+            "path": "backend/src/app/deployment_handler.py",
+            "role": "protected_operation",
+            "source_sha256": "05f252948ba90f39eaad9731d626f15d82de4594a68abbc3a08faff50d00979f"
+          },
+          {
+            "line_end": 844,
+            "line_start": 835,
+            "path": "backend/src/app/deployment_handler.py",
+            "role": "commit_point",
+            "source_sha256": "05f252948ba90f39eaad9731d626f15d82de4594a68abbc3a08faff50d00979f"
+          },
+          {
+            "line_end": 933,
+            "line_start": 857,
+            "path": "backend/src/app/services/aws_agent_registry.py",
+            "role": "guard_registration",
+            "source_sha256": "c7ca31b3e9f1092717ae7b83f1598d31be0df8c86dda9ba952b9f7dacee92bad"
+          },
+          {
+            "line_end": 743,
+            "line_start": 710,
+            "path": "backend/src/app/services/aws_agent_registry.py",
+            "role": "guard_registration",
+            "source_sha256": "c7ca31b3e9f1092717ae7b83f1598d31be0df8c86dda9ba952b9f7dacee92bad"
+          }
+        ],
+        "forbidden_condition": "Starting a deployment execution (sfn_client.start_execution) while any collected external MCP/A2A identifier has no APPROVED registry record, or while approval status is unknown because the registry control-plane listing failed (RegistryQueryFailed from list_records_strict: missing client, AccessDenied, throttle, wrong filter shape).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether deploy requests can originate from an agent tool dispatch or from agent-generated workflow/canvas input (versus operator UI/API calls only) is not shown in the supplied sources; required to set agent_mediation.",
+          "Behavior of app.services.registry_providers.unapproved_integrations_for_provider (LiteLLM backend verdicts and its failure mode) is not in the supplied views."
+        ],
+        "protected_operation": "POST /api/deploy handling that culminates in _start_sfn_execution / sfn_client.start_execution for the requested deployment.",
+        "protected_resource": "The Step Functions deployment execution and the agent external-integration wiring (MCP servers / A2A peers) that execution would instantiate for the tenant.",
+        "protection_obligation": "When Agent Registry federation/governance is enabled (a registry id is configured), POST /api/deploy must refuse to start the Step Functions deployment for any request wiring external MCP/A2A integrations (mcp_server_config endpoint/url/name/server_url/serverUrl values or a2a_config peer_allowlist entries) that lack an APPROVED record in the governing Agent Registry; it must return 503 (fail closed, approval status UNKNOWN \u2014 never 403 and never silent proceed) when the registry cannot be queried (RegistryQueryFailed), and 403 when identifiers are affirmatively unapproved. The gate must complete before the Step Functions execution starts.",
+        "scope_limits": [
+          "Gate is a no-op when federation is off: get_registry() returns None (no configured registry id) and unapproved_integrations returns [] (aws_agent_registry.py 905-907).",
+          "Fail-open residue: any non-RegistryQueryFailed, non-HTTPException error in the gating block is caught, logged as 'integration gating skipped', and the deploy proceeds (deployment_handler.py 515-518).",
+          "Identifier collection covers only the enumerated mcp_server_config and a2a_config keys (deployment_handler.py 476-485); other external-integration fields are not collected for gating.",
+          "Identifier matching is by exact record name or URL substring within any APPROVED record's JSON blob; no allowlist of trusted namespaces is enforced.",
+          "Supplied views do not bind the deploy request to an agent tool call, agent lifecycle hook, or agent-generated input; the guard runs on a control-plane HTTP request path.",
+          "LiteLLM-provider delegation of the gate (unapproved_integrations_for_provider) is invoked but that module is not among the supplied views."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source view establishes agent mediation \u2014 an agent tool dispatch, agent lifecycle hook, or agent-generated-input dataflow reaching any guarded effect \u2014 so agent_entry_binding evidence is absent and agent_mediation is not_established for all four contracts; repository topic/framework metadata was not used to infer mediation.",
+      "app.services.registry_providers (the LiteLLM registry backend delegated to by unapproved_integrations at aws_agent_registry.py 899-903) is not among the supplied views; its verdicts and failure behavior cannot be assessed.",
+      "The API Gateway JWT authorizer wiring that populates requestContext authorizer.jwt.claims.sub for deployment_app routes (relied on by _get_user_id for the deploy ownership checks) is not in the supplied views.",
+      "The Lambda Function URL AuthType for the streaming endpoint is stated inconsistently within stream_handler.py (NONE at lines 17-19; AWS_IAM-only at lines 233-246); actual configuration is not determinable from the supplied views.",
+      "harness_deployer.invoke_harness internals (including whether the harness data plane independently authenticates callers) are not supplied.",
+      "Behavior/runtime labels and prevalence data are unavailable (per scope statement); the contracts above are compile-time, source-supported hypotheses only, not violation or prevalence determinations."
+    ],
+    "repository": "aws-samples/sample-agentcore-lowcode-nocode",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:9b24bf5340183b9de4390a47fee0badf"
+  },
+  "request_sha256": "793f6ef6a2a50c798f57f686bbc0876b563ba02ebf7119798aefc17060b2b040",
+  "response_sha256": "2471293e8e660a6c859c12458b7d0aad05e122a78eb39dcad110c3907145a850",
+  "state": "completed",
+  "tokens": 155378,
+  "unit": "v24-screen:9b24bf5340183b9de4390a47fee0badf"
+}

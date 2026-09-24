@@ -1,0 +1,349 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "AuthMiddleware.dispatch's 401-vs-call_next decision: 401 JSONResponse for missing scheme (auth.py lines 211-214), expired token (226-229), or invalid token (232-235); otherwise request.state.user is set and call_next(request) proceeds (lines 238-239).",
+        "contract_id": "ecological-contract:4b30f03f0df6c4213580be7f420f8c85",
+        "declared_mechanism": "AuthMiddleware (Starlette BaseHTTPMiddleware) registered app-wide via app.add_middleware(AuthMiddleware) in create_app; AuthMiddleware.dispatch requires the Bearer scheme and delegates to validate_token, which uses PyJWKClient signing keys and jwt.decode with algorithms=['RS256'], audience, issuer, and verify_exp/verify_aud/verify_iss enabled, returning a 401 JSONResponse on missing, expired, or invalid tokens.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 103,
+            "line_start": 100,
+            "path": "src/bff/apic_vibe_portal_bff/app.py",
+            "role": "guard_registration",
+            "source_sha256": "716781d7a0d657446ed9c49d76b5e36b079f557eb143b6872174511502ccd327"
+          },
+          {
+            "line_end": 214,
+            "line_start": 202,
+            "path": "src/bff/apic_vibe_portal_bff/middleware/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "211ff71d4dd2a268bec9513f78434607e2b9dd674d9055c902bb284d083bb525"
+          },
+          {
+            "line_end": 167,
+            "line_start": 141,
+            "path": "src/bff/apic_vibe_portal_bff/middleware/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "211ff71d4dd2a268bec9513f78434607e2b9dd674d9055c902bb284d083bb525"
+          },
+          {
+            "line_end": 117,
+            "line_start": 106,
+            "path": "src/bff/apic_vibe_portal_bff/app.py",
+            "role": "protected_operation",
+            "source_sha256": "716781d7a0d657446ed9c49d76b5e36b079f557eb143b6872174511502ccd327"
+          },
+          {
+            "line_end": 239,
+            "line_start": 216,
+            "path": "src/bff/apic_vibe_portal_bff/middleware/auth.py",
+            "role": "commit_point",
+            "source_sha256": "211ff71d4dd2a268bec9513f78434607e2b9dd674d9055c902bb284d083bb525"
+          }
+        ],
+        "forbidden_condition": "A request on a non-public path reaching route handlers (call_next) without a 'Bearer ' Authorization header, or with a token that fails RS256 signature, issuer, audience, or expiry validation in validate_token.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which BFF routes invoke MAF agents and how request.state.user (AuthenticatedUser roles/claims) flows into AgentRequest.accessible_api_ids consumed by the agent security trimming.",
+          "Runtime configuration of bff_entra_tenant_id / bff_entra_client_id / bff_entra_audience; if unset, validate_token rejects all tokens (auth.py lines 86-88)."
+        ],
+        "protected_operation": "Invocation of any route handler registered in create_app (api_catalog, search, chat, admin access policies, admin agents, backup, compare, governance, analytics, metadata, MCP inspector; health routes exempt).",
+        "protected_resource": "All non-public BFF HTTP endpoints; on success the middleware attaches the AuthenticatedUser to request.state.user for downstream handlers.",
+        "protection_obligation": "Every HTTP request to BFF endpoints other than public paths (/health, /health/ready, /docs, /openapi., /redoc) must present a valid Entra ID Bearer JWT \u2014 RS256 signature verified against the tenant JWKS with issuer, audience, and expiry checked \u2014 or be rejected with 401 before any route handler executes.",
+        "scope_limits": [
+          "Public paths /health, /health/ready, /docs, /openapi., /redoc bypass authentication (auth.py lines 29-36, 197-198).",
+          "Transport-tier authentication only; route-level authorization such as require_role('Portal.Admin') is a separate guard covered by its own contracts.",
+          "Supplied source does not bind this middleware to any agent tool, agent lifecycle hook, or agent-generated input: the chat/agent-invoking router that would connect an authenticated request to an MAF agent run is not among the supplied views, so agent mediation is not established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "SecurityTrimmingMiddleware.process's block-vs-continue decision \u2014 raise MiddlewareTermination (definition.py lines 62-65) versus await call_next() (line 67) \u2014 occurring before the tool function body executes.",
+        "contract_id": "ecological-contract:5050574ad681a0271b65a5b146b3389e",
+        "declared_mechanism": "SecurityTrimmingMiddleware (MAF FunctionMiddleware) registered in _create_agent via middleware=[SecurityTrimmingMiddleware()]; process() reads accessible_api_ids from context.kwargs (populated by function_invocation_kwargs={'accessible_api_ids': ...} passed to agent.run), resolves api_id from tool arguments (Pydantic attribute or dict key), and raises MiddlewareTermination before call_next for non-permitted api_ids.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 426,
+            "line_start": 418,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "guard_registration",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          },
+          {
+            "line_end": 65,
+            "line_start": 56,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          },
+          {
+            "line_end": 230,
+            "line_start": 222,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "protected_operation",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          },
+          {
+            "line_end": 298,
+            "line_start": 290,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "protected_operation",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          },
+          {
+            "line_end": 368,
+            "line_start": 361,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "protected_operation",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          },
+          {
+            "line_end": 67,
+            "line_start": 62,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "commit_point",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          },
+          {
+            "line_end": 467,
+            "line_start": 462,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          }
+        ],
+        "forbidden_condition": "An intercepted tool call whose context.function.name is one of the three API Center tools and whose resolved api_id is non-empty and not in context.kwargs['accessible_api_ids'] (when that list is not None), i.e., invocation proceeding toward ApiCenterClient retrieval for a non-permitted API.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "MAF framework behavior \u2014 how function_invocation_kwargs populate context.kwargs and how a raised MiddlewareTermination is surfaced as the tool result to the model \u2014 is not in supplied source.",
+          "Derivation of request.accessible_api_ids from the authenticated caller's access policies (chat router / security_trimming module) is not supplied."
+        ],
+        "protected_operation": "MAF tool invocation of get_api_details, get_api_spec, or list_api_versions on the ApiDiscoveryAgent (each retrieving Azure API Center catalog data via ApiCenterClient).",
+        "protected_resource": "Azure API Center catalog content \u2014 API details/metadata, deployments and contacts, version listings, and exported specification documents \u2014 reachable through the three guarded tools.",
+        "protection_obligation": "MAF agent tool calls to the API Center tools get_api_details, get_api_spec, and list_api_versions must be terminated before tool execution when the call's api_id is not in the per-request accessible_api_ids list supplied via function_invocation_kwargs; the guard is registered agent-wide on the ApiDiscoveryAgent so it applies to every tool call.",
+        "scope_limits": [
+          "accessible_api_ids None is an admin bypass: all tool calls permitted (lines 36, 51-54).",
+          "An empty accessible_api_ids list blocks all three API Center tools (an empty list cannot contain any api_id; docstring line 37).",
+          "Only the three named tools are intercepted; search_apis is explicitly excluded because it enforces its own OData filter (lines 40-42) and is covered by a separate contract.",
+          "Calls with an empty or missing api_id bypass the block because the check requires a truthy api_id (line 62).",
+          "Only the api_id argument is checked; other arguments (e.g., version_id) are unvalidated by this middleware."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "svc.invalidate_policy_cache() (line 284), executed only when the require_role dependency passes.",
+        "contract_id": "ecological-contract:83c3ee70ded2ab6a8319af7b2ce9394b",
+        "declared_mechanism": "FastAPI route dependency dependencies=[Depends(require_role('Portal.Admin'))] on the POST route.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 274,
+            "line_start": 269,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "guard_registration",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          },
+          {
+            "line_end": 4,
+            "line_start": 1,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          },
+          {
+            "line_end": 285,
+            "line_start": 275,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "protected_operation",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          },
+          {
+            "line_end": 284,
+            "line_start": 284,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "commit_point",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          }
+        ],
+        "forbidden_condition": "Invocation of the invalidate_policy_cache handler (in-memory policy-cache invalidation) by a caller lacking the Portal.Admin role.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "middleware/rbac.py require_role implementation and the redacted route path literal.",
+          "Whether any agent lifecycle consumes this cache such that the mutation would be agent-relevant \u2014 not established in supplied source."
+        ],
+        "protected_operation": "POST cache-refresh request reaching svc.invalidate_policy_cache() (route path literal redacted in the supplied source view).",
+        "protected_resource": "The in-memory API access-policy cache in UserContextService, which governs when policies are reloaded from the persistent store.",
+        "protection_obligation": "The admin access-policy cache-refresh endpoint must invalidate the in-memory policy cache only for callers holding the Portal.Admin role.",
+        "scope_limits": [
+          "require_role source not supplied; commit semantics pending.",
+          "Cache invalidation is an availability/consistency control on in-memory state, not a persistent policy mutation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Construction of filter_expression and the AISearchClient.search invocation (definition.py lines 177-191), where the query is committed with or without the security filter.",
+        "contract_id": "ecological-contract:d8bc4dfdc1025d6e5b433f4e07bb3a85",
+        "declared_mechanism": "In-tool security trimming: search_apis reads accessible_api_ids from the per-request thread-local (agent_self._request_context), returns 'No APIs are accessible for your account.' for an empty list, builds search.in(apiName, '<ids>', ',') otherwise, AND-merges with the model-provided filter, and passes the result as filter_expression to AISearchClient.search.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 157,
+            "line_start": 150,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "guard_registration",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          },
+          {
+            "line_end": 175,
+            "line_start": 168,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          },
+          {
+            "line_end": 191,
+            "line_start": 184,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "protected_operation",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          },
+          {
+            "line_end": 191,
+            "line_start": 177,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "commit_point",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          },
+          {
+            "line_end": 467,
+            "line_start": 458,
+            "path": "src/bff/apic_vibe_portal_bff/agents/api_discovery_agent/definition.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f2cf287b0e96f3afb333b66fc2a3d1eb0b5180f6915767e727b60d6082d7999f"
+          }
+        ],
+        "forbidden_condition": "A search_apis tool call executing the AI Search query without the injected security filter while accessible_api_ids is a defined non-empty list, or executing the query at all when accessible_api_ids is an empty list.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "AISearchClient.search implementation (how filter_expression is applied to the Azure AI Search query) is not supplied.",
+          "Derivation of request.accessible_api_ids from the authenticated user's access policies is not supplied."
+        ],
+        "protected_operation": "The search_apis MAF tool's catalog query via AISearchClient.search (semantic search over the API catalog index).",
+        "protected_resource": "Azure AI Search API catalog index \u2014 which catalog entries are visible in agent search results for the caller.",
+        "protection_obligation": "The search_apis agent tool must restrict catalog search to the caller's accessible_api_ids by injecting an OData search.in(apiName, ...) security filter (AND-merged with any model-provided filter) before executing the Azure AI Search query, and must not execute the search at all when the caller's access list is empty.",
+        "scope_limits": [
+          "accessible_api_ids None is an admin bypass: no filter is injected (lines 36-38, 89, 170-171).",
+          "Query-side filtering in AI Search; the tool call itself is not intercepted by SecurityTrimmingMiddleware (lines 40-42).",
+          "The filter keys on the apiName index field against the accessible id list; the id-to-name scheme is not verified in supplied source.",
+          "Thread-local context is set in ApiDiscoveryAgent.run before agent.run and cleared in finally (lines 458-475); cross-request isolation rests on the documented thread-local design (lines 434-437)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The persistent policy mutations gated by the dependency check: svc._repo.upsert_policy(doc) (line 217) and svc._repo.delete_policy(api_name) (line 248), executed only when the require_role dependency passes.",
+        "contract_id": "ecological-contract:eefe37546183f24a1d7fedd5bfa094a7",
+        "declared_mechanism": "FastAPI route dependencies=[Depends(require_role('Portal.Admin'))] on the PUT and DELETE routes (_ADMIN_ROLE = 'Portal.Admin'); the require_role implementation (middleware/rbac.py) is not supplied.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 4,
+            "line_start": 1,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          },
+          {
+            "line_end": 199,
+            "line_start": 194,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "guard_registration",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          },
+          {
+            "line_end": 237,
+            "line_start": 232,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "guard_registration",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          },
+          {
+            "line_end": 229,
+            "line_start": 200,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "protected_operation",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          },
+          {
+            "line_end": 266,
+            "line_start": 238,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "protected_operation",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          },
+          {
+            "line_end": 218,
+            "line_start": 216,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "commit_point",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          },
+          {
+            "line_end": 249,
+            "line_start": 247,
+            "path": "src/bff/apic_vibe_portal_bff/routers/admin_access_policies.py",
+            "role": "commit_point",
+            "source_sha256": "9f6cf4b95be86f965051053721f1ab4b07f28c9f8586c6d7cdde395b3bb7be62"
+          }
+        ],
+        "forbidden_condition": "Execution of upsert_access_policy or delete_access_policy \u2014 and the resulting repository policy write \u2014 by a caller lacking the Portal.Admin role.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "middleware/rbac.py require_role implementation and its failure response.",
+          "Concrete dataflow from these policy documents to AgentRequest.accessible_api_ids used by SecurityTrimmingMiddleware and search_apis."
+        ],
+        "protected_operation": "PUT and DELETE requests to /api/admin/access-policies/{api_name} reaching svc._repo.upsert_policy(doc) / svc._repo.delete_policy(api_name) and the subsequent policy-cache invalidation.",
+        "protected_resource": "API access-policy documents in the UserContextService policy repository (module docstring: Cosmos DB-backed; deletion makes the API public by default) \u2014 the access rules consumed downstream for catalog security trimming.",
+        "protection_obligation": "The policy-mutating admin endpoints \u2014 PUT /api/admin/access-policies/{api_name} (create or replace) and DELETE /api/admin/access-policies/{api_name} (delete) \u2014 must perform their persistent access-policy writes only for callers holding the Portal.Admin role, enforced by route dependencies before the handler body executes.",
+        "scope_limits": [
+          "require_role source is not supplied; its role-extraction source (e.g., request.state.user.roles) and rejection behavior are pending.",
+          "GET list/get routes and the POST cache-refresh route on the same router also register require_role; this contract covers only the asserted policy-mutation obligation.",
+          "Supplied source does not bind these admin mutations to an agent tool, agent lifecycle hook, or agent-generated input; the downstream consumption of these policies by agent security trimming is not established by supplied lines."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "middleware/rbac.py (require_role) source is not supplied \u2014 role-extraction source, commit semantics, and rejection behavior are unverified.",
+      "middleware/security_trimming.py and services/user_context_service.py sources are not supplied \u2014 the dataflow from access-policy documents to AgentRequest.accessible_api_ids is unverified.",
+      "Chat router / agent-invocation route source is not supplied \u2014 no supplied line binds AuthMiddleware-authenticated requests or request.state.user to MAF agent runs, so agent mediation for the HTTP-tier guards is not_established.",
+      "ApiCenterClient and AISearchClient implementations are not supplied \u2014 downstream strata of API Center / AI Search effects are inferred from call sites only.",
+      "MAF framework internals (Agent, FunctionMiddleware context.kwargs population from function_invocation_kwargs, MiddlewareTermination propagation, @tool semantics) are not in supplied source.",
+      "Deployment settings (bff_entra_tenant_id, bff_entra_client_id, bff_entra_audience) and the POST cache-refresh route path (redacted in the supplied view) are unverified.",
+      "AgentRequest model definition (agents/types.py) is not supplied \u2014 the typing and derivation of accessible_api_ids are unknown."
+    ],
+    "repository": "christopherhouse/APIC-Vibe-Portal",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:688012bdf2eb7bf9f3388e706e9aac36"
+  },
+  "request_sha256": "0cd3a6f3c4c58b02572f2df4ed43b0a9f125981b4bc6d17ae763223cded84c72",
+  "response_sha256": "7e680d99c87a92d6e55b0633a7793e1f43c067db0816d7474c453bb055aa3e3f",
+  "state": "completed",
+  "tokens": 40393,
+  "unit": "v24-screen:688012bdf2eb7bf9f3388e706e9aac36"
+}

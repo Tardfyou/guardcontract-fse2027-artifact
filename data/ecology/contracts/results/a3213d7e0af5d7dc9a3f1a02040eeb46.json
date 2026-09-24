@@ -1,0 +1,193 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "cur.execute(sql) at line 265 inside _execute_sql, with mutation persistence at conn.commit() (line 270) and result materialization at cur.fetchall() (line 268); this point is reachable in supplied source only via the governed wrapper invocation at lines 323-329.",
+        "contract_id": "ecological-contract:0d734989acd20def743b96c15dc032f3",
+        "declared_mechanism": "Module-level guard registration: _governed_execute_sql = govern(_execute_sql, policy=str(policy_path for USER_ROLE), approval_handler=CallbackApproval(_password_approval)) at lines 291-295, with the role-specific policy resolved from USER_ROLE at lines 279-289 and the password approval handler defined at lines 46-66; governed_sql_tool (lines 298-329) is the only call site and passes a policy-evaluable context: action={'type': 'sql_tool'}, tool_args=_classify_sql(sql), user={'role': role}, approval={'password': approval_password}.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 289,
+            "line_start": 278,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 295,
+            "line_start": 291,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 66,
+            "line_start": 46,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 306,
+            "line_start": 299,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 259,
+            "line_start": 252,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 343,
+            "line_start": 335,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 272,
+            "line_start": 261,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "commit_point",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 345,
+            "line_start": 332,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 329,
+            "line_start": 313,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          }
+        ],
+        "forbidden_condition": "A SQL statement supplied through sql_tool reaching cur.execute(sql) or conn.commit() inside _execute_sql without having been evaluated by the govern() policy engine with the role-specific policy and the password-based approval handler \u2014 i.e., ungoverned SQL execution, including any direct invocation path to _execute_sql that bypasses _governed_execute_sql.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Contents of each role-specific policy YAML (which SQL verbs/fields are allow/deny/require_approval per role) loaded at lines 285-295 \u2014 needed to bind the declared mechanism to concrete decisions.",
+          "govern() semantics: whether a deny or a rejected _password_approval decision blocks, raises, or transforms the call before cur.execute at line 265.",
+          "CallbackApproval invocation model: when _password_approval runs relative to the guarded call and the runtime shape of request.context['approval']['password'].",
+          "Confirmation that a deployed agent executor actually binds and invokes the registered 'sql_tool' StructuredTool (registration is supplied; agent-loop wiring is not)."
+        ],
+        "protected_operation": "Execution of caller/agent-supplied SQL statements against the medical PostgreSQL database, reached exclusively through the governed_sql_tool entry point registered as the 'sql_tool' StructuredTool.",
+        "protected_resource": "The medical PostgreSQL database accessed via the get_connection() cursor in _execute_sql (the schema embedded from init.sql in the tool description).",
+        "protection_obligation": "Every SQL statement executed against the medical PostgreSQL database via sql_tool must pass through the registered governance wrapper \u2014 govern(_execute_sql, policy=<role-specific policy YAML>, approval_handler=CallbackApproval(_password_approval)) \u2014 before the cur.execute/conn.commit commit point inside _execute_sql; the sql_tool entry point must invoke only the governed wrapper with a policy-evaluable context (action type, tool_args SQL classification, user role, approval password) and must never reach the database ungoverned. (Merged first/second reviewer wording; duplicate obligation statements consolidated.)",
+        "scope_limits": [
+          "Only medical/tools/patient/sql_tool.py is supplied; the govern() engine, CallbackApproval, the role policy YAML files under medical/tools/patient/policy/, get_connection(), and init.sql are referenced but not supplied, so concrete enforcement semantics and rule contents are unverified.",
+          "Registration occurs at module import (lines 278-295); whether a deny decision or rejected approval actually prevents _execute_sql from executing depends on unsupplied govern()/CallbackApproval behavior.",
+          "governed_sql_tool is the sole call site of the governed wrapper in supplied source (line 323); absence of other _execute_sql callers cannot be verified because repository enumeration is not complete.",
+          "USER_ROLE is read once from the environment at import (lines 279-282); role provisioning and identity mapping are outside the supplied source.",
+          "The source itself labels the password approval wiring as a demonstration (lines 33-39); adequacy of the approval workflow is not assessed here \u2014 this contract records only the declared mechanism."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Dispatch of the (possibly rewritten) statement set at line 321 through _governed_execute_sql at lines 323-329, which executes via cur.execute(sql) (line 265) and materializes returned rows at cur.fetchall() (line 268); the rewrite-or-refuse gate at lines 313-321 must complete before this dispatch.",
+        "contract_id": "ecological-contract:ab732304ca6cacd9a0643234551f5ca9",
+        "declared_mechanism": "Pre-governance rewrite gate in governed_sql_tool (lines 313-321): if role == 'admin' and _classify_sql(sql)['is_select'], the statement is passed through _rewrite_admin_select (lines 172-207), which strips medical columns from explicit lists and expands 'SELECT *' to non-medical + id/meta columns; if rewritten is None the tool returns a refusal message and the query never reaches the governance engine or the database.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 207,
+            "line_start": 172,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 321,
+            "line_start": 313,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 312,
+            "line_start": 308,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 80,
+            "line_start": 73,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 268,
+            "line_start": 261,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 272,
+            "line_start": 261,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "commit_point",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          },
+          {
+            "line_end": 345,
+            "line_start": 332,
+            "path": "medical/tools/patient/sql_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "956f1001a057dd4ec00972791eeb2ee5fccf5a5d4aec4f038c9864e7d3e61af8"
+          }
+        ],
+        "forbidden_condition": "An admin-role SELECT touching medical fields (blood_type, allergies, chronic_conditions, current_medications, height_cm, weight_kg), including 'SELECT *', reaching database execution/return with medical columns intact \u2014 i.e., medical data being returned to the admin role.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether default_action: deny in the unsupplied role policy actually blocks unparseable or non-SELECT-shaped statements that _rewrite_admin_select returns unchanged.",
+          "Whether the _extract_selected_fields/_any_field_touched heuristics (aliases, expressions, subqueries) can miss medical-column references within shapes the rewrite does rewrite.",
+          "How USER_ROLE is provisioned per session/request and whether the import-time role capture (lines 279-289) always matches the acting agent's role at call time.",
+          "Whether admin-role access to the patients table exists through other tools or call sites outside the supplied source view."
+        ],
+        "protected_operation": "Execution and result-return of SELECT statements against the patients table performed on behalf of the admin role via the sql_tool StructuredTool.",
+        "protected_resource": "The medical columns of the patients table enumerated in _MEDICAL_FIELDS (lines 73-80): blood_type, allergies, chronic_conditions, current_medications, height_cm, weight_kg.",
+        "protection_obligation": "Admin-role SELECT statements issued via sql_tool must never expose medical columns of the patients table: before governance/execution every admin SELECT is rewritten by _rewrite_admin_select to drop medical columns (with 'SELECT *' expanded to the explicit non-medical + id/meta column list), and a SELECT consisting only of medical fields is refused so that it never reaches the governance engine or the database. (Second clause of the merged reviewer obligation; distinct forbidden condition, mechanism, and commit semantics from the governance-wrapper contract.)",
+        "scope_limits": [
+          "The admin gate applies only when role == 'admin' and the statement classifies as a SELECT (line 313); protections for other roles and verbs live entirely in the unsupplied policy YAML files (lines 69-72).",
+          "_rewrite_admin_select is a heuristic regex parser, not a full SQL parser: SQL not matching the simple 'SELECT ... FROM' shape is returned unchanged (lines 183-186, 193-194) and relies on _classify_sql plus the policy's default_action: deny as the safety net \u2014 the policy file content is unsupplied.",
+          "Column classification is a fixed metadata set (lines 73-104); patients-table columns not enumerated there (e.g., schema changes in the unsupplied init.sql) fall outside the rewrite's medical-field set.",
+          "Rewritten admin SELECTs still pass through the governed wrapper (lines 321-329), so this obligation composes with, and does not replace, the governance-wrapper contract.",
+          "Repository enumeration is not complete and behavior labels are unavailable; other access paths to the patients table are out of view."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Contents of the role-specific policy YAML files under medical/tools/patient/policy/ (roles, rules, default_action) referenced at lines 285-295 and line 186 \u2014 required to know which statements are allowed, denied, or require_approval.",
+      "Implementation of agentmesh.governance.govern and agentmesh.governance.approval.CallbackApproval: evaluation timing relative to the guarded call and behavior on deny or rejected approval.",
+      "Implementation of medical.db.connection.get_connection and the target database configuration (autocommit/transaction semantics around conn.commit at line 270).",
+      "Contents of init.sql embedded as INIT_SQL (lines 13-14, 340-342), which defines the actual patients schema backing the _MEDICAL_FIELDS/_NON_MEDICAL_FIELDS classification.",
+      "Agent executor/loop wiring that dispatches the registered 'sql_tool' StructuredTool at runtime (only the StructuredTool registration at lines 332-345 is supplied).",
+      "Any other call sites of _execute_sql, governed_sql_tool, or sql_tool elsewhere in the repository \u2014 repository enumeration is not complete, so exclusivity of the governed path is not verifiable.",
+      "How USER_ROLE is set for the running process and whether it can change after the import-time capture at lines 279-282."
+    ],
+    "repository": "NikhielRahulSingh/medical-bcx",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a3213d7e0af5d7dc9a3f1a02040eeb46"
+  },
+  "request_sha256": "bbe59d79e04750a63bafbd965acac655ac464a9d55788f7c6ef3832858a27063",
+  "response_sha256": "f22948f71a020db6b8f90abf5d44a04c09f8fdbc2198d2fbd8feed6d428359cd",
+  "state": "completed",
+  "tokens": 21451,
+  "unit": "v24-screen:a3213d7e0af5d7dc9a3f1a02040eeb46"
+}

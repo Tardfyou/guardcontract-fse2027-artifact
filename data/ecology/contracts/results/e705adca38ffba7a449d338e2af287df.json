@@ -1,0 +1,112 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The safe_eval(expression) call at src/graphql_demo/agent/tools.py:80: a ValueError raised inside safe_eval._eval aborts evaluation before `value` exists, before the success ToolResult is persisted (tools.py:94-97), and before the value is returned to the agent runtime (tools.py:98). Note: the raw expression string is already persisted in ToolCall.arguments_ at tools.py:69-77 before the guard runs; the guard blocks the evaluation/result effect, not persistence of the argument text.",
+        "contract_id": "ecological-contract:b859dd90461909508b3fbe66de35646d",
+        "declared_mechanism": "AST allowlist interpreter: safe_eval parses the expression with ast.parse(expression, mode='eval') (safe_eval.py:21) and _eval recursively accepts only ast.Constant with int|float value, BinOp whose op is in _ALLOWED_BINOPS {Add, Sub, Mult, Div, Pow, Mod, FloorDiv}, and UnaryOp whose op is in _ALLOWED_UNARY {UAdd, USub} (safe_eval.py:4-13, 25-31); every other node raises ValueError (safe_eval.py:32). The guard is registered into the concrete tool path at tools.py:80 (value = safe_eval(expression)); the tool catches ValueError together with SyntaxError and ZeroDivisionError (tools.py:82), persists an error ToolResult, and raises ModelRetry instead of a success result (tools.py:84-92).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 36,
+            "line_start": 35,
+            "path": "src/graphql_demo/agent/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3526a8458454b296fa972deee63ca180c6175432f097d83093c124dee50a9610"
+          },
+          {
+            "line_end": 66,
+            "line_start": 65,
+            "path": "src/graphql_demo/agent/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3526a8458454b296fa972deee63ca180c6175432f097d83093c124dee50a9610"
+          },
+          {
+            "line_end": 67,
+            "line_start": 66,
+            "path": "src/graphql_demo/agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "3526a8458454b296fa972deee63ca180c6175432f097d83093c124dee50a9610"
+          },
+          {
+            "line_end": 82,
+            "line_start": 79,
+            "path": "src/graphql_demo/agent/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "3526a8458454b296fa972deee63ca180c6175432f097d83093c124dee50a9610"
+          },
+          {
+            "line_end": 80,
+            "line_start": 80,
+            "path": "src/graphql_demo/agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "3526a8458454b296fa972deee63ca180c6175432f097d83093c124dee50a9610"
+          },
+          {
+            "line_end": 98,
+            "line_start": 93,
+            "path": "src/graphql_demo/agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "3526a8458454b296fa972deee63ca180c6175432f097d83093c124dee50a9610"
+          },
+          {
+            "line_end": 13,
+            "line_start": 4,
+            "path": "src/graphql_demo/agent/safe_eval.py",
+            "role": "guard_registration",
+            "source_sha256": "b839dfc81486ab1a39471f4430c41d1a1628bea467560b65fd1b8747857d4f46"
+          },
+          {
+            "line_end": 22,
+            "line_start": 16,
+            "path": "src/graphql_demo/agent/safe_eval.py",
+            "role": "guard_registration",
+            "source_sha256": "b839dfc81486ab1a39471f4430c41d1a1628bea467560b65fd1b8747857d4f46"
+          },
+          {
+            "line_end": 32,
+            "line_start": 25,
+            "path": "src/graphql_demo/agent/safe_eval.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b839dfc81486ab1a39471f4430c41d1a1628bea467560b65fd1b8747857d4f46"
+          }
+        ],
+        "forbidden_condition": "Evaluation, within the calculate tool's evaluation path, of an expression containing any AST node outside the allowlist \u2014 i.e., anything other than numeric int/float constants, the binary operators Add/Sub/Mult/Div/Pow/Mod/FloorDiv, unary +/-, and parentheses/grouping \u2014 including names, attributes, calls, or other constructs, which safe_eval._eval rejects with ValueError('Disallowed expression element: ...') (reviewers characterized such constructs as the arbitrary-code-execution surface of expression evaluation).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The supplied views do not show where register_tools(agent) is invoked, how the pydantic_ai Agent is constructed, or which application entry point dispatches runs to this agent, so the runtime path reaching the calculate tool is not evidenced.",
+          "Whether safe_eval has callers other than the calculate tool is not determinable from the supplied views.",
+          "Implementations of queries.create_tool_call / queries.create_tool_result (post-guard persistence behavior) are not supplied."
+        ],
+        "protected_operation": "In-process evaluation of the `expression` string supplied via agent tool dispatch to the calculate tool (tools.py calculate -> safe_eval(expression)), whose resulting value is persisted as a ToolResult and returned to the agent runtime.",
+        "protected_resource": "The calculate tool's expression-evaluation path in src/graphql_demo/agent/tools.py (calculate, lines 65-98) and the safe_eval arithmetic interpreter in src/graphql_demo/agent/safe_eval.py, which per its docstring evaluates 'without using eval()'.",
+        "protection_obligation": "Expressions dispatched to the `calculate` agent tool must be evaluated only under the arithmetic AST allowlist; any expression containing AST elements outside the whitelisted arithmetic subset must be rejected (ValueError) before an evaluation result is produced, persisted as a success ToolResult, or returned to the agent runtime. (Merged from phase-1 and phase-2 reviewer obligations, which describe the same guard.)",
+        "scope_limits": [
+          "The guard covers only the expression-evaluation effect of the calculate tool; the get_weather tool (tools.py:37-63) and any other tools are outside this contract.",
+          "safe_eval is evidenced only as invoked from the calculate tool within the supplied views; other callers, if any, are not evidenced.",
+          "The guard does not prevent persistence of a disallowed expression string in ToolCall.arguments_ (tools.py:69-77); it gates only evaluation and the success ToolResult/return value.",
+          "The ModelRetry conversion of ValueError/SyntaxError/ZeroDivisionError (tools.py:82-92) is recorded as downstream handling of the guard, not as a separate protection obligation.",
+          "The pubsub emission in _emit_tool_started (tools.py:22-32) is not part of this obligation.",
+          "No claim is made here about runtime bypass prevalence or whether the allowlist is exploitable; only the source-declared mechanism is compiled."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The phase-1 reviewer additionally proposed a CORS obligation (CORSMiddleware with allow_origins=settings.cors_origins, main.py:36-42; Settings.cors_origins, config.py:14-16 and 19-24) protecting the /graphql and /graphql-naive HTTP surface (main.py:56-57). The supplied views contain no explicit binding between that CORS-guarded HTTP/GraphQL surface and an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect, so under the stated scope rules it is not compiled as an agent-mediated protection contract; if such a binding is later supplied, it would require effect_stratum=http, a cited agent_entry_binding, and otherwise agent_mediation=not_established.",
+      "No supplied source shows the server invocation or host/port binding (e.g., the reviewer's claim that the app is served on 0.0.0.0 via uvicorn); serving configuration is unsupported by the supplied views.",
+      "Files referenced by the guarded path but not supplied \u2014 graphql_demo/agent/deps.py (AgentDeps), graphql_demo/db/queries.py, db/connection.py, db/seed.py, domain models, the pubsub implementation, and the GraphQL schemas/context getters \u2014 leave post-guard persistence behavior and any additional agent wiring unevidenced."
+    ],
+    "repository": "danik-tro/graphql-demo",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:e705adca38ffba7a449d338e2af287df"
+  },
+  "request_sha256": "11b426908b6cb733ef3cd159de5ae16d911ac3ed11447072695300c799289270",
+  "response_sha256": "4f75e34586c56d8d266aa3fe0c29c9dc5d1d5df3c4be67a34a71d09b8eedb3f5",
+  "state": "completed",
+  "tokens": 15995,
+  "unit": "v24-screen:e705adca38ffba7a449d338e2af287df"
+}

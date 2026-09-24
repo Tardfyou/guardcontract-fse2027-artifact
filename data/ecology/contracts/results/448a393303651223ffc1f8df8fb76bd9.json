@@ -1,0 +1,573 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Dispatch to the storage backend: resolved_backend.write(normalized, content) at azcore/middleware/filesystem.py:165 and resolved_backend.edit(...) at :201; realized as a filesystem mutation inside FilesystemBackend.write (mkdir + open-for-write + f.write, azcore/backends/filesystem.py:180-184) and FilesystemBackend.edit (open-for-write + f.write, :212-213).",
+        "contract_id": "ecological-contract:228d8299335ba3f3bac1b47bc7d6e938",
+        "declared_mechanism": "Inline path validation at the top of WriteFileTool.__call__ and EditFileTool.__call__: if '..' in file_path or file_path.startswith('~'), return 'Error: Path traversal not allowed', executed before resolved_backend.write / resolved_backend.edit is invoked.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 209,
+            "line_start": 143,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "protected_operation",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 160,
+            "line_start": 159,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 196,
+            "line_start": 195,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 165,
+            "line_start": 165,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "commit_point",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 201,
+            "line_start": 201,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "commit_point",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 184,
+            "line_start": 180,
+            "path": "azcore/backends/filesystem.py",
+            "role": "commit_point",
+            "source_sha256": "d7758ad70b10c6bca66d892198ed0b02c4feddfa7abd89c3e190c882397acfcc"
+          },
+          {
+            "line_end": 213,
+            "line_start": 212,
+            "path": "azcore/backends/filesystem.py",
+            "role": "commit_point",
+            "source_sha256": "d7758ad70b10c6bca66d892198ed0b02c4feddfa7abd89c3e190c882397acfcc"
+          },
+          {
+            "line_end": 316,
+            "line_start": 310,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "guard_registration",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 332,
+            "line_start": 318,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 244,
+            "line_start": 236,
+            "path": "azcore/agents/enhanced_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f0656bd186c613cc72e45ff3231a0a329f838f1b9d68d32fca278496955fc8ff"
+          },
+          {
+            "line_end": 338,
+            "line_start": 336,
+            "path": "azcore/agents/enhanced_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f0656bd186c613cc72e45ff3231a0a329f838f1b9d68d32fca278496955fc8ff"
+          }
+        ],
+        "forbidden_condition": "A write_file or edit_file tool call whose file_path contains '..' or starts with '~' proceeding past validation to the backend write/edit dispatch (the return value 'Error: Path traversal not allowed' must preempt it).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which backend instance a deployment passes to FilesystemMiddleware (default StateBackend factory, CompositeBackend, or custom factory) is configuration not shown; it determines the realized stratum of the guarded commit.",
+          "ReactAgent/AgentFactory tool-dispatch source is not supplied; that agent tool calls reach these tools with agent-chosen file_path is supported by registration into agent.tools, but the dispatch loop itself is unverified."
+        ],
+        "protected_operation": "Agent tool invocations of the write_file and edit_file filesystem tools (WriteFileTool.__call__, EditFileTool.__call__) registered on the agent by FilesystemMiddleware.",
+        "protected_resource": "Files/entries managed by the configured storage backend reached through write_file/edit_file (workspace files under FilesystemBackend in the enhanced-agent default wiring; runtime state entries under a StateBackend).",
+        "protection_obligation": "Agent-invoked write_file and edit_file filesystem tools must reject any file_path containing '..' or starting with '~' by returning an error before a storage backend write or edit is dispatched, so that no traversal path reaches the commit point.",
+        "scope_limits": [
+          "Effect stratum depends on the configured backend: standalone FilesystemMiddleware defaults to a StateBackend factory (azcore/middleware/filesystem.py:302), which would make the guarded commit an application/state mutation rather than a file mutation; the enhanced-agent default CompositeBackend routes non-/state paths to FilesystemBackend (azcore/agents/enhanced_agent.py:364-369).",
+          "The check covers only '..' occurring anywhere in the path and a leading '~'; it does not itself enforce root-directory containment (containment exists separately in virtual-mode FilesystemBackend._resolve_path).",
+          "The ls, glob, and grep tools perform no middleware-layer traversal check and pass paths directly to the backend (azcore/middleware/filesystem.py:111-115, 219-223, 233-247); they are outside this contract.",
+          "When HITLMiddleware is enabled it wraps these tools after registration (middleware stack order, azcore/agents/enhanced_agent.py:225-338), adding an approval gate upstream of the traversal check; with enable_hitl=False (factory default) the traversal check is the only pre-commit gate shown."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self._relationships[from_agent].extend(to_agents) at azcore/workflows/agent_rearrange.py:169.",
+        "contract_id": "ecological-contract:44971cc441ccfc54afce8bc255db0963",
+        "declared_mechanism": "DFS pre-check _would_create_cycle(from_agent, to_agent), invoked per target edge when enable_cycle_detection is True (constructor default), raising GraphCycleError before the _relationships extend.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 78,
+            "line_start": 63,
+            "path": "azcore/workflows/agent_rearrange.py",
+            "role": "guard_registration",
+            "source_sha256": "7e5f91be949770b6a8bc54064a994aeeac6d17abc8208f31a0191fea4be53735"
+          },
+          {
+            "line_end": 163,
+            "line_start": 157,
+            "path": "azcore/workflows/agent_rearrange.py",
+            "role": "guard_registration",
+            "source_sha256": "7e5f91be949770b6a8bc54064a994aeeac6d17abc8208f31a0191fea4be53735"
+          },
+          {
+            "line_end": 325,
+            "line_start": 307,
+            "path": "azcore/workflows/agent_rearrange.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7e5f91be949770b6a8bc54064a994aeeac6d17abc8208f31a0191fea4be53735"
+          },
+          {
+            "line_end": 173,
+            "line_start": 124,
+            "path": "azcore/workflows/agent_rearrange.py",
+            "role": "protected_operation",
+            "source_sha256": "7e5f91be949770b6a8bc54064a994aeeac6d17abc8208f31a0191fea4be53735"
+          },
+          {
+            "line_end": 169,
+            "line_start": 165,
+            "path": "azcore/workflows/agent_rearrange.py",
+            "role": "commit_point",
+            "source_sha256": "7e5f91be949770b6a8bc54064a994aeeac6d17abc8208f31a0191fea4be53735"
+          }
+        ],
+        "forbidden_condition": "Insertion of an edge from_agent -> to_agent when _would_create_cycle finds a directed path from to_agent back to from_agent in the current _relationships graph (including a self-edge from_agent -> from_agent); the GraphCycleError must preempt the store.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied call site invokes add_relationship with agent-generated from/to values at runtime; supplied usage is developer-driven workflow configuration (docstring examples, azcore/workflows/agent_rearrange.py:37-61).",
+          "The agents held in _agents are executed by run(), but the agent-side (LLM) dispatch source is not supplied; whether workflow topology is ever influenced by agent decisions is unconfirmed."
+        ],
+        "protected_operation": "AgentRearrange.add_relationship registration of routing edges into the workflow graph.",
+        "protected_resource": "The workflow routing graph AgentRearrange._relationships, which determines agent-to-agent routing during run().",
+        "protection_obligation": "AgentRearrange.add_relationship must refuse to register any from-to routing relationship whose insertion would create a cycle in the workflow routing graph, raising GraphCycleError before the edge is committed to _relationships.",
+        "scope_limits": [
+          "Cycle detection can be disabled at construction via enable_cycle_detection=False (azcore/workflows/agent_rearrange.py:66, 78); the guard is then absent.",
+          "The guard is registration-time and structural: it constrains the static edge set; run()-time routing and condition-callable dynamics are not re-checked (azcore/workflows/agent_rearrange.py:271-275).",
+          "Only relationship edges are guarded at add_relationship; agent registration via add_agent and entry-point/terminal assignments are outside this guard."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "open(self.q_table_path, 'wb') and pickle.dump(data, f) at azcore/rl/rl_manager.py:278-279.",
+        "contract_id": "ecological-contract:83ff016b8ed1e04f7ac55f0d4f2dd673",
+        "declared_mechanism": "Transitive: the allowlist early-return at update() entry (azcore/rl/rl_manager.py:683-685) is, per supplied source, the only admitted path by which action entries enter q_table and pending_updates (:697-703, :723, :729), which are the sole contents serialized by _save_persisted_data.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 685,
+            "line_start": 683,
+            "path": "azcore/rl/rl_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "95622e14512d110a5c1bd6275387869f598794e3fe74dcdc727f6244091cd0e4"
+          },
+          {
+            "line_end": 685,
+            "line_start": 683,
+            "path": "azcore/rl/rl_manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "95622e14512d110a5c1bd6275387869f598794e3fe74dcdc727f6244091cd0e4"
+          },
+          {
+            "line_end": 282,
+            "line_start": 244,
+            "path": "azcore/rl/rl_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "95622e14512d110a5c1bd6275387869f598794e3fe74dcdc727f6244091cd0e4"
+          },
+          {
+            "line_end": 280,
+            "line_start": 277,
+            "path": "azcore/rl/rl_manager.py",
+            "role": "commit_point",
+            "source_sha256": "95622e14512d110a5c1bd6275387869f598794e3fe74dcdc727f6244091cd0e4"
+          }
+        ],
+        "forbidden_condition": "An action outside self.tool_names reaching the persisted Q-table artifact \u2014 possible only if an unallowlisted action mutates q_table or pending_updates and those structures are then serialized.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Same mediation gap as the in-memory gate: no supplied call site ties persistence to agent tool execution or agent-generated queries.",
+          "Whether any code outside rl_manager.py mutates q_table directly (bypassing update()) cannot be excluded from the supplied views; per supplied source all writes flow through update() and the tool_names-bounded select_tools initialization."
+        ],
+        "protected_operation": "_save_persisted_data serialization of the learning state to q_table_path (invoked from update(), the async persist thread, force_persist(), and cleanup()).",
+        "protected_resource": "The persisted Q-table pickle file at self.q_table_path (default rl_data/q_table.pkl).",
+        "protection_obligation": "Q-table persistence must not write any action entry that was not admitted by the tool_names allowlist check at update() entry; the persisted Q-table file mutation is protected transitively by that gate because, per supplied source, all serialized state originates from allowlist-checked updates.",
+        "scope_limits": [
+          "_save_persisted_data performs no validation of its own; protection of this commit point depends entirely on the upstream allowlist gate.",
+          "force_persist() and cleanup() persist current state without their own checks (azcore/rl/rl_manager.py:976-981, 893-903); the async persist thread persists whenever pending updates reach batch_update_size (381-393).",
+          "Data loaded from a pre-existing pickle file is re-persisted as-is (_load_persisted_data, azcore/rl/rl_manager.py:199-242); the gate does not retroactively validate loaded content.",
+          "The q_table path is caller-configurable at construction (azcore/rl/rl_manager.py:61, 113); no supplied policy constrains its location."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "FilesystemBackend.write opening the resolved path for writing (azcore/backends/filesystem.py:181-183) and FilesystemBackend.edit writing replacement content (azcore/backends/filesystem.py:212-213), both preceded by _resolve_path at :172 and :196.",
+        "contract_id": "ecological-contract:98b4496bea2800ecd33c2a0c6f960c7e",
+        "declared_mechanism": "FilesystemBackend._resolve_path in virtual mode: raises ValueError('Path traversal not allowed') for '..' or a leading '~', and ValueError('Path outside root directory: ...') when (cwd / vpath).resolve() fails the relative_to(cwd) containment check; write() and edit() call _resolve_path before any file open.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 53,
+            "line_start": 42,
+            "path": "azcore/backends/filesystem.py",
+            "role": "guard_registration",
+            "source_sha256": "d7758ad70b10c6bca66d892198ed0b02c4feddfa7abd89c3e190c882397acfcc"
+          },
+          {
+            "line_end": 52,
+            "line_start": 46,
+            "path": "azcore/backends/filesystem.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d7758ad70b10c6bca66d892198ed0b02c4feddfa7abd89c3e190c882397acfcc"
+          },
+          {
+            "line_end": 221,
+            "line_start": 166,
+            "path": "azcore/backends/filesystem.py",
+            "role": "protected_operation",
+            "source_sha256": "d7758ad70b10c6bca66d892198ed0b02c4feddfa7abd89c3e190c882397acfcc"
+          },
+          {
+            "line_end": 184,
+            "line_start": 180,
+            "path": "azcore/backends/filesystem.py",
+            "role": "commit_point",
+            "source_sha256": "d7758ad70b10c6bca66d892198ed0b02c4feddfa7abd89c3e190c882397acfcc"
+          },
+          {
+            "line_end": 213,
+            "line_start": 212,
+            "path": "azcore/backends/filesystem.py",
+            "role": "commit_point",
+            "source_sha256": "d7758ad70b10c6bca66d892198ed0b02c4feddfa7abd89c3e190c882397acfcc"
+          },
+          {
+            "line_end": 165,
+            "line_start": 150,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 332,
+            "line_start": 318,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 244,
+            "line_start": 236,
+            "path": "azcore/agents/enhanced_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f0656bd186c613cc72e45ff3231a0a329f838f1b9d68d32fca278496955fc8ff"
+          }
+        ],
+        "forbidden_condition": "In virtual_mode, a path whose virtual form contains '..' or starts with '~', or whose resolved absolute form falls outside self.cwd, being used for a file effect (ValueError 'Path traversal not allowed' / 'Path outside root directory: ...' must preempt it).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied source instantiates FilesystemBackend with virtual_mode=True; whether this guard is active in any deployment is unconfirmed.",
+          "CompositeBackend's path-to-backend mapping implementation is not supplied; the dataflow from an agent tool path into this guard cannot be fully confirmed for /state-prefixed or custom routes."
+        ],
+        "protected_operation": "FilesystemBackend.write and FilesystemBackend.edit operations, which resolve their target through _resolve_path before opening files.",
+        "protected_resource": "The real filesystem under FilesystemBackend.root_dir / self.cwd (the workspace root bound into the middleware backend).",
+        "protection_obligation": "FilesystemBackend must refuse to resolve paths that escape the virtual root in virtual mode \u2014 paths containing '..', starting with '~', or resolving outside root_dir \u2014 before any file mutation (write or edit) is committed to the filesystem.",
+        "scope_limits": [
+          "Active only when virtual_mode=True; the non-virtual branch returns absolute paths with no traversal or containment check (azcore/backends/filesystem.py:55-58).",
+          "The default enhanced-agent backend instantiates FilesystemBackend(workspace_root=...) without virtual_mode (azcore/agents/enhanced_agent.py:366), so in that wiring this backend-layer guard is inactive and only the middleware tool-layer '..'/'~' check precedes commits.",
+          "The same _resolve_path guard also covers read/ls/glob/grep path resolution; those are non-mutating effects outside this contract's file-mutation stratum.",
+          "CompositeBackend routing semantics (which agent-supplied paths are routed to FilesystemBackend) are not in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "resolved_backend.read(normalized, offset=offset, limit=limit) at azcore/middleware/filesystem.py:140; realized as file open/read in FilesystemBackend.read (azcore/backends/filesystem.py:146-148).",
+        "contract_id": "ecological-contract:cfc64d8b2d1eba33e7e098cafcbf37d7",
+        "declared_mechanism": "Inline path validation at the top of ReadFileTool.__call__: '..' in file_path or a leading '~' returns 'Error: Path traversal not allowed' before resolved_backend.read is invoked.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 140,
+            "line_start": 118,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "protected_operation",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 136,
+            "line_start": 135,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 140,
+            "line_start": 140,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "commit_point",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 148,
+            "line_start": 146,
+            "path": "azcore/backends/filesystem.py",
+            "role": "commit_point",
+            "source_sha256": "d7758ad70b10c6bca66d892198ed0b02c4feddfa7abd89c3e190c882397acfcc"
+          },
+          {
+            "line_end": 316,
+            "line_start": 310,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "guard_registration",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 332,
+            "line_start": 318,
+            "path": "azcore/middleware/filesystem.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3a83f220f8608249e3bb5cec5ebe155d8b09db78deb9d07f664728a5d6831781"
+          },
+          {
+            "line_end": 244,
+            "line_start": 236,
+            "path": "azcore/agents/enhanced_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f0656bd186c613cc72e45ff3231a0a329f838f1b9d68d32fca278496955fc8ff"
+          },
+          {
+            "line_end": 338,
+            "line_start": 336,
+            "path": "azcore/agents/enhanced_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f0656bd186c613cc72e45ff3231a0a329f838f1b9d68d32fca278496955fc8ff"
+          }
+        ],
+        "forbidden_condition": "A read_file tool call whose file_path contains '..' or starts with '~' proceeding to resolved_backend.read (the return value 'Error: Path traversal not allowed' must preempt it).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which backend instance a deployment passes to FilesystemMiddleware is configuration not shown.",
+          "ReactAgent/AgentFactory tool-dispatch source is not supplied; agent-side dispatch of read_file is inferred from registration into agent.tools only."
+        ],
+        "protected_operation": "Agent tool invocation of the read_file filesystem tool (ReadFileTool.__call__) registered on the agent by FilesystemMiddleware.",
+        "protected_resource": "File contents addressable through the configured storage backend (workspace file contents under FilesystemBackend; runtime state content under StateBackend).",
+        "protection_obligation": "Agent-invoked read_file filesystem tool must reject any file_path containing '..' or starting with '~' before a storage backend read is dispatched.",
+        "scope_limits": [
+          "This is a non-mutating external read effect; the file stratum is reserved for filesystem mutations, so the read commit is classed as other_external.",
+          "The check covers only '..' and a leading '~'; it does not itself enforce root-directory containment.",
+          "ls, glob, and grep tools have no middleware-layer traversal check (azcore/middleware/filesystem.py:111-115, 219-223, 233-247) and are outside this contract.",
+          "Backend-dependence as in the write/edit contract: the realized read target depends on the configured backend, which is deployment configuration not shown."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "WrappedTool.__call__ dispatch to self.original_tool(*args, **kwargs) at azcore/middleware/hitl.py:269 (approve path) and :275 (modify path); the unconditional direct dispatch at :244 applies only to approval-exempt tools.",
+        "contract_id": "ecological-contract:d46f7b3797fb4535a98a7d4144a7863d",
+        "declared_mechanism": "HITLMiddleware.setup() replaces agent.tools with WrappedTool instances; WrappedTool.__call__ consults _should_request_approval and the configured approval_function, dispatching to the original tool only on ApprovalDecision.APPROVE (original args) or ApprovalDecision.MODIFY (merged args); REJECT \u2014 and any other decision value \u2014 returns an error dict without invoking the original tool.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 209,
+            "line_start": 187,
+            "path": "azcore/middleware/hitl.py",
+            "role": "guard_registration",
+            "source_sha256": "e4c090854e3876c4a048ef925da05dc059ecb56309587017c85093b5135fdfc3"
+          },
+          {
+            "line_end": 186,
+            "line_start": 176,
+            "path": "azcore/agents/enhanced_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "f0656bd186c613cc72e45ff3231a0a329f838f1b9d68d32fca278496955fc8ff"
+          },
+          {
+            "line_end": 329,
+            "line_start": 304,
+            "path": "azcore/agents/enhanced_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "f0656bd186c613cc72e45ff3231a0a329f838f1b9d68d32fca278496955fc8ff"
+          },
+          {
+            "line_end": 257,
+            "line_start": 239,
+            "path": "azcore/middleware/hitl.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e4c090854e3876c4a048ef925da05dc059ecb56309587017c85093b5135fdfc3"
+          },
+          {
+            "line_end": 283,
+            "line_start": 277,
+            "path": "azcore/middleware/hitl.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e4c090854e3876c4a048ef925da05dc059ecb56309587017c85093b5135fdfc3"
+          },
+          {
+            "line_end": 285,
+            "line_start": 224,
+            "path": "azcore/middleware/hitl.py",
+            "role": "protected_operation",
+            "source_sha256": "e4c090854e3876c4a048ef925da05dc059ecb56309587017c85093b5135fdfc3"
+          },
+          {
+            "line_end": 269,
+            "line_start": 268,
+            "path": "azcore/middleware/hitl.py",
+            "role": "commit_point",
+            "source_sha256": "e4c090854e3876c4a048ef925da05dc059ecb56309587017c85093b5135fdfc3"
+          },
+          {
+            "line_end": 275,
+            "line_start": 271,
+            "path": "azcore/middleware/hitl.py",
+            "role": "commit_point",
+            "source_sha256": "e4c090854e3876c4a048ef925da05dc059ecb56309587017c85093b5135fdfc3"
+          },
+          {
+            "line_end": 244,
+            "line_start": 242,
+            "path": "azcore/middleware/hitl.py",
+            "role": "commit_point",
+            "source_sha256": "e4c090854e3876c4a048ef925da05dc059ecb56309587017c85093b5135fdfc3"
+          },
+          {
+            "line_end": 338,
+            "line_start": 336,
+            "path": "azcore/agents/enhanced_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f0656bd186c613cc72e45ff3231a0a329f838f1b9d68d32fca278496955fc8ff"
+          },
+          {
+            "line_end": 202,
+            "line_start": 196,
+            "path": "azcore/middleware/hitl.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e4c090854e3876c4a048ef925da05dc059ecb56309587017c85093b5135fdfc3"
+          }
+        ],
+        "forbidden_condition": "A wrapped tool that requires approval (i.e., not exempted via the safe-tools auto-approve list) executing self.original_tool(...) without a returned APPROVE or MODIFY decision \u2014 in particular any execution following a REJECT decision, which must yield the rejection error object rather than the tool result.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The concrete set of tools wrapped at setup() depends on feature toggles and caller-supplied tools; per-deployment tool inventories are unconfirmed.",
+          "Deployment-supplied approval_function semantics (blocking behavior, response schema conformance) are outside supplied source; only the default CLI approver is shown.",
+          "Whether WrappedTool's copied attributes (name/description/parameters only, azcore/middleware/hitl.py:234-237) satisfy ReactAgent's tool-dispatch expectations cannot be verified without the agent dispatch source."
+        ],
+        "protected_operation": "Execution of the agent tools wrapped by HITLMiddleware.setup() \u2014 every entry of agent.tools at setup time (e.g., filesystem write/edit tools, shell tool, memory tools).",
+        "protected_resource": "The original tool implementations held by WrappedTool.original_tool, whose invocation would commit external effects (file writes, shell execution, state writes).",
+        "protection_obligation": "When HITLMiddleware is registered via setup(), an agent tool call that requires approval must not be dispatched to the original tool unless the approval function returns an approve or modify decision; a reject decision must block execution of the original tool.",
+        "scope_limits": [
+          "The gate is registered only when enable_hitl=True or interrupt_on is provided (azcore/agents/enhanced_agent.py:61, 306-329); the factory default enable_hitl=False leaves agent.tools unwrapped.",
+          "Tools in safe_tools are exempt when auto_approve_safe is True: _should_request_approval returns False and WrappedTool.__call__ dispatches directly with no decision (azcore/middleware/hitl.py:214-215, 242-244); defaults at azcore/middleware/hitl.py:117 and azcore/agents/enhanced_agent.py:315-320.",
+          "When require_approval_for is provided (e.g., derived from interrupt_on), only the listed tool names require approval and all others dispatch directly (azcore/middleware/hitl.py:218-219); when None, all non-exempt tools require approval (:221-222).",
+          "Any decision value other than APPROVE or MODIFY (including a malformed response object) falls into the reject branch and blocks invocation (azcore/middleware/hitl.py:268-283) \u2014 fail-closed handling.",
+          "The gate commits at dispatch; the underlying effects of approved calls fall in other strata (file, process, state) with commit points inside the tool implementations; ResumableShellToolMiddleware internals are not in supplied source.",
+          "In the enhanced-agent factory, HITLMiddleware is appended after FilesystemMiddleware and all middleware setup() calls run in stack order (azcore/agents/enhanced_agent.py:225-338), so filesystem tools registered earlier are wrapped; custom middleware appended after HITLMiddleware (:332-334) would register tools after wrapping and would not be gated.",
+          "The default CLI approval function cannot emit MODIFY (prints 'not implemented' and re-prompts, azcore/middleware/hitl.py:179-182)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The locked mutation block in update(): Q-value assignment self.q_table[state_key][action] = new_q at azcore/rl/rl_manager.py:723, with auxiliary mutations at :697 (visit counts) and :700-703 (Thompson parameters).",
+        "contract_id": "ecological-contract:f0fb60c77de98a246a69065f7ef8391c",
+        "declared_mechanism": "Early-return allowlist check 'if action not in self.tool_names: return' at update() entry, followed by acquisition of threading.Lock (self.update_lock) around the entire mutation block.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 687,
+            "line_start": 683,
+            "path": "azcore/rl/rl_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "95622e14512d110a5c1bd6275387869f598794e3fe74dcdc727f6244091cd0e4"
+          },
+          {
+            "line_end": 685,
+            "line_start": 683,
+            "path": "azcore/rl/rl_manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "95622e14512d110a5c1bd6275387869f598794e3fe74dcdc727f6244091cd0e4"
+          },
+          {
+            "line_end": 743,
+            "line_start": 667,
+            "path": "azcore/rl/rl_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "95622e14512d110a5c1bd6275387869f598794e3fe74dcdc727f6244091cd0e4"
+          },
+          {
+            "line_end": 729,
+            "line_start": 687,
+            "path": "azcore/rl/rl_manager.py",
+            "role": "commit_point",
+            "source_sha256": "95622e14512d110a5c1bd6275387869f598794e3fe74dcdc727f6244091cd0e4"
+          },
+          {
+            "line_end": 723,
+            "line_start": 719,
+            "path": "azcore/rl/rl_manager.py",
+            "role": "commit_point",
+            "source_sha256": "95622e14512d110a5c1bd6275387869f598794e3fe74dcdc727f6244091cd0e4"
+          }
+        ],
+        "forbidden_condition": "An update() call whose action is not a member of self.tool_names proceeding to any Q-table, visit-count, or Thompson-parameter mutation (the early return 'Unknown action ... - skipping update' must preempt it).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied call site binds update() to agent tool execution or agent-derived rewards; that the allowlisted actions correspond to tools an agent actually executed is unconfirmed.",
+          "ReactAgent/agent-loop source is not supplied, so any integration feeding tool names into RLManager cannot be verified from the provided views."
+        ],
+        "protected_operation": "RLManager.update Q-learning state mutation (visit_counts, alpha_params/beta_params, q_table, state cache, pending_updates).",
+        "protected_resource": "The in-memory Q-learning state: self.q_table, self.visit_counts, self.alpha_params, self.beta_params, and the state cache / pending-update queue derived from them.",
+        "protection_obligation": "RLManager.update must refuse to mutate the Q-table and its associated learning structures for any action name not in the registered tool_names allowlist, and all admitted mutations must be serialized behind update_lock.",
+        "scope_limits": [
+          "Allowlist membership is fixed at construction (tool_names deduplicated via set(), azcore/rl/rl_manager.py:108); no runtime API to extend it appears in supplied source.",
+          "update_batch and update_batch_optimized delegate to update() and inherit the gate (azcore/rl/rl_manager.py:761-762, 993-994).",
+          "select_tools initializes Q entries only for names in tool_names (azcore/rl/rl_manager.py:594-596); reset() clears state under the lock (878-891).",
+          "The lock provides concurrency serialization; it is a separate mechanism from the allowlist gate."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "CompositeBackend implementation is not among the supplied sources; the routing semantics that decide whether an agent-supplied path reaches FilesystemBackend (file mutation) or StateBackend (state mutation) cannot be confirmed.",
+      "StateBackend implementation is not supplied; the exact nature of filesystem-tool commits when the standalone middleware default (StateBackend factory, azcore/middleware/filesystem.py:302) is used cannot be characterized beyond 'state mutation'.",
+      "ReactAgent and AgentFactory implementations (the agent tool-invocation loop) are not supplied; dispatch of registered/wrapped tools to the middleware tool objects is inferred from agent.tools registration only.",
+      "ResumableShellToolMiddleware implementation is not supplied; shell tool execution commit points and their behavior under HITL wrapping cannot be contracted from supplied source.",
+      "No supplied source instantiates FilesystemBackend with virtual_mode=True; activation of the backend-layer traversal/containment guard in any deployment is unconfirmed.",
+      "No supplied call site binds RLManager.update or select_tools to agent tool execution or agent-generated queries; agent mediation of the RL guards is unestablished.",
+      "No supplied call site binds AgentRearrange.add_relationship to agent-generated routing decisions; agent mediation of the cycle guard is unestablished."
+    ],
+    "repository": "Azrienlabs/Az-Core",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:448a393303651223ffc1f8df8fb76bd9"
+  },
+  "request_sha256": "f4ea82482ac69046b8c2662287cfe684096de46467d5bebae53e55020d6e0fea",
+  "response_sha256": "b35d84c7fb026b17dca9871e8a6da09e198e19ef08d8e339118e65f8cc3744c2",
+  "state": "completed",
+  "tokens": 73009,
+  "unit": "v24-screen:448a393303651223ffc1f8df8fb76bd9"
+}

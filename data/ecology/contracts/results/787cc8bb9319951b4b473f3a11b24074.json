@@ -1,0 +1,175 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "conn.commit() persisting the UPDATE (tools.py line 169) or INSERT OR REPLACE (tools.py line 171) against campaign.db inside send_email_action (commit at tools.py line 172).",
+        "contract_id": "ecological-contract:5f3fbb9bf5295cebd8843b1c4c5b3af2",
+        "declared_mechanism": "domain_blocker_guardrail error-dict short-circuit registered as before_tool_callback on outreach_agent (agent.py line 60) and follow_up_agent (agent.py line 72); a blocked invocation returns before the tool body that performs the database write executes.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 41,
+            "line_start": 31,
+            "path": "multi_tool_agent/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "091d2b7d2b2a3e27e544484689e108c40fa63cc8631406cd36f220a17f8098f5"
+          },
+          {
+            "line_end": 60,
+            "line_start": 59,
+            "path": "multi_tool_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "091d2b7d2b2a3e27e544484689e108c40fa63cc8631406cd36f220a17f8098f5"
+          },
+          {
+            "line_end": 72,
+            "line_start": 71,
+            "path": "multi_tool_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "091d2b7d2b2a3e27e544484689e108c40fa63cc8631406cd36f220a17f8098f5"
+          },
+          {
+            "line_end": 61,
+            "line_start": 51,
+            "path": "multi_tool_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "091d2b7d2b2a3e27e544484689e108c40fa63cc8631406cd36f220a17f8098f5"
+          },
+          {
+            "line_end": 73,
+            "line_start": 63,
+            "path": "multi_tool_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "091d2b7d2b2a3e27e544484689e108c40fa63cc8631406cd36f220a17f8098f5"
+          },
+          {
+            "line_end": 173,
+            "line_start": 164,
+            "path": "multi_tool_agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "6b8c4679d603f58143a76e48f450080f81613674c8224fd3ff482d5834a32bcc"
+          },
+          {
+            "line_end": 172,
+            "line_start": 168,
+            "path": "multi_tool_agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "6b8c4679d603f58143a76e48f450080f81613674c8224fd3ff482d5834a32bcc"
+          }
+        ],
+        "forbidden_condition": "A send_email_action invocation with a lowercased target_email containing '@useotter.app' or '@example.com' proceeding past agent tool dispatch into the tool body's database bookkeeping (blocked condition defined at agent.py lines 33-40).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the database record for restricted-domain recipients is an independently intended protected resource under the stated policy, or only an ancillary effect of the SMTP-send obligation; policy intent is not stated in supplied source.",
+          "Framework short-circuit semantics of before_tool_callback (non-None return suppressing tool-body execution) are not evidenced by supplied framework source; the behavior is asserted only in reviewer rationale.",
+          "Whether follow-up targets from get_followup_targets (agent.py lines 67-69) can carry restricted-domain addresses to this commit via follow_up_agent, i.e., whether any upstream filtering exists besides the callback; none is shown in supplied source."
+        ],
+        "protected_operation": "The SQLite bookkeeping performed by send_email_action after dispatch: UPDATE outreach SET status/date_sent for follow-ups or INSERT OR REPLACE INTO outreach for initial sends, against campaign.db, finalized by conn.commit() (tools.py lines 164-173).",
+        "protected_resource": "The outreach table of the SQLite database campaign.db, which records contacted emails, send dates, and statuses (schema created at tools.py lines 19-28).",
+        "protection_obligation": "The same domain_blocker_guardrail registration must also prevent restricted-domain send_email_action invocations from committing the outreach-tracking record in campaign.db: the before_tool_callback gates the entire tool invocation, so a blocked call neither dispatches the email nor writes the database row. (Emitted as a separate contract because the shared obligation protects a second commit point in the database stratum.)",
+        "scope_limits": [
+          "The guard never inspects the database write itself; protection of this commit is derivative, since the callback gates the entire send_email_action invocation of which the bookkeeping is a trailing side effect executed only after the SMTP block (tools.py lines 164-173).",
+          "Same registration coverage limits as the SMTP contract: only outreach_agent and follow_up_agent register the callback (agent.py lines 60, 72).",
+          "The write records whatever target_email passes the guard; the guard imposes no additional constraint on database contents.",
+          "init_db() creates the table at import time outside any guard (tools.py lines 19-28); only the send_email_action bookkeeping path is covered by this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "smtp.send_message(msg) executed inside the smtplib.SMTP_SSL('smtp.gmail.com', 465) session within send_email_action (tools.py lines 157-159); the callback returns before the tool body runs, so a blocked invocation never reaches this commit.",
+        "contract_id": "ecological-contract:6676ac144c77d0d8adb276875f0138ed",
+        "declared_mechanism": "domain_blocker_guardrail (agent.py lines 31-41): a before-tool callback that checks tool.name == 'send_email_action' and args['target_email'] and, on a restricted-domain match, returns {'status': 'error', 'error_message': 'Policy restriction: ...'} to short-circuit the invocation; registered as before_tool_callback=domain_blocker_guardrail on outreach_agent (agent.py line 60) and follow_up_agent (agent.py line 72).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 41,
+            "line_start": 31,
+            "path": "multi_tool_agent/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "091d2b7d2b2a3e27e544484689e108c40fa63cc8631406cd36f220a17f8098f5"
+          },
+          {
+            "line_end": 60,
+            "line_start": 59,
+            "path": "multi_tool_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "091d2b7d2b2a3e27e544484689e108c40fa63cc8631406cd36f220a17f8098f5"
+          },
+          {
+            "line_end": 72,
+            "line_start": 71,
+            "path": "multi_tool_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "091d2b7d2b2a3e27e544484689e108c40fa63cc8631406cd36f220a17f8098f5"
+          },
+          {
+            "line_end": 61,
+            "line_start": 51,
+            "path": "multi_tool_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "091d2b7d2b2a3e27e544484689e108c40fa63cc8631406cd36f220a17f8098f5"
+          },
+          {
+            "line_end": 73,
+            "line_start": 63,
+            "path": "multi_tool_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "091d2b7d2b2a3e27e544484689e108c40fa63cc8631406cd36f220a17f8098f5"
+          },
+          {
+            "line_end": 160,
+            "line_start": 148,
+            "path": "multi_tool_agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "6b8c4679d603f58143a76e48f450080f81613674c8224fd3ff482d5834a32bcc"
+          },
+          {
+            "line_end": 159,
+            "line_start": 157,
+            "path": "multi_tool_agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "6b8c4679d603f58143a76e48f450080f81613674c8224fd3ff482d5834a32bcc"
+          }
+        ],
+        "forbidden_condition": "An invocation of the send_email_action tool whose lowercased target_email argument contains '@useotter.app' or '@example.com' being allowed to proceed past agent tool dispatch into execution (detected and rejected at agent.py lines 33-40 with an error-dict return).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Framework semantics: whether a non-None dict returned from before_tool_callback suppresses tool execution and substitutes as the tool result; ADK framework source is not supplied and this short-circuit behavior is asserted only in reviewer rationale.",
+          "Whether campaign_manager delegation to outreach_agent/follow_up_agent (agent.py lines 79-84) always routes send_email_action through the sub-agents' registered callback, or whether any manager-level path can reach the tool without the guard.",
+          "The reviewer rationale references a direct-call bypass of the agents in main.py; that file is not among the supplied sources, so non-agent invocation coverage cannot be assessed.",
+          "Whether the restricted-domain policy is exact-domain or substring by intent, and whether additional restricted domains exist, is not stated in the supplied source."
+        ],
+        "protected_operation": "Live outbound email dispatch performed by send_email_action: constructing the EmailMessage addressed to target_email and transmitting it via smtplib.SMTP_SSL('smtp.gmail.com', 465) with smtp.login and smtp.send_message (tools.py lines 148-160), in live mode per DRY_RUN = False (tools.py line 14).",
+        "protected_resource": "Outbound email delivery through the configured Gmail SMTP account (MY_EMAIL / MY_APP_PASSWORD, tools.py lines 16-17) to external recipients at the restricted domains @useotter.app and @example.com.",
+        "protection_obligation": "The domain_blocker_guardrail, registered as before_tool_callback on outreach_agent and follow_up_agent, must block any send_email_action invocation whose target_email contains '@useotter.app' or '@example.com' so that no live SMTP email is dispatched to those restricted domains. (Merged contract: the first-phase and second-phase reviewer opinions assert the same registered guard, protected tool, and SMTP commit point with different wording.)",
+        "scope_limits": [
+          "Coverage is limited to agents that register the callback: outreach_agent (agent.py line 60) and follow_up_agent (agent.py line 72); campaign_manager (agent.py lines 75-88) and scraper_agent (agent.py lines 43-49) register no before_tool_callback.",
+          "The guard only inspects invocations where tool.name == 'send_email_action' (agent.py line 33); scrape_useotter_emails and get_followup_targets are unchecked.",
+          "The restriction is substring containment of '@useotter.app' or '@example.com' in the lowercased target_email (agent.py line 35); the guard text does not anchor the match to the recipient domain, and a missing target_email defaults to '' and passes (agent.py line 34).",
+          "DRY_RUN is declared False ('LIVE EMAIL MODE') at tools.py line 14 but is never read in the supplied send path (lines 148-162), so the callback is the only declared gate before live dispatch.",
+          "The mechanism binds only through ADK agent tool dispatch on the two registered agents; per supplied source, any send_email_action invocation not routed through those agents is outside the declared guard's reach."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "block_destructive_commands is registered as before_model_callback on campaign_manager (agent.py lines 12-29, 87) and blocks user messages containing 'DELETE DATABASE'; the supplied source registers no tool or effect that performs a destructive database command (registered tools are scrape_useotter_emails, get_followup_targets, send_email_action), so no guarded effect commit point or effect stratum can be established for this guard from the supplied views and no contract is emitted for it.",
+      "main.py, referenced in the reviewer rationale as containing a direct-call bypass of the registered agents, is not among the supplied sources; the existence and shape of that path cannot be verified or contracted.",
+      "DRY_RUN (tools.py line 14) is assigned but never read anywhere in the supplied source; whether any dry-run branch exists that would alter the send path is unsupported.",
+      "The orchestration from scrape_useotter_emails output to outreach targets (agent.py lines 79-84) is instruction-level only; no enforced dataflow in the supplied source binds scraped emails as the target_email argument of send_email_action, so agent_generated_input_to_guarded_effect mediation is not established.",
+      "Framework source for google.adk before_tool_callback / before_model_callback semantics is not supplied; suppression behavior of guard return values cannot be confirmed from line-numbered source."
+    ],
+    "repository": "GauravOjha2/employment.exe",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:787cc8bb9319951b4b473f3a11b24074"
+  },
+  "request_sha256": "e2caf3f7960f6c3c2e8c5c25d2d67683d63d4a9c985fc258afd1e2700e3b1722",
+  "response_sha256": "585f7c66528b60a479f2e7380c70bf234e92afe70fdf5e33bb475c0fad4e7528",
+  "state": "completed",
+  "tokens": 19111,
+  "unit": "v24-screen:787cc8bb9319951b4b473f3a11b24074"
+}

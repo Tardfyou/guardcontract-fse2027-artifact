@@ -1,0 +1,182 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "For fetch_chunk: the _ensure_doc_in_scope gate at tools.py:571, executed after the chunk SELECT (tools.py 560-568) and before ChunkText is constructed and returned (tools.py 572-578). For SQL-filter tools: the scoped SELECT whose WHERE clause embeds the _scope_doc_id_filter fragment, executed before rows are returned (e.g., search_entities at tools.py 182-201).",
+        "contract_id": "ecological-contract:0be680f80d2611adf8e7cbc115269c62",
+        "declared_mechanism": "Two-layer guard: (1) tool/SQL layer \u2014 _scope_doc_id_filter injects a doc_id scope restriction into each tool's SELECT and raises ScopeViolation when DOCUMENT/CASE scope is unset (tools.py 41-61); _ensure_doc_in_scope raises ScopeViolation for out-of-scope doc_ids (tools.py 64-86) and is called by fetch_chunk before returning ChunkText (tools.py 571) and by get_document_entities before its query (tools.py 630); entity/relationship resolution is itself scope-filtered via _resolve_entity_ids (tools.py 89-154); (2) agent layer \u2014 the @_scope_guard decorator wraps each @agent.tool handler and converts ScopeViolation into pydantic_ai ModelRetry instructing the model to retry with an in-scope id or compose from held evidence (investigator.py 207-229).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 6,
+            "line_start": 1,
+            "path": "src/operation_lens_v2/query/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f8c465e7f795b15188edc24c79adcd55c8acea63c0ee8670622242209563a145"
+          },
+          {
+            "line_end": 61,
+            "line_start": 41,
+            "path": "src/operation_lens_v2/query/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "f8c465e7f795b15188edc24c79adcd55c8acea63c0ee8670622242209563a145"
+          },
+          {
+            "line_end": 86,
+            "line_start": 64,
+            "path": "src/operation_lens_v2/query/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f8c465e7f795b15188edc24c79adcd55c8acea63c0ee8670622242209563a145"
+          },
+          {
+            "line_end": 578,
+            "line_start": 554,
+            "path": "src/operation_lens_v2/query/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "f8c465e7f795b15188edc24c79adcd55c8acea63c0ee8670622242209563a145"
+          },
+          {
+            "line_end": 578,
+            "line_start": 571,
+            "path": "src/operation_lens_v2/query/tools.py",
+            "role": "commit_point",
+            "source_sha256": "f8c465e7f795b15188edc24c79adcd55c8acea63c0ee8670622242209563a145"
+          },
+          {
+            "line_end": 201,
+            "line_start": 173,
+            "path": "src/operation_lens_v2/query/tools.py",
+            "role": "commit_point",
+            "source_sha256": "f8c465e7f795b15188edc24c79adcd55c8acea63c0ee8670622242209563a145"
+          },
+          {
+            "line_end": 229,
+            "line_start": 207,
+            "path": "src/operation_lens_v2/query/investigator.py",
+            "role": "guard_registration",
+            "source_sha256": "08ea8027f821b5feff07f3e37e289cadd2feca1c4278f96d9a88eb88aa658557"
+          },
+          {
+            "line_end": 319,
+            "line_start": 312,
+            "path": "src/operation_lens_v2/query/investigator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "08ea8027f821b5feff07f3e37e289cadd2feca1c4278f96d9a88eb88aa658557"
+          },
+          {
+            "line_end": 352,
+            "line_start": 258,
+            "path": "src/operation_lens_v2/query/investigator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "08ea8027f821b5feff07f3e37e289cadd2feca1c4278f96d9a88eb88aa658557"
+          }
+        ],
+        "forbidden_condition": "An investigator agent tool invocation returning evidence derived from documents outside the active ScopeContext's in-scope document set (chunk text, entity/alias rows, relationship edges, co-occurrence chunks, timeline events, or document listings from out-of-scope docs).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "src/operation_lens_v2/query/scope.py is not supplied: ScopeContext fields, InvestigationScope mode enumeration, and the ScopeViolation definition are unverified, including whether any mode other than DOCUMENT/CASE maps to the '1=1' branch (tools.py 61).",
+          "Supplied source does not show where the ScopeContext passed to investigate()/investigate_stream() originates (caller/API layer) or how the in-scope document set is bound to a requesting principal or interaction.",
+          "Whether any entry point permits deps.scope to change mid-run is not shown; supplied code fixes deps at run start (investigator.py 375, 475)."
+        ],
+        "protected_operation": "The nine PydanticAI investigator tools \u2014 search_entities, get_entity_profile, get_relationships, get_cooccurrence, get_timeline, fetch_chunk, list_documents, get_document_entities, walk_graph \u2014 performing scoped DuckDB evidence reads on behalf of agent tool calls.",
+        "protected_resource": "Case evidence stored in DuckDB (chunks.text, entity_aliases, relationships/relationship_evidence, documents) reachable only through the in-scope document set defined by the active ScopeContext.",
+        "protection_obligation": "Investigator-agent evidence reads must be confined to the active ScopeContext: every investigator tool invocation must enforce scope at the tool/SQL layer so that chunk, entity, relationship, co-occurrence, timeline, and document reads falling outside the in-scope document set are refused (ScopeViolation surfaced to the model as ModelRetry), with the commit point at the scoped SQL execution / in-scope gate before rows are returned (e.g., fetch_chunk's _ensure_doc_in_scope gate before returning chunk text).",
+        "scope_limits": [
+          "Guard covers only the nine tools registered on the PydanticAI agent in register_investigator_tools (investigator.py 258-352); supplied source shows no other agent-bound tools.",
+          "In fetch_chunk the chunk SELECT itself is unscoped (tools.py 560-568); enforcement is the post-query gate before return, so refusal happens at return time, not at query time.",
+          "fetch_chunk returns None for a nonexistent chunk_id without any scope check (tools.py 569-570).",
+          "_scope_doc_id_filter emits an unrestricted '1=1' fragment when scope.mode is neither DOCUMENT nor CASE (tools.py 61); which additional scope modes exist is not defined in supplied source.",
+          "The guard restricts reads/returns only; it protects no database mutation and no external effect.",
+          "Refusal is delivered to the model as a retryable ModelRetry rather than a hard failure; the agent is constructed with retries=5 (investigator.py 247)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The httpx.AsyncClient GET to {base_url}/search inside NominatimGeocoder.lookup (geocoder.py 85-91), gated by the geocoding_enabled check at geocoder.py 73-75 that executes before request construction.",
+        "contract_id": "ecological-contract:814972108edde5220059ea6fa00f61ff",
+        "declared_mechanism": "NominatimGeocoder.lookup checks settings.geocoding_enabled at entry and raises GeocoderDisabled before building or issuing any request (geocoder.py 73-75); geocode_entity re-raises GeocoderDisabled (geocoder.py 131-134); the API route entity_geocode catches it and raises HTTPException 503 (graph.py 601-602); the backfill script catches it and returns/aborts (backfill_geocodes.py 53-55).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 7,
+            "line_start": 1,
+            "path": "src/operation_lens_v2/services/geocoder.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ce1b0620473f68faac184e57ba3d0a2e457b271b25c18c2e3352b61f2a9c985"
+          },
+          {
+            "line_end": 75,
+            "line_start": 73,
+            "path": "src/operation_lens_v2/services/geocoder.py",
+            "role": "guard_registration",
+            "source_sha256": "0ce1b0620473f68faac184e57ba3d0a2e457b271b25c18c2e3352b61f2a9c985"
+          },
+          {
+            "line_end": 91,
+            "line_start": 85,
+            "path": "src/operation_lens_v2/services/geocoder.py",
+            "role": "commit_point",
+            "source_sha256": "0ce1b0620473f68faac184e57ba3d0a2e457b271b25c18c2e3352b61f2a9c985"
+          },
+          {
+            "line_end": 137,
+            "line_start": 118,
+            "path": "src/operation_lens_v2/services/geocoder.py",
+            "role": "protected_operation",
+            "source_sha256": "0ce1b0620473f68faac184e57ba3d0a2e457b271b25c18c2e3352b61f2a9c985"
+          },
+          {
+            "line_end": 602,
+            "line_start": 583,
+            "path": "src/operation_lens_v2/api/routes/graph.py",
+            "role": "protected_operation",
+            "source_sha256": "e562f859ae531d2a1de42576bcb0a63c061fd4e07befb4c5c38ae8d965db255e"
+          },
+          {
+            "line_end": 55,
+            "line_start": 41,
+            "path": "scripts/backfill_geocodes.py",
+            "role": "protected_operation",
+            "source_sha256": "82cb11a44dcfa4ef17abbac3f10e657ab8a90837dd7adf21e3e9ac709b99517b"
+          }
+        ],
+        "forbidden_condition": "An outbound HTTP GET to {nominatim_base_url}/search (transmission of a location string to Nominatim) occurring while settings.geocoding_enabled is false.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds geocode_entity or NominatimGeocoder.lookup to an agent tool, agent lifecycle hook, or agent-generated input: the API route consumes an HTTP path parameter (graph.py 583-600) and the backfill script iterates database rows (backfill_geocodes.py 33-52).",
+          "geocoder.py 3-5 characterizes the module as the only component making outbound calls for 'investigator-facing metadata', but no investigator-side call path to the geocoder appears in supplied source; whether investigator agent outputs depend on geocoded entities is unverified."
+        ],
+        "protected_operation": "On-demand geocode resolution of entities: NominatimGeocoder.lookup invoked via geocode_entity, from the /graph/entity/{entity_id}/geocode API route and the geocode-backfill script loop.",
+        "protected_resource": "Outbound network egress to the configured Nominatim endpoint and the location strings transmitted to it (per the module's data-sovereignty note).",
+        "protection_obligation": "When geocoding is disabled (settings.geocoding_enabled false / GEOCODING_ENABLED=0), no outbound geocode lookup may be issued to the configured Nominatim /search endpoint for entity location strings, and production call sites must propagate the refusal (API entity_geocode returns 503; backfill script aborts).",
+        "scope_limits": [
+          "The guard triggers only when settings.geocoding_enabled is false at lookup entry (geocoder.py 74); flag semantics/defaults live in config, which is not supplied.",
+          "Cached geocodes bypass lookup entirely: geocode_entity returns duck_store.get_entity_geocode without any lookup when present and force is false (geocoder.py 127-129), so the guard does not govern cached-data return or persistence.",
+          "Covers only the NominatimGeocoder path; other outbound HTTP effects in supplied source (Ollama /v1 model endpoint and /api/tags in investigator.py 156-160, 171-177) are not guarded by this mechanism.",
+          "Caller-side refusals are supplied for exactly two call sites (API route, backfill script); the repository enumeration is incomplete, so additional call sites cannot be ruled out."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "src/operation_lens_v2/query/scope.py is not supplied: ScopeContext fields, InvestigationScope mode enumeration, and the ScopeViolation definition are unverified, including whether any scope mode is reachable that maps to the unrestricted '1=1' fragment at tools.py:61.",
+      "src/operation_lens_v2/config.py is not supplied: type, defaults, and parsing of geocoding_enabled (GEOCODING_ENABLED), nominatim_base_url, and investigator settings are unverified.",
+      "No supplied source establishes a call path from the investigator agent (tools, lifecycle hooks, or agent-generated input) to geocode_entity / NominatimGeocoder.lookup; the agent mediation of the geocoding obligation is therefore unestablished and recorded as not_established.",
+      "src/operation_lens_v2/ingestion/duck_store.py is not supplied: get_entity_geocode / set_entity_geocode cache persistence behavior is unverified."
+    ],
+    "repository": "meabs/localsearch",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:800a8309ebcda295341a5a7853bb221c"
+  },
+  "request_sha256": "735daff81516e623c14c7cc7e5c49e453fb538a158200aeacd4ee69fd6d00e46",
+  "response_sha256": "4eeb8e93449c0a98c87fb72f204ca38609f7fd9df2b3cd9b40eedfec634e8823",
+  "state": "completed",
+  "tokens": 46752,
+  "unit": "v24-screen:800a8309ebcda295341a5a7853bb221c"
+}

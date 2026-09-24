@@ -1,0 +1,364 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "await self._sessions.create_with_prompt(request[\"prompt\"], spawned_from_session_id=request[\"caller_session_id\"]) at spawn.py lines 172-175, followed by the success response at line 177.",
+        "contract_id": "ecological-contract:20ab9446d5ef3bba23aaeff2ed278f39",
+        "declared_mechanism": "self._sessions.compute_spawn_depth(caller_container.session_id) compared against the module constant MAX_SPAWN_DEPTH before create_with_prompt, refusing with error 'spawn_depth_exceeded' including cap and depth (lines 155-170); the refusal text is surfaced to the spawning model via SiblingSessionClient._format_spawn_error (_sibling_sessions.py lines 98-108).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 4,
+            "line_start": 1,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "protected_operation",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 26,
+            "line_start": 24,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "guard_registration",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 170,
+            "line_start": 155,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "guard_registration",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 170,
+            "line_start": 162,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 177,
+            "line_start": 172,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "commit_point",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 1192,
+            "line_start": 1179,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 77,
+            "line_start": 57,
+            "path": "src/claudebox/agent_session/_sibling_sessions.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "cc27723c2d05afb736934e3d77be761f894f1b98360790c0d911137208ec6196"
+          }
+        ],
+        "forbidden_condition": "depth + 1 > MAX_SPAWN_DEPTH for the peer-resolved caller session's lineage (spawn.py lines 162-170); also an unreadable lineage record (compute_spawn_depth returns None, refused as caller_record_unreadable, lines 157-160), which must not fall through to creation.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "SessionService.create_with_prompt and SessionService.compute_spawn_depth implementations are not supplied; the strata committed at the commit point cannot be fully attributed (a database/persistence component may exist alongside container creation).",
+          "Whether the daemon enforces any additional spawn limits (concurrency, total sessions) at other layers is not determinable from supplied source."
+        ],
+        "protected_operation": "Creation of a spawned sibling session/container via the daemon spawn socket \u2014 SessionService.create_with_prompt invoked from SpawnListener._process.",
+        "protected_resource": "The workspace's session/container population reachable through recursive agent self-spawning, bounded at lineage depth MAX_SPAWN_DEPTH = 3 (spawn.py lines 24-26).",
+        "protection_obligation": "The daemon's unix-socket spawn listener must refuse to create a spawned session when the caller's existing spawn-lineage depth plus one would exceed MAX_SPAWN_DEPTH (3), answering spawn_depth_exceeded (with cap and depth) before any session/container creation via create_with_prompt.",
+        "scope_limits": [
+          "The cap bounds lineage depth per caller session only; it does not bound breadth (number of siblings at one depth) or total sessions per workspace.",
+          "Request-shape/JSON/verb/prompt validation (spawn.py lines 122-146 and 179-197) is ordinary request validation and is not claimed as this contract's guard, though it also runs before the commit point.",
+          "MAX_SPAWN_DEPTH is a duplicated constant mirrored from langgraph_tools.subagent and must be kept in step (spawn.py lines 24-25); the LangGraph constant is not in supplied source.",
+          "Stratum assignment is provisional: create_with_prompt's internals (container start vs. session-record persistence) are not visible in the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The awaited SDK control calls self._sdk.reconnect_mcp_server(server_name) (line 427) and self._sdk.toggle_mcp_server(server_name, enabled) (line 441); deferred requests commit via the _pending_calls queue flushed by _flush_on_ready (lines 934-937), which re-enters the guarded methods.",
+        "contract_id": "ecological-contract:441c291854bb2cabaa2cfb40ec4f893c",
+        "declared_mechanism": "Exact-name comparison against SIBLING_MCP_SERVER_NAME raising McpServerProtected (ApiError, status_code 400, error_key 'mcp_server_protected') placed before both the immediate SDK call and the not-ready queueing branch; the deferred path is safe because _flush_on_ready re-invokes the public guarded methods via getattr(self, method) (runtime_claude.py lines 934-937), so the guard re-runs before any deferred commit.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 429,
+            "line_start": 417,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "guard_registration",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 424,
+            "line_start": 423,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 443,
+            "line_start": 431,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "guard_registration",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 438,
+            "line_start": 437,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 427,
+            "line_start": 426,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "commit_point",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 441,
+            "line_start": 440,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "commit_point",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 937,
+            "line_start": 934,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "commit_point",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 67,
+            "line_start": 57,
+            "path": "src/claudebox/agent_session/orchestration/errors.py",
+            "role": "forbidden_condition",
+            "source_sha256": "92270e848464f93ad23e5f8dd705e50ff0b52098f690f78410637e3723a821c3"
+          },
+          {
+            "line_end": 1169,
+            "line_start": 1158,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "protected_operation",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 1225,
+            "line_start": 1171,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "protected_operation",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 26,
+            "line_start": 24,
+            "path": "src/claudebox/agent_session/_sibling_sessions.py",
+            "role": "protected_operation",
+            "source_sha256": "cc27723c2d05afb736934e3d77be761f894f1b98360790c0d911137208ec6196"
+          }
+        ],
+        "forbidden_condition": "server_name == SIBLING_MCP_SERVER_NAME (\"claudebox\", _sibling_sessions.py lines 24-26) passed to reconnect_mcp_server (runtime_claude.py lines 423-424) or toggle_mcp_server (runtime_claude.py lines 437-438); the refusal is the McpServerProtected error defined at orchestration/errors.py lines 57-67.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The caller path for reconnect_mcp_server/toggle_mcp_server (orchestration HTTP endpoint, MCP panel handler, or an agent-reachable tool) is not in the supplied views, so agent mediation is not_established; McpServerProtected being an ApiError(400) suggests an HTTP API caller but no endpoint source is supplied.",
+          "claude_agent_sdk's reconnect_mcp_server/toggle_mcp_server semantics for an in-process create_sdk_mcp_server server (what session state actually changes) are external to the supplied sources."
+        ],
+        "protected_operation": "MCP server reconnect and enable/disable control-plane operations on the agent session's SDK client (self._sdk.reconnect_mcp_server / self._sdk.toggle_mcp_server).",
+        "protected_resource": "The in-process SDK MCP server 'claudebox' built in ClaudeRuntime._build_mcp_servers (runtime_claude.py lines 1158-1169) carrying the sibling-session delegation tools session_spawn, session_ask, session_read (runtime_claude.py lines 1171-1225).",
+        "protection_obligation": "The in-process sibling-session MCP server named 'claudebox' (SIBLING_MCP_SERVER_NAME) must never be reconnected or toggled via ClaudeRuntime.reconnect_mcp_server / toggle_mcp_server: both methods raise McpServerProtected for that name before any SDK control call, so an agent session cannot lose its session_spawn/session_ask/session_read delegation tools.",
+        "scope_limits": [
+          "Only the exact name 'claudebox' is protected; all other MCP servers (including workspace .mcp. servers) remain reconnectable/toggleable.",
+          "get_mcp_status also filters SIBLING_MCP_SERVER_NAME from status reporting (lines 445-460); that is a reporting filter, not the commit-point guard claimed here.",
+          "Only ClaudeRuntime is in the supplied sources; the LangGraph runtime adapter that shares SiblingSessionClient is not shown, so parity of this guard in that runtime is unverified.",
+          "The guard protects the server's availability/attachment; it does not govern the behavior of the sibling-session tools themselves."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "client.send(client.build_request(\"GET\", current), stream=True) at web.py line 132 \u2014 executed once per hop (initial URL plus up to 5 redirect targets), each send preceded by a _guard_url check.",
+        "contract_id": "ecological-contract:e346fec813f87b4e8e98724c7c11d1dd",
+        "declared_mechanism": "_guard_url (web.py lines 84-123): scheme allowlist check, socket.getaddrinfo resolution, and per-address classification raising ToolException; registered into web_fetch at line 44 before the httpx.Client is used, and re-registered per hop inside _guarded_get (lines 126-142) because follow_redirects=False prevents httpx from skipping re-validation; redirect chain capped at _MAX_REDIRECTS = 5.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 44,
+            "line_start": 34,
+            "path": "src/claudebox/agent_session/langgraph_tools/web.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4adf107baf8a95a395895738cfe3aba6507805ec3984eda98ed1a86f6879ce41"
+          },
+          {
+            "line_end": 90,
+            "line_start": 85,
+            "path": "src/claudebox/agent_session/langgraph_tools/web.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4adf107baf8a95a395895738cfe3aba6507805ec3984eda98ed1a86f6879ce41"
+          },
+          {
+            "line_end": 123,
+            "line_start": 94,
+            "path": "src/claudebox/agent_session/langgraph_tools/web.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4adf107baf8a95a395895738cfe3aba6507805ec3984eda98ed1a86f6879ce41"
+          },
+          {
+            "line_end": 123,
+            "line_start": 84,
+            "path": "src/claudebox/agent_session/langgraph_tools/web.py",
+            "role": "guard_registration",
+            "source_sha256": "4adf107baf8a95a395895738cfe3aba6507805ec3984eda98ed1a86f6879ce41"
+          },
+          {
+            "line_end": 142,
+            "line_start": 126,
+            "path": "src/claudebox/agent_session/langgraph_tools/web.py",
+            "role": "guard_registration",
+            "source_sha256": "4adf107baf8a95a395895738cfe3aba6507805ec3984eda98ed1a86f6879ce41"
+          },
+          {
+            "line_end": 53,
+            "line_start": 44,
+            "path": "src/claudebox/agent_session/langgraph_tools/web.py",
+            "role": "protected_operation",
+            "source_sha256": "4adf107baf8a95a395895738cfe3aba6507805ec3984eda98ed1a86f6879ce41"
+          },
+          {
+            "line_end": 132,
+            "line_start": 131,
+            "path": "src/claudebox/agent_session/langgraph_tools/web.py",
+            "role": "commit_point",
+            "source_sha256": "4adf107baf8a95a395895738cfe3aba6507805ec3984eda98ed1a86f6879ce41"
+          }
+        ],
+        "forbidden_condition": "Issuing a web_fetch GET to a URL whose scheme is not in _ALLOWED_FETCH_SCHEMES ({http, https}), whose hostname cannot be resolved, or whose hostname resolves (at guard time, per hop) to an address that is loopback, private, link-local, reserved, multicast, or unspecified (web.py lines 94-123).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied view shows who calls make_web_tools or registers web_fetch/web_search into a running agent graph; tool-dispatch wiring beyond the @tool decorator is unverified.",
+          "Whether any client-level configuration could alter the effective connection target relative to the guard-time getaddrinfo resolution cannot be determined from the supplied source."
+        ],
+        "protected_operation": "The outbound HTTP GET fetch performed inside the web_fetch tool, including the initial request and each manually followed redirect hop.",
+        "protected_resource": "Internal/loopback/link-local/reserved/multicast/unspecified network targets (including the cloud-metadata endpoint) reachable from the session container; only public http(s) hosts may be fetched.",
+        "protection_obligation": "The web_fetch agent tool must refuse to issue HTTP requests to non-http(s) schemes and to hosts resolving to loopback, private, link-local (including 169.254.169.254), reserved, multicast, or unspecified addresses: _guard_url runs on the model-supplied URL before the fetch, and _guarded_get re-applies _guard_url to every redirect target prior to each httpx send.",
+        "scope_limits": [
+          "Covers only web_fetch's own requests; web_search backends (duckduckgo/tavily/brave, lines 161-248) are not guarded by _guard_url.",
+          "web_search's allowed_domains/blocked_domains filters are client-side result filters (lines 265-291) and provide no protection for web_fetch's model-supplied URL (stated at lines 87-89).",
+          "Redirect following is capped at _MAX_REDIRECTS = 5; exceeding the cap raises ToolException rather than fetching.",
+          "The guard validates scheme and guard-time DNS resolution only; httpx's own connection behavior (proxy/env handling, connection-time resolution) is outside the supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "await self._sessions.create_with_prompt(...) at spawn.py lines 172-175 (shared commit point with the depth-cap contract).",
+        "contract_id": "ecological-contract:e6cdf93d47b22e39cabdc043195a6847",
+        "declared_mechanism": "_peer_pid reading SO_PEERCRED from the socket (spawn.py lines 199-214, 'kernel-verified, never from the payload'), the None-PID refusal (lines 115-120), and ContainerService.find_by_peer_pid resolution with the caller_unresolved refusal (lines 148-153), all preceding the depth check and create_with_prompt.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 4,
+            "line_start": 1,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "protected_operation",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 37,
+            "line_start": 36,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 120,
+            "line_start": 115,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "guard_registration",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 153,
+            "line_start": 148,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "guard_registration",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 153,
+            "line_start": 150,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 214,
+            "line_start": 199,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "guard_registration",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 177,
+            "line_start": 172,
+            "path": "src/claudebox_daemon/domain/sessions/spawn.py",
+            "role": "commit_point",
+            "source_sha256": "d61827cdb9812d7a1645fab02cf2237abccdc0aa0e0e34946ca73b34ecd1f4db"
+          },
+          {
+            "line_end": 1192,
+            "line_start": 1179,
+            "path": "src/claudebox/agent_session/runtime_claude.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1464d97b7dc5af03b6e1eb7d1f12bcce679fd2e1d068d0a6e4c6a18e99005af9"
+          },
+          {
+            "line_end": 77,
+            "line_start": 57,
+            "path": "src/claudebox/agent_session/_sibling_sessions.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "cc27723c2d05afb736934e3d77be761f894f1b98360790c0d911137208ec6196"
+          }
+        ],
+        "forbidden_condition": "Serving a spawn request from a peer whose PID cannot be read via SO_PEERCRED (peer_unidentified, spawn.py lines 115-120) or whose PID does not resolve to a container with a session id (caller_unresolved, spawn.py lines 148-153); treating the payload's caller_session_id as identity would violate the stated invariant (spawn.py lines 36-37).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ContainerService.find_by_peer_pid implementation is not supplied; PID lookup/reuse semantics are unverifiable from the supplied source.",
+          "Whether any other daemon entry point can reach SessionService.create_with_prompt without these gates is not determinable from the supplied views."
+        ],
+        "protected_operation": "Serving spawn requests on the workspace spawn socket and creating sessions on behalf of callers (SpawnListener._process up to create_with_prompt).",
+        "protected_resource": "The spawn socket service surface (CONTAINER_SESSIONS_MOUNT / SPAWN_SOCKET_NAME): only kernel-identified container peers that resolve to a live session may trigger session creation.",
+        "protection_obligation": "The daemon spawn listener must identify the connecting peer via kernel credentials (SO_PEERCRED) and resolve that PID to a container with a session id before serving a spawn request, refusing peer_unidentified and caller_unresolved before any creation; payload caller_session_id is recorded lineage, never identity.",
+        "scope_limits": [
+          "Identity is the SO_PEERCRED PID resolved through the container registry; payload caller_session_id is accepted only as lineage, never as identity.",
+          "Applies to the unix-socket spawn path only; no other session-creation entry points are present in the supplied views.",
+          "Socket filesystem permissions (chmod 0600, line 77) provide host-user separation and are a separate mechanism from this peer-identity gate.",
+          "Stratum assignment is provisional pending visibility into create_with_prompt's internals."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied view shows the orchestration/API layer that calls ClaudeRuntime.reconnect_mcp_server or toggle_mcp_server; the caller path (HTTP endpoint, MCP panel handler, or agent-reachable tool) is unknown, hence agent_mediation not_established for the MCP-protection contract.",
+      "No supplied view shows who calls make_web_tools or registers web_fetch/web_search into a running agent; tool-dispatch wiring beyond the @tool decorator is unverified.",
+      "SessionService.create_with_prompt and SessionService.compute_spawn_depth implementations are not supplied; the effects committed at the spawn commit point (container start vs. session-record persistence) cannot be attributed to specific effect strata.",
+      "Only ClaudeRuntime is supplied; the LangGraph runtime adapter that shares SiblingSessionClient is not shown, so guard parity (reconnect/toggle protection, web tools) in that runtime is unknown.",
+      "claude_agent_sdk internals (reconnect_mcp_server/toggle_mcp_server behavior for an in-process create_sdk_mcp_server server) are external to the supplied sources.",
+      "Behavior labels are unavailable per the stated scope; all guard behavior is asserted from the line-numbered source text only."
+    ],
+    "repository": "jakubro/claudebox",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:9696a101207f0f18a534dc5845c88db0"
+  },
+  "request_sha256": "9f86ee0aedc309694da06a3aa1c2f6bdd367a995f351030b72b78b0955f13429",
+  "response_sha256": "c21574f13a9aeb006db52877664f0d7ac164ec7e9934ba685a9ec929588783cb",
+  "state": "completed",
+  "tokens": 46078,
+  "unit": "v24-screen:9696a101207f0f18a534dc5845c88db0"
+}

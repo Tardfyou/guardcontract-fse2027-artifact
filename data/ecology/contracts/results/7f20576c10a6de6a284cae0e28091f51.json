@@ -1,0 +1,175 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The awaited call main_agent.commit_session_memory(...) inside _maybe_commit_session (chat.py:34), through which all three triggers funnel before the session is removed from the activity table.",
+        "contract_id": "ecological-contract:ce3a32004383c8da5eb06ec23924784b",
+        "declared_mechanism": "Three-trigger commit guard in gis_agent/API/chat.py: (1) explicit endpoint POST /api/chat/commit which commits and then pops the session from _session_activity to prevent duplicate commits (chat.py:150-162); (2) new-session trigger in guard_commit_on_new_request comparing _last_session_id (chat.py:54-58); (3) inactivity timeout trigger scanning _session_activity against _MEMORY_COMMIT_TIMEOUT_SECONDS, default 30 minutes (chat.py:22, 48-52); the guard is invoked at the entry of /api/chat (chat.py:70) and /api/chat/stream (chat.py:109) before the conversation executes.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 24,
+            "line_start": 14,
+            "path": "gis_agent/API/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "8214e9741407ef3fcc50f47cdba0991f40744225963c341de265cc6f9d6c9eba"
+          },
+          {
+            "line_end": 62,
+            "line_start": 43,
+            "path": "gis_agent/API/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "8214e9741407ef3fcc50f47cdba0991f40744225963c341de265cc6f9d6c9eba"
+          },
+          {
+            "line_end": 70,
+            "line_start": 65,
+            "path": "gis_agent/API/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "8214e9741407ef3fcc50f47cdba0991f40744225963c341de265cc6f9d6c9eba"
+          },
+          {
+            "line_end": 162,
+            "line_start": 150,
+            "path": "gis_agent/API/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "8214e9741407ef3fcc50f47cdba0991f40744225963c341de265cc6f9d6c9eba"
+          },
+          {
+            "line_end": 156,
+            "line_start": 152,
+            "path": "gis_agent/API/chat.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8214e9741407ef3fcc50f47cdba0991f40744225963c341de265cc6f9d6c9eba"
+          },
+          {
+            "line_end": 40,
+            "line_start": 31,
+            "path": "gis_agent/API/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "8214e9741407ef3fcc50f47cdba0991f40744225963c341de265cc6f9d6c9eba"
+          },
+          {
+            "line_end": 37,
+            "line_start": 33,
+            "path": "gis_agent/API/chat.py",
+            "role": "commit_point",
+            "source_sha256": "8214e9741407ef3fcc50f47cdba0991f40744225963c341de265cc6f9d6c9eba"
+          }
+        ],
+        "forbidden_condition": "Premature persistence of an in-progress (not yet ended) session's conversation into long-term memory \u2014 per the endpoint contract, writing 'Semi-finished products' (half-finished results) or pre-retraction incorrect facts \u2014 and duplicate re-commit of the same session segment after it has already been committed.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Implementation of MainAgent.commit_session_memory: the backing store type (database / file / external service) needed to confirm the effect_stratum, and whether the persisted content includes agent-generated messages.",
+          "Whether MainAgent also triggers memory commits internally during agent execution (which would establish an agent lifecycle binding) \u2014 not visible in supplied source.",
+          "Whether MainAgent.get_stream requests share the SupervisorGraph/guardrail path (MainAgent implementation not supplied).",
+          "Deployed value of MEMORY_COMMIT_TIMEOUT_MINUTES and whether deployment is single-process as the guard's comments assume."
+        ],
+        "protected_operation": "Long-term-memory persistence of a session: main_agent.commit_session_memory(session_id, user_id), declared to perform extraction + dedup + persistence of the session conversation.",
+        "protected_resource": "Per-session long-term memory records keyed by (session_id, user_id) written through MainAgent.commit_session_memory.",
+        "protection_obligation": "Session conversation data may be persisted to long-term memory only at session end via the declared 'Three insurances' (three-insurance) commit guard \u2014 an explicit POST /api/chat/commit call, a new-session switch, or an inactivity timeout; in-progress sessions must not be committed (avoiding half-finished answers or facts the user retracted entering long-term memory), and an already-committed session segment must not be re-committed. (Raised as a secondary guard in the second-phase reviewer rationale; compiled separately as a distinct source-supported obligation.)",
+        "scope_limits": [
+          "Guard state (_session_activity, _last_session_id, timeout constant) is in-process module-level state; the source comments state this is sufficient only for single-process deployment and that multi-worker deployments need shared storage such as Redis (chat.py:19-24).",
+          "Commit failures are silently swallowed: _maybe_commit_session logs a warning and returns 0 without retry or blocking (chat.py:31-40).",
+          "The guard only creates commit triggers; it does not veto any persistence call \u2014 the explicit /api/chat/commit endpoint commits whatever session_id it receives, and avoiding in-progress commits relies on the frontend calling it only at conversation end (chat.py:152-156).",
+          "The timeout sweep deliberately skips the currently active session (sid != session_id, chat.py:49-52).",
+          "The persistence target implementation (MainAgent.commit_session_memory) is not in the supplied views; the 'database' stratum is provisional pending confirmation of the backing store (could be file or external service).",
+          "Agent mediation is not established: the commit is invoked from HTTP request handlers, not from a shown agent tool call or lifecycle hook, and the dataflow of agent-generated content into the persisted record lies inside the unsupplied MainAgent."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Evaluation of the route_after_guardrail conditional edge after guardrail_check completes: when state.guardrail_blocked is True the graph commits to END (run terminates before the supervisor node executes); otherwise it commits to the supervisor node (guardrail.py:198-200, wired at supervisor_graph.py:184-188).",
+        "contract_id": "ecological-contract:fbc11759ebf9e7f7e4134b85b47ec73a",
+        "declared_mechanism": "LangGraph input-side guardrail node: SupervisorGraph._build_graph registers guardrail_check via builder.add_node and wires START -> guardrail_check -> conditional edges (route_after_guardrail) that map guardrail_blocked=True to END and otherwise to 'supervisor' (supervisor_graph.py:180-188). The guard uses a separate GLM-4-Flash model (temperature=0, _mode, Pydantic-validated JailbreakOutput with one retry) isolated from the main Qwen chain, declared as model-diversity defense; the module docstring declares a fail-open error policy.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 188,
+            "line_start": 180,
+            "path": "gis_agent/agent/multi_agent/supervisor_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "1c7da22d5fc6d0292f52b85350e0b0a5150d33381ed9e25b06dbd386f8bf3709"
+          },
+          {
+            "line_end": 171,
+            "line_start": 134,
+            "path": "gis_agent/agent/guardrails/guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "089fcffce5e8f711230aaba17314ade2e1155341deb496a3a1d0fc492c8abd2b"
+          },
+          {
+            "line_end": 64,
+            "line_start": 57,
+            "path": "gis_agent/agent/guardrails/guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "089fcffce5e8f711230aaba17314ade2e1155341deb496a3a1d0fc492c8abd2b"
+          },
+          {
+            "line_end": 159,
+            "line_start": 151,
+            "path": "gis_agent/agent/multi_agent/supervisor_graph.py",
+            "role": "protected_operation",
+            "source_sha256": "1c7da22d5fc6d0292f52b85350e0b0a5150d33381ed9e25b06dbd386f8bf3709"
+          },
+          {
+            "line_end": 200,
+            "line_start": 198,
+            "path": "gis_agent/agent/guardrails/guardrail.py",
+            "role": "commit_point",
+            "source_sha256": "089fcffce5e8f711230aaba17314ade2e1155341deb496a3a1d0fc492c8abd2b"
+          },
+          {
+            "line_end": 188,
+            "line_start": 182,
+            "path": "gis_agent/agent/multi_agent/supervisor_graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1c7da22d5fc6d0292f52b85350e0b0a5150d33381ed9e25b06dbd386f8bf3709"
+          }
+        ],
+        "forbidden_condition": "A user message classified as jailbreak/prompt-injection (JailbreakOutput.is_safe == False: attempts to bypass or override system instructions/policy, extract system prompts or internal data, 'ignore all instructions above', SQL-injection fragments, unlimited-AI role-play, smuggled code/instruction sequences) proceeding past the guardrail into the supervisor node of the graph instead of terminating at END.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether MainAgent.get_stream (chat.py:75-79, 113-117) invokes SupervisorGraph, or another graph that includes guardrail_check \u2014 the MainAgent implementation is not in the supplied views.",
+          "Runtime values of settings.guardrail_enabled, guardrail_check_relevance, guardrail_block_irrelevant, and presence of zhipu_api_key (config module not supplied).",
+          "Whether any other invocation path can reach the supervisor node without passing START -> guardrail_check (e.g., single-agent mode mentioned in supervisor_graph.py:7).",
+          "Whether the END short-circuit also prevents subsequent turns served from the MemorySaver checkpointer from re-driving previously blocked input, given that only the latest message is re-checked."
+        ],
+        "protected_operation": "Execution of the SupervisorGraph agent chain on user input \u2014 the supervisor routing decision (supervisor_decision node) and the downstream sub-agent nodes (data/knowledge/spatial/general) with their tool calls \u2014 which is declared to run only on input that passed the guardrail.",
+        "protected_resource": "The supervisor multi-agent graph main chain (supervisor node plus DATA/KNOWLEDGE/SPATIAL/GENERAL worker nodes) declared in gis_agent/agent/multi_agent/supervisor_graph.py.",
+        "protection_obligation": "Jailbreak / prompt-injection user messages must be intercepted at the entry of the supervisor multi-agent graph: the guardrail_check node classifies the latest user message, and on an unsafe (jailbreak/injection) verdict sets guardrail_blocked=True so that route_after_guardrail short-circuits the run to END, so that such input does not drive the supervisor decision or its downstream worker/tool chain. (Merged from both first- and second-phase reviewer wordings, which state the same obligation.)",
+        "scope_limits": [
+          "Fail-open policy as declared in source: missing ZHIPU_API_KEY, guardrail model initialization failure, or classification-call failure all return guardrail_blocked=False and let the input through (guardrail.py:14-16, 146-154, 162-164); only an affirmative unsafe verdict blocks.",
+          "Master switch settings.guardrail_enabled=False disables the check entirely (guardrail.py:136-138); enforcement therefore depends on configuration values not present in supplied source.",
+          "Only the latest HumanMessage is classified; earlier history is assumed already vetted (guardrail.py:140-144).",
+          "The domain-relevance check in the same node is log-only by default and blocks only when settings.guardrail_block_irrelevant=True (guardrail.py:173-189); that config-gated off-domain interception is a distinct conditional obligation and is not part of this contract's forbidden condition.",
+          "Classification is an LLM judge (probabilistic), not deterministic matching; its efficacy is not assessable from source and is not asserted here.",
+          "This contract covers only the input-side guardrail; the worker-internal verify_answer anti-hallucination loop is explicitly declared a separate, complementary mechanism (guardrail.py:12-13; supervisor_graph.py:72-94) and is not compiled as an obligation here because no reviewer raised it as one.",
+          "Supplied source does not show that chat.py's MainAgent.get_stream actually routes through SupervisorGraph, so application of this guard to the /api/chat and /api/chat/stream requests is not yet bound."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "agent/main_agent/MainAgent.py is not in the supplied views: the linkage between the /api/chat endpoints and SupervisorGraph (and thus guardrail_check) is unevidenced, and MainAgent.commit_session_memory's backing store and content handling are unknown.",
+      "config.settings definitions and deployed values (guardrail_enabled, guardrail_check_relevance, guardrail_block_irrelevant, zhipu_api_key, guardrail_model, guardrail_base_url) are not supplied.",
+      "agent/multi_agent/sub_agents.py and agent/tools/middleware.py are not supplied: supervisor_decision routing, worker tool dispatch, and verify_answer mechanics are not visible, so no contract is compiled for them.",
+      "models/schema.py (ChatRequest / MemoryCommitRequest field validation) is not supplied.",
+      "Whether the jailbreak END short-circuit has side effects on multi-turn checkpointer state is not determinable from supplied source."
+    ],
+    "repository": "leihao688/GISService",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7f20576c10a6de6a284cae0e28091f51"
+  },
+  "request_sha256": "ee8a43ec1b67512663b04dcfeffe1f654381b08928c37d6bec84110dc3c37264",
+  "response_sha256": "8b52be3e62528798b50d7baf2643f285a066f0d1fa49c4916e9b4f708da204fe",
+  "state": "completed",
+  "tokens": 25230,
+  "unit": "v24-screen:7f20576c10a6de6a284cae0e28091f51"
+}

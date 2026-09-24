@@ -1,0 +1,508 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "execute_tool(tool_name, repo=repo, **tool_kwargs) inside the agent tool loop (src/agents/domain_agents.py:199).",
+        "contract_id": "ecological-contract:0e6ee0478d43cd25ae93b9bc05802ef3",
+        "declared_mechanism": "Per-tool pre-execution check in the agent tool loop: if is_destructive or requires_human_approval, append a pending approval record, log the decision, and continue without calling execute_tool (src/agents/domain_agents.py:184-196).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 18,
+            "line_start": 18,
+            "path": "src/agents/domain_agents.py",
+            "role": "forbidden_condition",
+            "source_sha256": "adc046defbb70eee73bb1138524827823b239b09e384880d012f7f233ceb489a"
+          },
+          {
+            "line_end": 196,
+            "line_start": 184,
+            "path": "src/agents/domain_agents.py",
+            "role": "guard_registration",
+            "source_sha256": "adc046defbb70eee73bb1138524827823b239b09e384880d012f7f233ceb489a"
+          },
+          {
+            "line_end": 156,
+            "line_start": 154,
+            "path": "src/agents/domain_agents.py",
+            "role": "protected_operation",
+            "source_sha256": "adc046defbb70eee73bb1138524827823b239b09e384880d012f7f233ceb489a"
+          },
+          {
+            "line_end": 199,
+            "line_start": 198,
+            "path": "src/agents/domain_agents.py",
+            "role": "commit_point",
+            "source_sha256": "adc046defbb70eee73bb1138524827823b239b09e384880d012f7f233ceb489a"
+          },
+          {
+            "line_end": 156,
+            "line_start": 140,
+            "path": "src/agents/domain_agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "adc046defbb70eee73bb1138524827823b239b09e384880d012f7f233ceb489a"
+          }
+        ],
+        "forbidden_condition": "Executing an owned tool for which is_destructive(tool_name) or requires_human_approval(tool_name) is true (classification predicates imported at src/agents/domain_agents.py:18).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Definitions of is_destructive and requires_human_approval (src/agents/domain_agents.py:18) are not supplied, so the forbidden tool set cannot be enumerated."
+        ],
+        "protected_operation": "Tool execution by CollaborativeDomainAgent.process over its selected owned tools.",
+        "protected_resource": "The domain agents' tool registry dispatch (execute_tool over agent-owned tools).",
+        "protection_obligation": "Collaborative domain agents must not execute tools flagged destructive or requiring human approval; such tools are diverted to a pending-approval queue and skipped before the agent's execute_tool call.",
+        "scope_limits": [
+          "The concrete forbidden/approval-gated tool classifications live in src.intelligence.tools, which is not supplied.",
+          "External effects behind execute_tool are unknown beyond the invocation boundary; the commit is classified as tool_execution (invocation-only at this boundary).",
+          "Only the CollaborativeDomainAgent.process loop is claimed; SupervisorAgent and KnowledgeAgent perform no execute_tool dispatch."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "docker_scanner.restart_container / docker_scanner.ensure_running calls in Guardian.run (src/guardian.py:92-95), reached only after the allowed decision (src/guardian.py:77-91).",
+        "contract_id": "ecological-contract:5e81803ad317e7c19c872a0171ac515a",
+        "declared_mechanism": "Guardian._restart_decision enforces max_restart_attempts (src/guardian.py:204-205), the restart_cooldown_seconds window (src/guardian.py:207-214), and AppPolicyEngine.evaluate('restart_container', ...) with short-circuits on FORBIDDEN (src/guardian.py:224-229) and APPROVAL_REQUIRED (src/guardian.py:230-235); run() records a 'skipped' action and continues without restarting when not allowed (src/guardian.py:78-91).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 236,
+            "line_start": 197,
+            "path": "src/guardian.py",
+            "role": "guard_registration",
+            "source_sha256": "1867e2d7ada1dd60c4af56d6782ed86cf3e099682ef1ed1687a68420d70b91b4"
+          },
+          {
+            "line_end": 235,
+            "line_start": 204,
+            "path": "src/guardian.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1867e2d7ada1dd60c4af56d6782ed86cf3e099682ef1ed1687a68420d70b91b4"
+          },
+          {
+            "line_end": 91,
+            "line_start": 63,
+            "path": "src/guardian.py",
+            "role": "protected_operation",
+            "source_sha256": "1867e2d7ada1dd60c4af56d6782ed86cf3e099682ef1ed1687a68420d70b91b4"
+          },
+          {
+            "line_end": 95,
+            "line_start": 92,
+            "path": "src/guardian.py",
+            "role": "commit_point",
+            "source_sha256": "1867e2d7ada1dd60c4af56d6782ed86cf3e099682ef1ed1687a68420d70b91b4"
+          }
+        ],
+        "forbidden_condition": "Restarting a container when the attempt limit is reached, the cooldown window has not elapsed, or policy evaluation returns FORBIDDEN or APPROVAL_REQUIRED (each returns allowed=False).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, lifecycle hook, or MCP dispatch invokes Guardian.run/_restart_decision at runtime; none appears in supplied source, and the advertised restart_container MCP tool (src/dashboard.py:1602-1605) has no supplied server-side binding."
+        ],
+        "protected_operation": "Automatic restart of unhealthy Docker containers in Guardian.run.",
+        "protected_resource": "Docker containers managed via the guardian's docker_scanner (container lifecycle).",
+        "protection_obligation": "Guardian-driven automatic container restarts must not execute unless Guardian._restart_decision allows them: restart attempt count below max_restart_attempts, outside the cooldown window, and an AppPolicyEngine verdict that is neither FORBIDDEN nor APPROVAL_REQUIRED.",
+        "scope_limits": [
+          "No agent tool dispatch, lifecycle hook, or agent-generated input is wired to Guardian.run in supplied source; the gate is claimed as platform automation, not agent mediation.",
+          "Restart history persistence to restart_history. (src/guardian.py:269-277) and the post-restart email alert (src/guardian.py:100-104) are separate effects not gated by this obligation.",
+          "SelfHealingEngine restarts are covered by a separate contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "execute_tool(tool_name, repo=repo or self.repo) in the playground live loop (src/ai_workforce.py:1716).",
+        "contract_id": "ecological-contract:9156be50d0f28480ac088dd862b676aa",
+        "declared_mechanism": "get_allowed_tool_names computes the permitted set (src/ai_workforce.py:1570-1584); require_tool_allowed raises WorkforceExecutionBlocked('tool_not_allowed') for any tool outside it (src/ai_workforce.py:1586-1588); playground_execute calls require_tool_allowed immediately before execute_tool for each tool, and the dashboard endpoint surfaces the block as HTTP 409 (src/dashboard.py:7635-7636).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 1584,
+            "line_start": 1570,
+            "path": "src/ai_workforce.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78136c4f1d43f23947d22411055a68712da9b8e37445650e9698414a832e5bdd"
+          },
+          {
+            "line_end": 1588,
+            "line_start": 1586,
+            "path": "src/ai_workforce.py",
+            "role": "guard_registration",
+            "source_sha256": "78136c4f1d43f23947d22411055a68712da9b8e37445650e9698414a832e5bdd"
+          },
+          {
+            "line_end": 1689,
+            "line_start": 1672,
+            "path": "src/ai_workforce.py",
+            "role": "protected_operation",
+            "source_sha256": "78136c4f1d43f23947d22411055a68712da9b8e37445650e9698414a832e5bdd"
+          },
+          {
+            "line_end": 1716,
+            "line_start": 1712,
+            "path": "src/ai_workforce.py",
+            "role": "commit_point",
+            "source_sha256": "78136c4f1d43f23947d22411055a68712da9b8e37445650e9698414a832e5bdd"
+          },
+          {
+            "line_end": 7639,
+            "line_start": 7608,
+            "path": "src/dashboard.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5a526a63221f3c08c2ec1669473494aaa9617c9be3b02caa435dedfa118734a8"
+          }
+        ],
+        "forbidden_condition": "Executing a tool not in the agent's allowed tool names (explicit allowed permissions or configured tools, minus explicitly denied tools, per get_allowed_tool_names).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "External effects behind the registered tool names (the execute_tool implementation) are not supplied."
+        ],
+        "protected_operation": "WorkforceManager.playground_execute live-mode tool execution on behalf of a workforce agent.",
+        "protected_resource": "The workforce agent's tool permission set (workforce_tool_permissions plus agent tool configuration).",
+        "protection_obligation": "Workforce playground live executions must not run tools outside the workforce agent's allowed tool set; require_tool_allowed must raise WorkforceExecutionBlocked('tool_not_allowed') immediately before each execute_tool call.",
+        "scope_limits": [
+          "Adjacent WorkforceExecutionBlocked gates on the same execution \u2014 agent_not_active (src/ai_workforce.py:1684-1685) and budget_exceeded (src/ai_workforce.py:1687-1689) \u2014 are separate conditions not claimed here.",
+          "Simulation mode (simulate=True) executes no tools; only the live branch (src/ai_workforce.py:1704-1716) is claimed.",
+          "Knowledge-source read scoping (get_readable_knowledge_sources) is a separate restriction not claimed."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The run_pipeline execution step invoking _execute_remediation (src/autonomous.py:278), whose container-restart leg commits at SelfHealingEngine._heal_container's DockerScanner.restart_container call (src/healing.py:124).",
+        "contract_id": "ecological-contract:9333e2a1329addd1a39eb67ef8796378",
+        "declared_mechanism": "AutonomousPipeline._check_approval evaluates every plan action via AppPolicyEngine.evaluate; FORBIDDEN logs a warning and returns False, APPROVAL_REQUIRED marks the plan requires_approval and returns False; run_pipeline then sets status 'awaiting_approval', publishes APPROVAL_REQUESTED, and returns before the execution step.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 497,
+            "line_start": 481,
+            "path": "src/autonomous.py",
+            "role": "guard_registration",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          },
+          {
+            "line_end": 269,
+            "line_start": 256,
+            "path": "src/autonomous.py",
+            "role": "forbidden_condition",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          },
+          {
+            "line_end": 278,
+            "line_start": 271,
+            "path": "src/autonomous.py",
+            "role": "protected_operation",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          },
+          {
+            "line_end": 520,
+            "line_start": 505,
+            "path": "src/autonomous.py",
+            "role": "commit_point",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          },
+          {
+            "line_end": 124,
+            "line_start": 120,
+            "path": "src/healing.py",
+            "role": "commit_point",
+            "source_sha256": "921b47eaec89fa7b7f08fb85e26772162a3211438ca8a9738e71e6237ca7c1e0"
+          },
+          {
+            "line_end": 418,
+            "line_start": 402,
+            "path": "src/autonomous.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          }
+        ],
+        "forbidden_condition": "Executing a remediation plan action whose policy evaluation verdict is ActionVerdict.FORBIDDEN or ActionVerdict.APPROVAL_REQUIRED.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the agent registry dispatched in _generate_plan (src/autonomous.py:402-418) is always an AI agent registry at runtime \u2014 dashboard lifespan wires orchestrator.registry into the pipeline (src/dashboard.py:1756-1762) but the constructor allows agent_registry=None (src/dashboard.py:520-527)."
+        ],
+        "protected_operation": "Execution of the autonomous incident remediation plan by AutonomousPipeline._execute_remediation, dispatched to SelfHealingEngine healing events that reach the Docker container restart.",
+        "protected_resource": "Remediation plan actions targeting Docker containers (container restart effect) during autonomous incident resolution.",
+        "protection_obligation": "Autonomous pipeline remediation execution (container-restart leg) must not run any plan action that AppPolicyEngine classifies FORBIDDEN or APPROVAL_REQUIRED; the _check_approval short-circuit must return the pipeline as awaiting_approval before _execute_remediation is invoked.",
+        "scope_limits": [
+          "Plans with an empty actions list pass _check_approval trivially (src/autonomous.py:482-484); with no agent registry wired, the generated plan has no actions and the gate has nothing to block.",
+          "The same pipeline gate also protects the notification-retry communication leg, emitted as a separate contract; re_run_health_check and restart_monitoring_job mappings produce no external restart effect.",
+          "The healing engine applies its own independent SAFE-verdict gate at the restart commit (separate contract); this contract claims only the pipeline-level verdict short-circuit.",
+          "Post-execution effects such as event-bus publications and incident resolution are not claimed by this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "manager.record_diagnostic_evidence persisting the approved diagnostic evidence packet (src/dashboard.py:1056-1064), reached only after the read-only/whitelist validation (src/dashboard.py:1028-1043).",
+        "contract_id": "ecological-contract:a45e2c6c973b3d2778fb1e56da58b838",
+        "declared_mechanism": "_execute_approved_diagnostics loads the incident's proposed_remediation plan, raises ValueError unless plan.read_only is true, validates every action name against the _READ_ONLY_DIAGNOSTIC_ACTIONS whitelist, requires prepare_evidence_packet, and only then records the diagnostic evidence; api_respond_approval invokes it only for approved incident_diagnostic_remediation requests.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1043,
+            "line_start": 1008,
+            "path": "src/dashboard.py",
+            "role": "guard_registration",
+            "source_sha256": "5a526a63221f3c08c2ec1669473494aaa9617c9be3b02caa435dedfa118734a8"
+          },
+          {
+            "line_end": 1029,
+            "line_start": 1028,
+            "path": "src/dashboard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5a526a63221f3c08c2ec1669473494aaa9617c9be3b02caa435dedfa118734a8"
+          },
+          {
+            "line_end": 1043,
+            "line_start": 1038,
+            "path": "src/dashboard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5a526a63221f3c08c2ec1669473494aaa9617c9be3b02caa435dedfa118734a8"
+          },
+          {
+            "line_end": 4353,
+            "line_start": 4343,
+            "path": "src/dashboard.py",
+            "role": "protected_operation",
+            "source_sha256": "5a526a63221f3c08c2ec1669473494aaa9617c9be3b02caa435dedfa118734a8"
+          },
+          {
+            "line_end": 1064,
+            "line_start": 1056,
+            "path": "src/dashboard.py",
+            "role": "commit_point",
+            "source_sha256": "5a526a63221f3c08c2ec1669473494aaa9617c9be3b02caa435dedfa118734a8"
+          }
+        ],
+        "forbidden_condition": "Executing, from the approval endpoint, a proposed plan that is not flagged read_only, or whose requested actions fall outside _READ_ONLY_DIAGNOSTIC_ACTIONS or omit prepare_evidence_packet.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether proposed_remediation plans reaching _execute_approved_diagnostics can originate from agent output: governance attributes proposals to the incident-ai agent (src/dashboard.py:1084-1113), but the plan body arrives via the operator-authenticated /propose-remediation request (src/dashboard.py:2793-2806); no agent-generated dataflow into the guarded plan is established in supplied source.",
+          "Storage backing of IncidentManager.record_diagnostic_evidence (database vs in-memory/file) is not shown; the database stratum is inferred from IncidentManager's platform_repository wiring (src/dashboard.py:452-455)."
+        ],
+        "protected_operation": "Execution of approved diagnostics-only remediation plans via _execute_approved_diagnostics from the /api/approvals/{approval_id}/respond path.",
+        "protected_resource": "Incident records and their proposed_remediation diagnostic plans (read-only evidence collection against the incident).",
+        "protection_obligation": "The approvals response path may execute only diagnostic plans flagged read_only whose actions are all within the _READ_ONLY_DIAGNOSTIC_ACTIONS whitelist and include prepare_evidence_packet; any other plan or action must be refused before diagnostics are recorded against the incident.",
+        "scope_limits": [
+          "Only the approvals-endpoint execution path is claimed; the /api/ai/approve, /api/ai/reject, and /api/approval/respond approval bookkeeping stores (src/dashboard.py:5770-5854, 6098-6120) are separate state mutations not gated by this whitelist.",
+          "requested_actions from the approval details override the stored action names and are checked against the same whitelist (src/dashboard.py:1037-1041).",
+          "Whitelisted actions are read-only data collection; the recorded evidence packet is the only mutation claimed by this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "self._docker.restart_container(container_name) in SelfHealingEngine._heal_container (src/healing.py:124).",
+        "contract_id": "ecological-contract:f5ce1ac0037e3361ee8f3af50165e88b",
+        "declared_mechanism": "SelfHealingEngine._heal_container evaluates 'restart_container' via AppPolicyEngine.evaluate (src/healing.py:108) and, on any non-SAFE verdict, records a 'skipped' result and returns before the Docker scanner is touched (src/healing.py:109-113).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 65,
+            "line_start": 60,
+            "path": "src/healing.py",
+            "role": "forbidden_condition",
+            "source_sha256": "921b47eaec89fa7b7f08fb85e26772162a3211438ca8a9738e71e6237ca7c1e0"
+          },
+          {
+            "line_end": 113,
+            "line_start": 106,
+            "path": "src/healing.py",
+            "role": "guard_registration",
+            "source_sha256": "921b47eaec89fa7b7f08fb85e26772162a3211438ca8a9738e71e6237ca7c1e0"
+          },
+          {
+            "line_end": 94,
+            "line_start": 90,
+            "path": "src/healing.py",
+            "role": "protected_operation",
+            "source_sha256": "921b47eaec89fa7b7f08fb85e26772162a3211438ca8a9738e71e6237ca7c1e0"
+          },
+          {
+            "line_end": 124,
+            "line_start": 120,
+            "path": "src/healing.py",
+            "role": "commit_point",
+            "source_sha256": "921b47eaec89fa7b7f08fb85e26772162a3211438ca8a9738e71e6237ca7c1e0"
+          },
+          {
+            "line_end": 418,
+            "line_start": 402,
+            "path": "src/autonomous.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          },
+          {
+            "line_end": 520,
+            "line_start": 505,
+            "path": "src/autonomous.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          }
+        ],
+        "forbidden_condition": "Executing DockerScanner.restart_container when the healing policy evaluation verdict is not SAFE, per the engine contract that only SAFE-verdict actions execute automatically while APPROVAL_REQUIRED actions are queued and FORBIDDEN actions are rejected.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "SelfHealingEngine._heal_container autonomous restart of an unhealthy container.",
+        "protected_resource": "Docker container restart via the healing engine's docker scanner.",
+        "protection_obligation": "SelfHealingEngine container restarts must not execute unless AppPolicyEngine returns ActionVerdict.SAFE for 'restart_container'; FORBIDDEN and APPROVAL_REQUIRED verdicts block the Docker restart.",
+        "scope_limits": [
+          "The engine is also invoked directly from pipeline event handlers (e.g., src/autonomous.py:142-143, 161-162) without agent-generated plans; on those paths only this engine-level SAFE gate applies.",
+          "The same SAFE gate also guards retry_notification, re_run_health_check, and restart_monitoring_job (src/healing.py:144-199); only the container-restart commit is claimed here.",
+          "Guardian-path restarts use a separate decision mechanism (separate contract)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "AutonomousPipeline._execute_remediation healing dispatch (src/autonomous.py:515-520) reaching SelfHealingEngine._retry_notification's notifier send calls (src/healing.py:157-166).",
+        "contract_id": "ecological-contract:f72fb4064c0d0840c3a4061bc89165d5",
+        "declared_mechanism": "Pipeline-level _check_approval verdict gate prevents FORBIDDEN/APPROVAL_REQUIRED actions from reaching _execute_remediation's healing dispatch, where 'retry_notification' maps to EventType.NOTIFICATION_FAILED (src/autonomous.py:627-634) and SelfHealingEngine additionally requires an ActionVerdict.SAFE evaluation before delivery (src/healing.py:146-148).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 497,
+            "line_start": 481,
+            "path": "src/autonomous.py",
+            "role": "guard_registration",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          },
+          {
+            "line_end": 496,
+            "line_start": 490,
+            "path": "src/autonomous.py",
+            "role": "forbidden_condition",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          },
+          {
+            "line_end": 155,
+            "line_start": 144,
+            "path": "src/healing.py",
+            "role": "protected_operation",
+            "source_sha256": "921b47eaec89fa7b7f08fb85e26772162a3211438ca8a9738e71e6237ca7c1e0"
+          },
+          {
+            "line_end": 520,
+            "line_start": 515,
+            "path": "src/autonomous.py",
+            "role": "commit_point",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          },
+          {
+            "line_end": 166,
+            "line_start": 157,
+            "path": "src/healing.py",
+            "role": "commit_point",
+            "source_sha256": "921b47eaec89fa7b7f08fb85e26772162a3211438ca8a9738e71e6237ca7c1e0"
+          },
+          {
+            "line_end": 418,
+            "line_start": 402,
+            "path": "src/autonomous.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          },
+          {
+            "line_end": 634,
+            "line_start": 627,
+            "path": "src/autonomous.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "73b7b1e8610582a8d265b0234aaef3f5bb88327b635f6269161efd0c731faa4f"
+          }
+        ],
+        "forbidden_condition": "Delivering a retried notification for a remediation action whose policy verdict is FORBIDDEN or APPROVAL_REQUIRED (blocked at src/autonomous.py:490-496 before the healing dispatch).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether agent-generated plan actions mapping to retry_notification are always produced by the AI agent registry at runtime (same wiring question as the restart-leg contract)."
+        ],
+        "protected_operation": "SelfHealingEngine._retry_notification delivery of retried notifications (email/slack/discord) triggered by pipeline remediation execution.",
+        "protected_resource": "Outbound notification delivery channels invoked for autonomous remediation retries.",
+        "protection_obligation": "Autonomous pipeline remediation execution (notification-retry leg) must not deliver any remediation notification for a plan action that AppPolicyEngine classifies FORBIDDEN or APPROVAL_REQUIRED; the _check_approval short-circuit blocks the retry_notification action before healing dispatch.",
+        "scope_limits": [
+          "SelfHealingEngine's own SAFE-verdict gate at src/healing.py:146-148 is the pre-delivery guard on direct paths; this contract records the pipeline-level gate protecting the same delivery commit when the action originates from an agent-generated plan.",
+          "Direct event-bus invocations of healing.handle_event (e.g., src/autonomous.py:142-143, 161-162) reach the delivery without the pipeline plan gate; only the engine SAFE gate applies on that path.",
+          "Action names not present in _map_action_to_event produce no dispatch and no delivery."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "repo.upsert_secret(name, encrypted, category, actor=actor) (src/secrets.py:66-67), reached only with the Fernet-encrypted value (src/secrets.py:65).",
+        "contract_id": "ecological-contract:f98c0a4176fb877f87142f8d78efad87",
+        "declared_mechanism": "Fail-closed key derivation (_get_key raises RuntimeError for missing/invalid keys; _get_fernet builds Fernet only from a validated key) plus mandatory encrypt() of the value before repo.upsert_secret.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 17,
+            "line_start": 1,
+            "path": "src/secrets.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d74361479c0e4c7ebf2891cdad88ff784f0d1f4587f19d141aedbc3681e9ac1f"
+          },
+          {
+            "line_end": 49,
+            "line_start": 23,
+            "path": "src/secrets.py",
+            "role": "guard_registration",
+            "source_sha256": "d74361479c0e4c7ebf2891cdad88ff784f0d1f4587f19d141aedbc3681e9ac1f"
+          },
+          {
+            "line_end": 64,
+            "line_start": 61,
+            "path": "src/secrets.py",
+            "role": "protected_operation",
+            "source_sha256": "d74361479c0e4c7ebf2891cdad88ff784f0d1f4587f19d141aedbc3681e9ac1f"
+          },
+          {
+            "line_end": 68,
+            "line_start": 65,
+            "path": "src/secrets.py",
+            "role": "commit_point",
+            "source_sha256": "d74361479c0e4c7ebf2891cdad88ff784f0d1f4587f19d141aedbc3681e9ac1f"
+          }
+        ],
+        "forbidden_condition": "Persisting an unencrypted secret value, or reaching the persistence path without a valid Fernet key (missing, non-base64url, or not-exactly-32-bytes AEGISNEX_SECRET_KEY must raise before any store).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool or lifecycle hook invokes SecretManager.store_secret; none appears in supplied source."
+        ],
+        "protected_operation": "SecretManager.store_secret persistence of named secret values.",
+        "protected_resource": "Secret values at rest in the platform secrets store.",
+        "protection_obligation": "Secret values must never be persisted in plaintext: SecretManager.store_secret must Fernet-encrypt each value before the repository upsert commit and fail closed (raise RuntimeError) when AEGISNEX_SECRET_KEY is missing or invalid.",
+        "scope_limits": [
+          "The only supplied caller is the dashboard admin secrets endpoints requiring ADMIN_ROLES (src/dashboard.py:4207-4226); no agent tool, lifecycle hook, or agent-generated input reaches store_secret in supplied source.",
+          "If self._repo is None or lacks upsert_secret, store_secret returns the encrypted value without persistence; only the repository-backed commit is claimed."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Reviewer obligation on refresh-token rotation and family-wide revocation of revoked tokens (src/session.py:166-203 rotate_refresh_token inactive-session refusal; src/session.py:205-243 detect_token_theft family deactivation UPDATE) is ordinary web authentication with no supplied binding to an agent tool, lifecycle hook, or agent-generated input; excluded from contracts per study scope.",
+      "AuthManager integration with SessionStore (rotation and theft-detection call sites) is not supplied, so even the excluded session obligation's full enforcement path cannot be compiled from source.",
+      "Definitions of is_destructive and requires_human_approval in src.intelligence.tools are not supplied; the concrete forbidden/approval-gated tool sets for the domain-agent gate cannot be enumerated.",
+      "Implementation of execute_tool in src.intelligence.tools is not supplied; the external effects behind the domain-agent and workforce playground tool commits are unknown beyond the invocation boundary.",
+      "Storage backing of IncidentManager.record_diagnostic_evidence (database vs in-memory/file) is not shown in supplied source; the database stratum for the approval-diagnostics contract is inferred from IncidentManager's platform_repository wiring (src/dashboard.py:452-455).",
+      "MCP server source is not supplied; the advertised restart_container MCP tool (src/dashboard.py:1602-1605) cannot be bound to Guardian or SelfHealingEngine restart effects.",
+      "No caller of Guardian.run is shown in supplied source (Guardian is only wired into DashboardServices at src/dashboard.py:457-466); the runtime trigger for the Guardian restart path is unestablished."
+    ],
+    "repository": "sultan9723/AegisNex",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:50bba7746508614ddfd3e106fd229714"
+  },
+  "request_sha256": "2f3f5372e0f6f51bc91c053c8595e0331446fc34e76edec290397015b05d30b7",
+  "response_sha256": "b9c3dc8655f5920c61cfa4850dc52ab9efc28366527368df2ba19857f267993a",
+  "state": "completed",
+  "tokens": 193266,
+  "unit": "v24-screen:50bba7746508614ddfd3e106fd229714"
+}

@@ -1,0 +1,343 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The 'with lock:' critical sections in ParquetCollector.add_nodes and add_relationships where self.nodes / self.relationships are concatenated or assigned.",
+        "contract_id": "ecological-contract:2788d3cb613cb0fb2a133e8416eccf6b",
+        "declared_mechanism": "A per-instance threading.Lock lazily created in ParquetCollector.model_post_init and acquired in add_nodes and add_relationships before any mutation.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 219,
+            "line_start": 211,
+            "path": "genai_graph/kg/ingest/merge.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5cc18192de9905da7ddeed8baaa9986f7ba49d7eb04cfb174daa8c6dbcc16f26"
+          },
+          {
+            "line_end": 231,
+            "line_start": 226,
+            "path": "genai_graph/kg/ingest/merge.py",
+            "role": "guard_registration",
+            "source_sha256": "5cc18192de9905da7ddeed8baaa9986f7ba49d7eb04cfb174daa8c6dbcc16f26"
+          },
+          {
+            "line_end": 240,
+            "line_start": 233,
+            "path": "genai_graph/kg/ingest/merge.py",
+            "role": "commit_point",
+            "source_sha256": "5cc18192de9905da7ddeed8baaa9986f7ba49d7eb04cfb174daa8c6dbcc16f26"
+          },
+          {
+            "line_end": 251,
+            "line_start": 242,
+            "path": "genai_graph/kg/ingest/merge.py",
+            "role": "commit_point",
+            "source_sha256": "5cc18192de9905da7ddeed8baaa9986f7ba49d7eb04cfb174daa8c6dbcc16f26"
+          },
+          {
+            "line_end": 743,
+            "line_start": 741,
+            "path": "genai_graph/kg/ingest/merge.py",
+            "role": "protected_operation",
+            "source_sha256": "5cc18192de9905da7ddeed8baaa9986f7ba49d7eb04cfb174daa8c6dbcc16f26"
+          },
+          {
+            "line_end": 999,
+            "line_start": 986,
+            "path": "genai_graph/kg/ingest/merge.py",
+            "role": "protected_operation",
+            "source_sha256": "5cc18192de9905da7ddeed8baaa9986f7ba49d7eb04cfb174daa8c6dbcc16f26"
+          }
+        ],
+        "forbidden_condition": "Concurrent bundle-preparation tasks appending to the shared ParquetCollector's nodes/relationships dictionaries outside the collector lock (unsynchronized pa.concat_tables / dictionary assignment racing between threads).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether concurrent bundle preparation actually invokes the collector concurrently (task parallelism configuration not supplied).",
+          "Whether lock-free reads of the collector must also be serialized for the forbidden condition to hold is not specified in source."
+        ],
+        "protected_operation": "ParquetCollector.add_nodes and ParquetCollector.add_relationships appends performed against the module-global collector during batch merge (collector.add_nodes / collector.add_relationships in merge_nodes_batch / merge_relationships_batch).",
+        "protected_resource": "The module-global ParquetCollector instance (_parquet_collector, set via set_parquet_collector) and its nodes/relationships pa.Table dictionaries.",
+        "protection_obligation": "Concurrent bundle-preparation tasks must not mutate the module-global ParquetCollector's node/relationship tables except inside its registered threading.Lock; the commit point is the 'with lock:' critical section inside add_nodes/add_relationships in genai_graph/kg/ingest/merge.py.",
+        "scope_limits": [
+          "The lock covers only add_nodes/add_relationships mutations; count accessors get_node_count/get_relationship_count read the tables without the lock.",
+          "Guard is a process-internal threading.Lock; no multiprocess or cross-worker guarantee is declared.",
+          "Supplied views bind collector writes to the ingestion batch-merge path only; no agent tool in the supplied views writes to the collector."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "self.conn.execute(query, parameters) inside 'with _NATIVE_CALL_LOCK' in LadybugBackend.execute; super().execute_get_as_df(...) inside the same lock in execute_get_as_df; and the self.execute INSTALL/LOAD EXTENSION statements inside 'with _EXTENSION_LOCK' in _ensure_extension.",
+        "contract_id": "ecological-contract:44ba2e90024674bd447cfee0b8c215e0",
+        "declared_mechanism": "Two process-wide threading.RLock instances declared at module scope in genai_graph/kg/backend.py (_EXTENSION_LOCK, _NATIVE_CALL_LOCK) plus the _CALL_RE regex discriminator; execute()/execute_get_as_df() acquire _NATIVE_CALL_LOCK around conn.execute and whole-read materialization, and _ensure_extension() acquires _EXTENSION_LOCK around the INSTALL/LOAD pair with a double-checked per-connection _loaded_extensions cache.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 24,
+            "line_start": 18,
+            "path": "genai_graph/kg/backend.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 35,
+            "line_start": 27,
+            "path": "genai_graph/kg/backend.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 25,
+            "line_start": 25,
+            "path": "genai_graph/kg/backend.py",
+            "role": "guard_registration",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 36,
+            "line_start": 36,
+            "path": "genai_graph/kg/backend.py",
+            "role": "guard_registration",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 296,
+            "line_start": 283,
+            "path": "genai_graph/kg/backend.py",
+            "role": "protected_operation",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 295,
+            "line_start": 290,
+            "path": "genai_graph/kg/backend.py",
+            "role": "commit_point",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 311,
+            "line_start": 298,
+            "path": "genai_graph/kg/backend.py",
+            "role": "protected_operation",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 310,
+            "line_start": 308,
+            "path": "genai_graph/kg/backend.py",
+            "role": "commit_point",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 484,
+            "line_start": 467,
+            "path": "genai_graph/kg/backend.py",
+            "role": "guard_registration",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 502,
+            "line_start": 484,
+            "path": "genai_graph/kg/backend.py",
+            "role": "commit_point",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 1496,
+            "line_start": 1456,
+            "path": "genai_graph/kg/query/document_graph_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "daa32b838b0c33c2cd1bea13813f7b958e1dd7778984031eee1f2618f7e7cf06"
+          },
+          {
+            "line_end": 872,
+            "line_start": 860,
+            "path": "genai_graph/kg/query/document_graph_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "daa32b838b0c33c2cd1bea13813f7b958e1dd7778984031eee1f2618f7e7cf06"
+          }
+        ],
+        "forbidden_condition": "Concurrent execution of INSTALL/LOAD EXTENSION statements, or of native CALL statements, against one shared Ladybug Database from multiple connections/threads corrupts the native heap (observed as SIGSEGV / 'malloc(): unsorted double linked list corrupted' / 'free(): invalid size' during parallel hybrid searches).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether raw-connection execute sites in genai_graph/kg/ingest/merge.py (conn.conn extraction followed by kuzu_conn.execute) are required to be serialized under the same locks is not established by the supplied guard wiring.",
+          "Whether _CALL_RE regex matching is the complete discriminator for native CALL statements (multi-statement or embedded forms) is not established.",
+          "Reviewer rationale claims the locked backend is used by the CLI; no CLI source view is supplied to confirm that entry point binding."
+        ],
+        "protected_operation": "LadybugBackend.execute() and LadybugBackend.execute_get_as_df() execution of Cypher statements containing native CALL, and LadybugBackend._ensure_extension() issuance of INSTALL / LOAD EXTENSION statements (via ensure_vector_extension / ensure_fts_extension).",
+        "protected_resource": "The process-shared ladybug.Database and its native connections backing the knowledge graph.",
+        "protection_obligation": "All INSTALL/LOAD EXTENSION statements and native CALL statements (FTS/HNSW vector index queries, SHOW_INDEXES, table_info, show_tables, introspection) executed against a shared Ladybug/Kuzu Database must execute one-at-a-time process-wide: extension statements under _EXTENSION_LOCK and native CALL statements (including result materialization) under _NATIVE_CALL_LOCK, before the underlying conn.execute / result-walk commit.",
+        "scope_limits": [
+          "The locks bind only statements routed through LadybugBackend.execute / execute_get_as_df / _ensure_extension; code that extracts the raw connection and executes directly (e.g., merge_nodes_batch via conn.conn) is outside the declared lock scope per the supplied wiring.",
+          "Ordinary MATCH/RETURN Cypher reads remain fully concurrent by design (backend.py 27-35); only CALL and extension statements are serialized.",
+          "Serialization is within one Python process only; no cross-process serialization is declared.",
+          "CALL detection is the _CALL_RE regex over the query string; the Neo4jBackend alternative is an unimplemented placeholder."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "_KEEPALIVE_BACKENDS.append(backend) at shared-connection creation in _connect, and the conn.close() call inside LadybugBackend.close() as the ordered teardown commit.",
+        "contract_id": "ecological-contract:5f6aaaad2558a4b07a76dd859c77d09f",
+        "declared_mechanism": "_KEEPALIVE_BACKENDS, a process-lifetime list retaining every backend created by _connect (append at shared-connection creation), plus LadybugBackend.close(), which explicitly invokes Connection.close() (closing cached results and prepared statements, then unregistering from the Database) before dropping references.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 1327,
+            "line_start": 1322,
+            "path": "genai_graph/kg/query/document_graph_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "daa32b838b0c33c2cd1bea13813f7b958e1dd7778984031eee1f2618f7e7cf06"
+          },
+          {
+            "line_end": 1328,
+            "line_start": 1328,
+            "path": "genai_graph/kg/query/document_graph_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "daa32b838b0c33c2cd1bea13813f7b958e1dd7778984031eee1f2618f7e7cf06"
+          },
+          {
+            "line_end": 1340,
+            "line_start": 1331,
+            "path": "genai_graph/kg/query/document_graph_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "daa32b838b0c33c2cd1bea13813f7b958e1dd7778984031eee1f2618f7e7cf06"
+          },
+          {
+            "line_end": 1346,
+            "line_start": 1341,
+            "path": "genai_graph/kg/query/document_graph_tools.py",
+            "role": "commit_point",
+            "source_sha256": "daa32b838b0c33c2cd1bea13813f7b958e1dd7778984031eee1f2618f7e7cf06"
+          },
+          {
+            "line_end": 642,
+            "line_start": 634,
+            "path": "genai_graph/kg/backend.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 652,
+            "line_start": 634,
+            "path": "genai_graph/kg/backend.py",
+            "role": "protected_operation",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 651,
+            "line_start": 643,
+            "path": "genai_graph/kg/backend.py",
+            "role": "commit_point",
+            "source_sha256": "6bec8271079d0ae77f0050ca3456d40e46044d9740c5f6561d6885af426b2a11"
+          },
+          {
+            "line_end": 1378,
+            "line_start": 1370,
+            "path": "genai_graph/kg/query/document_graph_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "daa32b838b0c33c2cd1bea13813f7b958e1dd7778984031eee1f2618f7e7cf06"
+          }
+        ],
+        "forbidden_condition": "A Ladybug Connection object being garbage-collected while other threads still query the shared Database, corrupting the native heap (observed as SIGSEGV / 'free(): invalid size').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The implementation of genai_tk.utils.ladybug.get_shared_database and its shutdown-time ordered close path is not supplied; the shared-Database lifecycle beyond attach is unverified.",
+          "Whether keepalive retention is required for non-tool backend lifecycles is not established."
+        ],
+        "protected_operation": "Creation and retention of per-thread Document Graph backends in _connect (attach to the process-shared Database via get_shared_database) and the ordered teardown performed by LadybugBackend.close().",
+        "protected_resource": "The process-shared ladybug.Database and the per-thread LadybugBackend/Connection objects created by document_graph_tools._connect.",
+        "protection_obligation": "Native Ladybug Connection objects attached to the process-shared Database for Document Graph access must never be garbage-collected while other threads still query the shared Database: every shared-DB backend created for tool access is retained for the process lifetime via _KEEPALIVE_BACKENDS, and teardown occurs only through the ordered Connection.close() path in LadybugBackend.close().",
+        "scope_limits": [
+          "Keepalive registration is shown only for backends created via document_graph_tools._connect; other creation paths (create_backend_from_config, LadybugBackend.connect) are not shown registering keepalive.",
+          "close() suppresses exceptions and silently skips teardown when the Connection object lacks a close method.",
+          "The referenced interpreter-shutdown close hook (genai_tk.utils.ladybug.shared) is not among the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "kuzu_conn.execute(merge_query) executing the LOAD FROM ... MERGE statement with the filtered ON MATCH SET clause in merge_nodes_batch.",
+        "contract_id": "ecological-contract:8850b10668f6466f055c2f150bacae14",
+        "declared_mechanism": "_get_columns_for_set_clause filters the arrow-table column names before query construction: the key field is excluded entirely, and (with the default exclude_on_match = {'_created_at'}) every column ending in '_embedding' plus _created_at is removed from the ON MATCH SET column list.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 662,
+            "line_start": 637,
+            "path": "genai_graph/kg/ingest/merge.py",
+            "role": "guard_registration",
+            "source_sha256": "5cc18192de9905da7ddeed8baaa9986f7ba49d7eb04cfb174daa8c6dbcc16f26"
+          },
+          {
+            "line_end": 660,
+            "line_start": 652,
+            "path": "genai_graph/kg/ingest/merge.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5cc18192de9905da7ddeed8baaa9986f7ba49d7eb04cfb174daa8c6dbcc16f26"
+          },
+          {
+            "line_end": 720,
+            "line_start": 665,
+            "path": "genai_graph/kg/ingest/merge.py",
+            "role": "protected_operation",
+            "source_sha256": "5cc18192de9905da7ddeed8baaa9986f7ba49d7eb04cfb174daa8c6dbcc16f26"
+          },
+          {
+            "line_end": 737,
+            "line_start": 729,
+            "path": "genai_graph/kg/ingest/merge.py",
+            "role": "commit_point",
+            "source_sha256": "5cc18192de9905da7ddeed8baaa9986f7ba49d7eb04cfb174daa8c6dbcc16f26"
+          },
+          {
+            "line_end": 801,
+            "line_start": 789,
+            "path": "genai_graph/orchestration/tasks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e5879d0123e38c155f86b49e83a2334784fa24706d85c33fc2ad429045d83344"
+          }
+        ],
+        "forbidden_condition": "An ON MATCH SET clause that includes a property covered by a vector (HNSW) index \u2014 Ladybug/Kuzu forbid in-place updates of vector-index-covered properties ('Cannot set property vec in table embeddings ...'); additionally, updating _created_at on match would overwrite the creation timestamp.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether vector indexes exist at merge time depends on flow ordering of the drop/create index tasks; the ordering across all orchestration flows is not fixed by the supplied views.",
+          "Whether the _created_at exclusion carries the same enforcement weight as the vector-index prohibition or is only a semantic convention is not established beyond source comments."
+        ],
+        "protected_operation": "merge_nodes_batch execution of the batch statement 'LOAD FROM arrow_table MERGE (n:NodeType {pk: pk}) ON CREATE SET ... ON MATCH SET ...' for each node type.",
+        "protected_resource": "Node table properties covered by HNSW vector indexes (e.g., *_embedding columns) and the _created_at sentinel column on Ladybug node tables.",
+        "protection_obligation": "When batch-merging nodes into Ladybug/Kuzu, the ON MATCH SET clause must exclude vector-index-covered *_embedding columns (and the _created_at timestamp); the column filter computed by _get_columns_for_set_clause must take effect before the LOAD FROM arrow_table MERGE execution in merge_nodes_batch.",
+        "scope_limits": [
+          "The filter applies only to the ON MATCH column list; ON CREATE SET still includes embedding columns.",
+          "Exclusion is name-based (suffix '_embedding'); a vector-index-covered property not named with that suffix would not be excluded.",
+          "The guard is static query construction; index drop/recreate is handled separately by drop_vector_indexes_task / create_vector_indexes_task.",
+          "Supplied views bind this operation to the ingestion batch-merge path; no agent tool in the supplied views reaches merge_nodes_batch."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Reviewer rationale cites a confirmation gate before drop_document_graph in commands_docgraph.py; that file is not among the supplied sources, so no contract could be compiled for it.",
+      "Reviewer rationale cites non-root USER appuser hardening in deploy/Dockerfile; that file is not supplied and such infrastructure policy is outside study scope.",
+      "The Streamlit session-authentication gate (genai_graph/main/streamlit.py lines 42-66, st.stop() commit) referenced by a reviewer is ordinary web authentication with no supplied binding to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; it is excluded from scope per study rules and no contract was emitted for it.",
+      "Behavior labels and runtime prevalence data are unavailable; all contracts are compiled from the supplied static source views only.",
+      "The load_auth_config/authenticate implementation (genai_tk.utils.basic_auth) and the get_shared_database/shared-shutdown implementation (genai_tk.utils.ladybug) are not supplied, leaving the referenced external guard/teardown behavior unverified."
+    ],
+    "repository": "tclatos/genai-graph",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4d78f3a591819bd7e059718bded69b48"
+  },
+  "request_sha256": "bb48531df97aa6967ddcc1238fd6872bc3ea1f64f6516900913b91a352077c8e",
+  "response_sha256": "413d8c7eb5e18bfcf2f90c7cd9a6dcff25a2270e477b30cb73240d902ed4b4af",
+  "state": "completed",
+  "tokens": 81216,
+  "unit": "v24-screen:4d78f3a591819bd7e059718bded69b48"
+}

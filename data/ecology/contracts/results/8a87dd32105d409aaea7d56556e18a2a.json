@@ -1,0 +1,296 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Parameter validation at the entry of `create_deerflow_agent` (factory.py 127-134), before any middleware/tool assembly and before `create_agent` builds the persisted graph with the checkpointer (factory.py 168-176).",
+        "contract_id": "ecological-contract:1074b0810ea906f2417db41fafc4f585",
+        "declared_mechanism": "Entry-time guard in `create_deerflow_agent`: `if checkpoint_channel_mode == \"delta\" and checkpointer is not None: raise ValueError(...)` directing delta persistence to the guarded application paths (factory.py 127-134).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 110,
+            "line_start": 105,
+            "path": "backend/packages/harness/deerflow/agents/factory.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e938de4192afde150f68d25e637acf91a517cff092e6931cbbbc0619afc14729"
+          },
+          {
+            "line_end": 116,
+            "line_start": 115,
+            "path": "backend/packages/harness/deerflow/agents/factory.py",
+            "role": "protected_operation",
+            "source_sha256": "e938de4192afde150f68d25e637acf91a517cff092e6931cbbbc0619afc14729"
+          },
+          {
+            "line_end": 134,
+            "line_start": 127,
+            "path": "backend/packages/harness/deerflow/agents/factory.py",
+            "role": "guard_registration",
+            "source_sha256": "e938de4192afde150f68d25e637acf91a517cff092e6931cbbbc0619afc14729"
+          },
+          {
+            "line_end": 134,
+            "line_start": 127,
+            "path": "backend/packages/harness/deerflow/agents/factory.py",
+            "role": "commit_point",
+            "source_sha256": "e938de4192afde150f68d25e637acf91a517cff092e6931cbbbc0619afc14729"
+          },
+          {
+            "line_end": 176,
+            "line_start": 168,
+            "path": "backend/packages/harness/deerflow/agents/factory.py",
+            "role": "protected_operation",
+            "source_sha256": "e938de4192afde150f68d25e637acf91a517cff092e6931cbbbc0619afc14729"
+          }
+        ],
+        "forbidden_condition": "Constructing a persisted agent graph via `create_deerflow_agent` with `checkpoint_channel_mode == \"delta\"` and a non-None `checkpointer` \u2014 a persisted graph built there would bypass checkpoint mode marker injection and the fail-closed compatibility gate, silently corrupting thread state in a mixed-mode store.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The guarded delta persistence path in `deerflow.runtime.checkpoint_mode` (checkpoint mode marker injection and the fail-closed compatibility gate) is referenced but not included in the supplied source.",
+          "The concrete checkpointer backend and its persistence medium are not shown; the 'database' stratum is inferred from the \"persisted graphs\" / \"mixed-mode store\" language (factory.py 129-132).",
+          "How checkpoint writes commit during agent graph execution (which node/hook boundary) is not shown in supplied source, so agent mediation is not established."
+        ],
+        "protected_operation": "Persisted agent-graph construction \u2014 checkpoint persistence of thread state via the checkpointer passed to `create_agent` \u2014 which must occur only through guarded persistence paths.",
+        "protected_resource": "The checkpointer persistence backend and the persisted thread state it stores (factory.py 115-116 \"Optional persistence backend\"; 130-132 \"mixed-mode store would silently corrupt thread state\").",
+        "protection_obligation": "`create_deerflow_agent` must reject the combination of `checkpoint_channel_mode='delta'` with a non-None `checkpointer`, so persisted agent graphs are only ever built through the guarded application paths (`make_lead_agent` or `DeerFlowClient`) that inject checkpoint mode markers and run the fail-closed compatibility gate.",
+        "scope_limits": [
+          "Applies only to the SDK factory `create_deerflow_agent`; delta-with-checkpointer via the guarded application paths (`make_lead_agent`, `DeerFlowClient`) is the sanctioned route (factory.py 129-133).",
+          "Delta without a checkpointer is explicitly allowed because the graph is ephemeral (factory.py 109-110, 133-134)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Inside `authorize_sandbox_execution`, immediately before sandbox acquisition: the `provider.authorize` decision evaluation (sandbox_authz.py 85-99) returns on allow and raises on deny; the module contract (lines 1-8, 55-62) places this check before acquisition so the error propagates up through the invoking tool's execution.",
+        "contract_id": "ecological-contract:238452a89047f31e017a39d4acaf8f40",
+        "declared_mechanism": "`authorize_sandbox_execution(context, app_config)` (sandbox_authz.py 55-101): no-op when config is unreadable or `authorization.enabled` is not exactly True; provider-resolution failure raises `SandboxAuthorizationError` under fail_closed (74-81) and otherwise allows; provider None allows (82-83); `provider.authorize(AuthzRequest(principal, resource=\"sandbox\", action=\"execute\", target=\"*\"))` returns on allow (90-91) and raises `SandboxAuthorizationError` on deny (92-93) and on authorize error under fail_closed (96-99), with fail-open returning silently (100-101).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 8,
+            "line_start": 3,
+            "path": "backend/packages/harness/deerflow/authz/sandbox_authz.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4132db95a430fcef3f9e00892a67b0ed9a840eaa9c6b9b94f26bff1c8b4f23e7"
+          },
+          {
+            "line_end": 52,
+            "line_start": 48,
+            "path": "backend/packages/harness/deerflow/authz/sandbox_authz.py",
+            "role": "protected_operation",
+            "source_sha256": "4132db95a430fcef3f9e00892a67b0ed9a840eaa9c6b9b94f26bff1c8b4f23e7"
+          },
+          {
+            "line_end": 62,
+            "line_start": 55,
+            "path": "backend/packages/harness/deerflow/authz/sandbox_authz.py",
+            "role": "guard_registration",
+            "source_sha256": "4132db95a430fcef3f9e00892a67b0ed9a840eaa9c6b9b94f26bff1c8b4f23e7"
+          },
+          {
+            "line_end": 93,
+            "line_start": 85,
+            "path": "backend/packages/harness/deerflow/authz/sandbox_authz.py",
+            "role": "commit_point",
+            "source_sha256": "4132db95a430fcef3f9e00892a67b0ed9a840eaa9c6b9b94f26bff1c8b4f23e7"
+          },
+          {
+            "line_end": 101,
+            "line_start": 96,
+            "path": "backend/packages/harness/deerflow/authz/sandbox_authz.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4132db95a430fcef3f9e00892a67b0ed9a840eaa9c6b9b94f26bff1c8b4f23e7"
+          }
+        ],
+        "forbidden_condition": "Sandbox acquisition/execution proceeding without an allow decision: explicit deny from the provider, or provider-resolution/authorization failure under `fail_closed`, must not be followed by sandbox acquisition.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The call site that invokes `authorize_sandbox_execution` immediately before sandbox acquisition (e.g., SandboxMiddleware or a sandbox manager) is not included in the supplied source.",
+          "The agent tool whose execution reaches the sandbox path \u2014 the docstring states the error \"propagates up through the tool's execution\" and is converted to a ToolMessage by tool-error handling (sandbox_authz.py 5-8) \u2014 is not identified by any concrete dispatch/registration dataflow in supplied source, so agent mediation is not established.",
+          "The concrete effects performed via the acquired sandbox (e.g., process/shell execution versus other external effects) are not shown; the 'process' stratum is inferred from the module's description of the sandbox as the execution environment."
+        ],
+        "protected_operation": "Sandbox acquisition and subsequent sandbox execution, authorized as the single action `authorize(\"sandbox\", \"execute\")` against the sentinel target \"*\" (the sandbox as a whole).",
+        "protected_resource": "The shared sandbox execution environment (authorization target \"*\", per sandbox_authz.py 48-52).",
+        "protection_obligation": "`authorize_sandbox_execution` must gate every sandbox acquisition on an allow decision from `authorize(resource='sandbox', action='execute')`, raising `SandboxAuthorizationError` on explicit deny, and on provider-resolution or provider error when `fail_closed` is true, before the sandbox is acquired (enforcement point: before sandbox acquisition in authz/sandbox_authz.py).",
+        "scope_limits": [
+          "No-op when `app_config` is None or `authorization.enabled` is not exactly True, including environments without readable config such as CI runners (sandbox_authz.py 30-45, 67-69).",
+          "Provider resolution returning None permits acquisition (sandbox_authz.py 82-83).",
+          "Fail-open configuration permits acquisition despite provider errors (sandbox_authz.py 80-81, 100-101).",
+          "Single sentinel target \"*\" for the sandbox as a whole; no per-resource sandbox scoping (sandbox_authz.py 48-52)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Tool-list assembly inside `_make_lead_agent` (agent.py line 892): the conditional construction of `extra_tools`, which occurs before `apply_tool_authorization` (904-908), deferred assembly (911), and `create_agent(tools=final_tools)` binding (919-921).",
+        "contract_id": "ecological-contract:3f6f4ed2cdc6efa2eec7c5c11b7f1c57",
+        "declared_mechanism": "Assembly-time channel gate in `_make_lead_agent`: `channel_name = cfg.get(\"channel_name\")`; `is_webhook_channel = channel_name in _WEBHOOK_CHANNELS` with `_WEBHOOK_CHANNELS = frozenset({\"github\"})`; `extra_tools = [update_agent] if agent_name and not is_webhook_channel else []` (agent.py lines 890-892), so the tool never enters the candidate set for webhook-channel runs.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 82,
+            "line_start": 76,
+            "path": "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "eddf2f360b8ba207232489b7bd81ec9fb1199a9e8005efe6cb93a8c0fcccdca6"
+          },
+          {
+            "line_end": 889,
+            "line_start": 877,
+            "path": "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "eddf2f360b8ba207232489b7bd81ec9fb1199a9e8005efe6cb93a8c0fcccdca6"
+          },
+          {
+            "line_end": 892,
+            "line_start": 890,
+            "path": "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "eddf2f360b8ba207232489b7bd81ec9fb1199a9e8005efe6cb93a8c0fcccdca6"
+          },
+          {
+            "line_end": 892,
+            "line_start": 890,
+            "path": "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+            "role": "commit_point",
+            "source_sha256": "eddf2f360b8ba207232489b7bd81ec9fb1199a9e8005efe6cb93a8c0fcccdca6"
+          },
+          {
+            "line_end": 868,
+            "line_start": 867,
+            "path": "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "eddf2f360b8ba207232489b7bd81ec9fb1199a9e8005efe6cb93a8c0fcccdca6"
+          },
+          {
+            "line_end": 895,
+            "line_start": 892,
+            "path": "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "eddf2f360b8ba207232489b7bd81ec9fb1199a9e8005efe6cb93a8c0fcccdca6"
+          },
+          {
+            "line_end": 921,
+            "line_start": 919,
+            "path": "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "eddf2f360b8ba207232489b7bd81ec9fb1199a9e8005efe6cb93a8c0fcccdca6"
+          }
+        ],
+        "forbidden_condition": "`update_agent` being included in the assembled tool set (and therefore bound to the agent) for a run whose `channel_name` is a webhook channel \u2014 i.e., `is_webhook_channel` true while `agent_name` is set, which would give an arbitrary external commenter a path to mutate agent configuration persistently.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The `update_agent` implementation (deerflow.tools.builtins) is not in the supplied source; what it writes and where (SOUL.md file vs stored agent config/database) is unverified, so the downstream persistence stratum of the self-mutation effect is unresolved.",
+          "`ChannelManager._resolve_run_params`, which plumbs `channel_name` into `run_context` (referenced at agent.py 79-81 and 887-888), is not supplied; the full set of channel names that can populate `channel_name` is unknown.",
+          "Whether any execution-time mechanism would block `update_agent` if it reached a webhook run's tool set by another path is not shown in supplied source."
+        ],
+        "protected_operation": "Agent tool assembly for lead-agent runs \u2014 specifically the inclusion decision for the `update_agent` self-mutation tool prior to tool binding; downstream, the agent-invoked mutation of agent configuration (SOUL.md, tool_groups, model settings).",
+        "protected_resource": "The `update_agent` tool and the agent self-configuration it mutates (SOUL.md, tool_groups, model settings), whose changes persist across subsequent runs.",
+        "protection_obligation": "The lead-agent factory must withhold the `update_agent` tool from any run originating on a webhook channel (`channel_name` in `_WEBHOOK_CHANNELS`, currently only `github`), so that untrusted external commenters who can trigger webhook runs cannot reach agent self-mutation (tool_groups / SOUL.md / model) that persists for every subsequent run. (Merges the identical withholding obligations asserted by both reviewers.)",
+        "scope_limits": [
+          "Covers only channels enumerated in `_WEBHOOK_CHANNELS`, currently exactly `github` (agent.py 76-82); other webhook-like channels are unguarded until added to the set.",
+          "Bootstrap and direct invocations leave `channel_name` unset, so `update_agent` intentionally remains available there (agent.py 887-889).",
+          "Gate applies only to named custom agents (`agent_name` truthy); the default agent never receives `update_agent` (agent.py 867-868, 892).",
+          "The guard is assembly-time only; no per-execution channel re-check exists in the supplied source.",
+          "`update_agent` also passes through name-based `apply_tool_authorization` via `authorization_candidates` (agent.py 898), so a role policy could independently deny it, but that path is role-based, not channel-based."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The `apply_tool_authorization` calls in `_make_lead_agent` (agent.py 904-908 custom path; 823-827 bootstrap path), whose `authorized_tools` output is the sole source of `final_tools` passed to `create_agent` (agent.py 909-921 custom; 828-839 bootstrap).",
+        "contract_id": "ecological-contract:ac8e0ea28d715281751cbd0b6833a820",
+        "declared_mechanism": "`apply_tool_authorization` (tool_filter.py 22-72): no-op unless `authorization.enabled` is exactly True; resolves the provider (or reuses the caller's), builds a Principal from run context, and calls `filter_tools_by_authorization` with `fail_closed=authz_config.fail_closed`. `filter_tools_by_authorization` (enforcement.py 15-42) keeps only names allowed by `provider.filter_resources(principal, \"tool\", candidates)` and returns `[]` on provider exception or non-list/ non-str result when `fail_closed` is true; the docstring requires invocation before deferred-tool assembly.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 27,
+            "line_start": 15,
+            "path": "backend/packages/harness/deerflow/authz/enforcement.py",
+            "role": "guard_registration",
+            "source_sha256": "1b3b3bf6859d6759034e9eb614034ceb04be15679e0830f5678b00117c01ec40"
+          },
+          {
+            "line_end": 39,
+            "line_start": 33,
+            "path": "backend/packages/harness/deerflow/authz/enforcement.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b3b3bf6859d6759034e9eb614034ceb04be15679e0830f5678b00117c01ec40"
+          },
+          {
+            "line_end": 72,
+            "line_start": 51,
+            "path": "backend/packages/harness/deerflow/authz/tool_filter.py",
+            "role": "guard_registration",
+            "source_sha256": "adf722b505e34242335e0c9e6003d0e3bf29bc32f7fdbece612f5102480929f3"
+          },
+          {
+            "line_end": 910,
+            "line_start": 904,
+            "path": "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+            "role": "commit_point",
+            "source_sha256": "eddf2f360b8ba207232489b7bd81ec9fb1199a9e8005efe6cb93a8c0fcccdca6"
+          },
+          {
+            "line_end": 829,
+            "line_start": 823,
+            "path": "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+            "role": "commit_point",
+            "source_sha256": "eddf2f360b8ba207232489b7bd81ec9fb1199a9e8005efe6cb93a8c0fcccdca6"
+          },
+          {
+            "line_end": 921,
+            "line_start": 909,
+            "path": "backend/packages/harness/deerflow/agents/lead_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "eddf2f360b8ba207232489b7bd81ec9fb1199a9e8005efe6cb93a8c0fcccdca6"
+          }
+        ],
+        "forbidden_condition": "A policy-denied tool being bound into the agent's tool set when `authorization.enabled` is true; or any tools being bound after an authorization-provider failure or malformed `filter_resources` result when `fail_closed` is true (fail-closed deny-all must produce an empty bound set, not the original set).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Deferred tools promoted after assembly via tool_search (`assemble_deferred_tools` / `build_mcp_routing_middleware`, agent.py 830-836 and 911-917) are assembled after Layer 1 filtering; whether promoted deferred tools are re-checked against the authorization policy is not shown in supplied source.",
+          "The Layer 2 execution-time authorization middleware that consumes `authorization_provider` (agent.py 431-435; passed at 850 and 932 into `build_lead_runtime_middlewares`) is not included in supplied source.",
+          "Behavior when `resolve_authorization_provider` raises inside `apply_tool_authorization` is not shown (tool_filter.py 59-63 does not wrap the call)."
+        ],
+        "protected_operation": "Assembly-time binding of the lead agent's tool set (configured tools, `describe_skill` tool, memory tools) that becomes the agent's callable tool surface via `create_agent`.",
+        "protected_resource": "The lead agent's bound tool set \u2014 every tool reaching `create_agent` on the bootstrap and custom-agent assembly paths.",
+        "protection_obligation": "All candidate tools bound to the lead agent (both the bootstrap path and the custom-agent path) must be filtered through the authorization policy via `apply_tool_authorization` / `filter_tools_by_authorization` at assembly time, before deferred-tool assembly and binding: policy-denied tools are dropped, and on authorization-provider error or malformed filter result every tool is denied (empty set) when `fail_closed` is true. (Merges the identical fail-closed filtering obligations asserted by both reviewers.)",
+        "scope_limits": [
+          "No-op when `authorization.enabled` is not exactly True or the provider resolves to None (tool_filter.py 56-63); tools are then bound unfiltered.",
+          "Under an explicitly configured fail-open policy, provider errors preserve the original tool set (enforcement.py 37-39).",
+          "Filtering is name-based via `filter_resources(principal, \"tool\", ...)`; it does not evaluate per-invocation arguments or runtime context (enforcement.py 32-34, 41-42).",
+          "Filtering must run before deferred-tool assembly (enforcement.py 23-24); the bootstrap path additionally intersects filtered results with originally configured tool ids (agent.py 822, 828-829)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Implementation of the `update_agent` tool (deerflow.tools.builtins) \u2014 what it mutates and its persistence medium (file vs stored agent config/database) \u2014 is not in the supplied source; the downstream effect stratum of agent self-mutation is unverified.",
+      "ChannelManager._resolve_run_params and the complete set of channel names that can populate run_context.channel_name are not supplied; only the `github` entry in _WEBHOOK_CHANNELS is evidenced.",
+      "The sandbox acquisition call site that invokes authorize_sandbox_execution before acquisition, and the concrete sandbox runtime effects, are not supplied; the 'process' stratum is inferred from the module's execution-environment description.",
+      "deerflow.runtime.checkpoint_mode (checkpoint mode marker injection and the fail-closed compatibility gate) is referenced by factory.py 127-134 but not supplied.",
+      "The concrete checkpointer backend / persistence medium used with create_deerflow_agent and make_lead_agent is not shown.",
+      "The Layer 2 execution-time authorization middleware consuming authorization_provider via build_lead_runtime_middlewares (agent.py 431-435, 850, 932) is not supplied.",
+      "Whether deferred tools promoted after assembly via tool_search (assemble_deferred_tools / build_mcp_routing_middleware) are re-checked against the authorization policy is not shown.",
+      "No execution-time channel-based re-check of update_agent exists in the supplied source; the webhook guard is assembly-time only."
+    ],
+    "repository": "tosolommy/deer-flow",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:8a87dd32105d409aaea7d56556e18a2a"
+  },
+  "request_sha256": "7446e191a6121f20426edc2ed27d5170e38b223812bc0f4bf08e92f83365f0a7",
+  "response_sha256": "c7975e57663ef6dd437f3bf6a20fcfd136b78b090e2e94af1571ef762819933d",
+  "state": "completed",
+  "tokens": 44783,
+  "unit": "v24-screen:8a87dd32105d409aaea7d56556e18a2a"
+}

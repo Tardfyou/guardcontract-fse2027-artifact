@@ -1,0 +1,332 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "result = await client.call_tool(tool_name, arguments or {}, meta=meta) inside the retry loop (src/mcp_core/client/manager.py:140) \u2014 the upstream tool invocation.",
+        "contract_id": "ecological-contract:8b2773d262c67f4fe3cdf256656d4822",
+        "declared_mechanism": "Synchronous allowlist check at the entry of call_tool and get_tool_adapter against MCPClientServerConfig.allowed_tools (= set(enabled_tools)); refusal raises ServiceUnavailableException(detail='Tool ... is not approved for upstream server ...', error_code=McpErrorCode.MCP_UPSTREAM_TOOL_NOT_ALLOWED) before _connect, circuit-breaker, and semaphore gates and before the retry/invocation loop.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 118,
+            "line_start": 111,
+            "path": "src/mcp_core/client/manager.py",
+            "role": "protected_operation",
+            "source_sha256": "fb0854db078e8263b14fb25f9cee141603be2dd03c42f9dc48becb52afd0e8b1"
+          },
+          {
+            "line_end": 124,
+            "line_start": 120,
+            "path": "src/mcp_core/client/manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fb0854db078e8263b14fb25f9cee141603be2dd03c42f9dc48becb52afd0e8b1"
+          },
+          {
+            "line_end": 173,
+            "line_start": 167,
+            "path": "src/mcp_core/client/manager.py",
+            "role": "guard_registration",
+            "source_sha256": "fb0854db078e8263b14fb25f9cee141603be2dd03c42f9dc48becb52afd0e8b1"
+          },
+          {
+            "line_end": 73,
+            "line_start": 71,
+            "path": "src/mcp_core/common/models.py",
+            "role": "guard_registration",
+            "source_sha256": "61c9dc4de7d28c892c2a1a3b30dbf52615ef8c76226cf73518a4d2a42233b694"
+          },
+          {
+            "line_end": 140,
+            "line_start": 138,
+            "path": "src/mcp_core/client/manager.py",
+            "role": "commit_point",
+            "source_sha256": "fb0854db078e8263b14fb25f9cee141603be2dd03c42f9dc48becb52afd0e8b1"
+          }
+        ],
+        "forbidden_condition": "tool_name not present in config.allowed_tools (when the allowlist is non-empty) reaching the upstream client.call_tool dispatch, or an adapter being constructed for such an unapproved tool.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied line registers get_tool_adapter's returned callable (qualified_name plus callable: self.call_tool) into an agent tool registry, LangChain/LangGraph tool binding, or lifecycle hook; agent mediation of the guarded invocation is unbound in the supplied views and must not be inferred from the mcp_core topic or MCP framework metadata.",
+          "Whether tool_name/arguments originate from agent (LLM) output is not shown.",
+          "load_mcp_client_server_configs (mcp_core/client/settings.py) is not supplied; provenance and integrity of enabled_tools is unverified."
+        ],
+        "protected_operation": "MCPClientManager.call_tool invocation of a tool on a configured upstream MCP server via the fastmcp Client (client.call_tool over the configured transport).",
+        "protected_resource": "Upstream MCP servers configured via MCPClientServerConfig and their tool surface, bounded by the per-server allowed_tools allowlist (set(enabled_tools)).",
+        "protection_obligation": "Invoking an upstream MCP tool that is not in the target server's configured allowlist is forbidden: MCPClientManager.call_tool (and the adapter constructor get_tool_adapter) must refuse with ServiceUnavailableException carrying McpErrorCode.MCP_UPSTREAM_TOOL_NOT_ALLOWED before the upstream client.call_tool commit point is reached.",
+        "scope_limits": [
+          "An empty allowlist is permissive: the gate binds only when config.allowed_tools is non-empty (manager.py:120 and 169).",
+          "list_remote_tools filters discovery output by the same allowlist but performs no refusal; the refusal obligations are call_tool and get_tool_adapter.",
+          "The underlying transport is http or stdio per MCPClientServerConfig (_build_client), so the downstream effect medium varies; this contract fixes the stratum at the invocation effect, which commits before any upstream dispatch.",
+          "The circuit-breaker open-state check and the MCP_CLIENT_MAX_CONCURRENCY semaphore gate the same commit path but are distinct availability/concurrency controls, not part of the allowlist condition."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "await graphiti_service.write_clause_episode(clause_text=segment.text, metadata=metadata) (src/app/shared/rag/graphiti/write_clause_episodes.py:190-193), which commits the episode via await graphiti.add_episode(...) in src/app/shared/rag/graphiti/client.py write_clause_episode (client.py:231-238).",
+        "contract_id": "ecological-contract:b558a55b7cc963a9fd490ee5c349c445",
+        "declared_mechanism": "IdempotencyGuard.make_key(step_id=f'clause_episode:{segment.clause_id}', structural={'doc_id', 'clause_id'}, content=None, user_id=user_id) followed by await idempotency.get(idem_key); a cached successful ToolResult short-circuits with the stored episode_uuid; on success the write is recorded via idempotency.set(..., tool_name='write_clause_episode'); asyncio.Semaphore(_MAX_CONCURRENT_WRITES=5) bounds concurrent writes around the commit.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 25,
+            "line_start": 20,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 42,
+            "line_start": 40,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 18,
+            "line_start": 15,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 175,
+            "line_start": 162,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "guard_registration",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 104,
+            "line_start": 103,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "guard_registration",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 204,
+            "line_start": 195,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "guard_registration",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 96,
+            "line_start": 84,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "protected_operation",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 193,
+            "line_start": 190,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "commit_point",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 239,
+            "line_start": 230,
+            "path": "src/app/shared/rag/graphiti/client.py",
+            "role": "commit_point",
+            "source_sha256": "6b22352eadf0fbca6a885081064c3a5d092c5104d55a3b7148695f4e6491df30"
+          }
+        ],
+        "forbidden_condition": "Re-invoking the external clause-episode write (graphiti_service.write_clause_episode -> graphiti.add_episode) for a clause whose idempotency key already records a successful prior write (cached.success).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The relationship_mapping node function and its wiring into the LangGraph agent pipeline (app.shared.langgraph_layer.agent_saul) are not in the supplied views; the lifecycle binding rests on the module docstring and the agent-state type imports.",
+          "IdempotencyGuard implementation (app.shared.langchain_layer.agents.tools.idempotency) is not supplied.",
+          "Provenance of ctx.user_id/document_id (GraphIngestionContext) is not shown."
+        ],
+        "protected_operation": "Per-segment clause episode write executed by _write_single_clause_episode under phase 1 of write_clause_episodes_to_graphiti.",
+        "protected_resource": "Graphiti-managed Neo4j knowledge-graph episode store (clause episodes, group_id=doc_id).",
+        "protection_obligation": "Duplicate clause-episode writes from the relationship_mapping agent node to the Graphiti/Neo4j knowledge graph are forbidden: each phase-1 write is keyed by step_id 'clause_episode:{clause_id}' plus doc_id and user_id and checked against IdempotencyGuard before graphiti_service.write_clause_episode, and an already-successful write is skipped without re-invoking the external write, making the node safely retryable; concurrent clause writes are additionally capped at five by a semaphore.",
+        "scope_limits": [
+          "The skip applies only when cached.success is truthy; absent or failed cache entries proceed to a fresh write.",
+          "The semaphore caps only phase-1 clause writes; phase-2 edge writes run sequentially without it.",
+          "Only RuntimeError/ValueError/AttributeError are caught around the write; other exceptions propagate and leave the idempotency key unset.",
+          "graphiti.add_episode also performs internal Gemini LLM/embedding calls configured at setup; the commit point claimed here is the persistent Neo4j episode write.",
+          "The IdempotencyGuard backing store, key hashing, and TTL semantics are outside the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "await graphiti_service.write_relationship_edge(edge_input) (src/app/shared/rag/graphiti/write_clause_episodes.py:259), which commits via await graphiti.add_episode(...) in src/app/shared/rag/graphiti/client.py write_relationship_edge (client.py:285-292).",
+        "contract_id": "ecological-contract:f2b03145f5ff8b45e47d9d176510c2a7",
+        "declared_mechanism": "IdempotencyGuard.make_key(step_id=f'rel_edge:{relationship.edge_id}', structural={'doc_id', 'edge_id'}, content=None, user_id=user_id) followed by await idempotency.get(idem_key); a cached successful ToolResult short-circuits; success is recorded via idempotency.set(..., tool_name='write_relationship_edge'); edges are written sequentially with no concurrency cap.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 25,
+            "line_start": 20,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 42,
+            "line_start": 40,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 18,
+            "line_start": 15,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 245,
+            "line_start": 232,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "guard_registration",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 270,
+            "line_start": 261,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "guard_registration",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 137,
+            "line_start": 126,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "protected_operation",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 259,
+            "line_start": 259,
+            "path": "src/app/shared/rag/graphiti/write_clause_episodes.py",
+            "role": "commit_point",
+            "source_sha256": "9fae8f2970ca7fefa7a51637fd12b3b265d64cd60467352b08466578295f9dd9"
+          },
+          {
+            "line_end": 293,
+            "line_start": 284,
+            "path": "src/app/shared/rag/graphiti/client.py",
+            "role": "commit_point",
+            "source_sha256": "6b22352eadf0fbca6a885081064c3a5d092c5104d55a3b7148695f4e6491df30"
+          }
+        ],
+        "forbidden_condition": "Re-invoking the external relationship-edge write (graphiti_service.write_relationship_edge -> graphiti.add_episode) for an edge whose idempotency key already records a successful prior write (cached.success).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The relationship_mapping node wiring is not supplied; the lifecycle binding rests on the module docstring and the agent-state type imports.",
+          "IdempotencyGuard implementation is not supplied."
+        ],
+        "protected_operation": "Per-relationship edge write executed by _write_single_relationship_edge in the sequential phase-2 loop of write_clause_episodes_to_graphiti.",
+        "protected_resource": "Graphiti-managed Neo4j knowledge-graph episodes representing legal relationship edges (group_id=doc_id).",
+        "protection_obligation": "Duplicate relationship-edge writes from the relationship_mapping agent node to the Graphiti/Neo4j knowledge graph are forbidden: each phase-2 edge write is keyed by step_id 'rel_edge:{edge_id}' plus doc_id and user_id and checked against IdempotencyGuard before graphiti_service.write_relationship_edge, and an already-successful write is skipped without re-invoking the external write.",
+        "scope_limits": [
+          "No concurrency cap applies to edge writes (sequential loop).",
+          "The skip applies only when cached.success; only RuntimeError/ValueError/AttributeError are caught.",
+          "The IdempotencyGuard backing store is outside the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await self.session.execute(build_chunk_upsert_statement(rows)) in DocumentRepository.upsert_chunks (src/app/features/documents/repository.py:398) \u2014 the guarded persistent upsert execution.",
+        "contract_id": "ecological-contract:f638907aaef252fc2e0d9120231cfd64",
+        "declared_mechanism": "Static guard DocumentRepository._reject_width_mismatch invoked at the top of upsert_chunks before the execute: it returns DocumentEmbeddingWidthError for stored-width drift (via app.utils.embedding.stored_width_mismatch, deliberately non-retryable) and for any row whose len(embedding) != stored_dim; upsert_chunks converts a non-None error into Failure(DocumentEmbeddingWidthError) and skips session.execute entirely.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 396,
+            "line_start": 390,
+            "path": "src/app/features/documents/repository.py",
+            "role": "guard_registration",
+            "source_sha256": "cf9667c1ea545ae6f8c8b17201abb0e075541916e7601dee2a8d3dd00c36bc33"
+          },
+          {
+            "line_end": 356,
+            "line_start": 333,
+            "path": "src/app/features/documents/repository.py",
+            "role": "guard_registration",
+            "source_sha256": "cf9667c1ea545ae6f8c8b17201abb0e075541916e7601dee2a8d3dd00c36bc33"
+          },
+          {
+            "line_end": 356,
+            "line_start": 342,
+            "path": "src/app/features/documents/repository.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cf9667c1ea545ae6f8c8b17201abb0e075541916e7601dee2a8d3dd00c36bc33"
+          },
+          {
+            "line_end": 388,
+            "line_start": 372,
+            "path": "src/app/features/documents/repository.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cf9667c1ea545ae6f8c8b17201abb0e075541916e7601dee2a8d3dd00c36bc33"
+          },
+          {
+            "line_end": 393,
+            "line_start": 391,
+            "path": "src/app/features/documents/repository.py",
+            "role": "protected_operation",
+            "source_sha256": "cf9667c1ea545ae6f8c8b17201abb0e075541916e7601dee2a8d3dd00c36bc33"
+          },
+          {
+            "line_end": 781,
+            "line_start": 771,
+            "path": "src/app/features/documents/repository.py",
+            "role": "protected_operation",
+            "source_sha256": "cf9667c1ea545ae6f8c8b17201abb0e075541916e7601dee2a8d3dd00c36bc33"
+          },
+          {
+            "line_end": 399,
+            "line_start": 397,
+            "path": "src/app/features/documents/repository.py",
+            "role": "commit_point",
+            "source_sha256": "cf9667c1ea545ae6f8c8b17201abb0e075541916e7601dee2a8d3dd00c36bc33"
+          }
+        ],
+        "forbidden_condition": "Executing the chunk upsert while any row's embedding vector length differs from the stored width (CHUNK_EMBEDDING_DIM), or while the configured embedding dimension has drifted from the width the chunks.embedding column stores; partial persistence of a mismatched batch.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied line ties upsert_chunks or its callers to an agent tool, agent lifecycle hook, or agent-generated input (e.g., ingestion invoked from an agent flow or Celery task chain); caller chain is not in the supplied views.",
+          "Definition of CHUNK_EMBEDDING_DIM and the UnifiedChunk model (src/app/features/documents/model.py) is not supplied.",
+          "Implementations of stored_width_mismatch / width_mismatch_detail (app.utils.embedding) are not supplied."
+        ],
+        "protected_operation": "Bulk upsert of chunk rows into the PostgreSQL chunks relation via DocumentRepository.upsert_chunks -> session.execute(build_chunk_upsert_statement(rows)) (INSERT ... ON CONFLICT DO UPDATE).",
+        "protected_resource": "PostgreSQL 'chunks' relation, embedding column (UnifiedChunk / chunks.embedding, width CHUNK_EMBEDDING_DIM).",
+        "protection_obligation": "DocumentRepository.upsert_chunks must refuse any chunk batch whose embedding width does not match the width stored by chunks.embedding (CHUNK_EMBEDDING_DIM) \u2014 both declared-vs-configured drift and per-row-vs-stored mismatch \u2014 returning DocumentEmbeddingWidthError before the PostgreSQL INSERT ... ON CONFLICT statement is executed, so wrong-width vectors are never written and a mismatched batch is rejected wholesale rather than partially written. (Merges the duplicate first-phase and second-phase reviewer wordings.)",
+        "scope_limits": [
+          "The guard validates embedding width only; no other row fields are checked, and rows whose embedding is None are skipped by the per-row check.",
+          "The refusal path returns Failure instead of raising; the raising half of the same guard for offline batch paths (app.utils.embedding) is not in the supplied views.",
+          "The guard is repository-internal and fires for every upsert_chunks caller regardless of origin; caller identity is out of scope of the guard itself."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Screened out as ordinary web authorization with no supplied agent binding: require_role(UserRole.ADMIN) gates on POST /credits (credit_admin_router.py:25-29), POST /admin/billing/webhooks/{event_id}/replay (webhooks/router.py:80-84), and POST /admin/billing/dunning/run (dunning/router.py:36-39), enforced by the ForbiddenException-raising dependency factory (auth/dependencies.py:215-229, raise at 224-226). No supplied source line binds these HTTP endpoints to an agent tool, agent lifecycle hook, or agent-generated input.",
+      "Screened out as ordinary web caller-authentication: Razorpay webhook HMAC-SHA256 verification at POST /webhooks/razorpay (webhooks/router.py:37-47; webhooks/service.py:76-86) fails closed on missing/mismatched X-Razorpay-Signature before service.process; the guarded caller is the external payment provider and no agent binding appears in the supplied source.",
+      "Screened out as infrastructure policy: crawler per-owner rate-limit gate before CRAWLER_CRAWL enqueue (crawler/router.py:81-97, acquire at 92) and the fail-closed CrawlJobStore dependency when Redis is absent (crawler/dependencies.py:45-51); no agent binding for these effects appears in the supplied source.",
+      "Screened out as ordinary web authentication / infrastructure policy on the MCP HTTP surface: MCPAuthMiddleware bearer-token enforcement (mcp_core/server/middleware.py:40-87) and MCPRateLimitMiddleware (middleware.py:90-141), registered in build_mcp_http_middleware (middleware.py:159-169); the MCP HTTP endpoint's agent mediation is not established by supplied source, and these are standard bearer-auth and rate-limit controls.",
+      "Reviewer-mentioned but unsupported by supplied source: IdempotencyGuard-keyed duplicate-write skips for email/ingestion tasks (only the Graphiti write path is supplied); Redis-backed general rate-limit service internals; app.utils.embedding guard helpers; CHUNK_EMBEDDING_DIM / UnifiedChunk model definition; IdempotencyGuard implementation; relationship_mapping node wiring in agent_saul; MCP tool-adapter registration into any agent runtime; and load_mcp_client_server_configs. These are carried as pending_binding_information on the relevant contracts rather than guessed."
+    ],
+    "repository": "Harmeet10000/AgentNexus-LangChain-FastAPI",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:47c6c6b31c1eabff79dc72278a553163"
+  },
+  "request_sha256": "3aa120c828e105eceb30fdd0d6c4d41ef4bb8334f51a889a5856661d21a25224",
+  "response_sha256": "401dfa1fd469a64ebc4d5c7d19f2012fb52ed6d00a0cb18ad2db2815748f9ea9",
+  "state": "completed",
+  "tokens": 71960,
+  "unit": "v24-screen:47c6c6b31c1eabff79dc72278a553163"
+}

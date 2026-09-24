@@ -1,0 +1,81 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "`session = await handler.create_session(agent_id=..., organization_id=..., user_id=..., audio_callback=assistant_audio_callback)` at sunona/api/routes/webrtc_routes.py lines 89-94, followed by asyncio.create_task(process_results) at line 122; the balance check at lines 58-60 precedes this commit.",
+        "contract_id": "ecological-contract:9f18da8e481f9ef1cbaa48d2d879fa4e",
+        "declared_mechanism": "Inline route guard in create_session: `billing = BillingMiddleware(); await billing.check_balance(api_key.organization_id)` executed immediately after the Depends(get_api_key) dependency and before any session construction (webrtc_routes.py lines 58-60, commented '# Enforce billing'); an exception from check_balance aborts the handler before the session commit.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 61,
+            "line_start": 52,
+            "path": "sunona/api/routes/webrtc_routes.py",
+            "role": "guard_registration",
+            "source_sha256": "89e07f90c26c595c2bba6fbc6845fcead63df922888cca0f12d24e00a6b6476d"
+          },
+          {
+            "line_end": 94,
+            "line_start": 62,
+            "path": "sunona/api/routes/webrtc_routes.py",
+            "role": "protected_operation",
+            "source_sha256": "89e07f90c26c595c2bba6fbc6845fcead63df922888cca0f12d24e00a6b6476d"
+          },
+          {
+            "line_end": 94,
+            "line_start": 89,
+            "path": "sunona/api/routes/webrtc_routes.py",
+            "role": "commit_point",
+            "source_sha256": "89e07f90c26c595c2bba6fbc6845fcead63df922888cca0f12d24e00a6b6476d"
+          },
+          {
+            "line_end": 560,
+            "line_start": 548,
+            "path": "sunona/server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d9c7193181b49de9bc7c29d84f65bf95fb93228053fdfba5c23e663a2a45ec0a"
+          }
+        ],
+        "forbidden_condition": "Creation of a WebRTC voice-agent session while the caller organization's billing balance check fails or reports insufficient balance \u2014 i.e., handler.create_session (and the spawned assistant worker task) executing despite a failed check_balance. The parallel WebSocket chat gate shows the same check treated as blocking, rejecting with 'Insufficient balance to start conversation' (sunona/server.py 548-560).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "BillingMiddleware.check_balance fail semantics (raise vs. return value on insufficient balance) are unsupplied; enforcement in this route relies on exception propagation halting execution before line 89.",
+          "No supplied decorator, registration, tool dispatch, or dataflow binds POST /webrtc/session (or create_session) to an agent tool or agent lifecycle hook, and the input triggering the guarded effect is the client HTTP request, not agent-generated input; agent_mediation can only move off 'not_established' with evidence of such a binding.",
+          "Whether handler.create_session commits only in-process session state or also external signaling/media effects is unsupplied (sunona/webrtc/handler.py not provided); effect_stratum 'state' reflects the visible in-process session object and worker-task creation.",
+          "Reviewer wording cites 'voice-preview' session creation; no such route appears in the supplied views (sunona/api/routes/playground.py body unsupplied)."
+        ],
+        "protected_operation": "Creation of a billable WebRTC voice session for request.agent_id: fetching agent data from agents_store, constructing the Assistant with the agent's tasks and prompts, wiring assistant_audio_callback into handler.create_session, starting the session, and spawning the process_results worker that relays assistant.execute() output to the peer.",
+        "protected_resource": "The caller organization's billable balance (api_key.organization_id) consumed by WebRTC voice-agent sessions, and the session/assistant-worker resources created via get_webrtc_handler().",
+        "protection_obligation": "Billable voice-agent session establishment is gated: POST /webrtc/session must not create a WebRTC session (together with its wired Assistant agent worker) until BillingMiddleware.check_balance passes for the caller's organization_id. Merges the billing components of reviewer obligations 1 and 3 (identical guard site and commit point).",
+        "scope_limits": [
+          "Verified only for POST /webrtc/session; other /webrtc routes (get session, offer, ice, close, list, stats) show get_api_key plus organization_id comparisons but no balance gate in the supplied source.",
+          "Organization-level balance check executes once, before session creation; per-call/per-minute metering of the running agent session is not shown.",
+          "The guard acts on direct HTTP client requests; it is not registered as an agent tool guard, agent lifecycle hook, or agent-input filter in supplied source.",
+          "Master-key authentication bypass (sunona/api/auth.py 61-74) sits upstream of this guard and pins organization_id to 'default', so master-key sessions are balance-checked against the default organization."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Excluded as out-of-scope under the DEC boundary, with no agent tool, agent lifecycle hook, or agent-generated-input binding anywhere in the supplied views: (a) API-key authentication (401 via get_api_key, sunona/api/auth.py 35-100 and its Depends registration on every cited route) \u2014 ordinary web authentication; (b) per-IP rate limiting (429 via rate_limit_middleware, sunona/server.py 192-215) \u2014 unrelated infrastructure policy; (c) per-record 403 ownership/tenant checks on agents (sunona/api/routes/agents.py 171-172, 189-190, 214-215, 235-236), campaigns (sunona/api/routes/campaigns.py 234-235, 252-253, 286-287, 318-319, 365-366, 391-392, 426-427, 465-466, 497-498, 534-535, 573-574), and server.py agents_store operations (307-323, 348-392) \u2014 treated as the ordinary web authn/authz layer. If the study classifies ownership/tenant isolation outside the excluded categories, these would form additional not_established contracts split by stratum: http for guarded reads (e.g., agents.py 159-174) and state/database for guarded mutations (e.g., agents.py 193-196 in-memory updates, server.py agents_store.set at 341/368 and delete at 388 against persistent storage).",
+      "BillingMiddleware implementation (sunona/billing/middleware.py) is unsupplied: what balance is checked, whether check_balance raises or returns a verdict on insufficient balance, and whether usage is metered during a session are all unsupported facts.",
+      "The sunona.multitenancy APIKey schema is unsupplied; auth.py's standalone stub (lines 20-23, 66-69) defines only id/organization_id/has_permission, while agents.py and campaigns.py rely on api_key.account_id and api_key.permissions \u2014 those attributes' existence and semantics are unsupported in supplied source.",
+      "The agents_store backend (sunona.core.storage.get_agent_store) and the WebRTC handler (sunona.webrtc.handler.get_webrtc_handler, create_session, send_audio) implementations are unsupplied; persistence semantics of the agent store and the exact commit behavior of session creation are unsupported.",
+      "A parallel billing gate exists at sunona/server.py 548-560 for the /chat/{agent_id} WebSocket endpoint (check_balance before ws_manager.connect and Assistant construction) \u2014 a distinct supported commit point not cited by any reviewer; it should only be added as a separate contract if the billing obligation is broadened beyond WebRTC/preview session creation.",
+      "No agent tool registry, tool decorator, agent lifecycle hook, or agent-driven dispatch appears anywhere in the supplied views; whether any reviewed endpoint is ever invoked by the Assistant/agent framework is undetermined from this unit."
+    ],
+    "repository": "Sunona-AI-labs/sunona",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1c83fcff630537906d67e0345e15472e"
+  },
+  "request_sha256": "01321fea11def465ed5068c97fe0c4d09fa8268d742af1db269ba5b1d8036a86",
+  "response_sha256": "51a1a14c76cc4b66a6c38e468653806c69bfec390b1f551110d9358ca8051f66",
+  "state": "completed",
+  "tokens": 44326,
+  "unit": "v24-screen:1c83fcff630537906d67e0345e15472e"
+}

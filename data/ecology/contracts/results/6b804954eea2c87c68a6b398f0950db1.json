@@ -1,0 +1,164 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "subprocess.run(command, cwd=cwd, capture_output=True, text=True, encoding='utf-8', timeout=30) at tools/git_tools.py:74-81.",
+        "contract_id": "ecological-contract:d8577e863f16c934ce99d6b492bc7a53",
+        "declared_mechanism": "Pre-execution validation inside _run_git_command: (1) reject any command that does not start with the literal 'git' (tools/git_tools.py:57-59); (2) join the command arguments into a string and compare against the dangerous_commands blocklist using token-boundary matching, returning {'success': False, 'error': '\u041e\u043f\u0430\u0441\u043d\u0430\u044f \u043a\u043e\u043c\u0430\u043d\u0434\u0430 \u0437\u0430\u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0430\u043d\u0430: <token>'} before the executor is reached (tools/git_tools.py:61-67).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 55,
+            "line_start": 45,
+            "path": "tools/git_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 67,
+            "line_start": 56,
+            "path": "tools/git_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 67,
+            "line_start": 62,
+            "path": "tools/git_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 81,
+            "line_start": 74,
+            "path": "tools/git_tools.py",
+            "role": "commit_point",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 105,
+            "line_start": 104,
+            "path": "tools/git_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 1300,
+            "line_start": 1264,
+            "path": "tools/git_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          }
+        ],
+        "forbidden_condition": "A joined git command string matching any dangerous_commands entry ('rm', 'clean', 'reset --hard', 'push --force', 'rebase -i') as a standalone token \u2014 or any command whose first element is not 'git' \u2014 proceeding past validation to subprocess execution inside _run_git_command.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied source (e.g., core/security_agent_factory.py, core/config.py, agent run loop) shows how GIT_TOOLS/get_git_tools are attached to a running agent's tool set; confirm tool-dispatch wiring beyond the decorator and registry.",
+          "Whether any code path invokes _run_git_command outside @function_tool-decorated tools is not determinable from the supplied views."
+        ],
+        "protected_operation": "Execution of agent-invoked git commands (status, log, diff, branch list, add, commit, checkout, pull, remote ops, init, config, push, merge, reset, stash, tag, clone, fetch) routed through _run_git_command.",
+        "protected_resource": "The host OS subprocess/git execution context and the target git repository on which the tool-issued command operates.",
+        "protection_obligation": "Destructive git commands (rm, clean, reset --hard, push --force, rebase -i) issued through the agent git tools must be rejected by the _run_git_command validator (which additionally requires the command to start with 'git') before the git subprocess is executed, so that no blocklisted destructive git command reaches subprocess execution on behalf of an agent tool call.",
+        "scope_limits": [
+          "Guard covers only commands routed through _run_git_command; git execution outside this helper is not shown in supplied source and is not covered by this contract.",
+          "Blocklist covers exactly the literal tokens enumerated at tools/git_tools.py:62; no claim is made here about whether alternative spellings or variants are or are not blocked (pattern-coverage assessment is outside this compilation).",
+          "The non-'git' prefix rejection at lines 57-59 is recorded as part of the same guard site; no separate contract is emitted for it.",
+          "Agent mediation is established from the @function_tool decorators and the GIT_TOOLS registry within tools/git_tools.py; runtime attachment of these tools to a live agent run loop is a pending binding question, not asserted here."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "subprocess.run inside _run_git_command (tools/git_tools.py:74-81), reached from git_reset's guarded call at tools/git_tools.py:978.",
+        "contract_id": "ecological-contract:df6d55722f0262af228771077f2d2160",
+        "declared_mechanism": "Tool-layer mode validation in git_reset: mode must be in the valid_modes allowlist ['soft', 'mixed', 'hard'] (tools/git_tools.py:966-970), followed by an explicit refusal branch for mode == 'hard' that logs and returns a blocked warning before the command is constructed (tools/git_tools.py:972-976); only non-hard modes reach the _run_git_command invocation at tools/git_tools.py:978.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 953,
+            "line_start": 941,
+            "path": "tools/git_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 978,
+            "line_start": 978,
+            "path": "tools/git_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 976,
+            "line_start": 966,
+            "path": "tools/git_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 976,
+            "line_start": 972,
+            "path": "tools/git_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 81,
+            "line_start": 74,
+            "path": "tools/git_tools.py",
+            "role": "commit_point",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 942,
+            "line_start": 941,
+            "path": "tools/git_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          },
+          {
+            "line_end": 1291,
+            "line_start": 1289,
+            "path": "tools/git_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "244ab3f0adb04378cbf03282f2e5e501a70a24985cc199d6ec3c4c2a2f99258a"
+          }
+        ],
+        "forbidden_condition": "git_reset invoked with mode == 'hard' reaching the _run_git_command call that would execute 'git reset --hard <commit_hash>'.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Runtime attachment of git_reset to a live agent tool set (e.g., via SecurityAwareAgentFactory) is not shown in supplied source.",
+          "Whether reset commands can originate from call sites outside the supplied views of tools/git_tools.py is not determinable."
+        ],
+        "protected_operation": "Repository reset to a commit via the git_reset tool ('git reset --<mode> <commit_hash>').",
+        "protected_resource": "The git repository working tree, index, and HEAD in the directory targeted by git_reset.",
+        "protection_obligation": "The git_reset agent tool must explicitly refuse mode='hard' (hard reset) before any reset command is executed, returning a blocked warning ('Hard reset \u043c\u043e\u0436\u0435\u0442 \u043f\u0440\u0438\u0432\u0435\u0441\u0442\u0438 \u043a \u043f\u043e\u0442\u0435\u0440\u0435 \u0434\u0430\u043d\u043d\u044b\u0445. \u041e\u043f\u0435\u0440\u0430\u0446\u0438\u044f \u0437\u0430\u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0430\u043d\u0430 \u0434\u043b\u044f \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u0438.') instead of running 'git reset --hard <commit_hash>' through _run_git_command; only allowlisted non-hard modes ('soft', 'mixed') may proceed.",
+        "scope_limits": [
+          "This obligation covers the tool-layer refusal of mode == 'hard' in git_reset; reset commands from any other path fall under the separate _run_git_command blocklist contract (whose list also contains the token 'reset --hard').",
+          "Modes 'soft' and 'mixed' pass the guard and proceed to execution; no assertion is made about their effects.",
+          "In supplied source, only git_reset constructs git reset commands; no other supplied tool builds a reset invocation.",
+          "Mediation is established from the @function_tool decorator on git_reset and its GIT_TOOLS entry; runtime agent attachment remains a pending binding question."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Reviewer-cited HTTP middleware guards \u2014 SecurityMiddleware's 429 rate-limit and 413 request-size rejections (api/middleware/security.py:36-66) and the middleware registrations at api/main.py:99-102 (LoggingMiddleware, RateLimitingMiddleware, SecurityMiddleware, AuthenticationMiddleware) \u2014 are generic HTTP infrastructure policy. Supplied source contains no explicit binding of these guards to an agent tool, agent lifecycle hook, or agent-generated input reaching a guarded effect, so per scope rules no http-stratum contract is emitted. A contract would require source binding the guarded effect to agent mediation (e.g., middleware logic keyed to agent tool invocation rather than generic request dispatch).",
+      "CORS configuration (api/main.py:90-96) is ordinary web CORS and is out of scope per instructions; no contract is emitted for it.",
+      "Source for api/middleware/rate_limiting.py and api/middleware/authentication.py is not supplied; their guard logic cannot be characterized from the provided views.",
+      "Runtime wiring of the @function_tool-decorated git tools into a live agent (core/security_agent_factory.py, core/config.py, agent run loop) is outside supplied source; agent mediation for both contracts rests solely on the decorator and the GIT_TOOLS registry inside tools/git_tools.py.",
+      "Behavior and runtime labels are unavailable (per scope statement); the contracts above are static, source-derived hypotheses only, with no claim about observed enforcement, bypass behavior, or prevalence."
+    ],
+    "repository": "Daniil274/grid",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:6b804954eea2c87c68a6b398f0950db1"
+  },
+  "request_sha256": "c1c675fb6900e08c2bf00f1a3cbb6b095c93cc275c28649aab576a8b3f80c7d6",
+  "response_sha256": "bb72b10f4eb351dee3b3bcc42071584ec84a5decea7f958a7a93ae7abd663525",
+  "state": "completed",
+  "tokens": 33163,
+  "unit": "v24-screen:6b804954eea2c87c68a6b398f0950db1"
+}

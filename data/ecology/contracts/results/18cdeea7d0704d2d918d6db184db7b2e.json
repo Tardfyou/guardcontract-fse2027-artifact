@@ -1,0 +1,113 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "result = await Runner.run(my_agent, formatted_input) at backend/agent.py:95, wrapped in try with except InputGuardrailTripwireTriggered at backend/agent.py:130-131 that aborts the run (no images/final_output are returned when the tripwire fires).",
+        "contract_id": "ecological-contract:dfa18a5126ae8b01f08c8fe1b1a97e71",
+        "declared_mechanism": "The @input_guardrail-decorated async guardrail_function, which executes guardrail_agent ('Floorplan Checker Agent') over the run input and returns GuardrailFunctionOutput(output_info=reason, tripwire_triggered=is_not_allowed); registered on my_agent via input_guardrails=[guardrail_function]. A triggered tripwire raises InputGuardrailTripwireTriggered, which run_agent catches in the except clause around Runner.run and converts to an error response ({'error': 'Only valid floorplan-images are allowed...'}), abandoning the run result and its image outputs.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 20,
+            "line_start": 9,
+            "path": "backend/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "66e99148f0300d69a3004d2953bddb58a15b7e9a56464b84fbb25f5e9b7df3a1"
+          },
+          {
+            "line_end": 29,
+            "line_start": 22,
+            "path": "backend/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "66e99148f0300d69a3004d2953bddb58a15b7e9a56464b84fbb25f5e9b7df3a1"
+          },
+          {
+            "line_end": 75,
+            "line_start": 73,
+            "path": "backend/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "66e99148f0300d69a3004d2953bddb58a15b7e9a56464b84fbb25f5e9b7df3a1"
+          },
+          {
+            "line_end": 47,
+            "line_start": 38,
+            "path": "backend/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "66e99148f0300d69a3004d2953bddb58a15b7e9a56464b84fbb25f5e9b7df3a1"
+          },
+          {
+            "line_end": 95,
+            "line_start": 79,
+            "path": "backend/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "66e99148f0300d69a3004d2953bddb58a15b7e9a56464b84fbb25f5e9b7df3a1"
+          },
+          {
+            "line_end": 95,
+            "line_start": 94,
+            "path": "backend/agent.py",
+            "role": "commit_point",
+            "source_sha256": "66e99148f0300d69a3004d2953bddb58a15b7e9a56464b84fbb25f5e9b7df3a1"
+          },
+          {
+            "line_end": 131,
+            "line_start": 130,
+            "path": "backend/agent.py",
+            "role": "commit_point",
+            "source_sha256": "66e99148f0300d69a3004d2953bddb58a15b7e9a56464b84fbb25f5e9b7df3a1"
+          },
+          {
+            "line_end": 71,
+            "line_start": 64,
+            "path": "backend/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "66e99148f0300d69a3004d2953bddb58a15b7e9a56464b84fbb25f5e9b7df3a1"
+          },
+          {
+            "line_end": 116,
+            "line_start": 111,
+            "path": "backend/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "66e99148f0300d69a3004d2953bddb58a15b7e9a56464b84fbb25f5e9b7df3a1"
+          }
+        ],
+        "forbidden_condition": "Disallowed input reaching the Interior Design Agent run: an image that is not a valid floorplan, design preferences that are not relevant to interior design, or a user request that is offensive or not safe for work \u2014 expressed by the Floorplan Checker Agent output field is_not_allowed being true and mapped to GuardrailFunctionOutput.tripwire_triggered.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm from the agents SDK implementation that my_agent's input_guardrails execute before the agent's model steps and any ImageGenerationTool invocation, so a tripwire raised around Runner.run (line 95) cannot leave the image-generation effect already committed.",
+          "Identify the concrete caller(s) of run_agent (e.g., the FastAPI endpoint referenced by reviewers but absent from supplied source) that pass design_style and floorplan_image_b64 directly from user requests, to complete the end-user-to-guarded-effect dataflow.",
+          "Clarify how the guardrail's input_data (annotated str at line 23) is derived from formatted_input (a multimodal image+text message list, lines 80-92), i.e., whether the floorplan image content is actually evaluated by guardrail_agent or only the text.",
+          "Confirm that the caught tripwire path (lines 130-131) is the sole failure surface and that no partial image results from new_items can be returned when the run is aborted."
+        ],
+        "protected_operation": "The Interior Design Agent run \u2014 Runner.run(my_agent, formatted_input) over the user-submitted floorplan image (base64 input_image) and design-style text (input_text) \u2014 which plans per-room designs and generates room images via the agent's ImageGenerationTool.",
+        "protected_resource": "The Interior Design Agent run and its ImageGenerationTool image-generation effect (room design images derived from the user-submitted floorplan and design preferences).",
+        "protection_obligation": "User-submitted floorplan images and design-style preferences submitted to the Interior Design Agent run must pass the registered input guardrail (input must be a valid floorplan, the design preferences must be relevant to interior design, and the request must not be offensive or not safe for work) before the run proceeds, so that disallowed input triggers the guardrail tripwire, aborts the run at Runner.run, and prevents the run's ImageGenerationTool external image-generation effect from being committed.",
+        "scope_limits": [
+          "Compiled solely from the supplied backend/agent.py view (lines 1-131); the FastAPI endpoint or any other caller of run_agent is not present in the supplied source, so binding of end-user HTTP requests to design_style/floorplan_image_b64 is not shown.",
+          "The hosted 'image_generation' tool's network transport is not shown in supplied source; the external effect (external image generation by a service outside the enumerated file/database/process/communication/state/tool_execution classes) is therefore classified as other_external rather than http.",
+          "The guard check is performed by an LLM checker agent (guardrail_agent); this contract records the declared obligation and mechanism only and makes no claim about detection effectiveness, runtime behavior, or prevalence.",
+          "run_agent returns {'error': ...} on tripwire; how callers surface this to clients (HTTP status, response shape) is outside the supplied source.",
+          "Ordinary web authentication, CORS, and generic application validation are outside this contract; no such controls appear in the supplied view."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied source shows the caller of run_agent (endpoint/route wiring) that binds end-user requests to design_style and floorplan_image_b64; the reviewers' FastAPI reference is unsupported by the provided view.",
+      "No supplied source shows the agents library internals guaranteeing input-guardrail execution ordering relative to agent steps and ImageGenerationTool dispatch, so the 'aborts before the effect commits' property rests on registration plus the InputGuardrailTripwireTriggered handler rather than shown code.",
+      "No supplied source shows how guardrail_function's input_data (declared str) receives the multimodal formatted_input (image + text), so whether the image itself is guarded is unconfirmed.",
+      "No supplied source shows the transport or execution site of the hosted image_generation tool call, underlying the other_external stratum classification."
+    ],
+    "repository": "adam8325/DreamPlan",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:18cdeea7d0704d2d918d6db184db7b2e"
+  },
+  "request_sha256": "4dccb9c301ba2e15c81b8158e43ab3fb1c290aa6e6011a36963b502d32fa8068",
+  "response_sha256": "89956b116527fbc447d382d7c2d511c98c6b008eafbe5be36331d4ef2d84621a",
+  "state": "completed",
+  "tokens": 9918,
+  "unit": "v24-screen:18cdeea7d0704d2d918d6db184db7b2e"
+}

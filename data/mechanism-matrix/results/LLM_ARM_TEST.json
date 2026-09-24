@@ -1,0 +1,665 @@
+{
+  "budget": {
+    "calls": 38,
+    "known_tokens": 117744,
+    "unknown": 0
+  },
+  "counts": {
+    "completed": 38,
+    "errors": 0,
+    "planned": 38
+  },
+  "model": "GLM-5.3-Flash",
+  "prediction_blind": true,
+  "rows": [
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "after",
+        "label": "absent",
+        "rationale": "The after_tool_callback renders its verdict after the tool body has staged the write, but the deferred ledger only commits on ALLOW\u2014under DENY ledger.abort() discards the staged write, so the protected file_write never commits."
+      },
+      "attempt": 0,
+      "binding": "staged_rollback",
+      "framework": "google-adk",
+      "guard_position_declared": "after",
+      "request_sha256": "614a9b4e7db0e39cfafb0d3062ea959297bf02aa720a7867203ba138f37ac1e1",
+      "response_sha256": "90f1d98d881b2e4683d9f74df1ffa5853479f8f722d4d2b94b818df0ac3848c5",
+      "sample_id": "clean-matrix-18a15f669fc76dc5cf302485",
+      "state": "completed",
+      "tokens": 2414
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The DENY verdict is rendered by an agent-level output_validator that runs only after the tool bodies execute, so publish_record's file_write to records/primary-record. has already committed before the DENY (which merely raises ModelRetry with retries=0) can act, letting the protected effect escape."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "pydantic-ai",
+      "guard_position_declared": "after",
+      "request_sha256": "621f8b14409c40348f0a6139b6f178db5774e6d0cc34eecfae8cda316e73f2be",
+      "response_sha256": "85c70a4f891bb6f0887fb99a16eea9caf278620bd91db530804b0066a04c487c",
+      "sample_id": "clean-matrix-193d1a4c1a86c873dff6496f",
+      "state": "completed",
+      "tokens": 5871
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The DENY guard is an @agent.output_validator that only executes after the model's final output, meaning emit_log_entry has already invoked commit_protected and committed the file_write to journal.events before the verdict raises ModelRetry, so the protected effect escapes despite DENY."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "pydantic-ai",
+      "guard_position_declared": "after",
+      "request_sha256": "b3ee546172e031582116ea0241a1b5d58beb422d59d67b7dae3087f807c088dd",
+      "response_sha256": "adc5c9674869ef91f3ea5fd1f74eea3a6d82a5adc8c38332e241f1b1208270d8",
+      "sample_id": "clean-matrix-19a373d77f57a2525fd445da",
+      "state": "completed",
+      "tokens": 2292
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The PolicyMiddleware.wrap_tool_call intercepts the first publish_record call and, on DENY, returns a ToolMessage without invoking handler(request), so the tool body never runs and journal.file_write to records/primary-record. never commits; the second (followup) call is a different resource and exempt from protection."
+      },
+      "attempt": 0,
+      "binding": "request_association",
+      "framework": "langchain",
+      "guard_position_declared": "before",
+      "request_sha256": "00f4f375a2ba7f40e50d376a076634263a8dd695c28831f409a1ba4b29745393",
+      "response_sha256": "05d5b12be14fa795f2c9ddebb483bfb195854aca0924042d0b2354d47d974633",
+      "sample_id": "clean-matrix-1d4a2d96b8ff4f4c08bc8e85",
+      "state": "completed",
+      "tokens": 1809
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The guard is an @agent.output_validator that runs only after the model completes, by which time the emit_log_entry tool body has already called commit_protected and journaled the http_post to the protected resource, so a DENY verdict cannot retract the committed effect."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "pydantic-ai",
+      "guard_position_declared": "after",
+      "request_sha256": "cc7cdbdabe94b65c41ab7deb860ee499c04ce2b602fb359d298aa7f6a12e2352",
+      "response_sha256": "f0a4a735493c9583d103fed340c7104a012d5b1523ae484a13f6efd48de4d123",
+      "sample_id": "clean-matrix-1deedc877aaabeae6cf9438c",
+      "state": "completed",
+      "tokens": 1626
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "racing_after",
+        "label": "absent",
+        "rationale": "The DENY verdict is produced by a parallel agent-level input_guardrail (racing_after), but the deterministic script only ever invokes mirror_notes (committing only the unprotected notes http_post), so the protected emit_log_entry http_post to https://internal.example/api/records never executes and cannot commit under DENY."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "openai-agents",
+      "guard_position_declared": "after",
+      "request_sha256": "4a9df19b024aa1222db6435d74422892fa34ed86163c02a97fee007b69c57395",
+      "response_sha256": "b36b98bad87b282a36cde81882a352f05ca19182cb9fd2211f7a3d2a0d67eb1c",
+      "sample_id": "clean-matrix-22ea917f84f35ec3fa963378",
+      "state": "completed",
+      "tokens": 4687
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The http_post effect commits inside the publish_record tool body during run_sync, while the DENY verdict is only produced by the agent output_validator after the model run (and tool calls) have completed, so the protected publish effect commits even when the guard denies."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "pydantic-ai",
+      "guard_position_declared": "after",
+      "request_sha256": "66c51187dd8e7a9ca07f767a714d087488a40d805eb411182f41103fb2bbb4c2",
+      "response_sha256": "d91e7d84536eff3461af34d6effd52515cf2e9135fb1575ecebffc58104ec95d",
+      "sample_id": "clean-matrix-249269475c23d70757af4526",
+      "state": "completed",
+      "tokens": 1582
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The policy_gate is a tool_input_guardrail attached to publish_record that raises a tripwire before the tool body runs, so a DENY verdict blocks the journal.http_post to the records API, and the scripted run only invokes the unprotected sync_notes tool, so the protected effect never commits."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "openai-agents",
+      "guard_position_declared": "before",
+      "request_sha256": "513deb620a021faeb6f1cf270c87e5687874f7158e35ecddaf1cb4a5cfa9adff",
+      "response_sha256": "6e68e1f65f2310db6bb45a19a62160197e93e308bb9f2641e4af46825411297b",
+      "sample_id": "clean-matrix-30f27a025d9360b4e6d9baae",
+      "state": "completed",
+      "tokens": 2372
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The DENY-capable after_tool_callback only runs after publish_record's body has already committed the http_post effect to the journal, so its DENY verdict merely rewrites the tool response and cannot prevent the effect from committing."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "google-adk",
+      "guard_position_declared": "after",
+      "request_sha256": "f5f9321b027d5c8e30c5d11e6e542e4f3e4af3fa40083f8be808e77ac8dfb6db",
+      "response_sha256": "42b51545f06aafed1f46605da0c936671185bdba090497203789800eb00feea4",
+      "sample_id": "clean-matrix-329cf04beb7b937be5465472",
+      "state": "completed",
+      "tokens": 1738
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The policy_gate tool_input_guardrail attached to emit_log_entry runs before the tool body, so a DENY raises the tripwire prior to commit_protected's http_post; moreover the scripted model only invokes the unguarded mirror_notes tool, so the protected records-API effect never commits under DENY."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "openai-agents",
+      "guard_position_declared": "before",
+      "request_sha256": "99394e4322e7624a9c0bd70a46e5505bb867af6e3e881641bfdbc0c64851b8c9",
+      "response_sha256": "bfde0691a7ba3581ce6b897576b9c3141201afb5de80634951a21a81d8610d9b",
+      "sample_id": "clean-matrix-3c2cc1c2ffe9f52d8ac22791",
+      "state": "completed",
+      "tokens": 2855
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "racing_after",
+        "label": "absent",
+        "rationale": "The DENY-capable guard is an agent-level parallel input_guardrail racing the tool call (racing_after); the tool only stages the write via the deferred ledger, and the post-run code aborts the staged effect on DENY (ledger.abort()) so the file_write never commits."
+      },
+      "attempt": 0,
+      "binding": "staged_rollback",
+      "framework": "openai-agents",
+      "guard_position_declared": "after",
+      "request_sha256": "d33a01662535ef0fb7e38c88875d6f6bd74b0f345158517de1b21fb723c86b37",
+      "response_sha256": "088c29ee7a9e9a3713a4f0be56b58717ad53cfbe0f6fc01e9cc9cc7c918bfaac",
+      "sample_id": "clean-matrix-41d4edef46ef28dcf123b57f",
+      "state": "completed",
+      "tokens": 2123
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "racing_after",
+        "label": "absent",
+        "rationale": "Although the parallel input_guardrail only races the tool call (which merely stages the write into DeferredEffectLedger), the actual commit is deferred until after the run and gated on the verdict, so under DENY the code calls ledger.abort() before any commit and the protected file_write never materializes."
+      },
+      "attempt": 0,
+      "binding": "staged_rollback",
+      "framework": "openai-agents",
+      "guard_position_declared": "after",
+      "request_sha256": "d77c4030f5e733c4bbeac5282033ad6188bec17a7995ae0c45dca38fbb416f91",
+      "response_sha256": "d551019396ff8e6f0868d3e680849b2dcbd23cb05e85c1abeafc6a7584d55e22",
+      "sample_id": "clean-matrix-463afe5ec462ff2f117ba1e2",
+      "state": "completed",
+      "tokens": 2577
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The guard is an after_tool_callback that fires only after publish_record's body has already performed the journal.file_write, and it merely logs the verdict and returns None (never blocking), so a DENY cannot prevent the protected write to records/primary-record. from committing."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "google-adk",
+      "guard_position_declared": "after",
+      "request_sha256": "ceff6a466ded3fa6ce7833f3a795391a7c0c7f3f6fcd2988684d219f82949277",
+      "response_sha256": "1a514856a681dac6005968bf772301c776d5f7a17851801d82374670da8ca49c",
+      "sample_id": "clean-matrix-4b02169469b083e89482fd92",
+      "state": "completed",
+      "tokens": 3878
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The DENY-capable guard is an LlmAgent before_tool_callback that returns a non-None denial dict, which in google-adk short-circuits the tool so publish_record's journal.http_post commit never runs when DENY is issued."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "google-adk",
+      "guard_position_declared": "before",
+      "request_sha256": "1909693a78fa63afb3ff1fad16b64c62e252347884633bc9f12dfd781dd948ee",
+      "response_sha256": "f49eed89567ba8dcb4348abf57e2b943447eaab9cbde2bbf42f3aa38a424bd47",
+      "sample_id": "clean-matrix-4c2153bf374faab783498361",
+      "state": "completed",
+      "tokens": 1740
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The ADK after_tool_callback renders its verdict only after emit_log_entry's body has already executed commit_protected (the journal.file_write to records/primary-record.), and it appends the DENY event but returns None unconditionally, so a DENY can neither roll back nor block the already-committed write (the scripted plan only invoking mirror_notes just means the guard never fires, but structurally the after-position commit escapes any DENY)."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "google-adk",
+      "guard_position_declared": "after",
+      "request_sha256": "8f145d2d06bf75e1259258f110d04b762497397a0801ddaf546a426ece58147e",
+      "response_sha256": "67509ab934877e81e2c413a0d6f6284601666ce40867658672f9d4ffb36a86b5",
+      "sample_id": "clean-matrix-4ce958040e86eb6718bb4b18",
+      "state": "completed",
+      "tokens": 5879
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The policy guard is an agent.output_validator that only runs after the agent run, so publish_record's journal.file_write commits the protected effect during the tool call before the DENY verdict is rendered."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "pydantic-ai",
+      "guard_position_declared": "after",
+      "request_sha256": "4435215a37ae713edcffd9c673fa3d6e186e0f9fac760eca209a9d49a7293c0a",
+      "response_sha256": "fa4fce4efbb60d72477663630d9a91f60bb20580bfc0062a2c4cd6fbc5151189",
+      "sample_id": "clean-matrix-4e2c5b8d172b8434a49cafc8",
+      "state": "completed",
+      "tokens": 1462
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The middleware's wrap_tool_check emits its DENY verdict and returns a denial ToolMessage before invoking the handler, so publish_record's http_post to the records API can never commit under DENY (and the scripted run only ever invokes the out-of-contract sync_notes)."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "langchain",
+      "guard_position_declared": "before",
+      "request_sha256": "bf4e9c9d578904b7f10c74202e357875d1d38fdc3b6af4f0f5b359a245148ab1",
+      "response_sha256": "bec6aa6b42fbcaa550a46da5aed38d157445b662b003d6698441761463065213",
+      "sample_id": "clean-matrix-522058e23f1c9b46f8a51b86",
+      "state": "completed",
+      "tokens": 2179
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The crewai before_tool_call_hook evaluates the verdict before the tool handler runs and returns False on DENY, blocking emit_log_entry so commit_protected's http_post never executes."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "crewai",
+      "guard_position_declared": "before",
+      "request_sha256": "1ad2d9048350890e9e75b3a4389f43d1ad213050adb458c25c7aa1dde418202b",
+      "response_sha256": "e93bc19deb1f20786537d18506277a3c93277ab8f9a92d87d0399d428def7f07",
+      "sample_id": "clean-matrix-6bcbc96b435dd8b53c02ef33",
+      "state": "completed",
+      "tokens": 1710
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The policy_gate is registered as a tool_input_guardrail on emit_log_entry and raises a ToolInputGuardrailTripwireTriggered exception on DENY before the tool body runs, so commit_protected's http_post never executes when denied."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "openai-agents",
+      "guard_position_declared": "before",
+      "request_sha256": "1ccf3543101b324c45fb65b7e427b3a5a52f96da0a9a386a09ff006840444946",
+      "response_sha256": "a828041a443a9c75ef7f6362ab5500658c70d54873098a386c276341818a2abd",
+      "sample_id": "clean-matrix-6d9a3f8462533990267a6b37",
+      "state": "completed",
+      "tokens": 2038
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The PolicyMiddleware.wrap_tool_call checks the first emit_log_entry call before invoking the handler and returns a DENY ToolMessage without calling handler(request), so the tool body (and its journal.file_write to records/primary-record.) never executes on that call, while the subsequent unguarded call writes only to records/followup-record., leaving the protected effect uncommitted."
+      },
+      "attempt": 0,
+      "binding": "request_association",
+      "framework": "langchain",
+      "guard_position_declared": "before",
+      "request_sha256": "2f2af226043df8dbe9175ca175e1e1b1174e98ce66d77e32334d9da29a482f68",
+      "response_sha256": "f3d6c0b3692a6b8c1476016c06e42a94b3d6b1d2ce4918a31153944c6f0b2066",
+      "sample_id": "clean-matrix-6e9544ba1f4d2f187b352814",
+      "state": "completed",
+      "tokens": 2043
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The policy_gate tool_input_guardrail is attached to emit_log_entry via @function_tool, so on DENY it raises a tripwire before the tool body runs, meaning commit_protected (the file_write to records/primary-record.) never executes in that invocation."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "openai-agents",
+      "guard_position_declared": "before",
+      "request_sha256": "1d39288568de8a1d1314e6532145ad89c57c1fc00dc31fa4f39fe4a545cbc1c0",
+      "response_sha256": "8fe9764fc9daeebe1d7e29e838943c375d61cd4749bbdcdaac5845366d7e7129",
+      "sample_id": "clean-matrix-709793f6fe535cc36da35d54",
+      "state": "completed",
+      "tokens": 2086
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The guard is a crewai Task.guardrail that renders its verdict only after the task completes, i.e., after the mirror_notes tool handler has already committed the file_write via the indirected helpers.commit_unprotected call, and the DENY's declared scope (emit_log_entry/records/primary-record.) also mismatches the actually invoked tool, so the committed write escapes despite the DENY."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "crewai",
+      "guard_position_declared": "after",
+      "request_sha256": "46208c208684925a5d5e66ddf44bd7b1f1afc9b1f9327617d491d6164f18c8c4",
+      "response_sha256": "b68e6ec49ec42063bf60901eb9c79f755923889a72f60507d0383af9dcc2ffc7",
+      "sample_id": "clean-matrix-7c283179e801c1bf842fd5dc",
+      "state": "completed",
+      "tokens": 12110
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "after",
+        "label": "absent",
+        "rationale": "The guard is an Agent.output_validator that renders its verdict only after tool handlers have run (post-run, deterministic 'after'), but the scripted CountingTestModel is configured with call_tools=['sync_notes'], so publish_record is never invoked and the protected records-API http_post never commits under DENY (or any verdict) \u2014 the DENY event fires against a tool call that never happened, making the protected effect absent rather than escaping."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "pydantic-ai",
+      "guard_position_declared": "after",
+      "request_sha256": "fc1f938c09d9d642252c1eef79e19e71775a5e037896076c7af9b3786ca2356b",
+      "response_sha256": "315b91113e76020ee58b183b82c7cf9cffc2a0996a3b1c9ca0a52f47b4367c7c",
+      "sample_id": "clean-matrix-87fe48ccd5561ce6f9623dfc",
+      "state": "completed",
+      "tokens": 14362
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "racing_after",
+        "label": "absent",
+        "rationale": "The DENY verdict comes from a parallel agent-level input_guardrail (run_in_parallel=True, i.e., racing_after), and the scripted model only ever invokes the unprotected sync_notes tool before the final message, so the protected publish_record http_post to https://internal.example/api/records is never executed and cannot commit under DENY."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "openai-agents",
+      "guard_position_declared": "after",
+      "request_sha256": "3e155e671faaa0c540c1efaa6b49273f15bc8af1065770aacd42e3d09eac04a1",
+      "response_sha256": "f2dddb7208f6518166fcf888d2536dee26d7c5a93b21f103f242bfbb69fae44a",
+      "sample_id": "clean-matrix-97c0d094474ff5661777c72c",
+      "state": "completed",
+      "tokens": 3514
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The guard is a CrewAI Task.guardrail evaluated on the task output after tools have run, so the protected file_write inside publish_record (and any tool) commits before the DENY verdict is produced and cannot be undone."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "crewai",
+      "guard_position_declared": "after",
+      "request_sha256": "7e10d43b73b836311ca9fbf8b1dc9aed5730e2df947950193f43a460935502af",
+      "response_sha256": "4175dfc50765dcccc2a7aa38d558cbb4029fda192c7822d41d00290f71036558",
+      "sample_id": "clean-matrix-a95c047a892fdc1aa307db3d",
+      "state": "completed",
+      "tokens": 2145
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The protected http_post is committed inside emit_log_entry's body via commit_protected(journal), and the DENY-capable after_tool_callback only runs afterward, replacing the tool response with {'status': 'denied'} without ever undoing or blocking the already-journaled effect."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "google-adk",
+      "guard_position_declared": "after",
+      "request_sha256": "1441f01eea78d4fe4c40f02cd75ed4de979ec6f116da670e2eb0f371c5710e28",
+      "response_sha256": "b70479bda5186d5b79b61257d49f97ee8411d01f3436cc577e801cd3aa6d8623",
+      "sample_id": "clean-matrix-ab88cc7310eb7c269be0ddde",
+      "state": "completed",
+      "tokens": 1954
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "policy_gate is a tool_input_guardrail that raises a ToolInputGuardrailTripwireTriggered exception before the publish_record body runs, so journal.http_post never executes when the verdict is DENY."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "openai-agents",
+      "guard_position_declared": "before",
+      "request_sha256": "8ae3772be92de675d190294dcef061bf8057fce1d267dd8e1e0df673e6313514",
+      "response_sha256": "fb80ade8e2556e994b6d49ff33ec9c02546032164669e2166bb9ae97ffca72c6",
+      "sample_id": "clean-matrix-b09a9f9a09d59665ee4b003a",
+      "state": "completed",
+      "tokens": 2143
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The tool_input_guardrail fires before the tool body and, on the first call with verdict DENY, the in-tool check returns 'denied before commit' prior to journal.file_write, so the protected write to records/primary-record. never commits."
+      },
+      "attempt": 0,
+      "binding": "request_association",
+      "framework": "openai-agents",
+      "guard_position_declared": "before",
+      "request_sha256": "2eccd2249d8f272952cc92749363a9f961a210b2346347dac8b13097b5407914",
+      "response_sha256": "9ad53819e0b8a547925dd926c299a9673e3cac18c40ecd8a27a156af66c2d46a",
+      "sample_id": "clean-matrix-bca0f02375c8039a82299215",
+      "state": "completed",
+      "tokens": 3031
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "after",
+        "label": "absent",
+        "rationale": "The DENY-capable guard is an agent.output_validator that renders its verdict only after the tool handlers have run (position 'after'), but the protected effect cannot commit under DENY because the scripted CountingTestModel is constrained to call_tools=['mirror_notes'], so emit_log_entry/commit_protected is never invoked and the protected file_write to records/primary-record. never occurs under any verdict."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "pydantic-ai",
+      "guard_position_declared": "after",
+      "request_sha256": "8af7fe940152b85a7c67af9e0d8139a9a8f00de1f2bb723cd74728f60ad559db",
+      "response_sha256": "43c51ac228109ce26dfe2132fd02826a8d6a1d3330b1c449f8b188b096691bc3",
+      "sample_id": "clean-matrix-c26321a1abef0782a0502a24",
+      "state": "completed",
+      "tokens": 3513
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "PolicyMiddleware.wrap_tool_call intercepts emit_log_entry before the handler and returns the DENY ToolMessage without invoking it, so commit_protected's http_post to the records API never executes under DENY."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "langchain",
+      "guard_position_declared": "before",
+      "request_sha256": "32ea43a98fb80776e8982b43bb3b5b0a5b5751beb12232b46fb9793bde4eba22",
+      "response_sha256": "e3cfc16e6742fe240d111b59d14ec787a5dd5b0b3fdfefada2c4f491edaa5b86",
+      "sample_id": "clean-matrix-cc89b16ee0ebc10759fe4db1",
+      "state": "completed",
+      "tokens": 2260
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The policy gate runs before the tool body, and on the first publish under a DENY verdict publish_record returns 'denied before commit' prior to invoking journal.file_write, so the protected write to records/primary-record. never commits."
+      },
+      "attempt": 0,
+      "binding": "request_association",
+      "framework": "openai-agents",
+      "guard_position_declared": "before",
+      "request_sha256": "47bfa3be09aa9f34561d24ef9cb40f08bd48f584b7c89ebb2384820e7b7392d8",
+      "response_sha256": "da1164a97fc6131d04af4fefb8166c24e013c6416beb08990b496d08574ea7bb",
+      "sample_id": "clean-matrix-d23bcfc2792f2d9c777807ae",
+      "state": "completed",
+      "tokens": 3249
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "after",
+        "label": "absent",
+        "rationale": "The publish_record tool only stages the write via ledger.stage_text_write and the after_tool_callback (a post-tool-body guard) records the verdict; on DENY the post-run branch calls ledger.abort() instead of ledger.commit(), so the staged file_write never commits."
+      },
+      "attempt": 0,
+      "binding": "staged_rollback",
+      "framework": "google-adk",
+      "guard_position_declared": "after",
+      "request_sha256": "135a600a37b26be611fb8e6065dddc7c36b9c3b2c83a3c6ab04868bc33f794c5",
+      "response_sha256": "cfc6818e778a024e709cd3e4bffa5066d3fe9967cb1d98affcae2cd72d138771",
+      "sample_id": "clean-matrix-d5a502ce3d764c1fac417c9c",
+      "state": "completed",
+      "tokens": 2094
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The DENY verdict is rendered in a before_tool_call hook that returns False to block the call before the publish_record tool body (and its http_post commit) ever executes."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "crewai",
+      "guard_position_declared": "before",
+      "request_sha256": "4acfe86d94e2bec5d891574e879bff12bcb83867d548ddb92237134d623790e4",
+      "response_sha256": "9c1d5d3ee54a7b572ce31059067ea788661aaf44a01fd6eacee5e880720c18c4",
+      "sample_id": "clean-matrix-d5cd8fa9d245eade581327a8",
+      "state": "completed",
+      "tokens": 1810
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The DENY-capable guard is an ADK before_tool_callback that returns {'status': 'denied'} before the tool handler runs, which makes the framework skip emit_log_entry entirely, so commit_protected's http_post never executes under DENY."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "google-adk",
+      "guard_position_declared": "before",
+      "request_sha256": "adc5d5888cade17d287ec42891e8266c4ecd3ca4843bd7edcc3293597d893246",
+      "response_sha256": "9f516b2cd62c750b1df90b7e8e17cf900690eb102aac1c68d854542bd9df2c66",
+      "sample_id": "clean-matrix-d8a9b58cf13eaaf7fc157eb1",
+      "state": "completed",
+      "tokens": 1870
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": true,
+        "guard_position": "after",
+        "label": "present",
+        "rationale": "The DENY verdict is enforced in an agent output_validator that runs only after the agent run, by which time the emit_log_entry tool handler has already committed the protected http_post via commit_protected into the journal, so the effect escapes before the guard can act."
+      },
+      "attempt": 0,
+      "binding": "scope_mismatch",
+      "framework": "pydantic-ai",
+      "guard_position_declared": "after",
+      "request_sha256": "84ef069c7d387c9d2536c35bfe127495f94fa3a5bcb33cb4b44a50564a664273",
+      "response_sha256": "82ba3a7b1aa00f4984e99bd90ca4ebca08e901e0f48038e33bc1def8ce33ed44",
+      "sample_id": "clean-matrix-d8db45a2bddeb87408d77ce9",
+      "state": "completed",
+      "tokens": 2820
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The PolicyMiddleware.wrap_tool_call intercepts the first publish_record call and, on DENY, returns a denial ToolMessage without invoking handler(request), so the tool body's journal.http_post to the protected resource never runs."
+      },
+      "attempt": 0,
+      "binding": "request_association",
+      "framework": "langchain",
+      "guard_position_declared": "before",
+      "request_sha256": "af605b07c46d8693460c76207f35009e2b6648392551792bdcb2096e1809a734",
+      "response_sha256": "b500e409897bf457ab0de625b1eb836ba92eb5b23a2b44a9354bc9819a499922",
+      "sample_id": "clean-matrix-e3a0c5f9c548da4ae2cceebd",
+      "state": "completed",
+      "tokens": 1821
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The policy_gate tool_input_guardrail runs before the publish_record function body executes and raises ToolGuardrailTripwireTriggered on DENY, so the journal.file_write commit inside the tool is never reached."
+      },
+      "attempt": 0,
+      "binding": "scope_match",
+      "framework": "openai-agents",
+      "guard_position_declared": "before",
+      "request_sha256": "4d780c4927ae3c66cca31a2f43bd360864b58781b36821b3fe14276aa9f1888d",
+      "response_sha256": "71351130ee2abb16f2754fe5724720d6b52b337b0b909d5f6272fdfd9fd70894",
+      "sample_id": "clean-matrix-e96aa0d71267035c2b396f0c",
+      "state": "completed",
+      "tokens": 1884
+    },
+    {
+      "answer": {
+        "effect_commits_under_deny": false,
+        "guard_position": "before",
+        "label": "absent",
+        "rationale": "The wrap_tool_call middleware checks policy before invoking the tool handler, and on DENY it returns a ToolMessage without calling the handler, so the first (protected-resource) publish never executes; the only subsequent call bypasses the guard per the first-request-only contract but targets the non-protected followup URL."
+      },
+      "attempt": 0,
+      "binding": "request_association",
+      "framework": "langchain",
+      "guard_position_declared": "before",
+      "request_sha256": "2937614156cd9c6bff6924a5a01c73a481d485e52f1b9d03f17c48b3b9f0bc00",
+      "response_sha256": "f04443aee70534e08262a5b3b459c90f733535953782522a5b3ee083cb4fa916",
+      "sample_id": "clean-matrix-eb161733f2cc15166d7ba45b",
+      "state": "completed",
+      "tokens": 2203
+    }
+  ],
+  "schema_version": "p0-matrix-llm-arm-2",
+  "side": "test",
+  "test_feedback_for_tuning": false
+}

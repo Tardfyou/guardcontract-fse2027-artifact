@@ -1,0 +1,142 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The spawn of the bash child process: subprocess.Popen(self.cmd, ...) inside PTYSession.__init__ (src/Tools/session.py:60-68), reached from run_session via _create_session (src/Tools/SessionManager.py:279) and from run_session_async via asyncio.shield(self._create_session_async(...)) (src/Tools/SessionManager.py:311), each after Session.__init__ constructs and starts the PTYSession (src/Tools/session.py:234-235). Guard rejection occurs earlier in the same entry point, before cmd_full = ['bash','-lc',cmd] is built (src/Tools/SessionManager.py:276 and 308).",
+        "contract_id": "ecological-contract:58120c5d391969fb6cc545ebc3e803d9",
+        "declared_mechanism": "check_cmd (src/Tools/SessionManager.py:18-43) imports COMMAND_EXECUTION_VALIDATION_RULES (src/config.py:36), a creator-keyed registry of CmdFilterList entries where 'ctf_agent' maps to BlackOrWhite.BLACK with cmd_list=['bash'] (src/config.py:28-33); it splits the command with shlex, extracts the head token, and returns False when the head token is in a BLACK rule's cmd_list. run_session (line 270) and run_session_async (line 302) invoke check_cmd first and return a rejection message ('The command ... is not allowed to be executed.') \u2014 or a validation-failure message on exception (lines 272-274, 304-306) \u2014 before constructing cmd_full and creating the session.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 36,
+            "line_start": 22,
+            "path": "src/config.py",
+            "role": "guard_registration",
+            "source_sha256": "564a7d179325d28d89c95617edb0f81dff065e6e81bedde1c2752a4c408a01a7"
+          },
+          {
+            "line_end": 16,
+            "line_start": 14,
+            "path": "src/Tools/SessionManager.py",
+            "role": "guard_registration",
+            "source_sha256": "50129dfce235ad04a66712609c56c808b1bd57c0b9158646ca056c0617028d7a"
+          },
+          {
+            "line_end": 43,
+            "line_start": 18,
+            "path": "src/Tools/SessionManager.py",
+            "role": "guard_registration",
+            "source_sha256": "50129dfce235ad04a66712609c56c808b1bd57c0b9158646ca056c0617028d7a"
+          },
+          {
+            "line_end": 274,
+            "line_start": 268,
+            "path": "src/Tools/SessionManager.py",
+            "role": "guard_registration",
+            "source_sha256": "50129dfce235ad04a66712609c56c808b1bd57c0b9158646ca056c0617028d7a"
+          },
+          {
+            "line_end": 306,
+            "line_start": 300,
+            "path": "src/Tools/SessionManager.py",
+            "role": "guard_registration",
+            "source_sha256": "50129dfce235ad04a66712609c56c808b1bd57c0b9158646ca056c0617028d7a"
+          },
+          {
+            "line_end": 33,
+            "line_start": 28,
+            "path": "src/config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "564a7d179325d28d89c95617edb0f81dff065e6e81bedde1c2752a4c408a01a7"
+          },
+          {
+            "line_end": 41,
+            "line_start": 32,
+            "path": "src/Tools/SessionManager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50129dfce235ad04a66712609c56c808b1bd57c0b9158646ca056c0617028d7a"
+          },
+          {
+            "line_end": 267,
+            "line_start": 259,
+            "path": "src/Tools/SessionManager.py",
+            "role": "protected_operation",
+            "source_sha256": "50129dfce235ad04a66712609c56c808b1bd57c0b9158646ca056c0617028d7a"
+          },
+          {
+            "line_end": 299,
+            "line_start": 290,
+            "path": "src/Tools/SessionManager.py",
+            "role": "protected_operation",
+            "source_sha256": "50129dfce235ad04a66712609c56c808b1bd57c0b9158646ca056c0617028d7a"
+          },
+          {
+            "line_end": 281,
+            "line_start": 276,
+            "path": "src/Tools/SessionManager.py",
+            "role": "commit_point",
+            "source_sha256": "50129dfce235ad04a66712609c56c808b1bd57c0b9158646ca056c0617028d7a"
+          },
+          {
+            "line_end": 314,
+            "line_start": 308,
+            "path": "src/Tools/SessionManager.py",
+            "role": "commit_point",
+            "source_sha256": "50129dfce235ad04a66712609c56c808b1bd57c0b9158646ca056c0617028d7a"
+          },
+          {
+            "line_end": 235,
+            "line_start": 226,
+            "path": "src/Tools/session.py",
+            "role": "commit_point",
+            "source_sha256": "62e1cf7c5e310c46b8757f35520d2ec50d3b10c6fcbf2392623f14a68a556b54"
+          },
+          {
+            "line_end": 68,
+            "line_start": 56,
+            "path": "src/Tools/session.py",
+            "role": "commit_point",
+            "source_sha256": "62e1cf7c5e310c46b8757f35520d2ec50d3b10c6fcbf2392623f14a68a556b54"
+          }
+        ],
+        "forbidden_condition": "check_cmd(cmd, creater) evaluates to False \u2014 i.e., the command's head token matches an entry of a BLACK-type CmdFilterList in COMMAND_EXECUTION_VALIDATION_RULES (e.g., 'bash' in the 'ctf_agent' rule) \u2014 while the run_session/run_session_async path nonetheless proceeds past validation to build ['bash','-lc',cmd] and create a Session.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "check_cmd's rule-selection loop reuses the identifier 'creater' as the loop variable, shadowing the function parameter, so the source-literal creator-scoping comparison at src/Tools/SessionManager.py:34-36 does not clearly express the intended per-creator rule lookup; whether the 'ctf_agent' rule is selected only for that creator requires confirmation beyond the supplied text.",
+          "Agent-side binding is unresolved: no supplied source view shows a tool registration, decorator, dispatch table, or lifecycle hook that invokes run_session/run_session_async with an agent-controlled cmd/creater; identifying such wiring (if any) is required to upgrade agent_mediation from not_established.",
+          "The provenance of the 'creater' argument (e.g., whether it is an agent identifier such as 'ctf_agent' supplied by agent code) and of the 'cmd' string (whether agent-generated) is not shown in the supplied views."
+        ],
+        "protected_operation": "Execution of a caller-supplied command string through SessionManager.run_session (sync, src/Tools/SessionManager.py:259) or SessionManager.run_session_async (async, src/Tools/SessionManager.py:290), each of which validates via check_cmd, packages the command as ['bash','-lc',cmd], and creates a PTY-backed Session from the manager workspace.",
+        "protected_resource": "The PTY-backed bash child process (PTYSession.proc spawned by subprocess.Popen in src/Tools/session.py:60-68) executing 'bash -lc <cmd>' with cwd set to the session manager workspace (SESSION_MANAGER_WORKSPACE_DIR), together with its pseudo-terminal (pty.openpty, src/Tools/session.py:56).",
+        "protection_obligation": "Commands whose head token (first token of shlex.split) appears in the creator-keyed blacklist registered in COMMAND_EXECUTION_VALIDATION_RULES (e.g., head token 'bash' for 'ctf_agent') must be rejected by check_cmd inside SessionManager.run_session and SessionManager.run_session_async before a session is created and the 'bash -lc <cmd>' PTY subprocess is spawned.",
+        "scope_limits": [
+          "Applies only to the head token produced by shlex.split(cmd) (src/Tools/SessionManager.py:32-33); non-head tokens, arguments, and sub-commands reached via shell metacharacters are not part of the matched condition.",
+          "Default-allow semantics: an empty rule set (src/Tools/SessionManager.py:30-31) or a head token matching no rule (src/Tools/SessionManager.py:42-43) permits execution; only explicit BLACK-rule head-token hits are rejected.",
+          "Covers only the session-creation entry points run_session/run_session_async; input_session/input_session_async writes into already-running sessions (src/Tools/SessionManager.py:359-419) and direct Session/PTYSession construction are not routed through check_cmd in the supplied source.",
+          "The rule set is the import-time static content of COMMAND_EXECUTION_VALIDATION_RULES (src/config.py:36); dynamic configuration changes are outside this contract.",
+          "This contract records the declared source-supported obligation only; it does not assert DEC violation, safety, runtime effectiveness, or prevalence."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source view contains agent-side wiring (tool registry, decorator, dispatch table, or agent lifecycle hook) connecting agent turns to SessionManager.run_session/run_session_async; agent mediation of the command-execution effect therefore cannot be bound from the supplied source, and the config.py/module-docstring mentions of 'LLM'/'Agent' are treated as topic metadata, not binding evidence.",
+      "Provenance of the 'creater' argument (e.g., whether it equals an agent identifier such as 'ctf_agent' supplied by agent code) and of the 'cmd' string (whether agent-generated input) is not shown in the supplied views.",
+      "Alternative or direct construction paths for Session/PTYSession that would bypass check_cmd are not enumerated in the supplied views.",
+      "Runtime behavior, safety, and prevalence labels are unavailable per the stated scope; the effective creator-scoping semantics of check_cmd given the loop-variable shadowing at src/Tools/SessionManager.py:34-36 cannot be settled from the literal source text alone."
+    ],
+    "repository": "Sducabbagedog/youka-code_update",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:ccbec839ff203fb307ee39bd840cb31e"
+  },
+  "request_sha256": "dd4686b1916e843e1342d877e91af57e8c1189181f725c1e0924f1d9229dbd2f",
+  "response_sha256": "28febbc567b94c6077c3c9384aa8c32a6cea02ae2808de2a519caac13bef4852",
+  "state": "completed",
+  "tokens": 22673,
+  "unit": "v24-screen:ccbec839ff203fb307ee39bd840cb31e"
+}

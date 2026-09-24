@@ -1,0 +1,250 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "`_handle_chat`: `attachments = _resolve_attachments(thread_id, artifacts)` (manager.py:388) executes before the `OutboundMessage(attachments=attachments)` is constructed and `await self.bus.publish_outbound(outbound)` is called (manager.py:406-416); only paths that passed all checks can be attached at publication.",
+        "contract_id": "ecological-contract:7109cea7a4097c2888cc1f6c88d2905f",
+        "declared_mechanism": "`_resolve_attachments` (manager.py:141-185): (1) raw-string prefix check against `_OUTPUTS_VIRTUAL_PREFIX = \"/mnt/user-data/outputs/\"` with skip-and-warning on mismatch; (2) `Paths.resolve_virtual_path`, which requires a segment-boundary `/mnt/user-data` prefix match and raises ValueError 'Access denied: path traversal detected' if the resolved path escapes the thread's user-data base (paths.py:158-191); (3) a post-resolve containment re-check `actual.resolve().relative_to(outputs_dir)` against `paths.sandbox_outputs_dir(thread_id).resolve()`; (4) an `actual.is_file()` existence check. Any failure skips that artifact and logs a warning; only passing paths become ResolvedAttachment entries.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 185,
+            "line_start": 141,
+            "path": "deer-flow/backend/src/channels/manager.py",
+            "role": "guard_registration",
+            "source_sha256": "fcd985c4b8e780e4bf3e8beaa0817bc7ff02e5f4928efa5a07db2b17b5714afa"
+          },
+          {
+            "line_end": 149,
+            "line_start": 144,
+            "path": "deer-flow/backend/src/channels/manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fcd985c4b8e780e4bf3e8beaa0817bc7ff02e5f4928efa5a07db2b17b5714afa"
+          },
+          {
+            "line_end": 172,
+            "line_start": 157,
+            "path": "deer-flow/backend/src/channels/manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fcd985c4b8e780e4bf3e8beaa0817bc7ff02e5f4928efa5a07db2b17b5714afa"
+          },
+          {
+            "line_end": 191,
+            "line_start": 174,
+            "path": "deer-flow/backend/src/config/paths.py",
+            "role": "guard_registration",
+            "source_sha256": "8b080b7ab01e12136e4cf14dcd90e6921f5baae07e2f1d78ab441d6ecb56d594"
+          },
+          {
+            "line_end": 189,
+            "line_start": 186,
+            "path": "deer-flow/backend/src/config/paths.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8b080b7ab01e12136e4cf14dcd90e6921f5baae07e2f1d78ab441d6ecb56d594"
+          },
+          {
+            "line_end": 398,
+            "line_start": 385,
+            "path": "deer-flow/backend/src/channels/manager.py",
+            "role": "protected_operation",
+            "source_sha256": "fcd985c4b8e780e4bf3e8beaa0817bc7ff02e5f4928efa5a07db2b17b5714afa"
+          },
+          {
+            "line_end": 416,
+            "line_start": 406,
+            "path": "deer-flow/backend/src/channels/manager.py",
+            "role": "commit_point",
+            "source_sha256": "fcd985c4b8e780e4bf3e8beaa0817bc7ff02e5f4928efa5a07db2b17b5714afa"
+          },
+          {
+            "line_end": 124,
+            "line_start": 117,
+            "path": "deer-flow/backend/src/channels/manager.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fcd985c4b8e780e4bf3e8beaa0817bc7ff02e5f4928efa5a07db2b17b5714afa"
+          },
+          {
+            "line_end": 388,
+            "line_start": 375,
+            "path": "deer-flow/backend/src/channels/manager.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fcd985c4b8e780e4bf3e8beaa0817bc7ff02e5f4928efa5a07db2b17b5714afa"
+          }
+        ],
+        "forbidden_condition": "An agent-provided artifact virtual path that (a) does not start with `/mnt/user-data/outputs/`, or (b) resolves (after traversal) outside the thread's resolved outputs directory, or (c) does not exist as a file, being converted into a ResolvedAttachment and dispatched outbound to an IM channel.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether consumers of `bus.publish_outbound` upload attachment files to external platforms, and which channel adapters exist \u2014 the MessageBus consumers are not in the supplied source.",
+          "The external IM channel identities named in reviewer wording (Feishu/Slack/Telegram) do not appear in the supplied source.",
+          "Whether downstream uploaders use `ResolvedAttachment.actual_path` or `virtual_path` (both are carried in the payload).",
+          "Whether any other delivery path consumes thread artifacts without passing through `_resolve_attachments`."
+        ],
+        "protected_operation": "Resolution of agent-produced artifact paths into ResolvedAttachment entries for outbound channel dispatch in `_handle_chat` (the attachment upload path toward external IM platforms).",
+        "protected_resource": "Per-thread files outside `outputs/` \u2014 i.e., the thread's `uploads/` and `workspace/` files under the user-data directory on the host filesystem \u2014 against exfiltration via IM-channel message attachments.",
+        "protection_obligation": "Artifact attachments dispatched to external IM channels must originate only from the thread's `/mnt/user-data/outputs/` directory. `_resolve_attachments` must reject any agent-provided virtual path that lacks the outputs prefix, re-verify that the resolved host path stays inside the thread's resolved outputs directory (defense against path traversal after the prefix check), and confirm the path exists as a file, before any ResolvedAttachment is included in an OutboundMessage handed to `bus.publish_outbound`. Stated purpose in source: prevent exfiltration of uploads/workspace files via IM channels. (Consolidates two reviewer statements describing the same guard and commit point.)",
+        "scope_limits": [
+          "Guard runs only in the IM-channel chat dispatch path (`_handle_chat`); the `/command` path (`_handle_command`, manager.py:420-457) publishes outbound messages without attachment resolution and without this guard.",
+          "Rejection is per-artifact skip-and-warn: the outbound message is still published, and filenames of rejected/unresolved artifacts are appended to the response text (manager.py:389-398), so rejected file names may be disclosed as text even though their contents are not attached.",
+          "The guard filters only artifact paths extracted from `present_files` tool calls by `_extract_artifacts`; response text and other message content are not filtered.",
+          "The prefix check is a raw-string `startswith` performed before resolution; traversal defense depends on `resolve_virtual_path` plus the containment re-check.",
+          "Containment is scoped to the thread-specific outputs directory derived from `thread_id`; `thread_id` charset is restricted by `_SAFE_THREAD_ID_RE` in `Paths.thread_dir` (paths.py:105-107).",
+          "Enforcement occurs at attachment-resolution time host-side; no supplied source shows re-validation at the actual upload site."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Return of `Command(update={\"messages\": [tool_message]}, goto=END)` in `_handle_clarification` (clarification_middleware.py:126-129), which appends the formatted clarification to thread message state and terminates the turn.",
+        "contract_id": "ecological-contract:d42ad62d1dcefda299eb0e997315bca2",
+        "declared_mechanism": "`ClarificationMiddleware(AgentMiddleware)` overriding `wrap_tool_call` and `awrap_tool_call`: tool calls not named `ask_clarification` pass through to the handler unchanged; named calls are routed to `_handle_clarification`, which builds a formatted ToolMessage and returns `Command(update={\"messages\": [tool_message]}, goto=END)` (clarification_middleware.py:91-129, 131-173).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 33,
+            "line_start": 20,
+            "path": "deer-flow/backend/src/agents/middlewares/clarification_middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "9453b482301982271e229c0b4cb60299caec7e5a95e2940db535dabff5fb653f"
+          },
+          {
+            "line_end": 151,
+            "line_start": 146,
+            "path": "deer-flow/backend/src/agents/middlewares/clarification_middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9453b482301982271e229c0b4cb60299caec7e5a95e2940db535dabff5fb653f"
+          },
+          {
+            "line_end": 173,
+            "line_start": 168,
+            "path": "deer-flow/backend/src/agents/middlewares/clarification_middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9453b482301982271e229c0b4cb60299caec7e5a95e2940db535dabff5fb653f"
+          },
+          {
+            "line_end": 29,
+            "line_start": 21,
+            "path": "deer-flow/backend/src/agents/middlewares/clarification_middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "9453b482301982271e229c0b4cb60299caec7e5a95e2940db535dabff5fb653f"
+          },
+          {
+            "line_end": 129,
+            "line_start": 121,
+            "path": "deer-flow/backend/src/agents/middlewares/clarification_middleware.py",
+            "role": "commit_point",
+            "source_sha256": "9453b482301982271e229c0b4cb60299caec7e5a95e2940db535dabff5fb653f"
+          },
+          {
+            "line_end": 136,
+            "line_start": 131,
+            "path": "deer-flow/backend/src/agents/middlewares/clarification_middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9453b482301982271e229c0b4cb60299caec7e5a95e2940db535dabff5fb653f"
+          },
+          {
+            "line_end": 158,
+            "line_start": 153,
+            "path": "deer-flow/backend/src/agents/middlewares/clarification_middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9453b482301982271e229c0b4cb60299caec7e5a95e2940db535dabff5fb653f"
+          }
+        ],
+        "forbidden_condition": "An `ask_clarification` tool call being forwarded to the underlying tool execution handler (executed as an ordinary tool), or agent execution continuing past a clarification request instead of interrupting at END to await user input.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied source shows `ClarificationMiddleware` being instantiated or attached to a specific agent's middleware list; the registration wiring outside the class is unverified.",
+          "The definition/registration of the `ask_clarification` tool itself is not in the supplied source (only its interception).",
+          "How the frontend/user response resumes the interrupted thread after `goto=END` is not shown in the supplied source."
+        ],
+        "protected_operation": "Interception of agent `ask_clarification` tool calls before execution and interruption of the agent turn so the formatted clarification is presented to the user and execution waits for the user's response.",
+        "protected_resource": "The agent execution turn / conversation thread state (the LangGraph message history and turn continuation) during clarification handling.",
+        "protection_obligation": "Agent tool-call dispatch must route `ask_clarification` calls through `ClarificationMiddleware` so that the clarification request (including `risk_confirmation`-type clarifications) is intercepted before the underlying tool executes, converted into a user-facing ToolMessage, and the agent turn ends (`Command goto=END`) pending the user's response, instead of the tool executing normally and the conversation flow continuing.",
+        "scope_limits": [
+          "Applies only to tool calls named `ask_clarification`; all other tool calls pass through to the handler unchanged (lines 147-149 sync, 169-171 async).",
+          "The middleware does not evaluate risk itself; gating depends on the agent choosing to call `ask_clarification` (e.g., with `clarification_type: risk_confirmation`, rendered with a warning icon at lines 61-67).",
+          "Effect is limited to formatting/appending a ToolMessage and ending the graph turn; no external effect is performed by the middleware.",
+          "Enforcement depends on the agent framework invoking the `wrap_tool_call`/`awrap_tool_call` hooks around tool dispatch."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Return of `Command(update={\"artifacts\": normalized_paths, \"messages\": [...]})` in `present_file_tool` (present_file_tool.py:95-99); on normalization failure the error Command at lines 90-92 is returned instead and no artifacts update occurs.",
+        "contract_id": "ecological-contract:ef2c475d5da9ce77d6536162aefd865b",
+        "declared_mechanism": "`_normalize_presented_filepath` (present_file_tool.py:15-59): resolves virtual paths via `Paths.resolve_virtual_path` or host-side paths via `Path(...).expanduser().resolve()`, then requires `actual_path.relative_to(outputs_dir)` where `outputs_dir` comes from thread runtime state (`thread_data['outputs_path']`); a ValueError is raised ('Only files in /mnt/user-data/outputs can be presented') and converted by the tool body into an error ToolMessage Command instead of the artifacts update (lines 87-92).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 67,
+            "line_start": 62,
+            "path": "deer-flow/backend/src/tools/builtins/present_file_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6075af790a3f3bc94474284911a19413c92f335fd0c61b8045748cf0a834cb96"
+          },
+          {
+            "line_end": 59,
+            "line_start": 45,
+            "path": "deer-flow/backend/src/tools/builtins/present_file_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "6075af790a3f3bc94474284911a19413c92f335fd0c61b8045748cf0a834cb96"
+          },
+          {
+            "line_end": 57,
+            "line_start": 54,
+            "path": "deer-flow/backend/src/tools/builtins/present_file_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6075af790a3f3bc94474284911a19413c92f335fd0c61b8045748cf0a834cb96"
+          },
+          {
+            "line_end": 92,
+            "line_start": 85,
+            "path": "deer-flow/backend/src/tools/builtins/present_file_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "6075af790a3f3bc94474284911a19413c92f335fd0c61b8045748cf0a834cb96"
+          },
+          {
+            "line_end": 99,
+            "line_start": 95,
+            "path": "deer-flow/backend/src/tools/builtins/present_file_tool.py",
+            "role": "commit_point",
+            "source_sha256": "6075af790a3f3bc94474284911a19413c92f335fd0c61b8045748cf0a834cb96"
+          }
+        ],
+        "forbidden_condition": "An agent-supplied `filepaths` entry whose resolved host path falls outside the current thread's resolved outputs directory being registered as a presented artifact via the `artifacts` state update.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Behavior of the `merge_artifacts` reducer that merges the `artifacts` update (referenced at present_file_tool.py:94) is not in the supplied source.",
+          "Whether all downstream consumers of the `artifacts` state route through `_resolve_attachments` (channel path) or whether other consumers exist is not determinable from supplied source."
+        ],
+        "protected_operation": "Agent invocation of the `present_files` tool that normalizes presented paths and updates the `artifacts` state (making files visible to the user in the client interface).",
+        "protected_resource": "The thread's outputs directory contents and the conversation's `artifacts` state (the set of files surfaced to the user).",
+        "protection_obligation": "The agent-invoked `present_files` tool must confine presented artifacts to the current thread's outputs directory: every agent-supplied filepath (virtual sandbox path or host-side path) must resolve inside the thread's resolved outputs directory before it can be registered in the conversation's `artifacts` state; on violation the tool returns an error ToolMessage and leaves `artifacts` unchanged.",
+        "scope_limits": [
+          "Confinement is enforced inside the tool and is fail-closed for the state update: violations produce an error ToolMessage rather than an artifacts update.",
+          "The guard accepts host-side absolute paths as input and confines them via `relative_to(outputs_dir)` after `resolve()`; it relies on `thread_data['outputs_path']` and `runtime.context['thread_id']` being present, raising ValueError if missing (lines 33-43).",
+          "Supplied source shows no existence/`is_file` check at presentation time (unlike `_resolve_attachments`); the guard constrains path location, not file existence or content.",
+          "The guard does not validate or sanitize the accompanying ToolMessage text beyond the normalization result."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Consumers of MessageBus outbound messages (channel adapters that would upload ResolvedAttachment files to external IM platforms) are absent from the supplied source; behavior after `bus.publish_outbound` is unverified.",
+      "The external IM channel identities named in reviewer wording (Feishu/Slack/Telegram) do not appear anywhere in the supplied source.",
+      "No supplied source shows where `ClarificationMiddleware` is instantiated/registered on an agent, nor the definition of the `ask_clarification` tool itself.",
+      "The `merge_artifacts` reducer for the `artifacts` state key (referenced at present_file_tool.py:94) is not supplied.",
+      "Behavior labels and runtime enforcement outcomes are unavailable per the stated scope; these contracts are source-supported hypotheses only."
+    ],
+    "repository": "ishi253/Meridian-GTM-Research-Agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:fcb2e52312099f88ce73cc8f29db4771"
+  },
+  "request_sha256": "7bde531491eb1d213b31ed544798e5a0ecfdee4980324eb7044a5694b40dc45a",
+  "response_sha256": "618eb4d9a6bb2c4433bf7a98f43255cb822937ccbf3c25b12bd38ec960d36692",
+  "state": "completed",
+  "tokens": 30396,
+  "unit": "v24-screen:fcb2e52312099f88ce73cc8f29db4771"
+}

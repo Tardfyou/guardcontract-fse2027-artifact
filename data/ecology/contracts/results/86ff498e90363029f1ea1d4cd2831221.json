@@ -1,0 +1,409 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "QueryService._execute_duckdb -> self._duckdb.execute_query(sql) (query_service.py:461) and QueryService._execute_connection -> conn.execute(text(sql)) (query_service.py:546), reached via the tool's delegation at agent_tools.py:306-310.",
+        "contract_id": "ecological-contract:233059323714d5572eb566802ea24a58",
+        "declared_mechanism": "is_read_only_sql check inside the @agent.tool-registered run_query (agent_tools.py:277-283) raising ModelRetry, layered over the QueryService.execute guard (query_service.py:173-179) that re-checks before dispatch to _execute_duckdb/_execute_connection.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 47,
+            "line_start": 47,
+            "path": "apps/backend/src/app/services/agent_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "40ce799ae9343affba35b51a865ea758b2bb1c43a8f66926537e8a2644151083"
+          },
+          {
+            "line_end": 262,
+            "line_start": 248,
+            "path": "apps/backend/src/app/services/agent_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "40ce799ae9343affba35b51a865ea758b2bb1c43a8f66926537e8a2644151083"
+          },
+          {
+            "line_end": 273,
+            "line_start": 263,
+            "path": "apps/backend/src/app/services/agent_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "40ce799ae9343affba35b51a865ea758b2bb1c43a8f66926537e8a2644151083"
+          },
+          {
+            "line_end": 283,
+            "line_start": 277,
+            "path": "apps/backend/src/app/services/agent_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "40ce799ae9343affba35b51a865ea758b2bb1c43a8f66926537e8a2644151083"
+          },
+          {
+            "line_end": 282,
+            "line_start": 279,
+            "path": "apps/backend/src/app/services/agent_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "40ce799ae9343affba35b51a865ea758b2bb1c43a8f66926537e8a2644151083"
+          },
+          {
+            "line_end": 310,
+            "line_start": 299,
+            "path": "apps/backend/src/app/services/agent_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "40ce799ae9343affba35b51a865ea758b2bb1c43a8f66926537e8a2644151083"
+          },
+          {
+            "line_end": 40,
+            "line_start": 37,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 52,
+            "line_start": 43,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "guard_registration",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 179,
+            "line_start": 173,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "guard_registration",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 462,
+            "line_start": 460,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "commit_point",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 546,
+            "line_start": 544,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "commit_point",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          }
+        ],
+        "forbidden_condition": "run_query invoked with a sql parameter whose first significant keyword matches _WRITE_KEYWORDS; the tool raises pydantic_ai ModelRetry ('SQL rejected: write operations (INSERT, UPDATE, DELETE, DROP, etc.) are not allowed. Only read-only SELECT statements are permitted.') instead of executing.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The Agent construction site that calls register_tools(agent) is not in the supplied views; the decorator binding is evidenced only within agent_tools.py.",
+          "Whether DuckDB dataset storage is file-persisted or in-memory."
+        ],
+        "protected_operation": "The agent tool run_query executing model-supplied SQL via QueryService.execute against a dataset (DuckDB) or connection (external database) source.",
+        "protected_resource": "DuckDB dataset query execution (DuckDBManager) and external database connections (SQLAlchemy engines via ConnectionManager), reached through QueryService.execute.",
+        "protection_obligation": "Write SQL statements (INSERT/UPDATE/DELETE/DROP/ALTER/CREATE/TRUNCATE/REPLACE/MERGE/GRANT/REVOKE/RENAME) are forbidden from execution through the agent's run_query tool against DuckDB dataset sources and external SQLAlchemy connection sources; the is_read_only_sql guard must raise ModelRetry inside the tool before it delegates to QueryService.execute, and the service-layer guard re-checks before the execution commit point.",
+        "scope_limits": [
+          "Covers only the run_query tool; the other registered agent tools (get_schema, summarize_table, render_chart, render_table, render_data_profile, suggest_followups, create_bookmark, search_bookmarks, list_datasources) are not covered by this contract.",
+          "On violation the guard raises ModelRetry, which feeds the rejection message back to the model for self-correction (retries=3); deciding whether that retry behavior constitutes a DEC violation is out of scope here.",
+          "The guard is a first-keyword regex heuristic; bypass analysis is a downstream adjudication question.",
+          "Concrete execution statements inside DuckDBManager and ConnectionManager-provisioned engines are not in the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "QueryService._execute_duckdb -> self._duckdb.execute_query(sql) (query_service.py:461) for dataset sources; QueryService._execute_connection -> conn.execute(text(sql)) (query_service.py:546) for external connection sources.",
+        "contract_id": "ecological-contract:56c8babb523ae6a7141e00b695bd9708",
+        "declared_mechanism": "is_read_only_sql / _WRITE_KEYWORDS regex (query_service.py:36-52) checked at the endpoint (queries.py:175-181) and re-checked inside QueryService.execute (query_service.py:173-179) before dispatching to _execute_duckdb or _execute_connection.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 167,
+            "line_start": 158,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "protected_operation",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 181,
+            "line_start": 175,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "guard_registration",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 179,
+            "line_start": 177,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "forbidden_condition",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 188,
+            "line_start": 183,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "protected_operation",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 40,
+            "line_start": 37,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 52,
+            "line_start": 43,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "guard_registration",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 179,
+            "line_start": 173,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "guard_registration",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 192,
+            "line_start": 183,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "protected_operation",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 462,
+            "line_start": 460,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "commit_point",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 546,
+            "line_start": 544,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "commit_point",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          }
+        ],
+        "forbidden_condition": "Submission or execution of a SQL statement whose first significant keyword matches _WRITE_KEYWORDS (INSERT, UPDATE, DELETE, DROP, ALTER, CREATE, TRUNCATE, REPLACE, MERGE, GRANT, REVOKE, RENAME); the endpoint raises AppError READ_ONLY_VIOLATION (HTTP 400) and QueryService.execute returns a READ_ONLY_VIOLATION error result instead of dispatching.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent runtime reaches this endpoint over HTTP rather than via the run_query tool.",
+          "Whether DuckDB dataset storage is file-persisted or in-memory (affects persistence semantics of the guarded mutation)."
+        ],
+        "protected_operation": "POST /queries/execute executing raw user-supplied SQL through QueryService.execute against the selected dataset (DuckDB) or connection (external database) source.",
+        "protected_resource": "DuckDB dataset query execution (DuckDBManager) and external database connections (SQLAlchemy engines obtained via ConnectionManager).",
+        "protection_obligation": "Write SQL statements (INSERT/UPDATE/DELETE/DROP/ALTER/CREATE/TRUNCATE/REPLACE/MERGE/GRANT/REVOKE/RENAME) are forbidden from execution via POST /queries/execute and QueryService.execute against DuckDB dataset sources and external SQLAlchemy connection sources; the is_read_only_sql guard must run at both the endpoint layer and the service layer before any execution commit point.",
+        "scope_limits": [
+          "Covers only the POST /queries/execute path; POST /queries/explain shows no read-only guard in the supplied views and no contract is asserted for it.",
+          "The guard is a first-significant-keyword regex heuristic; whether it can be bypassed (e.g., comments, CTE-prefixed writes) is a DEC-adjudication question and is not decided here.",
+          "Concrete statement execution inside DuckDBManager.execute_query and inside ConnectionManager-provisioned engines is not in the supplied views.",
+          "No supplied source binds this HTTP endpoint to agent tool dispatch or an agent lifecycle hook; agent mediation is not established for this path."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Delegated execution inside CrossSourceQueryEngine.execute, invoked from queries.py:281-286 via query_service.py:144-149; the concrete execute statements inside the engine are not in the supplied views and remain unverified.",
+        "contract_id": "ecological-contract:b9a2603b26ce73161e537d6fb0cc35d4",
+        "declared_mechanism": "Endpoint-level is_read_only_sql loop over body.sub_queries (queries.py:240-250) plus a join_sql check (queries.py:261-266); QueryService.execute_cross_source (query_service.py:126-149) shows no additional read-only re-check in the supplied views before delegating to CrossSourceQueryEngine.execute.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 238,
+            "line_start": 229,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "protected_operation",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 250,
+            "line_start": 240,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "guard_registration",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 248,
+            "line_start": 244,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "forbidden_condition",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 266,
+            "line_start": 261,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "guard_registration",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 264,
+            "line_start": 263,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "forbidden_condition",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 286,
+            "line_start": 281,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "commit_point",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 40,
+            "line_start": 37,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 52,
+            "line_start": 43,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "guard_registration",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 149,
+            "line_start": 126,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "commit_point",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          }
+        ],
+        "forbidden_condition": "Any body.sub_queries[i].sql or body.join_sql whose first significant keyword matches _WRITE_KEYWORDS; the endpoint raises AppError READ_ONLY_VIOLATION (HTTP 400) naming the offending sub-query alias or the join SQL.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Source of app/services/cross_source_query.py (CrossSourceQueryEngine.execute) is needed to locate the actual execution commit points and confirm whether read-only is re-checked there.",
+          "Whether DuckDB dataset storage is file-persisted or in-memory."
+        ],
+        "protected_operation": "Cross-source execution of per-source sub-queries and the final join SQL, dispatched via QueryService.execute_cross_source to CrossSourceQueryEngine.",
+        "protected_resource": "DuckDB (temp-table load and final join per the endpoint docstring) and external connections targeted by sub-queries.",
+        "protection_obligation": "Write SQL statements (INSERT/UPDATE/DELETE/DROP/ALTER/CREATE/TRUNCATE/REPLACE/MERGE/GRANT/REVOKE/RENAME) are forbidden in every cross-source sub-query and in the join_sql submitted to POST /queries/execute/cross-source; each sub-query and the join SQL must pass is_read_only_sql at the endpoint before QueryService.execute_cross_source delegates execution to CrossSourceQueryEngine.",
+        "scope_limits": [
+          "Only the endpoint-layer guard is evidenced for this path; no service-layer or engine-layer re-check is visible in the supplied source.",
+          "CrossSourceQueryEngine internals (per-source execution, temp table loading, join execution) are not in the supplied views; the internal commit points and any engine-level guard are unverified.",
+          "No supplied source binds this endpoint to agent tool dispatch or an agent lifecycle hook."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "QueryService._paginate_duckdb -> self._duckdb.execute_query(count_sql) and self._duckdb.execute_query(paginated_sql) (query_service.py:286, 290); QueryService._paginate_connection -> conn.execute(text(count_sql)) and conn.execute(text(paginated_sql)) (query_service.py:349, 353).",
+        "contract_id": "ecological-contract:c4c300571c9ad91416243eb8c4b71e8e",
+        "declared_mechanism": "is_read_only_sql checked at the endpoint (queries.py:381-387) and re-checked at the top of QueryService.paginate (query_service.py:226-233) before the SQL is wrapped (query_service.py:248-253) and executed.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 373,
+            "line_start": 362,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "protected_operation",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 387,
+            "line_start": 381,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "guard_registration",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 385,
+            "line_start": 384,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "forbidden_condition",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 398,
+            "line_start": 389,
+            "path": "apps/backend/src/app/api/v1/queries.py",
+            "role": "protected_operation",
+            "source_sha256": "65039d3d68ceacd8a3c237bbb94e70f0f88d1447f435b8999bdab1685a773dcc"
+          },
+          {
+            "line_end": 40,
+            "line_start": 37,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 52,
+            "line_start": 43,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "guard_registration",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 233,
+            "line_start": 226,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "guard_registration",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 253,
+            "line_start": 248,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "protected_operation",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 290,
+            "line_start": 284,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "commit_point",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          },
+          {
+            "line_end": 353,
+            "line_start": 345,
+            "path": "apps/backend/src/app/services/query_service.py",
+            "role": "commit_point",
+            "source_sha256": "dabef670318817eb95ae75cbc6df1a2d7def62d20f0feb837adf48e313c59ec1"
+          }
+        ],
+        "forbidden_condition": "A paginate request sql whose first significant keyword matches _WRITE_KEYWORDS; the endpoint raises AppError READ_ONLY_VIOLATION (HTTP 400) and QueryService.paginate returns an error PaginatedResult before any wrapped statement is constructed or executed.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent-mediated flow reaches /queries/paginate.",
+          "Whether DuckDB dataset storage is file-persisted or in-memory."
+        ],
+        "protected_operation": "POST /queries/paginate re-executing user SQL wrapped as 'SELECT COUNT(*) FROM (<sql>) AS _subq' and 'SELECT * FROM (<sql>) AS _subq ... LIMIT/OFFSET' via QueryService.paginate against dataset or connection sources.",
+        "protected_resource": "DuckDB dataset query execution (DuckDBManager) and external database connections (SQLAlchemy engines via ConnectionManager).",
+        "protection_obligation": "Write SQL statements (INSERT/UPDATE/DELETE/DROP/ALTER/CREATE/TRUNCATE/REPLACE/MERGE/GRANT/REVOKE/RENAME) are forbidden from execution via POST /queries/paginate and QueryService.paginate; the original SQL must pass is_read_only_sql at the endpoint and again in the service before it is wrapped as a subquery and executed as count and page statements against DuckDB datasets or external connections.",
+        "scope_limits": [
+          "The separate sort_by sanitization (regex strip, query_service.py:238-246) is a distinct injection-control mechanism and is not covered by this contract.",
+          "No supplied source binds this endpoint to agent tool dispatch or an agent lifecycle hook.",
+          "Concrete execution statements inside DuckDBManager.execute_query and ConnectionManager-provisioned engines are not in the supplied views."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Source views for app/services/cross_source_query.py (CrossSourceQueryEngine.execute) are not supplied; the concrete per-source and join execution statements, temp-table writes, and any engine-level read-only re-check are unverified.",
+      "Source for DuckDBManager.execute_query and ConnectionManager engine provisioning is not supplied; the lowest-level database commit statements behind the guarded paths are unverified.",
+      "No supplied source establishes whether DuckDB dataset storage is file-persisted or in-memory, which affects the persistence semantics of the guarded database mutation.",
+      "POST /queries/explain and QueryService.explain show no is_read_only_sql check in the supplied views; no protection contract is asserted for that path.",
+      "No supplied source binds the /queries HTTP endpoints to any agent tool dispatch, lifecycle hook, or agent-generated input; agent mediation for the API-layer contracts is therefore not_established.",
+      "The module that constructs the Pydantic AI Agent and calls register_tools(agent) is not in the supplied views; agent tool registration is evidenced only by the decorator inside agent_tools.py.",
+      "Runtime behavior labels are unavailable (per study scope), so guard effectiveness at runtime is not asserted."
+    ],
+    "repository": "sequenzia/datax",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:86ff498e90363029f1ea1d4cd2831221"
+  },
+  "request_sha256": "1a02c8b004c0f53fb87b243450b1e40b5926d443e64e708df3e828bcf1bfc69a",
+  "response_sha256": "976009890b9019234d31e6c901567f7e1bd5f7ee8bbefb7f2a38e97c851e5b12",
+  "state": "completed",
+  "tokens": 43405,
+  "unit": "v24-screen:86ff498e90363029f1ea1d4cd2831221"
+}

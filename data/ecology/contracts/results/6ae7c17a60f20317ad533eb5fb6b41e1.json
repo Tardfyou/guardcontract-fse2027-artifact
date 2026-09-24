@@ -1,0 +1,92 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The tool-execution step for `get_weather` inside agent.invoke (lines 46-51): the run interrupts instead of committing tool execution, and the step completes only after the resume invoke carrying the decisions payload (lines 53-59).",
+        "contract_id": "ecological-contract:3513cb4ea709bf1b1e264c23b6ba3c41",
+        "declared_mechanism": "HumanInTheLoopMiddleware(interrupt_on={\"get_weather\": {\"allowed_decisions\": [\"approve\", \"reject\"]}}) passed in create_agent's middleware list (keyed on the tool name), together with checkpointer=InMemorySaver() enabling stateful interrupt/resume; the source demonstrates decision delivery via a second agent.invoke(Command(resume={\"decisions\": [{\"type\": \"reject\", \"message\": ...}]}), config) after detecting \"__interrupt__\" in the first run's result.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 44,
+            "line_start": 36,
+            "path": "LangChain/LangChain1.0-create_agent-advanced-use-121297eb/create_agent-advanced-use_middleware-0e9bdfc1.py",
+            "role": "guard_registration",
+            "source_sha256": "ba93fed5b6b72fdc52ff2a182e9c19e8b85a2777d824e84c591489e9ce3e3c9e"
+          },
+          {
+            "line_end": 41,
+            "line_start": 37,
+            "path": "LangChain/LangChain1.0-create_agent-advanced-use-121297eb/create_agent-advanced-use_middleware-0e9bdfc1.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ba93fed5b6b72fdc52ff2a182e9c19e8b85a2777d824e84c591489e9ce3e3c9e"
+          },
+          {
+            "line_end": 14,
+            "line_start": 9,
+            "path": "LangChain/LangChain1.0-create_agent-advanced-use-121297eb/create_agent-advanced-use_middleware-0e9bdfc1.py",
+            "role": "protected_operation",
+            "source_sha256": "ba93fed5b6b72fdc52ff2a182e9c19e8b85a2777d824e84c591489e9ce3e3c9e"
+          },
+          {
+            "line_end": 51,
+            "line_start": 46,
+            "path": "LangChain/LangChain1.0-create_agent-advanced-use-121297eb/create_agent-advanced-use_middleware-0e9bdfc1.py",
+            "role": "commit_point",
+            "source_sha256": "ba93fed5b6b72fdc52ff2a182e9c19e8b85a2777d824e84c591489e9ce3e3c9e"
+          },
+          {
+            "line_end": 59,
+            "line_start": 53,
+            "path": "LangChain/LangChain1.0-create_agent-advanced-use-121297eb/create_agent-advanced-use_middleware-0e9bdfc1.py",
+            "role": "commit_point",
+            "source_sha256": "ba93fed5b6b72fdc52ff2a182e9c19e8b85a2777d824e84c591489e9ce3e3c9e"
+          },
+          {
+            "line_end": 42,
+            "line_start": 32,
+            "path": "LangChain/LangChain1.0-create_agent-advanced-use-121297eb/create_agent-advanced-use_middleware-0e9bdfc1.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ba93fed5b6b72fdc52ff2a182e9c19e8b85a2777d824e84c591489e9ce3e3c9e"
+          }
+        ],
+        "forbidden_condition": "Execution of the `get_weather` tool without a recorded human decision within allowed_decisions [\"approve\", \"reject\"] \u2014 i.e., the agent proceeding past the get_weather tool-execution step with no interrupt-plus-resume decision, or a resume decision of a type outside the allowed set.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "HumanInTheLoopMiddleware internals (exact interrupt timing relative to tool execution, and whether decision types outside allowed_decisions are rejected) are library behavior not present in the supplied source.",
+          "The exact Command(resume=...) payload shape accepted for the \"approve\" decision type is not demonstrated; only the \"reject\" payload at lines 55-57 is shown.",
+          "Whether the configured external model (DeepSeek-R1 via siliconflow) actually emits a get_weather tool call in a given run is not established by the source.",
+          "Whether any alternate create_agent wiring exists without the middleware or checkpointer cannot be determined from the supplied views."
+        ],
+        "protected_operation": "Invocation/execution of the `get_weather` agent tool during agent.invoke runs of the configured agent.",
+        "protected_resource": "The `get_weather` tool \u2014 an in-process @tool-decorated function returning a formatted weather string \u2014 registered on the agent via create_agent(tools=[get_weather]).",
+        "protection_obligation": "Agent tool execution of `get_weather` must not proceed without an explicit human decision restricted to the allowed_decisions set [\"approve\", \"reject\"]: the agent run must interrupt at the get_weather tool-execution step during agent.invoke and may resume that step only through a Command(resume={\"decisions\": [...]}) payload, per the HumanInTheLoopMiddleware registered in create_agent. (Merges the two reviewer wordings, which describe the same guard, tool, and commit point.)",
+        "scope_limits": [
+          "The gate keys on the literal tool name \"get_weather\" in interrupt_on; only that tool is gated by this configuration, and any other tool would not be covered (no other tools are registered in this unit).",
+          "The guarded tool performs an in-process computation returning a static string (lines 9-14); the contract protects the invocation decision itself, not an http/file/database/process/communication external effect, none of which appear in the supplied source.",
+          "The supplied source exercises only the \"reject\" resume path; the \"approve\" path is declared in allowed_decisions but never demonstrated.",
+          "Interrupt/resume state depends on checkpointer=InMemorySaver() with configurable.thread_id \"1\"; no persistent checkpoint backend is shown.",
+          "This contract records the declared guard registration in the supplied source only; runtime enforcement by the middleware is not verified here."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Library-internal enforcement semantics of HumanInTheLoopMiddleware (interrupt placement before tool execution, validation of decision types against allowed_decisions) are not included in the supplied source.",
+      "The \"approve\" decision resume path is never exercised in the supplied source; only the \"reject\" payload at lines 55-57 is shown.",
+      "Actual runtime behavior (whether the model triggers get_weather, whether the interrupt fires in a given run) and prevalence labels are unavailable per unit scope; no DEC-violation, safety, or runtime determination is made here.",
+      "No supplied source view shows get_weather performing an external side effect (network, file, database, process, message delivery); the guarded effect is in-process tool invocation only."
+    ],
+    "repository": "0-Anan-0/an",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:6ae7c17a60f20317ad533eb5fb6b41e1"
+  },
+  "request_sha256": "f0d6aa02cb3081e579406c6f44d1b5ec41d4b043a9ba8e5aad1692c71d575316",
+  "response_sha256": "41660d64f7e696b7aa458099301c01b5304cde148f9edb64df34e3a09681ed3e",
+  "state": "completed",
+  "tokens": 9391,
+  "unit": "v24-screen:6ae7c17a60f20317ad533eb5fb6b41e1"
+}

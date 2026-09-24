@@ -1,0 +1,108 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "middleware.py line 80: result = handler(request) \u2014 the point where the agent tool call is actually executed; the blocked path returns the error ToolMessage at lines 74-78 before this statement, so a blocked call never commits.",
+        "contract_id": "ecological-contract:1395ca54f7e47f950fe4c3dfedceebc8",
+        "declared_mechanism": "secure_middleware(mode='enforce') builds Config/Interceptor and returns wrap_tool_call(_make_tool_call_handler(interceptor, session, ToolMessage)), registering the guard into LangChain v1's agent middleware tool-call dispatch (middleware.py:96-109). The _securevector callback serializes the tool-call args and calls Interceptor.evaluate_input, which in order: resolves permissions via resolve_permission (AppUnreachable -> Decision(True,'block','local app unreachable (fail-closed)') in enforce, allow in observe) at core.py:103-109; honors verdict.action=='block' as Decision(self.enforce,'block',...) at core.py:111-118; and runs secret/threat analysis via analyze, blocking only when enforce and risk_score >= cfg.threat_risk_threshold at core.py:127-137. Decision.blocked already accounts for mode and is only True when the call should actually be stopped (core.py:54-63, 17-20). When decision.blocked, _securevector returns tool_message_factory(content='[SecureVector] Tool ... blocked: ...', tool_call_id=call_id, status='error') WITHOUT calling handler (middleware.py:71-78); only otherwise does it reach handler(request) (middleware.py:80).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 109,
+            "line_start": 89,
+            "path": "src/securevector_sdk_langgraph/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "2812a08413f9c6d05b3c5a44ec8f98caeb522d0189085f340b61a285a460a88a"
+          },
+          {
+            "line_end": 70,
+            "line_start": 61,
+            "path": "src/securevector_sdk_langgraph/middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "2812a08413f9c6d05b3c5a44ec8f98caeb522d0189085f340b61a285a460a88a"
+          },
+          {
+            "line_end": 84,
+            "line_start": 71,
+            "path": "src/securevector_sdk_langgraph/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "2812a08413f9c6d05b3c5a44ec8f98caeb522d0189085f340b61a285a460a88a"
+          },
+          {
+            "line_end": 98,
+            "line_start": 96,
+            "path": "src/securevector_sdk_langgraph/middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2812a08413f9c6d05b3c5a44ec8f98caeb522d0189085f340b61a285a460a88a"
+          },
+          {
+            "line_end": 20,
+            "line_start": 17,
+            "path": "src/securevector_sdk_langgraph/core.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d00cdf956a864fea0cc04478f072c28bebff28f71448e60940504707414dd0a2"
+          },
+          {
+            "line_end": 63,
+            "line_start": 54,
+            "path": "src/securevector_sdk_langgraph/core.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d00cdf956a864fea0cc04478f072c28bebff28f71448e60940504707414dd0a2"
+          },
+          {
+            "line_end": 118,
+            "line_start": 103,
+            "path": "src/securevector_sdk_langgraph/core.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d00cdf956a864fea0cc04478f072c28bebff28f71448e60940504707414dd0a2"
+          },
+          {
+            "line_end": 137,
+            "line_start": 120,
+            "path": "src/securevector_sdk_langgraph/core.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d00cdf956a864fea0cc04478f072c28bebff28f71448e60940504707414dd0a2"
+          }
+        ],
+        "forbidden_condition": "Control reaching the tool-execution statement handler(request) with Decision.blocked == True under enforce mode, where blocked is caused by any of: (a) LocalAppClient.resolve_permission returning verdict.action == 'block'; (b) a threat/secret finding on the serialized tool input with risk_score >= cfg.threat_risk_threshold; or (c) AppUnreachable during permission resolution (enforce is fail-closed, so an unreachable app yields blocked=True).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No runtime source in the supplied views constructs an agent with this middleware; the wiring middleware=[secure_middleware(mode='enforce')] in create_agent appears only in the module docstring example (middleware.py:10-16), so the concrete live agent registration is unconfirmed.",
+          "Runtime mode, enabled flag, and threat_risk_threshold derive from Config.from_env environment parsing (middleware.py:106); the deployed enforce configuration cannot be fixed from source.",
+          "The semantics of LocalAppClient.resolve_permission verdicts and analyze risk scoring are outside the supplied views (core.py:104, 123).",
+          "The session id is a random uuid generated once at middleware construction (middleware.py:108); its binding to a specific agent conversation is not established."
+        ],
+        "protected_operation": "Execution of an agent tool call through the wrap_tool_call handler path \u2014 the _securevector(request, handler) callback invoking handler(request) for the tool identified by request.tool_call['name'] with request.tool_call['args'].",
+        "protected_resource": "Agent tools dispatched through the LangChain/LangGraph wrap_tool_call middleware on agents constructed with secure_middleware (tool calls carrying name, args, and id from the agent's ToolCallRequest).",
+        "protection_obligation": "In enforce mode, a LangChain/LangGraph agent tool call must not execute when SecureVector's evaluation marks it blocked \u2014 i.e., when the local-app policy denies the tool id, when the tool input's secret/threat risk score is at or above the configured threat_risk_threshold, or when the local app is unreachable (fail-closed). The registered wrap_tool_call middleware must short-circuit such a call by returning an error ToolMessage instead of invoking the tool handler. (Merged from first- and second-phase reviewer opinions, which state the same obligation with overlapping citations.)",
+        "scope_limits": [
+          "Blocking occurs only when cfg.mode == 'enforce'; the default 'observe' mode is fail-open and never blocks (core.py:17-20, 106-109, 118, 128; middleware.py:92-93).",
+          "No protection when cfg.enabled is false: evaluate_input returns Decision(False,'allow','sdk disabled','') immediately without any checks (core.py:97-98).",
+          "Secret/threat analysis is best-effort: AppUnreachable during analyze after permissions pass sets a_in=None and cannot block (core.py:121-125).",
+          "Output-side scanning (scan_output) runs only after the tool has already executed and is log-only; it cannot retract a committed execution (core.py:148-157; middleware.py:81-83).",
+          "The mechanism requires the LangChain v1 middleware API (langchain.agents.middleware.wrap_tool_call) and raises ImportError otherwise (middleware.py:96-104).",
+          "Only tool calls routed through this middleware on agents constructed with it are gated; direct tool invocation outside the middleware and the CrewAI raising convenience path (guard_input, core.py:176-179) are outside this contract."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied source view shows a concrete, non-docstring agent/tool registration invoking secure_middleware; the agent wiring exists only as the create_agent example in the middleware module docstring (middleware.py:10-16).",
+      "The LocalAppClient implementation (resolve_permission, analyze, record_audit) is outside the supplied views, so permission-verdict semantics and risk-score/threshold comparison behavior cannot be confirmed from source.",
+      "The CrewAI tool wrapper that would consume Interceptor.guard_input (core.py:176-179, referenced by comments at core.py:8-9 and 173-175) is not present in supplied source; for that path the guarded operation, its commit point, and agent mediation are unestablished and no contract is emitted for it.",
+      "Behavior labels / runtime test evidence are unavailable per the stated scope, so actual enforcement behavior in a running agent is unverified.",
+      "Config.from_env's parsing of mode/enabled/threat_risk_threshold is not in the supplied views (only its call site at middleware.py:106), so the exact precedence of environment configuration is unsupported."
+    ],
+    "repository": "Secure-Vector/securevector-sdk-langgraph",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:11753b72144a70b31d72314526d58f96"
+  },
+  "request_sha256": "de3cd97fa7bfac4b011d3b71e8893c5648df995e9e346370559db7b6fb380f3c",
+  "response_sha256": "38fe67470c192580302f41876d7eebecdcea12bf3c8dc809ccd2e53eb19af987",
+  "state": "completed",
+  "tokens": 16763,
+  "unit": "v24-screen:11753b72144a70b31d72314526d58f96"
+}

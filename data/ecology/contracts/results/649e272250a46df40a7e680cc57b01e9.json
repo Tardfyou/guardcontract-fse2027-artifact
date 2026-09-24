@@ -1,0 +1,123 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The Google Drive API HTTP effects inside each gated tool: service.files().list(...).execute() (tools.py:162-169), service.files().create(...).execute() (tools.py:271-276), and service.files().delete(...).execute() (tools.py:335-338). All are in the same http stratum under one guard, so they are captured in a single contract.",
+        "contract_id": "ecological-contract:5a1735acae970258582ea76824ac72c7",
+        "declared_mechanism": "before_tool_callback function (gdrive_agent/callbacks.py:44-122), wired as before_tool_callback on the LlmAgent root_agent (agent.py:54). The callback matches tool names 'list_files', 'create_file', 'delete_file' plus a redacted prefix (callbacks.py:56-61); loads cached token info from tool_context.state['CREDS_CACHE_KEY'], refreshing expired tokens or discarding invalid ones (callbacks.py:62-84); returns None to allow the tool when creds and creds.valid hold (callbacks.py:86-88); otherwise consults tool_context.get_auth_response for an exchanged OAuth2 credential and caches it if present (callbacks.py:90-109); and, if none exists, calls tool_context.request_credential(AuthConfig(...)) and returns {'pending': True, 'message': 'Awaiting user authentication.'} (callbacks.py:111-120), which by declared ADK callback semantics blocks the tool from executing.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 48,
+            "path": "gdrive-agent/gdrive_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "aec4e97fd695529c573d220f17e7171f9113960da24f8dd0e14510591a789098"
+          },
+          {
+            "line_end": 53,
+            "line_start": 48,
+            "path": "gdrive-agent/gdrive_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "aec4e97fd695529c573d220f17e7171f9113960da24f8dd0e14510591a789098"
+          },
+          {
+            "line_end": 61,
+            "line_start": 56,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 120,
+            "line_start": 86,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 64,
+            "line_start": 57,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          },
+          {
+            "line_end": 198,
+            "line_start": 191,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          },
+          {
+            "line_end": 298,
+            "line_start": 292,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          },
+          {
+            "line_end": 169,
+            "line_start": 159,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          },
+          {
+            "line_end": 276,
+            "line_start": 268,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          },
+          {
+            "line_end": 338,
+            "line_start": 332,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          }
+        ],
+        "forbidden_condition": "A gated Drive tool call (list_files, create_file, delete_file) proceeding to its Drive API execute() effect while no valid OAuth2 credential is held \u2014 i.e., before_tool_callback permitting the tool (returning None) when the CREDS_CACHE_KEY state holds no valid credential and tool_context.get_auth_response yields no exchanged credential.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm from ADK framework source that a dict return (the pending response) from before_tool_callback actually prevents tool execution and that request_credential suspends the call until the user completes OAuth authorization.",
+          "Identity of the redacted tool-name prefix at callbacks.py:57 \u2014 it may gate an additional Drive-related tool not visible in the supplied views.",
+          "Whether the exchanged-credential path (callbacks.py:98-109) guarantees a usable token before caching (oauth.access_token / oauth.refresh_token are stored without explicit validation); validity is only established implicitly when tools later construct Credentials.",
+          "Whether any code path outside root_agent's tool dispatch can reach build('drive', 'v3', ...)/execute() effects without passing before_tool_callback (repository enumeration is incomplete per scope).",
+          "Whether the commented-out authenticate tool (tools.py:14-55) is ever re-enabled and registered, since it would also read CREDS_CACHE_KEY and build the Drive service."
+        ],
+        "protected_operation": "Invocation of the agent-registered Google Drive tools list_files, create_file, and delete_file, each of which culminates in a Google Drive API v3 request executed with the user's OAuth2 credentials.",
+        "protected_resource": "The user's Google Drive data accessed through the Drive API v3 service client built inside each tool (service = build(\"drive\", \"v3\", credentials=creds) at tools.py:160, 269, 333).",
+        "protection_obligation": "Google Drive tool invocations (list_files, create_file, delete_file) must not reach Google Drive API execution unless the agent holds valid OAuth2 credentials: the before_tool_callback registered on the root LlmAgent gates each such tool call by name, and when cached credentials are absent or invalid and no exchanged auth response exists, it requests user authentication and returns a pending response instead of allowing the tool to run. (Merged from both reviewer submissions, which state the same obligation, guard, and commit-point family.)",
+        "scope_limits": [
+          "The credential gate applies only to tools whose names start with the redacted prefix, 'list_files', 'create_file', or 'delete_file' (callbacks.py:56-61); any other tool falls through and returns None unconditionally (callbacks.py:122).",
+          "Blocking depends on ADK LlmAgent before_tool_callback semantics (a non-None return prevents tool execution; request_credential/pending suspends until auth completes); the framework implementation is not among the supplied views.",
+          "The guard's allow decision is based on the CREDS_CACHE_KEY session-state cache and any exchanged auth response at callback time; credential validity at the later execute() moment is enforced only by the tools' try/except error handling (tools.py:171-175, 278-282, 340-344), which is not part of the declared guard.",
+          "Only Google Drive API v3 network effects (files().list/create/delete().execute()) are in scope; no filesystem, database, process, message-delivery, or in-process eval effects are implicated by the supplied source.",
+          "Supplied source is sanitized: OAuth authorization/token URLs, one scope entry, and one gated tool-name prefix are redacted, so the full guard surface cannot be confirmed from the views.",
+          "No DEC violation, safety, runtime behavior, or prevalence determination is made here; this is a source-supported protection-contract hypothesis only."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "ADK framework source defining before_tool_callback blocking semantics, tool_context.request_credential, and tool_context.get_auth_response is not supplied; the declared blocking effect of the pending return rests on framework conventions rather than provided code.",
+      "The redacted tool-name prefix in callbacks.py:56-57 and the redacted OAuth authorization URL, token URL, and one scope entry in callbacks.py:21-33 cannot be identified from the sanitized views.",
+      "Values of runtime environment variables (GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, ROOT_AGENT_MODEL, etc.) are not supplied, so credential configuration completeness cannot be verified.",
+      "Repository enumeration is not complete and behavior labels are unavailable; the existence of additional agents, tools, or entry points that could trigger Drive API effects outside root_agent's gated tool dispatch is unknown.",
+      "The commented-out authenticate tool (tools.py:14-55) is not registered in the supplied agent.py view; whether it is active elsewhere is unsupported."
+    ],
+    "repository": "thisisashwinraj/agent-after-dark",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:649e272250a46df40a7e680cc57b01e9"
+  },
+  "request_sha256": "0e92e16751cbfa1f79925c24fc8516daa2ea5957209c3e5f9dcb048764bd2384",
+  "response_sha256": "b99302fa2510d145f9816f22f3a1226e5024088535ad9d34786fc9602d3a7710",
+  "state": "completed",
+  "tokens": 14442,
+  "unit": "v24-screen:649e272250a46df40a7e680cc57b01e9"
+}

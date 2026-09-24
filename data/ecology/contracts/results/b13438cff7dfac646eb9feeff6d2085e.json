@@ -1,0 +1,156 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "save_path.write_text(.dumps(result_data, indent=2, ensure_ascii=False)) at src/selectron/ai/codegen_agent.py:274, gated by the exists() check at line 273 in the source-directory branch.",
+        "contract_id": "ecological-contract:3a386c49172f0c6c08fc292794689dbd",
+        "declared_mechanism": "Branch selection by comparing self.parser_save_dir against get_app_dir() / 'parsers' (is_saving_to_user_dir, codegen_agent.py:249-251), followed in the source-directory branch by a pre-write existence gate `if not save_path.exists():` that permits write_text only when the file is absent, with an else branch that skips and logs a warning ('skipped saving to source directory: file already exists') (codegen_agent.py:271-279).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 159,
+            "line_start": 156,
+            "path": "src/selectron/ai/codegen_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "57c341124b4b7e56bb08208a177736b1627b82f79ea7fa2e447d96c2005a4162"
+          },
+          {
+            "line_end": 235,
+            "line_start": 230,
+            "path": "src/selectron/ai/codegen_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "57c341124b4b7e56bb08208a177736b1627b82f79ea7fa2e447d96c2005a4162"
+          },
+          {
+            "line_end": 260,
+            "line_start": 256,
+            "path": "src/selectron/ai/codegen_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "57c341124b4b7e56bb08208a177736b1627b82f79ea7fa2e447d96c2005a4162"
+          },
+          {
+            "line_end": 254,
+            "line_start": 246,
+            "path": "src/selectron/ai/codegen_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "57c341124b4b7e56bb08208a177736b1627b82f79ea7fa2e447d96c2005a4162"
+          },
+          {
+            "line_end": 274,
+            "line_start": 272,
+            "path": "src/selectron/ai/codegen_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "57c341124b4b7e56bb08208a177736b1627b82f79ea7fa2e447d96c2005a4162"
+          },
+          {
+            "line_end": 279,
+            "line_start": 271,
+            "path": "src/selectron/ai/codegen_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "57c341124b4b7e56bb08208a177736b1627b82f79ea7fa2e447d96c2005a4162"
+          },
+          {
+            "line_end": 275,
+            "line_start": 273,
+            "path": "src/selectron/ai/codegen_agent.py",
+            "role": "commit_point",
+            "source_sha256": "57c341124b4b7e56bb08208a177736b1627b82f79ea7fa2e447d96c2005a4162"
+          }
+        ],
+        "forbidden_condition": "Executing save_path.write_text(...) against a path in the source parser directory when save_path.exists() is true \u2014 clobbering a pre-existing source parser JSON file with AI-codegen output; the source explicitly declares this at codegen_agent.py:272 ('Prevent overwriting in the source directory').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether base_url, input_selector, input_selector_description, or html_samples (which determine save_path and the written content beyond the code field) can originate from agent-generated input; the supplied source shows them only as caller-supplied constructor parameters.",
+          "Whether any agent tool or lifecycle hook can trigger the save; the supplied source binds saving solely to the save_results constructor flag evaluated within run()."
+        ],
+        "protected_operation": "Persisting the codegen result JSON (agent-generated parser code plus selector metadata) into the source parsers directory after a successful CodegenAgent.run() when save_results is True.",
+        "protected_resource": "Existing parser JSON files under the bound source parser directory (self.parser_save_dir equal to Path('src/selectron/parsers')), addressed by the slugified base_url filename (save_path = parser_save_dir / f'{url_slug}.').",
+        "protection_obligation": "When CodegenAgent saves results into the source parsers directory (src/selectron/parsers), it must not overwrite an existing parser JSON file: the commit-point write may execute only when the target file does not already exist, and an existing-file target must cause the save to be skipped and logged. User-directory saves explicitly permit overwrite and are outside this obligation. (Duplicate reviewer wording of the codegen no-overwrite obligation merged into this single contract.)",
+        "scope_limits": [
+          "The guard applies only when is_saving_to_user_dir is False (source-directory branch); user-directory saves explicitly allow overwriting and their write at codegen_agent.py:266 is a distinct, unprotected commit point.",
+          "The write executes after the pydantic_ai agent run completes inside CodegenAgent.run(); it is not performed inside an agent tool or lifecycle hook.",
+          "Write failures are caught and logged (codegen_agent.py:280-281); error-handling behavior is outside this contract.",
+          "The guard is an exists() pre-check preceding the write; atomicity/TOCTOU properties are runtime behavior and are not decided here.",
+          "Whether the source-directory branch is operative at runtime depends on Path('src/selectron/parsers').is_dir() at __init__ time (codegen_agent.py:80-89); branch selection at runtime is not decided.",
+          "Only supplied line-numbered source views were reviewed; repository enumeration is incomplete and behavior labels are unavailable."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file_path.unlink() at src/selectron/parse/parser_registry.py:174, inside the try block (lines 173-178), followed by registry removal at line 177.",
+        "contract_id": "ecological-contract:5edfa0242bcbdd5ac5ed6ec593c4e0d1",
+        "declared_mechanism": "Origin guard inside delete_source_parser: after extracting the stored origin, the check `if origin != \"source\":` logs a warning ('Attempted to delete a non-source parser ... Deletion refused.') and returns False, short-circuiting before the unlink call (parser_registry.py:157-163).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 151,
+            "line_start": 142,
+            "path": "src/selectron/parse/parser_registry.py",
+            "role": "protected_operation",
+            "source_sha256": "0a6bccc30cfc15111ce9d203d84b5636b1a80d64aae5b8c42825e039ea7f0b92"
+          },
+          {
+            "line_end": 163,
+            "line_start": 157,
+            "path": "src/selectron/parse/parser_registry.py",
+            "role": "guard_registration",
+            "source_sha256": "0a6bccc30cfc15111ce9d203d84b5636b1a80d64aae5b8c42825e039ea7f0b92"
+          },
+          {
+            "line_end": 162,
+            "line_start": 160,
+            "path": "src/selectron/parse/parser_registry.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0a6bccc30cfc15111ce9d203d84b5636b1a80d64aae5b8c42825e039ea7f0b92"
+          },
+          {
+            "line_end": 178,
+            "line_start": 173,
+            "path": "src/selectron/parse/parser_registry.py",
+            "role": "commit_point",
+            "source_sha256": "0a6bccc30cfc15111ce9d203d84b5636b1a80d64aae5b8c42825e039ea7f0b92"
+          }
+        ],
+        "forbidden_condition": "Unlinking a parser file whose registry entry has origin != 'source' \u2014 i.e., any filesystem deletion of a non-source (e.g., user-directory) parser issued through delete_source_parser.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which production call sites invoke delete_source_parser, and whether any is an agent tool dispatch or agent lifecycle hook.",
+          "Whether the slug argument can be derived from agent-generated input at any call site.",
+          "Whether ParserOrigin defines origin values beyond 'source' and 'user' (selectron/parse/types.py not supplied)."
+        ],
+        "protected_operation": "Deletion of a registered parser file by slug via ParserRegistry.delete_source_parser(slug).",
+        "protected_resource": "Parser JSON files on the local filesystem tracked in ParserRegistry._available_parsers, in particular files whose registered origin is 'user' (entries loaded from the user parser directory).",
+        "protection_obligation": "Parser file deletion performed via ParserRegistry.delete_source_parser(slug) must only proceed for parsers whose registered origin is 'source'; deletion attempts for parsers with any other registered origin (e.g., 'user') must be refused before any filesystem mutation occurs. (Merged from reviewer opinions: duplicate wording of the delete-guard obligation consolidated here.)",
+        "scope_limits": [
+          "No caller of delete_source_parser appears in the supplied source views, so no binding to an agent tool dispatch, agent lifecycle hook, or agent-generated slug is established.",
+          "The guard refuses deletion only for non-source origins; deletion of source parsers is permitted by this method by design.",
+          "Registry override semantics during rescan (user parsers overriding source entries, parser_registry.py:113-135) are separate from this deletion guard.",
+          "Missing-file handling (file_path.exists() check at parser_registry.py:165-171) is an availability precondition, not part of the origin-forbidden condition.",
+          "Only supplied line-numbered source views were reviewed; repository enumeration is incomplete and behavior labels are unavailable."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No call sites for ParserRegistry.delete_source_parser appear in the supplied views; whether it is dispatched as an agent tool, reached from a lifecycle hook, or fed an agent-generated slug cannot be established from source, so agent_mediation is not_established for the deletion contract.",
+      "The origin of CodegenAgent constructor inputs (base_url, html_samples, input_selector, input_selector_description) is not shown; whether any of them flow from agent-generated data into save_path or file content is unestablished.",
+      "selectron/parse/types.py (ParserInfo, ParserOrigin) is not supplied; the full set of parser origin values is inferred only from usage of 'source' and 'user' in parser_registry.py.",
+      "_exec_candidate executes agent-generated code via compile/exec with a plain namespace dict (codegen_agent.py:108-124); whether this sandbox restricts builtins, imports, or side effects is unsupported by the supplied source, so no tool_execution isolation contract is asserted.",
+      "Deployment layout (whether Path('src/selectron/parsers') exists at runtime, and therefore which save branch is operative) is not determinable from the supplied views."
+    ],
+    "repository": "zocomputer/selectron",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b13438cff7dfac646eb9feeff6d2085e"
+  },
+  "request_sha256": "4700df54dc087ba6371693e7b5fa383ce0111b7ad6b203b103d5a6f4aa9bd013",
+  "response_sha256": "3c454f3c7edf26df2c83c7408efea8ddd25f015491178115c27375738e84968f",
+  "state": "completed",
+  "tokens": 18949,
+  "unit": "v24-screen:b13438cff7dfac646eb9feeff6d2085e"
+}

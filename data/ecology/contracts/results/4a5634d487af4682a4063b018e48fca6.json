@@ -1,0 +1,162 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The allowed root is bound where the launcher script is written with extra_args baked into the Popen args list (lines 151-176, especially args_list assembly and script_path.write_text) and where the server is registered for spawn via the MCPServerLocal instantiation (lines 185-193); the ultimate file read/write commit occurs inside the external npx filesystem server process, whose code is not present in the supplied source.",
+        "contract_id": "ecological-contract:30aa90be1328537134fcd7968c194ec8",
+        "declared_mechanism": "build_mcp_servers creates the filesystem MCP server via _write_launcher(name='filesystem', package='@<REDACTED>', extra_args=[str(WORKSPACE)]) so the workspace path is embedded in the launcher's Popen argument list, and attaches it with MCPServerLocal(command=f'{sys.executable} {fs_script}', session_timeout=300.0); WORKSPACE is defined at lines 146-148 and created with mkdir before launcher generation.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 148,
+            "line_start": 146,
+            "path": "full-stack-joey.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          },
+          {
+            "line_end": 184,
+            "line_start": 184,
+            "path": "full-stack-joey.py",
+            "role": "protected_operation",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          },
+          {
+            "line_end": 194,
+            "line_start": 185,
+            "path": "full-stack-joey.py",
+            "role": "guard_registration",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          },
+          {
+            "line_end": 176,
+            "line_start": 151,
+            "path": "full-stack-joey.py",
+            "role": "commit_point",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          },
+          {
+            "line_end": 193,
+            "line_start": 185,
+            "path": "full-stack-joey.py",
+            "role": "commit_point",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          },
+          {
+            "line_end": 427,
+            "line_start": 416,
+            "path": "full-stack-joey.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          }
+        ],
+        "forbidden_condition": "File read/write operations performed by the agent's filesystem MCP tools on paths outside the joey-workspace root (C:/joey-workspace on Windows, /tmp/joey-workspace otherwise), contrary to the build comment that the server 'lets Joey read/write files in the workspace'.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the npx filesystem package hard-enforces its allowed-root argument across all of its tools (read, write, move, search, etc.) is not determinable from the supplied source.",
+          "How MCPServerLocal exposes server tools to the agent LLM and with what tool names is framework behavior not supplied; the docstring claim that MCPServerLocal spawns via a shell-parsed string command (lines 153-158) comes only from the repository's own text.",
+          "Whether the workspace path passed via extra_args is normalized or validated by either the framework or the server is unknown."
+        ],
+        "protected_operation": "Agent-invoked file read and write operations dispatched to the filesystem MCP server (tools such as read_file / write_file named in the agent instructions and wired through the agent's mcp_servers).",
+        "protected_resource": "The host filesystem outside the joey-workspace directory; the joey-workspace root is the declared allowed directory passed to the spawned server.",
+        "protection_obligation": "The agent's filesystem MCP file read/write operations must be confined to the joey-workspace directory (C:/joey-workspace on Windows, /tmp/joey-workspace otherwise), with the allowed root registered when the filesystem MCP server is built: extra_args=[str(WORKSPACE)] is baked into the spawned launcher script and MCPServerLocal is instantiated against that launcher (merged wording from both reviewer obligations covering filesystem MCP access rooted at WORKSPACE).",
+        "scope_limits": [
+          "The actual read/write enforcement lives in the external '@<REDACTED>' filesystem MCP package; the supplied source shows only the workspace root argument passed at spawn, not the server's enforcement behavior.",
+          "INSTRUCTIONS text (lines 21-28) is content/format guidance and is not treated as an enforcement mechanism for this contract.",
+          "The fetch MCP server (lines 196-201) and the conditional GitHub MCP server (lines 203-214) are separate registrations with no declared confinement guard in the shown source and are excluded from this contract.",
+          "The launcher scripts are themselves written inside WORKSPACE (lines 173-174); any consequence of that placement is not judged here.",
+          "No runtime behavior, safety verdict, or prevalence estimate is expressed."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "subprocess.run(command, shell=True, cwd=workspace, capture_output=True, text=True, timeout=60) inside run_workspace_command (lines 355-363), where the OS process is spawned and the command's effects commit.",
+        "contract_id": "ecological-contract:4ee64db4171ee9d0a21d648fd4745791",
+        "declared_mechanism": "@vlm.register_function registers run_workspace_command with a description asserting confinement (lines 346-352); the shown implementation expresses the guard as a working-directory scope only, passing cwd=workspace to subprocess.run together with shell=True, capture_output=True, text=True, and timeout=60 (lines 353-363).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 352,
+            "line_start": 346,
+            "path": "full-stack-joey.py",
+            "role": "guard_registration",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          },
+          {
+            "line_end": 350,
+            "line_start": 348,
+            "path": "full-stack-joey.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          },
+          {
+            "line_end": 354,
+            "line_start": 353,
+            "path": "full-stack-joey.py",
+            "role": "protected_operation",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          },
+          {
+            "line_end": 363,
+            "line_start": 355,
+            "path": "full-stack-joey.py",
+            "role": "commit_point",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          },
+          {
+            "line_end": 352,
+            "line_start": 346,
+            "path": "full-stack-joey.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          },
+          {
+            "line_end": 427,
+            "line_start": 408,
+            "path": "full-stack-joey.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4e82da3445bfe37f8608e9c6e45fef761227876942ea9bb2f8906268b65244d9"
+          }
+        ],
+        "forbidden_condition": "An agent-invoked shell command whose execution effects reach outside the joey-workspace directory, contrary to the registration description stating 'Run a safe shell command inside the joey-workspace directory' and 'Commands are restricted to the joey-workspace directory'.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether vlm.register_function restricts invocation to the agent LLM and how tool dispatch reaches the function is defined in vision_agents framework code not supplied.",
+          "Whether any additional filtering corresponding to the word 'safe' in the description exists outside the shown function body is unknown.",
+          "Whether the command argument is validated anywhere between tool dispatch and subprocess.run is not shown in the supplied source."
+        ],
+        "protected_operation": "Execution of agent-requested shell commands (project scaffolding, package installation, linters) via the run_workspace_command tool function.",
+        "protected_resource": "The host system outside the joey-workspace directory; the joey-workspace directory is the declared sole execution root.",
+        "protection_obligation": "Shell commands executed through the LLM-registered run_workspace_command tool must be confined to the joey-workspace directory (C:/joey-workspace on Windows, /tmp/joey-workspace otherwise), as declared in the tool's own registration description; the guarded effect commits at the subprocess.run(command, shell=True, cwd=workspace) call.",
+        "scope_limits": [
+          "The supplied source shows only cwd scoping; with shell=True a free-form command string can reference paths and effects outside the workspace, so the declared confinement is not implemented in the shown code path.",
+          "The workspace path is re-derived as a string literal inside run_workspace_command (line 354) rather than reusing the WORKSPACE constant defined at line 148.",
+          "The 60-second timeout and exception handling are operational safeguards, not confinement enforcement.",
+          "Confinement of the separate filesystem MCP server is covered by a distinct contract and is not judged here.",
+          "Only the supplied line-numbered source was used; no runtime behavior, safety verdict, or prevalence estimate is expressed."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The enforcement behavior of the external filesystem MCP package ('@<REDACTED>') is absent from the supplied source; whether it treats the workspace root argument as a hard boundary is unknown.",
+      "vision_agents framework internals (MCPServerLocal spawn behavior, Agent tool dispatch, vlm.register_function registration semantics) are not supplied; framework claims in the source exist only as repository docstring text.",
+      "No enforcement of the run_workspace_command confinement beyond cwd=workspace is visible in the supplied source; whether any framework-level guard wraps registered functions is unknown.",
+      "generate_component_boilerplate writes files via output_path.write_text (lines 273-277) with the agent-supplied component_name flowing into the output path; no declared guard mechanism is visible for this write in the supplied source, so no contract is emitted for it absent evidence of a guard.",
+      "Whether the tool surfaces listed in INSTRUCTIONS (lines 70-77) exactly match the tools actually dispatched by the registered MCP servers and custom functions is not shown in the supplied source.",
+      "Behavior labels and complete repository enumeration are unavailable; only the supplied single-file view was used."
+    ],
+    "repository": "calebjubal/vision-agent-hack",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4a5634d487af4682a4063b018e48fca6"
+  },
+  "request_sha256": "4292c4ec09a6ccce7e11457f01ba1eff09a7331b22bb1542f94e12d48e6fca61",
+  "response_sha256": "a53341a7145c0657e63f5ce610ea618d6295a1e7816fe0e3b770f88fe1216102",
+  "state": "completed",
+  "tokens": 21084,
+  "unit": "v24-screen:4a5634d487af4682a4063b018e48fca6"
+}

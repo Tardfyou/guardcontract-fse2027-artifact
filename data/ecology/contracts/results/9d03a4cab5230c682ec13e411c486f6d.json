@@ -1,0 +1,194 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The filesystem mutation would commit inside the external stdio MCP filesystem server reached through the MCPToolset connection (lines 33-40); the tool_filter blocks the effect upstream by excluding mutating tools from agent exposure at registration (lines 51-60).",
+        "contract_id": "ecological-contract:5b0dfbb1681673aa13148894fc5bc891",
+        "declared_mechanism": "MCPToolset tool_filter allowlist applied at toolset registration (lines 51-59), permitting only read_file, read_multiple_files, list_directory, directory_tree, search_files, get_file_info, and list_allowed_directories; lines 42-50 document the write-exclusion intent with an (inactive) lambda-filter alternative.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 60,
+            "line_start": 51,
+            "path": "adk/dev/mcp_stdio_server_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "2e91b2c47f16ce1b779b197e1ca181db91da541235f35ff19a404b1cbb92c019"
+          },
+          {
+            "line_end": 50,
+            "line_start": 42,
+            "path": "adk/dev/mcp_stdio_server_agent/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2e91b2c47f16ce1b779b197e1ca181db91da541235f35ff19a404b1cbb92c019"
+          },
+          {
+            "line_end": 41,
+            "line_start": 32,
+            "path": "adk/dev/mcp_stdio_server_agent/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "2e91b2c47f16ce1b779b197e1ca181db91da541235f35ff19a404b1cbb92c019"
+          },
+          {
+            "line_end": 31,
+            "line_start": 27,
+            "path": "adk/dev/mcp_stdio_server_agent/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "2e91b2c47f16ce1b779b197e1ca181db91da541235f35ff19a404b1cbb92c019"
+          },
+          {
+            "line_end": 22,
+            "line_start": 22,
+            "path": "adk/dev/mcp_stdio_server_agent/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "2e91b2c47f16ce1b779b197e1ca181db91da541235f35ff19a404b1cbb92c019"
+          },
+          {
+            "line_end": 40,
+            "line_start": 33,
+            "path": "adk/dev/mcp_stdio_server_agent/agent.py",
+            "role": "commit_point",
+            "source_sha256": "2e91b2c47f16ce1b779b197e1ca181db91da541235f35ff19a404b1cbb92c019"
+          },
+          {
+            "line_end": 33,
+            "line_start": 24,
+            "path": "adk/dev/mcp_stdio_server_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2e91b2c47f16ce1b779b197e1ca181db91da541235f35ff19a404b1cbb92c019"
+          }
+        ],
+        "forbidden_condition": "The agent invoking (or being exposed to) a mutating filesystem MCP tool \u2014 the in-source comment names write_file, edit_file, create_directory, and move_file as the write operations the agent must not perform \u2014 against the allowed directory.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether ADK MCPToolset enforces tool_filter at invocation time as well as at tool listing/registration time (framework source not supplied).",
+          "The full tool inventory of the stdio MCP filesystem server; its package identifier is sanitized as '@<REDACTED>' (line 38), so server-side write-tool names and directory confinement cannot be confirmed.",
+          "Whether the allowed read-only tool names (e.g., search_files) have any mutating side effects in the sanitized server implementation."
+        ],
+        "protected_operation": "Agent-driven filesystem access performed via the stdio MCP filesystem server registered in the LlmAgent's tools list.",
+        "protected_resource": "The directory at _allowed_path (os.path.dirname(os.path.abspath(__file__))), which is passed to the MCP filesystem server and named as the allowed directory in the agent instruction.",
+        "protection_obligation": "The 'enterprise_assistant' LlmAgent must access the local filesystem only through the MCPToolset's read-only tool_filter allowlist, so that mutating filesystem MCP tools are never exposed to the agent. (Merged from first-phase and second-phase opinions describing the same tool_filter guard.)",
+        "scope_limits": [
+          "Guard is declared only in adk/dev/mcp_stdio_server_agent/agent.py; no claim is made about other agents' toolsets in the repository.",
+          "Lines 43-50 are commented-out alternative wording (lambda filter naming the four write tools); they document intent but are not executed.",
+          "Deny-by-default semantics of an allowlist-style tool_filter are an ADK framework property; the framework implementation is not in supplied source.",
+          "The instruction text telling the model the allowed directory (lines 27-31) is advisory prompt content, not the declared guard mechanism."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "cursor.execute(sql_query, params) inside execute_sql (sqlite_agent.py lines 155-159), with the PermissionError guard raising at lines 151-153 before it; the connection context manager commits successful writes on exit (lines 160-166).",
+        "contract_id": "ecological-contract:ac1e9ac06587261161b17d7fe5330e58",
+        "declared_mechanism": "Default-deny flag: SQLiteAgent.__init__(write_access=False) stored as self.allow_writes (lines 27-42); _WRITE_OPERATIONS regex classification via _is_write_query (lines 22-25, 74-76); execute_sql raises PermissionError when is_write and not allow_writes, before cursor.execute (lines 149-153); siculo agent wires ALLOW_WRITES = getenv_boolean('SICULO_AGENT_ALLOW_WRITES', False) into the singleton (agent.py lines 66, 71); CLI exposes opt-in --allow-writes (main.py lines 24, 55-56).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 25,
+            "line_start": 22,
+            "path": "adk/prod/lib/sqlite_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ca9230465cafdc5118bdba6cddfb14bda339b3b974f3790203fdd61cc3a9683f"
+          },
+          {
+            "line_end": 153,
+            "line_start": 149,
+            "path": "adk/prod/lib/sqlite_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ca9230465cafdc5118bdba6cddfb14bda339b3b974f3790203fdd61cc3a9683f"
+          },
+          {
+            "line_end": 42,
+            "line_start": 27,
+            "path": "adk/prod/lib/sqlite_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ca9230465cafdc5118bdba6cddfb14bda339b3b974f3790203fdd61cc3a9683f"
+          },
+          {
+            "line_end": 146,
+            "line_start": 131,
+            "path": "adk/prod/lib/sqlite_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "ca9230465cafdc5118bdba6cddfb14bda339b3b974f3790203fdd61cc3a9683f"
+          },
+          {
+            "line_end": 159,
+            "line_start": 155,
+            "path": "adk/prod/lib/sqlite_agent.py",
+            "role": "commit_point",
+            "source_sha256": "ca9230465cafdc5118bdba6cddfb14bda339b3b974f3790203fdd61cc3a9683f"
+          },
+          {
+            "line_end": 71,
+            "line_start": 62,
+            "path": "adk/prod/agents/siculo/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5d8135e7167725262472132a9a8304ba649cab1e4040ee67193056aa7a8f446c"
+          },
+          {
+            "line_end": 90,
+            "line_start": 87,
+            "path": "adk/prod/agents/siculo/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5d8135e7167725262472132a9a8304ba649cab1e4040ee67193056aa7a8f446c"
+          },
+          {
+            "line_end": 207,
+            "line_start": 198,
+            "path": "adk/prod/agents/siculo/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5d8135e7167725262472132a9a8304ba649cab1e4040ee67193056aa7a8f446c"
+          },
+          {
+            "line_end": 24,
+            "line_start": 24,
+            "path": "adk/prod/agents/siculo/main.py",
+            "role": "guard_registration",
+            "source_sha256": "ab1e14860a51db0b708d5f63f1b19edb7c360153c391e84d1d790c767912f7e1"
+          },
+          {
+            "line_end": 56,
+            "line_start": 55,
+            "path": "adk/prod/agents/siculo/main.py",
+            "role": "guard_registration",
+            "source_sha256": "ab1e14860a51db0b708d5f63f1b19edb7c360153c391e84d1d790c767912f7e1"
+          }
+        ],
+        "forbidden_condition": "A SQL statement matching the _WRITE_OPERATIONS prefix regex (INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|REPLACE) being executed while self.allow_writes is False.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Runtime value of SICULO_AGENT_ALLOW_WRITES (and CLI --allow-writes usage) in actual deployments; the source default is False.",
+          "Whether the PermissionError raised inside the ADK tool call is surfaced back to the model or aborts the agent run (ADK tool error propagation not in supplied source).",
+          "Whether any deployment constructs SQLiteAgent with write_access=True behind an agent-registered tool."
+        ],
+        "protected_operation": "Generic SQL execution against the instance's SQLite database, reached from the agent via tool_execute_sql -> SingletonAgent.execute_sql (and directly via execute_sql in the CLI).",
+        "protected_resource": "The SQLite database file configured per instance (DB_FILE / SICULO_AGENT_DB_FILE, default 'agents/siculo/google_events.sqlite'; args.db_file for the CLI).",
+        "protection_obligation": "SQLiteAgent.execute_sql must refuse SQL write statements (INSERT/UPDATE/DELETE/CREATE/DROP/ALTER/REPLACE) against the configured SQLite database unless write_access is explicitly enabled, raising PermissionError before execution; the production siculo agent binds this guarded executor as its SQL tool with write access defaulting to disabled. (Merged from first-phase and second-phase opinions describing the same default-deny write guard.)",
+        "scope_limits": [
+          "Write classification is a statement-start regex enumerating only INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, REPLACE; any statement-initial keyword outside that set is classified as a read (lines 22-25, 74-76, 149-151). Behavior for multi-statement strings, leading comments, or other mutating statement forms is not addressed in supplied source.",
+          "The natural-language path execute_natural_language_query is a simulated LLM placeholder in supplied source and is not registered as an agent tool in siculo/agent.py; when used (CLI exec-nl) it relies on the same execute_sql guard (sqlite_agent.py line 315).",
+          "Read operations (list_tables, get_table_schema, schema dumps, row counts) are not restricted by this obligation.",
+          "The same guard fronts the non-agent CLI path (main.py exec-sql), which is ordinary programmatic invocation rather than agent tool dispatch; the agent-mediated binding is established via siculo/agent.py."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "ADK framework source implementing MCPToolset.tool_filter and LlmAgent tool dispatch is not supplied; allowlist enforcement semantics and invocation-time filtering are unverified.",
+      "The stdio MCP filesystem server package identifier is sanitized ('@<REDACTED>' in adk/dev/mcp_stdio_server_agent/agent.py line 38); the server's write-tool inventory and directory confinement cannot be verified.",
+      "Deployment environment values for SICULO_AGENT_ALLOW_WRITES and SICULO_AGENT_DB_FILE are not present in supplied source; only source-level defaults (False / 'agents/siculo/google_events.sqlite') are known.",
+      "The first-phase rationale references a commented-out guard in prod/agents/filomena/agent.py; that file is not among the supplied sources, so no contract is compiled for it.",
+      "Behavior labels and runtime traces are unavailable per the stated scope; no claims are made about actual enforcement outcomes for either guard."
+    ],
+    "repository": "palladius/ai-friendly-agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:9d03a4cab5230c682ec13e411c486f6d"
+  },
+  "request_sha256": "9b9ea5fd23e709063ff9c1332563028e5e60d9896c648a5e8c743779b7fd4b76",
+  "response_sha256": "6f283bf24ac54caf2b884de2104725492a94b6b9549dbcf6c3e702d6153023f5",
+  "state": "completed",
+  "tokens": 25344,
+  "unit": "v24-screen:9d03a4cab5230c682ec13e411c486f6d"
+}

@@ -1,0 +1,96 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "bridge_request_store.complete(body.request_id, body.result) at api_service/main.py:323 (completed branch) and bridge_request_store.fail(body.request_id, err) at api_service/main.py:331 (failed branch) \u2014 the in-memory store mutation that finalizes the request record.",
+        "contract_id": "ecological-contract:a74bdb14d8fccb72d1fff29b6ca4127e",
+        "declared_mechanism": "Shared-secret header gate inside the FastAPI handler: the X-Callback-Token header (bound via FastAPI Header alias) is compared to os.getenv(\"CALLBACK_TOKEN\").strip(); an unset/empty configured token raises HTTPException 503 (fail closed) and a missing or mismatched header raises HTTPException 401, both raised before any bridge_request_store mutation. The authorized sender (local_bridge/callback_client.post_result_callback) attaches the same shared secret as header {\"X-Callback-Token\": callback_token} on the callback POST.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 311,
+            "line_start": 307,
+            "path": "api_service/main.py",
+            "role": "guard_registration",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 318,
+            "line_start": 312,
+            "path": "api_service/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 328,
+            "line_start": 320,
+            "path": "api_service/main.py",
+            "role": "commit_point",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 336,
+            "line_start": 330,
+            "path": "api_service/main.py",
+            "role": "commit_point",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 373,
+            "line_start": 361,
+            "path": "api_service/main.py",
+            "role": "protected_operation",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 32,
+            "line_start": 23,
+            "path": "local_bridge/callback_client.py",
+            "role": "protected_operation",
+            "source_sha256": "6846d7c75c1ad444cae7e58449f0db202d92eb731695f55717abbffe6b4b60f2"
+          }
+        ],
+        "forbidden_condition": "A POST /internal/result-callback request lacking an X-Callback-Token header, or presenting a header value unequal to the configured CALLBACK_TOKEN secret, proceeding past the entry check into the state-changing store calls; equivalently, the guard failing open when CALLBACK_TOKEN is unconfigured (source instead raises 503) or when the header is missing/mismatched (source instead raises 401).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the pipeline services named only in module comments (vision_service -> matching_service -> explanation_service, api_service/main.py:3-7) constitute an AI-agent runtime whose output is agent-generated input reaching the guarded store mutation; no supplied source shows tool registration, lifecycle hooks, or agent dispatch.",
+          "Implementation of bridge_request_store (api_service/request_store.py not supplied): whether records are purely in-memory or persisted, which would confirm or change the 'state' effect stratum and commit semantics of complete()/fail().",
+          "Deployment topology (LOCAL_BRIDGE_URL, RESULT_CALLBACK_URL, CALLBACK_TOKEN provisioning, Azure-to-local tunnel) is not supplied, so the trust boundary between the legitimate sender and api_service cannot be confirmed.",
+          "Whether any callers other than local_bridge/callback_client.post_result_callback post to /internal/result-callback.",
+          "Provenance of the callback 'result' payload (LLM/agent output vs. deterministic matching logic in explanation_service) is unknown because those service sources were not supplied."
+        ],
+        "protected_operation": "Writing final bridge job outcomes for a request_id \u2014 completing the record with its result payload via bridge_request_store.complete() or failing it with an error via bridge_request_store.fail() \u2014 through the internal result-callback endpoint.",
+        "protected_resource": "bridge_request_store records (status/result/error keyed by request_id), the user-visible contents served by GET /result/{request_id}.",
+        "protection_obligation": "Unauthorized callers are forbidden from writing bridge job results: POST /internal/result-callback must reject any request whose X-Callback-Token header is missing or does not equal the configured CALLBACK_TOKEN (fail-closed HTTP 503 when CALLBACK_TOKEN is unset/empty; HTTP 401 on missing or mismatched header) before the bridge request record may be completed or failed via bridge_request_store.complete()/fail(), whose stored status/result/error are subsequently served to end users at GET /result/{request_id}.",
+        "scope_limits": [
+          "Obligation covers only the /internal/result-callback token gate and the subsequent bridge_request_store.complete()/fail() mutations; the parallel RabbitMQ routine.completed consumer path (api_service/main.py:161-197, 200-212) writes Redis results with no token guard and is not covered by this obligation.",
+          "Agent mediation is not established by supplied source: no agent tool registration, agent lifecycle hook, or agent-generated input dataflow binds this endpoint or its payload to an AI-agent runtime; absent such a binding this ordinary shared-token HTTP guard falls outside the DEC agent-mediation scope.",
+          "Does not cover /submit ingress, /recommend publishing, read authorization on GET /result/{request_id}, CORS, or transport security (TLS/tunnel) of the callback channel.",
+          "Guard effectiveness depends on CALLBACK_TOKEN configuration parity between api_service and the local-bridge sender; deployment/configuration sources are not supplied.",
+          "Per-request authorization is not covered: any holder of the shared token can complete or fail any known request_id; no submitter-to-callback binding is visible in source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "api_service/request_store.py is not supplied; the 'in-memory store' characterization of the guarded resource comes only from the module docstring (api_service/main.py:11), so persistence semantics of bridge_request_store.complete()/fail() are unverified.",
+      "No supplied source registers an AI agent, agent tool, agent lifecycle hook, or agent-to-callback dataflow; agent mediation for this obligation cannot be bound from the supplied views (hence agent_mediation=not_established and no agent_entry_binding evidence role), and the obligation may be out of DEC scope unless such a binding is later supplied.",
+      "Configuration/deployment sources for CALLBACK_TOKEN, RESULT_CALLBACK_URL, LOCAL_BRIDGE_URL, and the Azure-to-local tunnel are not supplied, so shared-secret parity and the sender trust boundary are unconfirmed.",
+      "Sources for vision_service, matching_service, and explanation_service are not supplied, so the provenance of the callback result payload cannot be classified as agent-generated or deterministic.",
+      "Whether any additional internal routes, background tasks, or consumers mutate bridge_request_store without passing the token gate cannot be determined from the supplied views."
+    ],
+    "repository": "MaayanCohen1/personalized-skincare-recommender",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:573e75a70c9cdbef340756ace903fd42"
+  },
+  "request_sha256": "8fa20e712983db6c4682b16ff3b1cc1db6b41f98038dfdf1238b57fe3c972907",
+  "response_sha256": "a8ebbb99e94a30091fc09bfa1fc52431f9aa28736b300df7efeef4740a8ce7d6",
+  "state": "completed",
+  "tokens": 16299,
+  "unit": "v24-screen:573e75a70c9cdbef340756ace903fd42"
+}

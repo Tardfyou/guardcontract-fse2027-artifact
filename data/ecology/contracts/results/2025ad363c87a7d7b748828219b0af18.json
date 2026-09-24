@@ -1,0 +1,136 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Guardrail evaluation at the start of the streamed run: Runner.run_streamed(self.agent, input=input_items) at career_manager.py:37-40; when either blocking guardrail trips, InputGuardrailTripwireTriggered is raised and the run is aborted before proceeding to tool invocation, enforced by the except handler at career_manager.py:57-60 that yields the refusal instead of streamed output.",
+        "contract_id": "ecological-contract:133ae37f23c833d96034decb14af2aa9",
+        "declared_mechanism": "Agent-level input guardrails: two @input_guardrail-decorated functions (inappropriate_content_guardrail, prompt_injection_guardrail) that run checker sub-agents and return GuardrailFunctionOutput with tripwire_triggered driven by is_inappropriate / is_injection_attempt; the combined list all_guardrails is registered on the Agent constructor as input_guardrails=all_guardrails; CareerManager.run wraps Runner.run_streamed in a try/except that catches InputGuardrailTripwireTriggered and yields a fixed refusal message, aborting the run.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 107,
+            "line_start": 93,
+            "path": "career_agents/career_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "96873e03dd8f2636645291c2c54e6b5c6269214376120ee9d25636bb10005170"
+          },
+          {
+            "line_end": 28,
+            "line_start": 22,
+            "path": "career_agents/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "b681d8dde3d8d8c16d98f09393901b0b4246c85a8d20227e049ab64207dbd04a"
+          },
+          {
+            "line_end": 60,
+            "line_start": 54,
+            "path": "career_agents/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "b681d8dde3d8d8c16d98f09393901b0b4246c85a8d20227e049ab64207dbd04a"
+          },
+          {
+            "line_end": 114,
+            "line_start": 109,
+            "path": "career_agents/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "b681d8dde3d8d8c16d98f09393901b0b4246c85a8d20227e049ab64207dbd04a"
+          },
+          {
+            "line_end": 19,
+            "line_start": 10,
+            "path": "career_agents/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b681d8dde3d8d8c16d98f09393901b0b4246c85a8d20227e049ab64207dbd04a"
+          },
+          {
+            "line_end": 51,
+            "line_start": 31,
+            "path": "career_agents/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b681d8dde3d8d8c16d98f09393901b0b4246c85a8d20227e049ab64207dbd04a"
+          },
+          {
+            "line_end": 104,
+            "line_start": 96,
+            "path": "career_agents/career_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "96873e03dd8f2636645291c2c54e6b5c6269214376120ee9d25636bb10005170"
+          },
+          {
+            "line_end": 40,
+            "line_start": 31,
+            "path": "career_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "7c1803f86c80c0284688cb5070a972a0b4e319814d03fe9ed27425367bc366df"
+          },
+          {
+            "line_end": 40,
+            "line_start": 37,
+            "path": "career_manager.py",
+            "role": "commit_point",
+            "source_sha256": "7c1803f86c80c0284688cb5070a972a0b4e319814d03fe9ed27425367bc366df"
+          },
+          {
+            "line_end": 60,
+            "line_start": 57,
+            "path": "career_manager.py",
+            "role": "commit_point",
+            "source_sha256": "7c1803f86c80c0284688cb5070a972a0b4e319814d03fe9ed27425367bc366df"
+          },
+          {
+            "line_end": 107,
+            "line_start": 104,
+            "path": "career_agents/career_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "96873e03dd8f2636645291c2c54e6b5c6269214376120ee9d25636bb10005170"
+          },
+          {
+            "line_end": 40,
+            "line_start": 34,
+            "path": "career_manager.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7c1803f86c80c0284688cb5070a972a0b4e319814d03fe9ed27425367bc366df"
+          }
+        ],
+        "forbidden_condition": "The user message reaches the career agent run while containing inappropriate, offensive, or unprofessional content (inappropriate_content_guardrail returns tripwire_triggered=result.final_output.is_inappropriate) or while constituting a prompt-injection/jailbreak attempt, e.g., instructions-override requests, system-prompt extraction, role-switching, or jailbreak-mode requests (prompt_injection_guardrail returns tripwire_triggered=result.final_output.is_injection_attempt).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm from tools.py and career_agents/email_agent.py whether send_contact_email commits a communication-stratum effect and whether add_qa_to_database, update_qa_answer, or record_unknown_question commit database-stratum effects; if confirmed, separate stratum-specific contracts with distinct commit points may be warranted.",
+          "Confirm from framework source or runtime behavior that input guardrails evaluate before the first model response and before any tool invocation within Runner.run_streamed.",
+          "Confirm the models.py definitions of InappropriateContentOutput.is_inappropriate and PromptInjectionOutput.is_injection_attempt that drive tripwire_triggered in the two blocking guardrails.",
+          "Determine whether a tripwire aborts the run before any streamed tokens are emitted, since career_manager.py:43-44 appends and yields an assistant placeholder before streaming begins.",
+          "Identify the upstream caller of CareerManager.run (e.g., UI/chat entry point) to confirm the end-to-end user-input dataflow."
+        ],
+        "protected_operation": "The career agent run initiated by CareerManager.run via Runner.run_streamed(self.agent, input=input_items), together with the agent's subsequent ability to invoke its registered tools (search_qa_database, record_unknown_question, add_qa_to_database, list_recent_qa, update_qa_answer, send_contact_email, evaluate_my_response).",
+        "protected_resource": "The career assistant agent run and the tool surface reachable from it (the tools list on the 'Sam Shulman Career Assistant' Agent at career_agents/career_agent.py:96-104), which a flagged input must not reach.",
+        "protection_obligation": "User input submitted to the career agent run must be evaluated by the two blocking input guardrails (inappropriate_content_guardrail and prompt_injection_guardrail, registered via input_guardrails=all_guardrails) before the run may proceed, and a tripped guardrail must abort the run via InputGuardrailTripwireTriggered so that the agent never reaches tool invocation or other downstream effects; the manager surfaces the abort as a refusal message instead of a streamed answer. (Merged from the two reviewer opinions, which describe the same obligation with duplicate wording.)",
+        "scope_limits": [
+          "Only the two blocking guardrails enforce this gate; off_topic_guardrail (career_agents/guardrails.py:77-83) and competitor_mention_guardrail (career_agents/guardrails.py:99-105) hardcode tripwire_triggered=False and do not block the run.",
+          "The gate is a run-level input check on the whole conversation input; supplied source shows no per-tool authorization - once the run passes guardrail evaluation, no supplied mechanism distinguishes which individual tools may be invoked.",
+          "The concrete external effects of the registered tools (e.g., an outbound SendGrid email or Q&A database writes) are not verifiable from the supplied views because tools.py and email_agent.py were not provided; the reviewer rationale references email_agent.py:76-85, but that view is outside the supplied source.",
+          "The ordering of input-guardrail execution relative to the first model turn and any tool call inside Runner.run_streamed is Agents-SDK framework behavior not shown in the supplied source; the supplied source shows only that InputGuardrailTripwireTriggered is raised during the run and caught by the manager.",
+          "This contract covers the run in CareerManager.run only; any other entry point into the agent is out of scope of the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "tools.py source (search_qa_database, record_unknown_question, add_qa_to_database, list_recent_qa, update_qa_answer) is needed to verify which registered tools commit database or other external effects at their call sites.",
+      "career_agents/email_agent.py source is needed to verify that send_contact_email performs an outbound email (communication-stratum) effect; the reviewer rationale cites email_agent.py:76-85 but that view was not supplied.",
+      "models.py source for the InappropriateContentOutput and PromptInjectionOutput schemas whose fields drive tripwire_triggered.",
+      "The agents SDK (agents package) source or documentation showing that input guardrails registered via input_guardrails execute at the start of Runner.run_streamed and before tool execution; this ordering is asserted by the reviewer opinions but not demonstrated in the supplied repository views.",
+      "Any web/UI entry point that invokes CareerManager.run, to confirm the user-input dataflow from an external request into the guarded run."
+    ],
+    "repository": "shulman33/Career-Conversation-Agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:2025ad363c87a7d7b748828219b0af18"
+  },
+  "request_sha256": "1a06af191147d54f5c3bc64710f2fa0a444a2f4d060159e45d92c32d416125a9",
+  "response_sha256": "7f990e7b28b2ba679d4a20fabe28cf4453a30cfe4ecc94851c1b4a64a3e0460c",
+  "state": "completed",
+  "tokens": 16946,
+  "unit": "v24-screen:2025ad363c87a7d7b748828219b0af18"
+}

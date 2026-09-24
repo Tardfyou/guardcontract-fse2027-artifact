@@ -1,0 +1,198 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "requests.request(...) execution inside _request_text at tools.py:115-125, issued once per hop under the bounded redirect loop (tools.py:114) with allow_redirects=False; each hop's URL must already be validated \u2014 the initial URL at tools.py:319/337 and each redirect target at tools.py:144-147.",
+        "contract_id": "ecological-contract:1af4e8be30686c3474ed19b0c48b3155",
+        "declared_mechanism": "_validate_http_url(url, tool_name) (tools.py:53-102): scheme/netloc check, credential check, hostname presence, resolution to IP addresses (literal or via socket.getaddrinfo), and rejection unless every resolved address is_global. Invoked by http_get at tools.py:319 and http_post at tools.py:337 before _request_text; _request_text re-validates each redirect Location via _validate_http_url at tools.py:144-147 before the next request.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 102,
+            "line_start": 53,
+            "path": "agent/tools/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "6632661994afab09ccf6c5234c8daea2e42913379906a8a5169dc020353141c0"
+          },
+          {
+            "line_end": 147,
+            "line_start": 144,
+            "path": "agent/tools/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "6632661994afab09ccf6c5234c8daea2e42913379906a8a5169dc020353141c0"
+          },
+          {
+            "line_end": 101,
+            "line_start": 96,
+            "path": "agent/tools/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6632661994afab09ccf6c5234c8daea2e42913379906a8a5169dc020353141c0"
+          },
+          {
+            "line_end": 67,
+            "line_start": 55,
+            "path": "agent/tools/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6632661994afab09ccf6c5234c8daea2e42913379906a8a5169dc020353141c0"
+          },
+          {
+            "line_end": 323,
+            "line_start": 316,
+            "path": "agent/tools/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "6632661994afab09ccf6c5234c8daea2e42913379906a8a5169dc020353141c0"
+          },
+          {
+            "line_end": 341,
+            "line_start": 334,
+            "path": "agent/tools/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "6632661994afab09ccf6c5234c8daea2e42913379906a8a5169dc020353141c0"
+          },
+          {
+            "line_end": 125,
+            "line_start": 113,
+            "path": "agent/tools/tools.py",
+            "role": "commit_point",
+            "source_sha256": "6632661994afab09ccf6c5234c8daea2e42913379906a8a5169dc020353141c0"
+          },
+          {
+            "line_end": 319,
+            "line_start": 315,
+            "path": "agent/tools/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6632661994afab09ccf6c5234c8daea2e42913379906a8a5169dc020353141c0"
+          },
+          {
+            "line_end": 337,
+            "line_start": 333,
+            "path": "agent/tools/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6632661994afab09ccf6c5234c8daea2e42913379906a8a5169dc020353141c0"
+          },
+          {
+            "line_end": 354,
+            "line_start": 351,
+            "path": "agent/tools/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6632661994afab09ccf6c5234c8daea2e42913379906a8a5169dc020353141c0"
+          }
+        ],
+        "forbidden_condition": "A requests.request call executing with a destination that has not been validated: non-http(s) scheme or missing netloc (tools.py:55-61), embedded username/password (tools.py:62-67), missing hostname (tools.py:69-75), unresolvable hostname (tools.py:89-94), or any resolved address failing ipaddress.is_global \u2014 'Private, loopback, link-local, and reserved destinations are blocked' (tools.py:96-101).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which deployed agent(s) register create_http_tools output \u2014 ResearchAgent and other agent sources are not supplied, so the tool-to-agent registration chain beyond the @tool decorators and create_http_tools return (tools.py:351-354) is unconfirmed.",
+          "Whether the url/data arguments are always model-generated tool-call inputs in every deployment path (agent graph / tool dispatch wiring not supplied).",
+          "Whether validation-time resolved addresses can diverge from the addresses actually used at request time (requests library and DNS runtime behavior outside supplied source)."
+        ],
+        "protected_operation": "Outbound GET fetch performed by the http_get agent tool (tools.py:316-323), outbound JSON POST performed by the http_post agent tool (tools.py:334-341), and each redirect hop continued inside _request_text (tools.py:113-149).",
+        "protected_resource": "Host network egress \u2014 internal, private, loopback, link-local, and otherwise reserved network destinations reachable from the machine running the agent.",
+        "protection_obligation": "Every outbound HTTP request issued by the http_get and http_post agent tools \u2014 including each redirect hop followed inside _request_text \u2014 must first pass _validate_http_url, which blocks any destination that is not an absolute http(s) URL, embeds credentials, or resolves (directly or via DNS) to any non-global (private, loopback, link-local, or reserved) IP address.",
+        "scope_limits": [
+          "Covers only the http_get/http_post tools returned by create_http_tools (tools.py:312-354); other network paths in the supplied sources (web search tools at tools.py:218-258, ChatOllama base_url at supervisor_agent.py:107-111) are outside this mechanism.",
+          "Validation resolves the hostname itself at validation time; whether the requests library's own later resolution could diverge (DNS rebinding / TOCTU) is not determinable from supplied source.",
+          "Redirects are followed only for GET, capped at max_redirects=3 (tools.py:110, 114, 140-143); POST redirects are refused outright (tools.py:134-139), and redirect re-validation hardcodes the tool name 'http_get' (tools.py:146).",
+          "Schemes are limited to http/https (tools.py:56) and embedded credentials are rejected (tools.py:62-67); no port restriction applies beyond that \u2014 any port on a global address passes.",
+          "An empty resolution set or any non-global resolved address triggers rejection (tools.py:96-101).",
+          "Behavior labels and prevalence are unavailable; repository enumeration is not complete per the stated scope."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "supervisor_agent.py:86-92 \u2014 the super().__init__(...) call, where the validated tools_list is committed into the base agent's state; the guard at supervisor_agent.py:85 executes strictly before this commit point.",
+        "contract_id": "ecological-contract:1f610e140fc4a2616bab4dc24ec96d98",
+        "declared_mechanism": "Static guard SupervisorAgent._reject_direct_rag_tools (supervisor_agent.py:136-147), invoked in __init__ at supervisor_agent.py:85 before super().__init__; it raises ValueError listing any exposed forbidden tool names.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 85,
+            "line_start": 85,
+            "path": "agent/agents/supervisor_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "6010cb989f994dc1ba61b2ba3205d36caf1af885731343c72ad0907892b51226"
+          },
+          {
+            "line_end": 147,
+            "line_start": 136,
+            "path": "agent/agents/supervisor_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "6010cb989f994dc1ba61b2ba3205d36caf1af885731343c72ad0907892b51226"
+          },
+          {
+            "line_end": 143,
+            "line_start": 138,
+            "path": "agent/agents/supervisor_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6010cb989f994dc1ba61b2ba3205d36caf1af885731343c72ad0907892b51226"
+          },
+          {
+            "line_end": 43,
+            "line_start": 43,
+            "path": "agent/agents/supervisor_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "6010cb989f994dc1ba61b2ba3205d36caf1af885731343c72ad0907892b51226"
+          },
+          {
+            "line_end": 84,
+            "line_start": 79,
+            "path": "agent/agents/supervisor_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "6010cb989f994dc1ba61b2ba3205d36caf1af885731343c72ad0907892b51226"
+          },
+          {
+            "line_end": 92,
+            "line_start": 86,
+            "path": "agent/agents/supervisor_agent.py",
+            "role": "commit_point",
+            "source_sha256": "6010cb989f994dc1ba61b2ba3205d36caf1af885731343c72ad0907892b51226"
+          },
+          {
+            "line_end": 85,
+            "line_start": 70,
+            "path": "agent/agents/supervisor_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6010cb989f994dc1ba61b2ba3205d36caf1af885731343c72ad0907892b51226"
+          }
+        ],
+        "forbidden_condition": "SupervisorAgent being initialized with a tools_list whose tool names intersect the forbidden set {search_collection, search_all_collections, get_list_of_collections, add_document_to_collection}; the guard computes the intersection (supervisor_agent.py:144) and raises ValueError naming the exposed tools (supervisor_agent.py:145-147).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether BaseAgent.__init__ or the downstream graph re-validates or can mutate tools_list after construction (BaseAgent source not supplied).",
+          "Whether create_delegation_tools output can ever contain names colliding with the forbidden set (agent/adapters/delegation source not supplied).",
+          "Which production callers construct SupervisorAgent with a non-default tools_list (call sites not supplied; only from_config at supervisor_agent.py:94-134 is shown, and it omits tools_list)."
+        ],
+        "protected_operation": "Registration of the supervisor's toolset during SupervisorAgent.__init__ \u2014 the default delegation toolset from create_delegation_tools (supervisor_agent.py:80-84) or a caller-supplied tools_list (supervisor_agent.py:75) \u2014 per the class contract 'Coordinate specialized agents without receiving their tools directly' (supervisor_agent.py:43).",
+        "protected_resource": "The SupervisorAgent tool surface (delegation-only toolset) and, downstream, the private RAG vector-store collections the forbidden tools would reach via the ClientManager-backed tool wrappers.",
+        "protection_obligation": "SupervisorAgent construction must fail fast (raise ValueError) whenever the candidate tools_list exposes any direct RAG tool \u2014 search_collection, search_all_collections, get_list_of_collections, or add_document_to_collection \u2014 so that the supervisor's registered toolset never contains direct RAG tools and the supervisor acts only directly or through delegation.",
+        "scope_limits": [
+          "The guard is enforced only at SupervisorAgent construction; supplied source shows no re-validation or mutation protection of the toolset after __init__ (BaseAgent source not supplied).",
+          "The check is exact tool-name membership in a fixed four-name set (supervisor_agent.py:138-144); same-behavior tools under different names would not match.",
+          "The default construction path supplies create_delegation_tools output (supervisor_agent.py:80-84); only callers explicitly passing tools_list can trigger the rejection.",
+          "ToolCallLimitMiddleware delegation caps (supervisor_agent.py:48-68) are a separate mechanism and are not part of this obligation.",
+          "Behavior labels and prevalence are unavailable; repository enumeration is not complete per the stated scope."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "BaseAgent implementation is not supplied: whether super().__init__ (supervisor_agent.py:86-92) is the sole tool-registration commit point, and whether the toolset can be re-validated or mutated afterward, is unconfirmed.",
+      "agent/adapters/delegation.create_delegation_tools source is not supplied: the contents of the default supervisor toolset are unconfirmed.",
+      "ResearchAgent, CodingAgent, and DatabaseAgent sources are not supplied: which agent registers the create_http_tools output (tools.py:312-354) and whether RAG tools could flow into any SupervisorAgent construction path is unconfirmed.",
+      "Application entry points and callers are not supplied: instantiation paths that pass a custom tools_list to SupervisorAgent are unconfirmed.",
+      "The vectorstore ClientManager backend (tools.py:24-25) is not supplied: the downstream effects of the forbidden RAG tools are unconfirmed beyond their tool wrappers.",
+      "No runtime/behavior labels or prevalence data are available per the stated scope; requests library and DNS resolution behavior lie outside the supplied source."
+    ],
+    "repository": "Matela7/platon",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7d21a7037271076bd29a142f2c18de46"
+  },
+  "request_sha256": "b9c279158158f9a72ddf7f13f5efc4fb8dc3025a3f25ed2f5c6e67b4e826969b",
+  "response_sha256": "eb5f793b56e83808d5efd29f2134a5c20f4e3c3e1b4ccb78e11623daa186b127",
+  "state": "completed",
+  "tokens": 24461,
+  "unit": "v24-screen:7d21a7037271076bd29a142f2c18de46"
+}

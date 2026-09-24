@@ -1,0 +1,474 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Rejection at dependency resolution before each handler body; absent the guard the effects commit at await service.create_site(site_in) (sites.py:88), await service.update_site(site_id, site_in) (sites.py:99), and await service.delete_site(site_id) (sites.py:109).",
+        "contract_id": "ecological-contract:2e131792816ebb65f9017c7c11fad50e",
+        "declared_mechanism": "FastAPI dependency get_current_user_with_tenant (deps.py:224-268) resolving tenant context and demo status and raising BadRequestException(detail=_('auth.demo_mode')) for non-exempt write methods during dependency resolution, before handler execution.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 268,
+            "line_start": 224,
+            "path": "backend/app/core/web/deps.py",
+            "role": "guard_registration",
+            "source_sha256": "1c7a3e3ec6006d2e2a4d36ac21f27fb3bddf96d23a4596bc9f6dace108221cd4"
+          },
+          {
+            "line_end": 50,
+            "line_start": 41,
+            "path": "backend/app/core/web/deps.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1c7a3e3ec6006d2e2a4d36ac21f27fb3bddf96d23a4596bc9f6dace108221cd4"
+          },
+          {
+            "line_end": 266,
+            "line_start": 259,
+            "path": "backend/app/core/web/deps.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1c7a3e3ec6006d2e2a4d36ac21f27fb3bddf96d23a4596bc9f6dace108221cd4"
+          },
+          {
+            "line_end": 110,
+            "line_start": 77,
+            "path": "backend/app/api/admin/endpoints/sites.py",
+            "role": "protected_operation",
+            "source_sha256": "2d0e9fb42ebbcda21cbfac564ee643f4ab7c1601163a55f7b3e2529045dd8ab5"
+          },
+          {
+            "line_end": 89,
+            "line_start": 77,
+            "path": "backend/app/api/admin/endpoints/sites.py",
+            "role": "commit_point",
+            "source_sha256": "2d0e9fb42ebbcda21cbfac564ee643f4ab7c1601163a55f7b3e2529045dd8ab5"
+          },
+          {
+            "line_end": 100,
+            "line_start": 92,
+            "path": "backend/app/api/admin/endpoints/sites.py",
+            "role": "commit_point",
+            "source_sha256": "2d0e9fb42ebbcda21cbfac564ee643f4ab7c1601163a55f7b3e2529045dd8ab5"
+          },
+          {
+            "line_end": 110,
+            "line_start": 103,
+            "path": "backend/app/api/admin/endpoints/sites.py",
+            "role": "commit_point",
+            "source_sha256": "2d0e9fb42ebbcda21cbfac564ee643f4ab7c1601163a55f7b3e2529045dd8ab5"
+          }
+        ],
+        "forbidden_condition": "A request whose resolved tenant is a demo tenant (get_ee_tenant_is_demo -> true) using HTTP method POST/PUT/PATCH/DELETE against an admin site endpoint whose (method, request.url.path) is not in DEMO_WRITE_EXEMPT_ENDPOINTS (deps.py:259-266; exemption boundary deps.py:41-50).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the agent graph's toolset includes tools that invoke admin site endpoints or SiteService mutations.",
+          "SiteService persistence internals (actual DB commit statements).",
+          "Redacted exempt endpoint entries (deps.py:43-44)."
+        ],
+        "protected_operation": "Admin site mutation endpoints: create_site (POST '', sites.py:77-89), update_site (PUT /{site_id}, sites.py:92-100), and delete_site (DELETE /{site_id}, sites.py:103-110), each wired to Depends(get_current_user_with_tenant) and delegating to SiteService.",
+        "protected_resource": "Site records (tenant-scoped site entities; cf. crud_site DB usage in deps.py:30, deps.py:324).",
+        "protection_obligation": "Demo-tenant write requests (POST/PUT/PATCH/DELETE) against admin API endpoints must be rejected with BadRequestException ('auth.demo_mode') by get_current_user_with_tenant before the handler executes, unless whitelisted in DEMO_WRITE_EXEMPT_ENDPOINTS. Concrete instance (this contract, database stratum): admin site create (POST ''), update (PUT /{site_id}), and delete (DELETE /{site_id}) must never reach SiteService.create_site/update_site/delete_site for a demo tenant.",
+        "scope_limits": [
+          "SiteService.create_site/update_site/delete_site bodies are not in supplied views; that they perform database persistence is inferred from CRUD naming and crud_site's DB usage, not from visible commit statements.",
+          "Only the cache and site admin routers are supplied; other admin write endpoints mounting the same dependency are outside the evidenced set.",
+          "CE ImportError fallback leaves is_demo=False (deps.py:249-255); exemption whitelist is partially redacted (deps.py:43-44).",
+          "No agent binding in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Update path: guard runs before session attribute mutation and flush within @transactional create_or_update (session.py:78-100; flush at line 100, final commit owned by @transactional). Delete path: guard runs immediately before self.db.delete(session) (session.py:312) and the raw checkpoint-table DELETEs (session.py:321-324).",
+        "contract_id": "ecological-contract:510622152c6481a01d6bff49dff7a5e8",
+        "declared_mechanism": "ChatSessionService.ensure_session_access static guard (session.py:249-263) raising ForbiddenException(detail=_('session.access_denied')) on any supplied-field mismatch; wired into create_or_update (session.py:70-77, preceded by the direct member_id check at session.py:70-71) and into delete_session_by_thread_id (session.py:305-311) before self.db.delete(session).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 263,
+            "line_start": 249,
+            "path": "backend/app/services/chat/session.py",
+            "role": "guard_registration",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          },
+          {
+            "line_end": 77,
+            "line_start": 66,
+            "path": "backend/app/services/chat/session.py",
+            "role": "guard_registration",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          },
+          {
+            "line_end": 71,
+            "line_start": 67,
+            "path": "backend/app/services/chat/session.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          },
+          {
+            "line_end": 263,
+            "line_start": 257,
+            "path": "backend/app/services/chat/session.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          },
+          {
+            "line_end": 52,
+            "line_start": 42,
+            "path": "backend/app/services/chat/session.py",
+            "role": "protected_operation",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          },
+          {
+            "line_end": 291,
+            "line_start": 283,
+            "path": "backend/app/services/chat/session.py",
+            "role": "protected_operation",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          },
+          {
+            "line_end": 100,
+            "line_start": 78,
+            "path": "backend/app/services/chat/session.py",
+            "role": "commit_point",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          },
+          {
+            "line_end": 312,
+            "line_start": 305,
+            "path": "backend/app/services/chat/session.py",
+            "role": "commit_point",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          },
+          {
+            "line_end": 324,
+            "line_start": 321,
+            "path": "backend/app/services/chat/session.py",
+            "role": "commit_point",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          }
+        ],
+        "forbidden_condition": "Mutating or deleting a ChatSession where session.member_id != member_id (create_or_update rejects this outright, including member_id=None callers, session.py:67-71), or where any supplied non-None member_id/site_id/tenant_id differs from the session record (ensure_session_access, session.py:257-263).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Endpoints or agent tools that call delete_session_by_thread_id/get_session_for_access and how caller member_id/site_id/tenant_id are bound from HTTP or agent context.",
+          "Whether any agent tool invokes ChatSessionService mutation methods."
+        ],
+        "protected_operation": "ChatSessionService.create_or_update's update branch (last_message/last_message_role/message_count mutation plus flush under @transactional, session.py:42-100) and delete_session_by_thread_id (db.delete(session) plus checkpoint-table DELETEs under @transactional, session.py:283-334).",
+        "protected_resource": "ChatSession rows, and the associated LangGraph checkpoints/checkpoint_blobs/checkpoint_writes rows removed by the delete path.",
+        "protection_obligation": "Any update or deletion of a ChatSession must be denied with ForbiddenException(detail='session.access_denied') when a caller-supplied member_id, site_id, or tenant_id does not match the stored session record: enforced in create_or_update before the update mutation/flush (with an explicit direct member_id comparison that also rejects anonymous callers when the session has a member), and in delete_session_by_thread_id immediately before the transactional delete of the session and its LangGraph checkpoint rows.",
+        "scope_limits": [
+          "ensure_session_access validates only caller-supplied (non-None) fields (session.py:258-263); a delete caller passing no identifiers skips ownership validation entirely. The direct member_id check covers only the create_or_update update branch.",
+          "Caller identity originates from chat request fields via initialize_chat_context (request.user as member_id; filter-derived site_id/tenant_id, service.py:800-806 and 849/854-863); no authenticated-principal binding is shown for these service parameters.",
+          "delete_all_sessions_by_member (session.py:336-378) bulk-deletes by member_id/site_id without ensure_session_access; it is outside this obligation but bounds its coverage.",
+          "HTTP/agent entry points calling delete_session_by_thread_id or get_session_for_access are not in supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Graph instantiation and execution: get_checkpointer + create_agent_graph + generate_chat_chunks (service.py:665-670); graph.astream_events inside _produce (service.py:608-621); graph.ainvoke in _invoke_graph_blocking (service.py:697-704); all reached only after the guard passes at service.py:844-847.",
+        "contract_id": "ecological-contract:98026bb487bebe7ec96b62b89ebb8a15",
+        "declared_mechanism": "_guard_channel_policy invoked at the first statement of process_chat_request (service.py:843-847) raising ForbiddenException; the graph is created and run only afterwards in _generate_graph_chunks / _invoke_graph_blocking, reached via the dispatch at service.py:875-891.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 847,
+            "line_start": 843,
+            "path": "backend/app/services/chat/service.py",
+            "role": "guard_registration",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          },
+          {
+            "line_end": 268,
+            "line_start": 245,
+            "path": "backend/app/services/chat/service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          },
+          {
+            "line_end": 891,
+            "line_start": 875,
+            "path": "backend/app/services/chat/service.py",
+            "role": "protected_operation",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          },
+          {
+            "line_end": 670,
+            "line_start": 665,
+            "path": "backend/app/services/chat/service.py",
+            "role": "commit_point",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          },
+          {
+            "line_end": 621,
+            "line_start": 608,
+            "path": "backend/app/services/chat/service.py",
+            "role": "commit_point",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          },
+          {
+            "line_end": 704,
+            "line_start": 697,
+            "path": "backend/app/services/chat/service.py",
+            "role": "commit_point",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          }
+        ],
+        "forbidden_condition": "Same conditions as the channel-policy guard: (a) non-bot channel with emit_tool_status_text; (b) bot channel when settings.CATWIKI_EDITION != 'enterprise'; (c) bot channel with unimportable app.ee.license module or license_service.is_valid() false (service.py:245-268), enforced at process_chat_request entry (service.py:843-847).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether bot-channel integrations or any agent tool invoke process_chat_request (entry binding for the guard).",
+          "Tool registry of create_agent_graph, to determine whether agent tools reach other guarded effects."
+        ],
+        "protected_operation": "Agent-driven chat completion: creation of the LangGraph ReAct graph (create_agent_graph) and its execution via _generate_graph_chunks/generate_chat_chunks/_run_graph_stream (graph.astream_events) or _invoke_graph_blocking (graph.ainvoke).",
+        "protected_resource": "Agent graph execution and its in-process tool/node invocations (including nested LLM provider interactions).",
+        "protection_obligation": "The same _guard_channel_policy denial (emit_tool_status_text outside the bot channel; bot channel without enterprise edition or with missing/invalid EE license) must also prevent forbidden chat requests from reaching agent graph execution: create_agent_graph must not be constructed or driven (astream_events/ainvoke) for a denied request.",
+        "scope_limits": [
+          "The guarded entry is an HTTP-facing chat service; although the prevented effect is agent-graph execution, supplied source shows no agent tool dispatch, lifecycle hook, or agent-generated-input binding for the entry, so mediation remains not_established.",
+          "Nested LLM provider network calls (http stratum) inside graph execution are not separately contracted.",
+          "Agent graph internals/tool registry (app.core.ai.graph) are not in supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The @transactional boundary of initialize_chat_context (service.py:732-733): create_or_update's session upsert/flush and history_service.save_message (service.py:798-810) never commit because the guard raises first.",
+        "contract_id": "ecological-contract:b4e9ec187725ce0a362d490a06e33f3a",
+        "declared_mechanism": "ChatService._guard_channel_policy (service.py:245-268), invoked as the first statement of process_chat_request (service.py:843-847), raising ForbiddenException before initialize_chat_context is awaited (service.py:853-864).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 847,
+            "line_start": 843,
+            "path": "backend/app/services/chat/service.py",
+            "role": "guard_registration",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          },
+          {
+            "line_end": 268,
+            "line_start": 245,
+            "path": "backend/app/services/chat/service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          },
+          {
+            "line_end": 842,
+            "line_start": 832,
+            "path": "backend/app/services/chat/service.py",
+            "role": "protected_operation",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          },
+          {
+            "line_end": 864,
+            "line_start": 853,
+            "path": "backend/app/services/chat/service.py",
+            "role": "protected_operation",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          },
+          {
+            "line_end": 733,
+            "line_start": 732,
+            "path": "backend/app/services/chat/service.py",
+            "role": "commit_point",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          },
+          {
+            "line_end": 810,
+            "line_start": 798,
+            "path": "backend/app/services/chat/service.py",
+            "role": "commit_point",
+            "source_sha256": "c9968d8b1ca26705fb838e9f31da75327f2a5ab5869a5c5d6ca937df666a51ac"
+          }
+        ],
+        "forbidden_condition": "(a) channel != 'bot' and emit_tool_status_text (service.py:252-253); (b) channel == 'bot' and settings.CATWIKI_EDITION != 'enterprise' (service.py:258-259); (c) channel == 'bot' with app.ee.license.license_service unimportable (service.py:262-265) or license_service.is_valid() false (service.py:267-268).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "HTTP or bot-channel entry points calling process_chat_request and how channel/emit_tool_status_text derive from client input.",
+          "Whether any agent tool or agent lifecycle hook invokes process_chat_request or initialize_chat_context."
+        ],
+        "protected_operation": "Processing of a chat completion request (process_chat_request, service.py:832-842) and its initialization pipeline initialize_chat_context (@transactional), which persists/updates the chat session (create_or_update) and saves the first user message (save_message).",
+        "protected_resource": "Chat session and chat history database records written at the start of each chat turn.",
+        "protection_obligation": "ChatService.process_chat_request must deny, via _guard_channel_policy raising ForbiddenException at its first statement: (a) any chat request with emit_tool_status_text=True on a non-bot channel; (b) any bot-channel chat request when settings.CATWIKI_EDITION != 'enterprise'; (c) any bot-channel chat request when the app.ee.license module is unimportable or license_service.is_valid() is False. This contract covers the database commit point: the denial must occur before initialize_chat_context's transactional session/message persistence commits.",
+        "scope_limits": [
+          "The guard sits upstream of all effects; this contract covers the earliest prevented commit (session/message persistence). The agent-graph execution it also precludes is contracted separately (tool_execution stratum).",
+          "channel and emit_tool_status_text are service parameters; the HTTP/bot endpoints that set them are not in supplied views.",
+          "In streaming mode a denied CatWikiError is converted to an SSE error stream (service.py:865-873); denial still prevents all persistence."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Execute-time: statement options/where injection during do_orm_execute (events.py:44-54). Insert-time: tenant_id materialization on the target before the row is persisted (events.py:73-78).",
+        "contract_id": "ecological-contract:e0a243b0f324ab79310ae48fc88d79bb",
+        "declared_mechanism": "SQLAlchemy event listeners: apply_tenant_filter registered for session 'do_orm_execute' via event.listen in register_core_db_events (events.py:81-86), injecting with_loader_criteria(Base, _tenant_filter_criteria, include_aliases=True) plus a tenant-specific statement-cache fingerprint (events.py:56-65); apply_tenant_on_insert registered via @event.listens_for(Base, 'before_insert', propagate=True) (events.py:68), setting target.tenant_id from the current tenant when NULL.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 86,
+            "line_start": 81,
+            "path": "backend/app/db/events.py",
+            "role": "guard_registration",
+            "source_sha256": "9baeb1c0485a3ed6012691e469383e8d50b7b5d96df216e3b30190ed95da6d19"
+          },
+          {
+            "line_end": 78,
+            "line_start": 68,
+            "path": "backend/app/db/events.py",
+            "role": "guard_registration",
+            "source_sha256": "9baeb1c0485a3ed6012691e469383e8d50b7b5d96df216e3b30190ed95da6d19"
+          },
+          {
+            "line_end": 54,
+            "line_start": 38,
+            "path": "backend/app/db/events.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9baeb1c0485a3ed6012691e469383e8d50b7b5d96df216e3b30190ed95da6d19"
+          },
+          {
+            "line_end": 35,
+            "line_start": 21,
+            "path": "backend/app/db/events.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9baeb1c0485a3ed6012691e469383e8d50b7b5d96df216e3b30190ed95da6d19"
+          },
+          {
+            "line_end": 64,
+            "line_start": 59,
+            "path": "backend/app/services/chat/session.py",
+            "role": "protected_operation",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          },
+          {
+            "line_end": 100,
+            "line_start": 87,
+            "path": "backend/app/services/chat/session.py",
+            "role": "protected_operation",
+            "source_sha256": "2878df03e8d00738fb6866df3e309d2c25d3620e03b285eeaeafcf548134f671"
+          },
+          {
+            "line_end": 54,
+            "line_start": 44,
+            "path": "backend/app/db/events.py",
+            "role": "commit_point",
+            "source_sha256": "9baeb1c0485a3ed6012691e469383e8d50b7b5d96df216e3b30190ed95da6d19"
+          },
+          {
+            "line_end": 78,
+            "line_start": 73,
+            "path": "backend/app/db/events.py",
+            "role": "commit_point",
+            "source_sha256": "9baeb1c0485a3ed6012691e469383e8d50b7b5d96df216e3b30190ed95da6d19"
+          }
+        ],
+        "forbidden_condition": "An ORM execute that would return or target rows belonging to a tenant other than get_current_tenant(), or a flush of an entity having a tenant_id attribute left NULL, occurring while a tenant context is set (criteria construction events.py:21-35; execute-time injection events.py:38-54; insert-time attribution events.py:68-78).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Startup call site of register_core_db_events().",
+          "Whether any agent tool executes tenant-scoped ORM statements such that this guard mediates agent-driven effects."
+        ],
+        "protected_operation": "All ORM executes and inserts against Base-derived tenant-scoped models, e.g., ChatSession selects (session.py:59-64) and ChatSession insert/flush (session.py:87-100) driven by chat flows.",
+        "protected_resource": "Tenant-scoped rows of Base-derived ORM models (tenant_id column) in the application database.",
+        "protection_obligation": "When a tenant context is set, ORM database access must be tenant-isolated: every ORM statement execution is filtered to the current tenant's rows (apply_tenant_filter injecting with_loader_criteria over Base), and every insert of a tenant-attributed entity whose tenant_id is NULL is populated with the current tenant_id before persistence (apply_tenant_on_insert), via the SQLAlchemy events registered by register_core_db_events.",
+        "scope_limits": [
+          "Both listeners no-op when get_current_tenant() returns None (events.py:29-35, 44-45, 73-77); OSS default tenant is 1 per source comment (events.py:76).",
+          "with_loader_criteria injection only reaches statements exposing .options (ORM statements); Core/text SQL such as the raw checkpoint-table DELETEs (session.py:321-324, 368-372) is not tenant-filtered by this guard.",
+          "The 'do_orm_execute' registration depends on register_core_db_events() being invoked; its call site is not in supplied views (the before_insert listener self-registers at import).",
+          "No agent binding in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Rejection occurs at dependency resolution ahead of the clear_cache handler; absent the guard the effect commits at await cache.clear() (cache.py:50).",
+        "contract_id": "ecological-contract:f1c4ca4c46bda81fdb2648f122d2f22b",
+        "declared_mechanism": "FastAPI dependency get_current_user_with_tenant (deps.py:224-268): authenticates via get_current_active_user (JWT Bearer), sets tenant context via set_current_tenant, resolves is_demo via app.ee.loader.get_ee_tenant_is_demo (community-edition ImportError fallback leaves is_demo=False), and for write methods whose (method, path) is not exempt raises BadRequestException(detail=_('auth.demo_mode')) during dependency resolution, before the handler body runs.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 268,
+            "line_start": 224,
+            "path": "backend/app/core/web/deps.py",
+            "role": "guard_registration",
+            "source_sha256": "1c7a3e3ec6006d2e2a4d36ac21f27fb3bddf96d23a4596bc9f6dace108221cd4"
+          },
+          {
+            "line_end": 50,
+            "line_start": 41,
+            "path": "backend/app/core/web/deps.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1c7a3e3ec6006d2e2a4d36ac21f27fb3bddf96d23a4596bc9f6dace108221cd4"
+          },
+          {
+            "line_end": 266,
+            "line_start": 259,
+            "path": "backend/app/core/web/deps.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1c7a3e3ec6006d2e2a4d36ac21f27fb3bddf96d23a4596bc9f6dace108221cd4"
+          },
+          {
+            "line_end": 53,
+            "line_start": 44,
+            "path": "backend/app/api/admin/endpoints/cache.py",
+            "role": "protected_operation",
+            "source_sha256": "fc225ed3c15fb1da89981dcff6320f5cde20d527f4874c4dfc909dd76f546105"
+          },
+          {
+            "line_end": 51,
+            "line_start": 48,
+            "path": "backend/app/api/admin/endpoints/cache.py",
+            "role": "commit_point",
+            "source_sha256": "fc225ed3c15fb1da89981dcff6320f5cde20d527f4874c4dfc909dd76f546105"
+          }
+        ],
+        "forbidden_condition": "A request whose resolved tenant is a demo tenant (get_ee_tenant_is_demo -> true) using HTTP method POST/PUT/PATCH/DELETE against an admin endpoint whose (method, request.url.path) is not in DEMO_WRITE_EXEMPT_ENDPOINTS (deps.py:259-266; exemption boundary defined at deps.py:41-50).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool or lifecycle hook dispatches to the admin cache endpoints (agent graph tool registry not in supplied views).",
+          "Concrete cache backend behind get_cache() to fix the effect stratum.",
+          "The two redacted exempt (method, path) entries at deps.py:43-44."
+        ],
+        "protected_operation": "Handling of the admin cache-clear endpoint POST :clear (clear_cache, cache.py:44-53), which is wired to Depends(get_current_user_with_tenant) and would clear the application-wide cache.",
+        "protected_resource": "Application cache obtained via get_cache() (cache subsystem state).",
+        "protection_obligation": "Demo-tenant write requests (POST/PUT/PATCH/DELETE) against admin API endpoints must be rejected with BadRequestException ('auth.demo_mode') by the get_current_user_with_tenant FastAPI dependency before the endpoint handler executes, unless the (method, path) pair is whitelisted in DEMO_WRITE_EXEMPT_ENDPOINTS. Concrete instance (this contract): the admin cache-clear endpoint POST :clear must never reach cache.clear() for a demo tenant. (Merges the duplicate first-phase and second-phase reviewer wordings for the same dependency guard.)",
+        "scope_limits": [
+          "The block fires only when a tenant_id resolves and the tenant record exists (deps.py:244-246); CE import failure of app.ee.loader leaves is_demo=False, disabling the block (deps.py:249-255).",
+          "Two of the three DEMO_WRITE_EXEMPT_ENDPOINTS entries are redacted (deps.py:43-44); only the POST .../documents/retrieve exemption is fully visible.",
+          "Cache backend implementation (get_cache) is not in supplied views; classified as application-state mutation, but an external (e.g., Redis) backend would push the stratum toward database/other_external.",
+          "No agent tool, lifecycle hook, or agent-generated input is bound to this endpoint in supplied source; retained as a source-supported web-layer protection obligation with mediation unestablished."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Agent-mediation evidence is absent for every contract: no supplied view contains an agent tool registration, agent lifecycle hook, or tool-dispatch dataflow reaching the get_current_user_with_tenant-guarded endpoints, SiteService, ChatSessionService, the cache, or ChatService. agent_mediation is not_established throughout; agent graph internals (app.core.ai.graph.create_agent_graph) are not supplied, so it is unknown whether any agent tool reaches these guarded effects.",
+      "The startup invocation site of register_core_db_events() is not in supplied views; only its definition (events.py:81-86) and the self-registering before_insert decorator (events.py:68) are visible.",
+      "Bodies of SiteService.create_site/update_site/delete_site and the get_cache() backend are not supplied; the exact DB commit statements (sites) and the cache effect stratum (in-process vs external store) are unresolved.",
+      "Two DEMO_WRITE_EXEMPT_ENDPOINTS entries are redacted (deps.py:43-44); their (method, path) pairs are unknown.",
+      "HTTP/bot endpoints calling ChatService.process_chat_request, process_responses_request, and ChatSessionService.delete_session_by_thread_id are not supplied; the provenance of channel, emit_tool_status_text, member_id, site_id, and tenant_id from client or agent context is unbound.",
+      "EE modules app.ee.loader.get_ee_tenant_is_demo and app.ee.license.license_service are not in supplied views; demo-tenant detection and license validity semantics are unverified, and the CE ImportError fallback yields is_demo=False (deps.py:249-255), making the demo-write block inert on that path.",
+      "process_responses_request (service.py:910-986) performs the same persistence pipeline but does not invoke _guard_channel_policy; whether it constitutes an uncovered bypass of the channel/EE capability policy cannot be judged from supplied source alone."
+    ],
+    "repository": "bulolo/CatWiki",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:5298c3d265a67d559d137e140e31e5d9"
+  },
+  "request_sha256": "6367c8f70b296321b5a626ff2942bb5bffc87b259242ba860577819050de4b02",
+  "response_sha256": "0b918ffe33de6e3fa4eb18148fd6041b84eac470997083a3e8a888ac16f4ea68",
+  "state": "completed",
+  "tokens": 53967,
+  "unit": "v24-screen:5298c3d265a67d559d137e140e31e5d9"
+}

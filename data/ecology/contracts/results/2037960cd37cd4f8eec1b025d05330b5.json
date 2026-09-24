@@ -1,0 +1,356 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Guardrail acceptance at the review_and_release task-output boundary (registration crew.py:108-110), with the accepted output committed to the released response at api.py:100-104 after re-validation in flow.py:42-55.",
+        "contract_id": "ecological-contract:0e8a5bba70c80d33c1264294b5f76c84",
+        "declared_mechanism": "CrewAI task guardrail structured_analysis_guardrail (guardrails.py:19-35) registered on the review_and_release Task via guardrail=structured_analysis_guardrail, guardrail_max_retries=2, and output_pydantic=AnalysisResponse (crew.py:100-111); the guardrail returns (False, corrective message) on schema or causal-language failure and (True, analysis) only on acceptance.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 111,
+            "line_start": 100,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/crew.py",
+            "role": "guard_registration",
+            "source_sha256": "75d56f9d2b92782ff9c0cb562838d99f63a16196c3692d1a8cbd6529bc3ec16b"
+          },
+          {
+            "line_end": 111,
+            "line_start": 100,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/crew.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "75d56f9d2b92782ff9c0cb562838d99f63a16196c3692d1a8cbd6529bc3ec16b"
+          },
+          {
+            "line_end": 35,
+            "line_start": 19,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "abd370b1594119be6ba4329db6b0dc57da534d069d63e8ca54aef6c3a6d10a79"
+          },
+          {
+            "line_end": 34,
+            "line_start": 28,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abd370b1594119be6ba4329db6b0dc57da534d069d63e8ca54aef6c3a6d10a79"
+          },
+          {
+            "line_end": 16,
+            "line_start": 10,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abd370b1594119be6ba4329db6b0dc57da534d069d63e8ca54aef6c3a6d10a79"
+          },
+          {
+            "line_end": 99,
+            "line_start": 93,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/crew.py",
+            "role": "protected_operation",
+            "source_sha256": "75d56f9d2b92782ff9c0cb562838d99f63a16196c3692d1a8cbd6529bc3ec16b"
+          },
+          {
+            "line_end": 55,
+            "line_start": 42,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/flow.py",
+            "role": "protected_operation",
+            "source_sha256": "1ad96a1f54b7fd8d0c36dce3c18e4a265bf2e1da33152498ee4b318bc3602d0e"
+          },
+          {
+            "line_end": 104,
+            "line_start": 100,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/api.py",
+            "role": "commit_point",
+            "source_sha256": "536b0060bb41e0d614fb417b2bdc2b0ae5f6b528eb3f7ce46c5d53a09787c9d1"
+          }
+        ],
+        "forbidden_condition": "A review_and_release TaskOutput that is neither an AnalysisResponse instance nor JSON validating as AnalysisResponse, or whose rendered lowercase JSON contains any DISALLOWED_CAUSAL_PHRASES entry ('this caused', 'will cause', 'guaranteed to', 'guarantees', 'proves that the change'), being accepted as the crew result and released as the final analysis.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "tasks_config['review_and_release'] contents (config/agents.yaml, config/tasks.yaml) and the safety-policy.md text injected into the task description (crew.py:93-99) are not supplied, so prompt-level enforcement context is unknown.",
+          "The exact exception or result shape CrewAI surfaces when guardrail retries are exhausted, and how it maps onto flow.py:42-43, is not defined in the supplied views."
+        ],
+        "protected_operation": "Release of the review_and_release task's agent output as the crew's final analysis, propagated through VisibilityAnalysisFlow.interpret_with_crew (flow.py:42-55) and run_analysis (flow.py:58-63) to the /v1/analyze response.",
+        "protected_resource": "The final analysis payload released to callers of POST /v1/analyze (crew review_and_release output).",
+        "protection_obligation": "The final review_and_release task output must not be accepted or released as the crew's analysis unless it is a schema-valid AnalysisResponse free of disallowed causal language; structured_analysis_guardrail is registered on the Task executed by the safety_reviewer agent with guardrail_max_retries=2 and output_pydantic=AnalysisResponse, so only guardrail-accepted output may propagate through the flow to the /v1/analyze response.",
+        "scope_limits": [
+          "Covers only the review_and_release task's output; upstream tasks (analyze_evidence, assess_brand_voice, plan_actions, crew.py:61-91) carry no registered guardrail in the supplied source.",
+          "DISALLOWED_CAUSAL_PHRASES is a fixed literal tuple (guardrails.py:10-16) matched as lowercase substrings of the rendered response JSON (guardrails.py:31-32); no other content policy is enforced by this mechanism.",
+          "Behavior after guardrail_max_retries=2 exhaustion is CrewAI framework behavior not shown in the supplied source; downstream flow.py:42-43 raises ValueError if output.pydantic is None."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "api.py:98-99 (capacity acquire plus asyncio.create_task(asyncio.to_thread(run_analysis, ...))) and the awaited response return at api.py:100-104, reached only after the guard block at api.py:75-91 and payload validation at api.py:93-96.",
+        "contract_id": "ecological-contract:405b714304cdf400cf53077da63cd204",
+        "declared_mechanism": "Handler-ordered guard block: key_id equality check (api.py:75-76); verify_signature computing HMAC-SHA256 over 'timestamp.request_id.body' with TTL window check and hmac.compare_digest (security.py:27-52); ReplayGuard.claim of request_id with bounded per-instance seen-set (security.py:55-72, invoked api.py:86-89); AuthenticationError converted to HTTP 401 before payload validation (api.py:90-91).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 63,
+            "line_start": 56,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/api.py",
+            "role": "protected_operation",
+            "source_sha256": "536b0060bb41e0d614fb417b2bdc2b0ae5f6b528eb3f7ce46c5d53a09787c9d1"
+          },
+          {
+            "line_end": 91,
+            "line_start": 74,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/api.py",
+            "role": "guard_registration",
+            "source_sha256": "536b0060bb41e0d614fb417b2bdc2b0ae5f6b528eb3f7ce46c5d53a09787c9d1"
+          },
+          {
+            "line_end": 52,
+            "line_start": 27,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/security.py",
+            "role": "guard_registration",
+            "source_sha256": "5c3292159e506a4dd118b7983977dd86425e07a034ef336fcf0da888c6735f07"
+          },
+          {
+            "line_end": 52,
+            "line_start": 37,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5c3292159e506a4dd118b7983977dd86425e07a034ef336fcf0da888c6735f07"
+          },
+          {
+            "line_end": 72,
+            "line_start": 55,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/security.py",
+            "role": "guard_registration",
+            "source_sha256": "5c3292159e506a4dd118b7983977dd86425e07a034ef336fcf0da888c6735f07"
+          },
+          {
+            "line_end": 69,
+            "line_start": 68,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5c3292159e506a4dd118b7983977dd86425e07a034ef336fcf0da888c6735f07"
+          },
+          {
+            "line_end": 104,
+            "line_start": 93,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/api.py",
+            "role": "protected_operation",
+            "source_sha256": "536b0060bb41e0d614fb417b2bdc2b0ae5f6b528eb3f7ce46c5d53a09787c9d1"
+          },
+          {
+            "line_end": 99,
+            "line_start": 98,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/api.py",
+            "role": "commit_point",
+            "source_sha256": "536b0060bb41e0d614fb417b2bdc2b0ae5f6b528eb3f7ce46c5d53a09787c9d1"
+          },
+          {
+            "line_end": 55,
+            "line_start": 31,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/flow.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1ad96a1f54b7fd8d0c36dce3c18e4a265bf2e1da33152498ee4b318bc3602d0e"
+          },
+          {
+            "line_end": 123,
+            "line_start": 113,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/crew.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "75d56f9d2b92782ff9c0cb562838d99f63a16196c3692d1a8cbd6529bc3ec16b"
+          }
+        ],
+        "forbidden_condition": "Proceeding to payload validation and run_analysis kickoff for a request whose key_id does not match the configured key, whose timestamp is missing/non-numeric/outside signature_ttl_seconds, whose request_id is missing/outside 8-120 ASCII characters, whose signature is missing or fails constant-time comparison, or whose request_id was already claimed by the per-instance ReplayGuard.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "settings.key_id, settings.signing_secret, and settings.signature_ttl_seconds values and key management are resolved via get_settings(); the settings source view is not supplied.",
+          "The number of processes/workers sharing or splitting ReplayGuard state in deployment is not determinable from the supplied source.",
+          "The guard itself is HTTP-handler logic with no decorator/registration as an agent tool or lifecycle hook; its agent mediation rests solely on the crew-output-to-response dataflow (flow.py:31-55, api.py:98-104) - confirm the study accepts this binding for an admission gate."
+        ],
+        "protected_operation": "Crew-analysis kickoff and release of the agent-generated analysis via POST /v1/analyze (handler admission -> AnalysisRequest validation -> run_analysis -> awaited AnalysisResponse).",
+        "protected_resource": "The /v1/analyze analysis pipeline: CrewAI AnswerEvidenceCrew execution via run_analysis and the /v1/analyze HTTP response carrying its output.",
+        "protection_obligation": "POST /v1/analyze must not proceed past request admission to payload validation and crew-analysis kickoff unless the request carries a matching key_id, a well-formed timestamp within the signature TTL, a well-formed request_id, a valid HMAC-SHA256 signature over timestamp.request_id.body, and a request_id not previously claimed; the verify_signature/replay_guard.claim block must complete before AnalysisRequest validation and the run_analysis kickoff that executes the agent crew and releases its output as the response.",
+        "scope_limits": [
+          "Covers only the POST /v1/analyze admission path; GET /health (api.py:51-53), TrustedHostMiddleware (api.py:26), body-size limits (api.py:64-74), and the concurrency semaphore (api.py:27, 98) are not part of this obligation.",
+          "ReplayGuard state is documented as bounded per-instance (10,000 entries with oldest-entry eviction, security.py:55-72); cross-process/cross-worker replay coverage is outside the supplied source.",
+          "The signature scheme authenticates the request that drives the agent pipeline and the TTL/replay window; it does not itself validate agent output, which is covered by downstream guardrail and evidence-reference contracts."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "flow.py:54 (self.state.response_payload = validated.model_dump(mode=\"\")).",
+        "contract_id": "ecological-contract:aed0e5e06fba4e17581a45883625f758",
+        "declared_mechanism": "Guard chain upstream of the write: CrewAI task guardrail registered at crew.py:109-110, output.pydantic null-check and AnalysisResponse.model_validate at flow.py:42-44, and validate_evidence_references at flow.py:53 immediately preceding self.state.response_payload assignment at flow.py:54; run_analysis raises RuntimeError when response_payload is empty (flow.py:61-62).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 55,
+            "line_start": 44,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/flow.py",
+            "role": "protected_operation",
+            "source_sha256": "1ad96a1f54b7fd8d0c36dce3c18e4a265bf2e1da33152498ee4b318bc3602d0e"
+          },
+          {
+            "line_end": 54,
+            "line_start": 54,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/flow.py",
+            "role": "commit_point",
+            "source_sha256": "1ad96a1f54b7fd8d0c36dce3c18e4a265bf2e1da33152498ee4b318bc3602d0e"
+          },
+          {
+            "line_end": 53,
+            "line_start": 53,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/flow.py",
+            "role": "guard_registration",
+            "source_sha256": "1ad96a1f54b7fd8d0c36dce3c18e4a265bf2e1da33152498ee4b318bc3602d0e"
+          },
+          {
+            "line_end": 110,
+            "line_start": 108,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/crew.py",
+            "role": "guard_registration",
+            "source_sha256": "75d56f9d2b92782ff9c0cb562838d99f63a16196c3692d1a8cbd6529bc3ec16b"
+          },
+          {
+            "line_end": 34,
+            "line_start": 28,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abd370b1594119be6ba4329db6b0dc57da534d069d63e8ca54aef6c3a6d10a79"
+          },
+          {
+            "line_end": 73,
+            "line_start": 48,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abd370b1594119be6ba4329db6b0dc57da534d069d63e8ca54aef6c3a6d10a79"
+          },
+          {
+            "line_end": 43,
+            "line_start": 42,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/flow.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1ad96a1f54b7fd8d0c36dce3c18e4a265bf2e1da33152498ee4b318bc3602d0e"
+          },
+          {
+            "line_end": 44,
+            "line_start": 42,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/flow.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1ad96a1f54b7fd8d0c36dce3c18e4a265bf2e1da33152498ee4b318bc3602d0e"
+          }
+        ],
+        "forbidden_condition": "Committing response_payload derived from crew output that failed AnalysisResponse schema validation (including a null output.pydantic at flow.py:42-43), failed causal-language screening, or references evidence outside the signed request; also completing run_analysis with an empty response_payload.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "CrewAI Flow semantics (listener scheduling, whether state can be mutated outside the shown methods) are framework behavior not defined in the supplied views."
+        ],
+        "protected_operation": "Mutation of VisibilityFlowState.response_payload inside VisibilityAnalysisFlow.interpret_with_crew (flow.py:44-55).",
+        "protected_resource": "VisibilityFlowState.response_payload, consumed by run_analysis to produce the returned AnalysisResponse (flow.py:58-63).",
+        "protection_obligation": "Only crew output that has passed the structured_analysis_guardrail and evidence-reference validation may be committed to the flow's response_payload state; the state commit at flow.py:54 is reachable only after output.pydantic is a validated AnalysisResponse (flow.py:42-44) and validate_evidence_references succeeds (flow.py:53), with run_analysis failing closed when the flow completes without a payload (flow.py:61-62).",
+        "scope_limits": [
+          "Covers the in-request, in-memory flow state commit only; the http release of the same validated payload is a separate contract at a different commit point.",
+          "Only two flow methods (@start validate_signed_evidence, @listen interpret_with_crew) appear in the supplied source; no later mutation of response_payload is shown."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "flow.py:53-55 (validation gate preceding the response_payload commit) with the http release at api.py:100-104; the rejection path surfaces at api.py:107-112.",
+        "contract_id": "ecological-contract:f0ae915e26c49118dc16e61ebef36269",
+        "declared_mechanism": "validate_evidence_references(analysis, request) invoked in interpret_with_crew before the payload is committed (flow.py:53-54); it builds allowed run_id/prompt_id/source_url/owned_url sets from the signed request and raises ValueError via _require_subset on any unknown reference (guardrails.py:38-80); api.py:107-112 converts ValueError to HTTP 422 'Crew output failed evidence validation', blocking release.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 74,
+            "line_start": 38,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "abd370b1594119be6ba4329db6b0dc57da534d069d63e8ca54aef6c3a6d10a79"
+          },
+          {
+            "line_end": 73,
+            "line_start": 48,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abd370b1594119be6ba4329db6b0dc57da534d069d63e8ca54aef6c3a6d10a79"
+          },
+          {
+            "line_end": 80,
+            "line_start": 77,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abd370b1594119be6ba4329db6b0dc57da534d069d63e8ca54aef6c3a6d10a79"
+          },
+          {
+            "line_end": 55,
+            "line_start": 53,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/flow.py",
+            "role": "guard_registration",
+            "source_sha256": "1ad96a1f54b7fd8d0c36dce3c18e4a265bf2e1da33152498ee4b318bc3602d0e"
+          },
+          {
+            "line_end": 44,
+            "line_start": 42,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/flow.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1ad96a1f54b7fd8d0c36dce3c18e4a265bf2e1da33152498ee4b318bc3602d0e"
+          },
+          {
+            "line_end": 112,
+            "line_start": 107,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/api.py",
+            "role": "guard_registration",
+            "source_sha256": "536b0060bb41e0d614fb417b2bdc2b0ae5f6b528eb3f7ce46c5d53a09787c9d1"
+          },
+          {
+            "line_end": 104,
+            "line_start": 100,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/api.py",
+            "role": "commit_point",
+            "source_sha256": "536b0060bb41e0d614fb417b2bdc2b0ae5f6b528eb3f7ce46c5d53a09787c9d1"
+          },
+          {
+            "line_end": 63,
+            "line_start": 58,
+            "path": "services/visibility-crew/src/answerlint_visibility_crew/flow.py",
+            "role": "protected_operation",
+            "source_sha256": "1ad96a1f54b7fd8d0c36dce3c18e4a265bf2e1da33152498ee4b318bc3602d0e"
+          }
+        ],
+        "forbidden_condition": "Release of an AnalysisResponse whose findings/customer_pain_themes/brand_voice/executive_decisions/actions contain evidence_run_ids, affected_prompt_ids, prompt_id, source_urls, or linked_page_url values outside the sets derived from the signed request's runs, citations, and owned_pages, or whose analysis_id/project_id differ from the signed request (guardrails.py:48-73, 77-80).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "schemas.py definitions of AnalysisRequest/AnalysisResponse (including url types whose str() renderings are compared at guardrails.py:45-46, 50, 63, 68-69) are not supplied, so URL-normalization equivalence behavior is unknown."
+        ],
+        "protected_operation": "Release of the crew-generated analysis as the POST /v1/analyze response (run_analysis return awaited by the handler).",
+        "protected_resource": "The analysis response payload released to /v1/analyze callers (evidence provenance of agent output).",
+        "protection_obligation": "Agent-generated analysis output must not be released as the /v1/analyze response when it references evidence absent from the signed request: validate_evidence_references fail-closes on findings, customer_pain_themes, brand_voice, executive_decisions, or actions citing unknown run_ids, prompt_ids, source_urls, or non-owned linked_page_url values, or on analysis_id/project_id mismatch, raising ValueError which the handler converts to HTTP 422 instead of releasing the analysis.",
+        "scope_limits": [
+          "Operates on the flow-level AnalysisResponse downstream of the CrewAI task guardrail (crew.py:109); it does not itself enforce response schema shape or causal language (covered by the guardrail contract).",
+          "Provenance sets derive solely from the signed request body validated at api.py:93-96; no external evidence registry is consulted in the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The settings module (settings.key_id, signing_secret, signature_ttl_seconds, max_body_bytes, max_concurrency, storage_dir, llm_* options) is not supplied; configured values and key management practices are unknown.",
+      "schemas.py (AnalysisRequest, AnalysisResponse field constraints, url types) is not supplied; field-level validation behavior behind api.py:94 and guardrails.py comparisons is unknown.",
+      "config/agents.yaml, config/tasks.yaml, and config/prompts/*.md are not supplied; task descriptions and policy text referenced at crew.py:19-20, 63-98 are unknown.",
+      "CrewAI framework internals (guardrail invocation point in the task lifecycle, retry-exhaustion behavior, Flow listener scheduling, kickoff return semantics) are not defined in the supplied source views.",
+      "The deployment process model (whether multiple uvicorn workers/processes would hold separate ReplayGuard instances) is not determinable from the supplied source; api.py:133-139 shows uvicorn.run without an explicit workers argument.",
+      "No supplied source registers the signature/replay guard as an agent tool or agent lifecycle hook; agent mediation for the /v1/analyze admission gate rests only on the crew-output-to-response dataflow (flow.py:31-55, api.py:98-104), which should be confirmed as a sufficient binding for the study.",
+      "The concurrency semaphore (api.py:27, 98, 123-130) is a capacity guard around the same kickoff but no reviewer obligation addressed it; its treatment (in or out of scope) is undecided here."
+    ],
+    "repository": "rakeshcheekatimala/answerlint-web",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:2037960cd37cd4f8eec1b025d05330b5"
+  },
+  "request_sha256": "97888eaabbcd313d0073b1cf83af2803129827676ba567e3ab28ec7ddca6b870",
+  "response_sha256": "7016e446c70fc4a9990309bee6017776086a990f1a5cdf61a87d57940dd643e8",
+  "state": "completed",
+  "tokens": 29317,
+  "unit": "v24-screen:2037960cd37cd4f8eec1b025d05330b5"
+}

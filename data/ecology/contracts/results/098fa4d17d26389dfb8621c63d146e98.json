@@ -1,0 +1,356 @@
+{
+  "attempt": 2,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "with open(path, 'wb') as handle: handle.write(payload) at api/routes/chat.py:736-737.",
+        "contract_id": "ecological-contract:2df3932a28f11ad6b0bf8c8d491e2d1f",
+        "declared_mechanism": "Inline defense-in-depth containment check (api/routes/chat.py:731-733) after secure_filename (chat.py:725) and path join (chat.py:730): os.path.realpath + os.path.commonpath containment against user_dir, raising ValueError before the write.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 733,
+            "line_start": 725,
+            "path": "api/routes/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 733,
+            "line_start": 731,
+            "path": "api/routes/chat.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 737,
+            "line_start": 712,
+            "path": "api/routes/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 807,
+            "line_start": 775,
+            "path": "api/routes/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 2843,
+            "line_start": 2824,
+            "path": "api/routes/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 737,
+            "line_start": 736,
+            "path": "api/routes/chat.py",
+            "role": "commit_point",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          }
+        ],
+        "forbidden_condition": "A pasted-text path whose resolved (realpath) location escapes the per-user upload directory user_dir reaching the open(path, 'wb') write; the guard must raise ValueError('pasted text path escapes upload directory') first.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "If the study elects to treat the agent-chat pipeline itself as mediation, the candidate dataflow is POST /api/agents/chat (api/routes/chat.py:3801-3806) -> stream_state['payload'] -> generate() -> _prepare_stream (api/routes/chat.py:2824-2843) -> _display_files_from_pasted_payload (api/routes/chat.py:775-807) -> _persist_pasted_text_file; the supplied source shows the inputs are client-supplied, so no agent-entry binding is asserted here.",
+          "context_service.fs_safe_partition implementation is absent from the supplied views; whether it constrains dir_key is unverified."
+        ],
+        "protected_operation": "_persist_pasted_text_file (api/routes/chat.py:712-772): secure_filename normalization of the supplied filename, join into UPLOAD_DIR/<dir_key>, and byte write of pasted-text content; invoked from _display_files_from_pasted_payload for client pasted blocks and from _prepare_stream for oversized messages.",
+        "protected_resource": "The caller's per-user upload directory UPLOAD_DIR/<dir_key> and pasted-text files within it.",
+        "protection_obligation": "Pasted-text persistence writes performed during agent-chat stream preparation must remain inside the caller's per-user upload directory: the inline containment check in _persist_pasted_text_file must resolve the joined path and reject any escape with ValueError before open(path, 'wb') commits bytes to disk (chat-side counterpart of the _safe_upload_path obligation).",
+        "scope_limits": [
+          "Guard is an inline check in chat.py rather than the shared _safe_upload_path helper; the realpath/commonpath predicate is identical.",
+          "The long-message call path uses a constant filename 'Pasted text.txt' (api/routes/chat.py:2838); the pasted-block path uses the client-supplied filename from payload['files'] (api/routes/chat.py:792-799).",
+          "dir_key falls back to context_service.fs_safe_partition(partition_id) (api/routes/chat.py:727); that helper is not in the supplied views.",
+          "Agent mediation not established: filename and content originate from the client's chat request payload, not model output."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Module-level settings = Settings() at api/config.py:182 \u2014 the validator raises during instantiation, so the process never completes boot with the placeholder key bound outside the exemption.",
+        "contract_id": "ecological-contract:819f896afbd6f22d9edd71dfd47bf746",
+        "declared_mechanism": "Pydantic model_validator(mode='after') _reject_insecure_encryption_key (api/config.py:162-179): fail-closed ValueError when _is_insecure_encryption_key(self.encryption_key) and not _is_local_dev(self.dynamo_endpoint); _is_local_dev exempts NASH_ENV in {dev, development, test, local} or a localhost/127.0.0.1 DYNAMO_ENDPOINT (api/config.py:24-30).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 179,
+            "line_start": 162,
+            "path": "api/config.py",
+            "role": "guard_registration",
+            "source_sha256": "38441710f5a24dc211d26be7e8bea2a53e19ca6bdd081e4df01be7e0611eb5cc"
+          },
+          {
+            "line_end": 30,
+            "line_start": 24,
+            "path": "api/config.py",
+            "role": "guard_registration",
+            "source_sha256": "38441710f5a24dc211d26be7e8bea2a53e19ca6bdd081e4df01be7e0611eb5cc"
+          },
+          {
+            "line_end": 21,
+            "line_start": 13,
+            "path": "api/config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "38441710f5a24dc211d26be7e8bea2a53e19ca6bdd081e4df01be7e0611eb5cc"
+          },
+          {
+            "line_end": 178,
+            "line_start": 171,
+            "path": "api/config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "38441710f5a24dc211d26be7e8bea2a53e19ca6bdd081e4df01be7e0611eb5cc"
+          },
+          {
+            "line_end": 12,
+            "line_start": 9,
+            "path": "api/config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "38441710f5a24dc211d26be7e8bea2a53e19ca6bdd081e4df01be7e0611eb5cc"
+          },
+          {
+            "line_end": 111,
+            "line_start": 110,
+            "path": "api/config.py",
+            "role": "protected_operation",
+            "source_sha256": "38441710f5a24dc211d26be7e8bea2a53e19ca6bdd081e4df01be7e0611eb5cc"
+          },
+          {
+            "line_end": 182,
+            "line_start": 182,
+            "path": "api/config.py",
+            "role": "commit_point",
+            "source_sha256": "38441710f5a24dc211d26be7e8bea2a53e19ca6bdd081e4df01be7e0611eb5cc"
+          }
+        ],
+        "forbidden_condition": "Booting with settings.encryption_key matching the insecure-placeholder predicate \u2014 membership in _INSECURE_ENCRYPTION_KEYS or containing 'change_me'/'change-me' case-insensitively (api/config.py:13-21) \u2014 while the local-development exemption does not hold; the validator must raise ValueError rather than bind the key.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied call site consumes settings.encryption_key to encrypt or decrypt BYOK secrets; binding this boot guard to the concrete crypto effect (and confirming the final effect stratum of that operation) requires additional source.",
+          "The second value in _INSECURE_ENCRYPTION_KEYS is redacted in the sanitized source (api/config.py:15) and the referenced .env.example (api/config.py:9-10) is not supplied; the full insecure-value set is unverified."
+        ],
+        "protected_operation": "Instantiation of the process-wide Settings singleton binding the BYOK encryption key (encryption_key setting, api/config.py:110-111), which downstream configures the encryption of user BYOK secrets.",
+        "protected_resource": "User BYOK secrets that would be encrypted under settings.encryption_key (consumption sites not present in supplied views) and the process-wide settings state that binds the key.",
+        "protection_obligation": "Refuse to boot (raise at settings instantiation) outside local development whenever ENCRYPTION_KEY is a known public placeholder, so BYOK user secrets are never encrypted under a repo-public key; the commit point is the module-level settings = Settings() in api/config.py that runs the fail-closed model validator.",
+        "scope_limits": [
+          "Local-development exemption is explicit: NASH_ENV in {dev, development, test, local} or DYNAMO_ENDPOINT containing localhost/127.0.0.1 keeps the placeholder permissible (api/config.py:24-30, 164-170).",
+          "The predicate covers exact set membership plus 'change_me'/'change-me' substrings (api/config.py:21); other weak or compromised keys are outside the declared guard.",
+          "The guard evaluates once at import/Settings instantiation; later runtime changes to the key or environment are not re-checked anywhere in the supplied views.",
+          "No agent tool, lifecycle hook, or agent-generated input participates; this is process configuration state, not an agent-mediated effect."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file.save(filepath) at api/routes/files.py:470 \u2014 bytes first hit the filesystem here, after the guard call at lines 466-469.",
+        "contract_id": "ecological-contract:989f636ddfd4d9377f914ed91a3d4608",
+        "declared_mechanism": "Shared helper _safe_upload_path (api/routes/files.py:92-107): secure_filename, os.path.join with a server-generated uuid4 file_id, then os.path.realpath + os.path.commonpath containment re-assertion against user_dir raising ValueError; upload_image catches ValueError and returns HTTP 400 before file.save().",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 107,
+            "line_start": 92,
+            "path": "api/routes/files.py",
+            "role": "guard_registration",
+            "source_sha256": "0d71b59d52eb1f4ae6af9c6e35ed6d6f1fe0ace30c6053d6a9f04897359f5591"
+          },
+          {
+            "line_end": 106,
+            "line_start": 102,
+            "path": "api/routes/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0d71b59d52eb1f4ae6af9c6e35ed6d6f1fe0ace30c6053d6a9f04897359f5591"
+          },
+          {
+            "line_end": 470,
+            "line_start": 451,
+            "path": "api/routes/files.py",
+            "role": "protected_operation",
+            "source_sha256": "0d71b59d52eb1f4ae6af9c6e35ed6d6f1fe0ace30c6053d6a9f04897359f5591"
+          },
+          {
+            "line_end": 470,
+            "line_start": 470,
+            "path": "api/routes/files.py",
+            "role": "commit_point",
+            "source_sha256": "0d71b59d52eb1f4ae6af9c6e35ed6d6f1fe0ace30c6053d6a9f04897359f5591"
+          }
+        ],
+        "forbidden_condition": "An image-upload path whose resolved (realpath) location escapes the caller's per-user upload directory user_dir \u2014 e.g. a client-supplied filename carrying traversal segments \u2014 reaching the file.save() commit; the guard must raise ValueError('upload path escapes user directory') first.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the ValueError branch (api/routes/files.py:468-469) is reachable at runtime given secure_filename's stripping is a runtime question; the declared guard only is recorded.",
+          "No agent tool, lifecycle hook, or agent-generated input reaches this commit point in the supplied source; input is the direct authenticated HTTP multipart request."
+        ],
+        "protected_operation": "Authenticated image upload handler upload_image (POST /api/files/images, @require_auth): constructing the on-disk path from request.files['file'].filename via _safe_upload_path and persisting the image bytes.",
+        "protected_resource": "The caller's per-user upload directory UPLOAD_DIR/<dir_key> and the image files within it.",
+        "protection_obligation": "Image uploads to POST /api/files/images whose on-disk path is derived from the client-controlled filename must remain inside the caller's per-user upload directory: _safe_upload_path must sanitize, resolve, and reject any path escaping user_dir with ValueError before file.save() commits bytes to disk.",
+        "scope_limits": [
+          "Applies only to the POST /api/files/images path-construction and save; avatar and agent-avatar write endpoints use different path construction and are outside this contract.",
+          "The file_id component of the on-disk name is a server-generated uuid4 (api/routes/files.py:460); only the filename suffix is client-controlled.",
+          "No runtime violation, enforcement success, or prevalence claim is made."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file.save(filepath) at api/routes/files.py:254 \u2014 bytes first hit the filesystem here, after the guard call at lines 251-253.",
+        "contract_id": "ecological-contract:d29ab0832d91aa62ecfe23739490138e",
+        "declared_mechanism": "_safe_upload_path (api/routes/files.py:92-107): werkzeug secure_filename on the raw client filename, os.path.join with a server-generated uuid4 file_id, then a defense-in-depth os.path.realpath + os.path.commonpath containment re-assertion against user_dir that raises ValueError; upload_file catches ValueError and returns HTTP 400 before file.save().",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 107,
+            "line_start": 92,
+            "path": "api/routes/files.py",
+            "role": "guard_registration",
+            "source_sha256": "0d71b59d52eb1f4ae6af9c6e35ed6d6f1fe0ace30c6053d6a9f04897359f5591"
+          },
+          {
+            "line_end": 106,
+            "line_start": 102,
+            "path": "api/routes/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0d71b59d52eb1f4ae6af9c6e35ed6d6f1fe0ace30c6053d6a9f04897359f5591"
+          },
+          {
+            "line_end": 254,
+            "line_start": 236,
+            "path": "api/routes/files.py",
+            "role": "protected_operation",
+            "source_sha256": "0d71b59d52eb1f4ae6af9c6e35ed6d6f1fe0ace30c6053d6a9f04897359f5591"
+          },
+          {
+            "line_end": 254,
+            "line_start": 254,
+            "path": "api/routes/files.py",
+            "role": "commit_point",
+            "source_sha256": "0d71b59d52eb1f4ae6af9c6e35ed6d6f1fe0ace30c6053d6a9f04897359f5591"
+          }
+        ],
+        "forbidden_condition": "An upload path whose resolved (realpath) location escapes the caller's per-user upload directory user_dir \u2014 e.g. a client-supplied filename carrying traversal segments \u2014 reaching the file.save() commit; the guard must raise ValueError('upload path escapes user directory') first.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the ValueError branch (api/routes/files.py:252-253) is reachable at runtime given secure_filename's separator stripping is a runtime question; this contract records the declared guard only.",
+          "No agent tool, agent lifecycle hook, or agent-generated input reaches this commit point in the supplied source; the only input path is the direct authenticated HTTP multipart request. Any downstream agent flow consuming the upload (e.g. _process_pending_files uploading to Backboard threads, api/routes/chat.py:1817-1831) occurs after the guarded commit and does not mediate it."
+        ],
+        "protected_operation": "Authenticated multipart upload handler upload_file (POST /api/files, @require_auth): constructing the on-disk path from request.files['file'].filename via _safe_upload_path and persisting the upload bytes.",
+        "protected_resource": "The caller's per-user upload directory UPLOAD_DIR/<dir_key> (dir_key derived from g.user_id/g.session_key via _upload_dir_key) and the files within it.",
+        "protection_obligation": "File uploads to POST /api/files whose on-disk path is derived from the client-controlled filename must remain inside the caller's per-user upload directory: _safe_upload_path must sanitize, resolve, and reject any path escaping user_dir with ValueError before file.save() commits bytes to disk.",
+        "scope_limits": [
+          "Applies only to the POST /api/files path-construction and save; download authorization (_authorize_download_dir), DELETE, the in-response /api/files/export builder (writes no file), and the avatar endpoints (local-disk avatar fallback and agent-avatar writes, which do not route through _safe_upload_path) are separate effects outside this contract.",
+          "The file_id component of the on-disk name is a server-generated uuid4 (api/routes/files.py:244); only the filename suffix is client-controlled.",
+          "No runtime violation, enforcement success, or prevalence claim is made; only the declared guard and its wiring in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "with open(path, 'wb') as f: f.write(payload) at api/routes/chat.py:866-867.",
+        "contract_id": "ecological-contract:ee935fab0954ec247fe43dbdf6c21dd3",
+        "declared_mechanism": "Inline defense-in-depth containment check (api/routes/chat.py:863-865) after secure_filename (chat.py:848) and path join (chat.py:862): os.path.realpath + os.path.commonpath containment against user_dir, raising ValueError before the write; tool-call failures are surfaced back to the model as tool_output error JSON (api/routes/chat.py:992-993).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 865,
+            "line_start": 848,
+            "path": "api/routes/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 865,
+            "line_start": 863,
+            "path": "api/routes/chat.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 867,
+            "line_start": 839,
+            "path": "api/routes/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 867,
+            "line_start": 866,
+            "path": "api/routes/chat.py",
+            "role": "commit_point",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 3161,
+            "line_start": 3157,
+            "path": "api/routes/chat.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 4383,
+            "line_start": 4372,
+            "path": "api/routes/chat.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 988,
+            "line_start": 977,
+            "path": "api/routes/chat.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          },
+          {
+            "line_end": 1020,
+            "line_start": 1018,
+            "path": "api/routes/chat.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5a9994ae4b2c9ab9f3cd4acbdb640d387a9e55990823c8975ba26249ba97938e"
+          }
+        ],
+        "forbidden_condition": "An export path whose resolved (realpath) location escapes the per-user upload directory user_dir reaching the open(path, 'wb') write; the guard must raise ValueError('invalid filename') first.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the containment check can trip at runtime after secure_filename is a runtime question; the declared guard only is recorded.",
+          "DOCUMENT_EXPORT_TOOL / DOCUMENT_EXPORT_TOOL_NAME definitions live in api/services/backboard_service (imported at api/routes/chat.py:44-45) and are not in the supplied views; the exact tool schema exposed to the model is unverified."
+        ],
+        "protected_operation": "_create_document_export_file (api/routes/chat.py:839-892): secure_filename normalization of the model-supplied filename, export-type and size validation, join into UPLOAD_DIR/<dir_key>, and byte write of the export payload; dispatched from _execute_export_tool_calls for model tool calls.",
+        "protected_resource": "The caller's per-user upload directory UPLOAD_DIR/<dir_key> and the exported files within it.",
+        "protection_obligation": "Document-export files written on behalf of a model-issued create_document_export tool call must remain inside the caller's per-user upload directory: the containment check in _create_document_export_file must resolve the path built from the model-supplied filename and reject any escape with ValueError before open(path, 'wb') commits bytes to disk.",
+        "scope_limits": [
+          "Adjacent validations (supported export type, non-empty content, 2 MB cap at api/routes/chat.py:851-856) bound the operation but are not the containment guarantee.",
+          "dir_key is the caller's captured upload directory (stream_state['dirKey'] via _upload_dir_key, api/routes/chat.py:3839 and 3947, passed through _execute_export_tool_calls at 4378-4383); the model controls only filename and content.",
+          "The containment ValueError is converted to a tool_output error rather than an HTTP error (api/routes/chat.py:992-993)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied view shows any consumer of settings.encryption_key performing BYOK secret encryption/decryption; the downstream effect stratum of the protected crypto operation is unconfirmed from source.",
+      "DOCUMENT_EXPORT_TOOL and DOCUMENT_EXPORT_TOOL_NAME definitions (api/services/backboard_service, imported at api/routes/chat.py:44-45) are not in the supplied views; the tool schema offered to the model is unverified.",
+      "The second _INSECURE_ENCRYPTION_KEYS entry is redacted (api/config.py:15) and .env.example is not supplied; the complete insecure-key set cannot be enumerated from the supplied source.",
+      "context_service.fs_safe_partition and export_service.is_supported_export/build_export implementations are absent from the supplied views although they participate in path construction and export validation.",
+      "Per the unit scope, behavior labels are unavailable; nothing in these contracts asserts a DEC violation, runtime enforcement success, safety, or prevalence."
+    ],
+    "repository": "Backboard-io/Nash",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:098fa4d17d26389dfb8621c63d146e98"
+  },
+  "request_sha256": "124bc655b58156af7515f1eb2c8b63c3c03cca464d6bff9241b86e77cf05464e",
+  "response_sha256": "cbb2d0be239e63ec4a0c7a757cba2d0f6cb819bb7a8349dceeca1dd8aa5c6b3c",
+  "state": "completed",
+  "tokens": 111834,
+  "unit": "v24-screen:098fa4d17d26389dfb8621c63d146e98"
+}

@@ -1,0 +1,579 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "claim_story.py lines 78-89: the mismatch branch replaces the payload before the state record and return.",
+        "contract_id": "ecological-contract:1f7062d3099c03a39b9b9f0049d5cd39",
+        "declared_mechanism": "Post-fetch comparison of story['member_id'] against tool_context.state[SUBJECT_MEMBER_ID_KEY] returning member_mismatch_payload (status member_mismatch), recorded to session state.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 89,
+            "line_start": 78,
+            "path": "backend/src/agents/claim_story.py",
+            "role": "commit_point",
+            "source_sha256": "59d645074fe2f8af4f0aa1b3bf85dc9f94700f831155863a01e9a2522ac27022"
+          },
+          {
+            "line_end": 66,
+            "line_start": 58,
+            "path": "backend/src/agents/session_context.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6daf48700dc6084c87a6c64aaa28cfbfe6591f386053bc10fae6ed02441e9d6a"
+          },
+          {
+            "line_end": 131,
+            "line_start": 131,
+            "path": "backend/src/agents/claim_story.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "59d645074fe2f8af4f0aa1b3bf85dc9f94700f831155863a01e9a2522ac27022"
+          },
+          {
+            "line_end": 163,
+            "line_start": 157,
+            "path": "backend/src/agents/claim_story.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "59d645074fe2f8af4f0aa1b3bf85dc9f94700f831155863a01e9a2522ac27022"
+          }
+        ],
+        "forbidden_condition": "Claim detail for a member other than the established session subject being returned from lookup_claim_story (cross-subject claim access).",
+        "missing_evidence_roles": [
+          "guard_registration",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Deployed enablement of enforce_member_context.",
+          "Whether ClaimStoryService.prepare can constrain the fetch by subject before execution (not shown)."
+        ],
+        "protected_operation": "Disclosure of a fetched claim story by the lookup_claim_story tool.",
+        "protected_resource": "Claim records associated to a member other than the session's established subject.",
+        "protection_obligation": "When member-context enforcement is enabled, a fetched claim whose story member_id differs from the session's subject_member_id must not be disclosed; lookup_claim_story must replace the payload with the member_mismatch response stating that no claim details were disclosed.",
+        "scope_limits": [
+          "The check runs after service.prepare has already executed; the fetch itself is not pre-gated on subject identity.",
+          "Requires enforce_member_context=True and a non-empty SUBJECT_MEMBER_ID in session state; an absent subject skips the comparison (claim_story.py lines 79-84).",
+          "Depends on the prepared story payload containing a member_id field."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "claim_story.py lines 66-75: the guard branch returns the blocked payload before service.prepare(request.claim_id) executes.",
+        "contract_id": "ecological-contract:728303f76dfd12a66a0e9ecfbb0ab0b9",
+        "declared_mechanism": "Entry gate roi_permits_member_detail(tool_context.state) returning roi_blocked_payload (status roi_required) with record_finding/record_intent state recording; roi_permits_member_detail fails closed to False for missing or unrecognized statuses.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 55,
+            "line_start": 49,
+            "path": "backend/src/agents/claim_story.py",
+            "role": "guard_registration",
+            "source_sha256": "59d645074fe2f8af4f0aa1b3bf85dc9f94700f831155863a01e9a2522ac27022"
+          },
+          {
+            "line_end": 75,
+            "line_start": 66,
+            "path": "backend/src/agents/claim_story.py",
+            "role": "commit_point",
+            "source_sha256": "59d645074fe2f8af4f0aa1b3bf85dc9f94700f831155863a01e9a2522ac27022"
+          },
+          {
+            "line_end": 41,
+            "line_start": 28,
+            "path": "backend/src/agents/session_context.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6daf48700dc6084c87a6c64aaa28cfbfe6591f386053bc10fae6ed02441e9d6a"
+          },
+          {
+            "line_end": 131,
+            "line_start": 131,
+            "path": "backend/src/agents/claim_story.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "59d645074fe2f8af4f0aa1b3bf85dc9f94700f831155863a01e9a2522ac27022"
+          },
+          {
+            "line_end": 163,
+            "line_start": 157,
+            "path": "backend/src/agents/claim_story.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "59d645074fe2f8af4f0aa1b3bf85dc9f94700f831155863a01e9a2522ac27022"
+          }
+        ],
+        "forbidden_condition": "service.prepare(claim_id) executing and member-specific claim detail being returned while roi_permits_member_detail(tool_context.state) is False, including when roi_status was never established in session state.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Deployed wiring that constructs the claim-story tool/agent with enforce_member_context=True.",
+          "ClaimStoryService.prepare behavior and the member data it returns (source not supplied)."
+        ],
+        "protected_operation": "lookup_claim_story tool invocation fetching one exact claim's story via ClaimStoryService.",
+        "protected_resource": "Member-specific claim records held by the claims repository behind ClaimStoryService.",
+        "protection_obligation": "When member-context enforcement is enabled, the lookup_claim_story ADK tool must not fetch or disclose claim-specific detail unless the shared session ROI status is verified/not_required; it must return the blocked roi_required payload (recording the finding) before any claim service call executes.",
+        "scope_limits": [
+          "The gate is conditional on enforce_member_context=True; the factory default is False (claim_story.py lines 52, 140), and no supplied view enables it in the deployed app.",
+          "The blocked path still records state and intent but returns no claim detail.",
+          "The separate post-fetch subject-mismatch control is covered by a distinct contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Writes of roi.status.value and the ROI finding into tool_context.state (roi_gatekeeper.py lines 171-172; session_context.py lines 110-115).",
+        "contract_id": "ecological-contract:aa35312c398e8a55cf9ca9bbedcc5f4a",
+        "declared_mechanism": "check_roi_authorization pure function (self-check on caller_id taken from session state, no-record to UNKNOWN, _is_valid expiration check, matching-but-invalid to EXPIRED/MISSING, no-match to MISSING); ROI_ALLOWED whitelist {verified, not_required}; roi_permits_member_detail fail-closed read; roi_gap_detected events emitted for non-permissive outcomes.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 68,
+            "line_start": 50,
+            "path": "backend/src/agents/roi_gatekeeper.py",
+            "role": "guard_registration",
+            "source_sha256": "d4155d9c8419f8fdea6d4caa8e0cebe57293fcf884c7be101716011d5edcd36d"
+          },
+          {
+            "line_end": 47,
+            "line_start": 36,
+            "path": "backend/src/agents/roi_gatekeeper.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d4155d9c8419f8fdea6d4caa8e0cebe57293fcf884c7be101716011d5edcd36d"
+          },
+          {
+            "line_end": 97,
+            "line_start": 84,
+            "path": "backend/src/agents/roi_gatekeeper.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d4155d9c8419f8fdea6d4caa8e0cebe57293fcf884c7be101716011d5edcd36d"
+          },
+          {
+            "line_end": 148,
+            "line_start": 118,
+            "path": "backend/src/agents/roi_gatekeeper.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d4155d9c8419f8fdea6d4caa8e0cebe57293fcf884c7be101716011d5edcd36d"
+          },
+          {
+            "line_end": 172,
+            "line_start": 166,
+            "path": "backend/src/agents/roi_gatekeeper.py",
+            "role": "commit_point",
+            "source_sha256": "d4155d9c8419f8fdea6d4caa8e0cebe57293fcf884c7be101716011d5edcd36d"
+          },
+          {
+            "line_end": 246,
+            "line_start": 236,
+            "path": "backend/src/agents/roi_gatekeeper.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d4155d9c8419f8fdea6d4caa8e0cebe57293fcf884c7be101716011d5edcd36d"
+          },
+          {
+            "line_end": 29,
+            "line_start": 25,
+            "path": "backend/src/agents/session_context.py",
+            "role": "guard_registration",
+            "source_sha256": "6daf48700dc6084c87a6c64aaa28cfbfe6591f386053bc10fae6ed02441e9d6a"
+          },
+          {
+            "line_end": 115,
+            "line_start": 96,
+            "path": "backend/src/agents/session_context.py",
+            "role": "commit_point",
+            "source_sha256": "6daf48700dc6084c87a6c64aaa28cfbfe6591f386053bc10fae6ed02441e9d6a"
+          },
+          {
+            "line_end": 157,
+            "line_start": 157,
+            "path": "backend/src/agents/session_context.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6daf48700dc6084c87a6c64aaa28cfbfe6591f386053bc10fae6ed02441e9d6a"
+          }
+        ],
+        "forbidden_condition": "A permissive roi_status being established in shared session state when authorization cannot be verified: no authorization records for the member (unknown), a matching authorization flagged expired or past an unparseable/elapsed expiration date (expired), or no matching authorization for the caller name (missing).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Where caller_id is populated from the authenticated session (not supplied).",
+          "How the roi_gatekeeper agent and the establish_member_context tool are wired into the deployed orchestrator (orchestrator source not supplied)."
+        ],
+        "protected_operation": "Resolution and recording of Release-of-Information authorization by the roi_gate and establish_member_context tools before member-specific lookups are served.",
+        "protected_resource": "Shared ADK session state keys roi_status/roi_finding (and the SUBJECT_MEMBER_ID context) that downstream member-lookup tools read.",
+        "protection_obligation": "Caller disclosure authorization must be resolved deterministically and fail closed: only a self-identified caller (session caller_id equal to the subject member id) or a currently valid, unexpired, matching Release of Information yields verified/not_required; absent records, expired or invalid authorizations, and unmatched caller names yield unknown/missing/expired. Only permissive statuses may be written to the shared ADK session state that downstream member-detail tools gate on.",
+        "scope_limits": [
+          "The self path trusts caller_id read from session state (roi_gatekeeper.py lines 166-167); the wiring that authenticates and seeds caller_id is not in the supplied views.",
+          "check_roi_authorization defaults to date.today() and the lazily constructed default member-records client when not injected (roi_gatekeeper.py lines 67-68).",
+          "roi_gap_detected emission is an in-process event-log publish, not an external delivery effect."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "benefits.py lines 1404-1405: the refusal return precedes plan resolution, the knowledge-base lookup, and provider personalization; tool-level roi_required mapping at benefits.py lines 1567-1577.",
+        "contract_id": "ecological-contract:ba25f1e754b2470587cb3ce421d58111",
+        "declared_mechanism": "roi_permits_detail whitelist check at the head of answer_benefits_question returning _roi_refusal; ROI_ALLOWED = {verified, not_required} with fail-closed treatment of missing/expired/None/unrecognized; lookup_coverage reads member_id and roi_status from session state and maps the blocked result to status roi_required, emitting a refused_roi event.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 1400,
+            "line_start": 1390,
+            "path": "backend/src/agents/benefits.py",
+            "role": "guard_registration",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 67,
+            "line_start": 58,
+            "path": "backend/src/agents/benefits.py",
+            "role": "forbidden_condition",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 1302,
+            "line_start": 1291,
+            "path": "backend/src/agents/benefits.py",
+            "role": "forbidden_condition",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 1405,
+            "line_start": 1401,
+            "path": "backend/src/agents/benefits.py",
+            "role": "commit_point",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 1564,
+            "line_start": 1552,
+            "path": "backend/src/agents/benefits.py",
+            "role": "protected_operation",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 1577,
+            "line_start": 1567,
+            "path": "backend/src/agents/benefits.py",
+            "role": "commit_point",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 1680,
+            "line_start": 1674,
+            "path": "backend/src/agents/benefits.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          }
+        ],
+        "forbidden_condition": "answer_benefits_question composing and returning member-personalized coverage, prior-authorization, or cost detail while member is not None and roi_status is not in {verified, not_required} - including missing, expired, and unrecognized values.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Any caller of answer_benefits_question other than lookup_coverage; the permissive default is safe only where callers pass session-derived roi_status."
+        ],
+        "protected_operation": "lookup_coverage tool invocation answering coverage/prior-authorization/cost questions personalized to the session subject member.",
+        "protected_resource": "Member records (members table/CSV) and member-personalized benefits detail.",
+        "protection_obligation": "The benefits coverage tool must not disclose member-personalized coverage detail (member's plan type, preferred language, member-tied provider suggestions) unless the session ROI status is verified/not_required; answer_benefits_question returns the Release-of-Information refusal before composing member-specific content, and lookup_coverage surfaces status roi_required with a refused_roi event.",
+        "scope_limits": [
+          "Plan-generic answers (no member_id) are not gated, since no member detail is involved (benefits.py lines 1404, 1407-1409).",
+          "The member record is loaded at benefits.py line 1401 (for language preference) before the ROI branch; the gate blocks disclosure, not the in-process read.",
+          "The pure function's roi_status parameter defaults to the permissive 'not_required' (benefits.py line 1393); fail-closed behavior on the tool path depends on lookup_coverage passing the session-derived value (benefits.py lines 1553, 1564)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "benefits.py lines 1552-1562 (lookup_coverage state read and no_member branch) and benefits.py lines 1618-1620 (find_provider_tool).",
+        "contract_id": "ecological-contract:c2b17e40035717a751c4f79769c432d9",
+        "declared_mechanism": "Tool signatures accept no member_id parameter; member_id is read from tool_context.state[StateKeys.SUBJECT_MEMBER_ID] (written only by establish_member_context or seeding), with a no_member short-circuit when absent.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 1511,
+            "line_start": 1507,
+            "path": "backend/src/agents/benefits.py",
+            "role": "forbidden_condition",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 44,
+            "line_start": 40,
+            "path": "backend/src/agents/benefits.py",
+            "role": "protected_operation",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 1562,
+            "line_start": 1552,
+            "path": "backend/src/agents/benefits.py",
+            "role": "commit_point",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 1620,
+            "line_start": 1618,
+            "path": "backend/src/agents/benefits.py",
+            "role": "commit_point",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 1680,
+            "line_start": 1674,
+            "path": "backend/src/agents/benefits.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          }
+        ],
+        "forbidden_condition": "A member-specific lookup using a model-authored member_id argument (agent-generated input) as the data subject for claims, coverage, or provider detail.",
+        "missing_evidence_roles": [
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "Whether any deployed tool exposes member_id as a model-supplied argument (none shown in the supplied source)."
+        ],
+        "protected_operation": "Subject selection for member-specific lookups in lookup_coverage and find_provider_tool.",
+        "protected_resource": "Member-specific claim, coverage, and provider records selected by subject identity.",
+        "protection_obligation": "Member-lookup tools must take the data subject from ADK session state (SUBJECT_MEMBER_ID) rather than from model-supplied tool arguments, so the model cannot invent or substitute the member whose claim, coverage, or provider data is fetched; absent a subject, the tools short-circuit with no_member.",
+        "scope_limits": [
+          "establish_member_context itself accepts caller_name and subject_member_id as tool arguments (session_context.py lines 77-82), so initial subject establishment is model-driven; only downstream lookups are bound to state.",
+          "lookup_claim_story still takes claim_id as a model-supplied argument (claim_story.py lines 59-65); its subject binding is the post-fetch mismatch check covered by a separate contract.",
+          "The declared intent is a source comment (benefits.py lines 1507-1511); enforcement is via the tool signatures shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "return await call_next(request) for permitted requests (http.py lines 66, 90) versus the early JSONResponse 401/403 returns (http.py lines 58, 69, 74, 81, 89).",
+        "contract_id": "ecological-contract:c6eda6648e583f0f3763e715c87126b8",
+        "declared_mechanism": "authentication_middleware registered via app.middleware(\"http\") (main.py line 144): Origin allowlist, session-cookie resolution via AuthStore.resolve_session or bypass identity, public-path and OPTIONS allowlist, 401 for missing identity, 403 for insufficient role; plus require_role(MANAGER) dependency on /operations (main.py lines 152-156).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 144,
+            "line_start": 144,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "905bac2e85d4682928271e229712a3bbdfbe83a3de434090c3f925bc1044715b"
+          },
+          {
+            "line_end": 51,
+            "line_start": 47,
+            "path": "backend/src/auth/http.py",
+            "role": "guard_registration",
+            "source_sha256": "2f7c0519745f4a7265da638b728c575b79913e55d90da5320b5dc7f5503ad439"
+          },
+          {
+            "line_end": 30,
+            "line_start": 18,
+            "path": "backend/src/auth/http.py",
+            "role": "protected_operation",
+            "source_sha256": "2f7c0519745f4a7265da638b728c575b79913e55d90da5320b5dc7f5503ad439"
+          },
+          {
+            "line_end": 58,
+            "line_start": 55,
+            "path": "backend/src/auth/http.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2f7c0519745f4a7265da638b728c575b79913e55d90da5320b5dc7f5503ad439"
+          },
+          {
+            "line_end": 69,
+            "line_start": 59,
+            "path": "backend/src/auth/http.py",
+            "role": "commit_point",
+            "source_sha256": "2f7c0519745f4a7265da638b728c575b79913e55d90da5320b5dc7f5503ad439"
+          },
+          {
+            "line_end": 74,
+            "line_start": 70,
+            "path": "backend/src/auth/http.py",
+            "role": "commit_point",
+            "source_sha256": "2f7c0519745f4a7265da638b728c575b79913e55d90da5320b5dc7f5503ad439"
+          },
+          {
+            "line_end": 89,
+            "line_start": 75,
+            "path": "backend/src/auth/http.py",
+            "role": "commit_point",
+            "source_sha256": "2f7c0519745f4a7265da638b728c575b79913e55d90da5320b5dc7f5503ad439"
+          }
+        ],
+        "forbidden_condition": "An unauthenticated request, a request from an untrusted Origin, or a request whose role is insufficient reaching the manager-only ADK surface (/run, /run_sse, /run_live, /, /docs, /openapi., /redoc, /list-apps, /apps/, /dev-ui, /dev/, /builder/), /operations, or /demo outside the public/OPTIONS allowlist.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Route handlers behind /run, /run_sse, /run_live are provided by get_fast_api_app and are not supplied; the dataflow from these endpoints into agent tools or lifecycle hooks is not established."
+        ],
+        "protected_operation": "HTTP request handling for the manager-only ADK agent REST/dev-UI surface and other non-public routes.",
+        "protected_resource": "ADK agent invocation endpoints (/run, /run_sse, /run_live), ADK dev-UI/builder prefixes, the operations dashboard, and the conversation demo routes.",
+        "protection_obligation": "HTTP requests outside the public allowlist must carry an authenticated session, and requests to manager-only routes - including the ADK agent endpoints /run, /run_sse, /run_live and the dev-UI/builder prefixes - must carry the MANAGER role; authentication_middleware fails closed with 401/403 before the route handler executes. /operations and /demo carry additional role gates.",
+        "scope_limits": [
+          "OPTIONS requests and the public paths /health, /version, /api/auth/login, /api/auth/member-demo bypass all checks (http.py lines 15-17, 65).",
+          "Origin rejection applies only when an Origin header is present (http.py line 56).",
+          "bypass_user() can synthesize an identity when auth bypass is enabled (http.py line 60; main.py lines 44-48).",
+          "This is coarse path/role gating at the boundary; it does not authorize individual agent turns or tool calls."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The middleware's send of {\"type\": \"websocket.close\", \"code\": 4401|4403} (websocket.py lines 43, 53, 62) versus the pass-through await self.app(scope, receive, send) for permitted connections (websocket.py lines 35, 65).",
+        "contract_id": "ecological-contract:e1c6ce2f97b67e10da25964c9fca46aa",
+        "declared_mechanism": "WebSocketRouteGuardMiddleware (pure ASGI middleware): conversation-path allowlist passthrough; Origin allowlist check; session-cookie resolution via AuthStore.resolve_session or configured bypass identity; UserRole.MANAGER requirement; explicit websocket.close sends with codes 4401/4403.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 143,
+            "line_start": 143,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "905bac2e85d4682928271e229712a3bbdfbe83a3de434090c3f925bc1044715b"
+          },
+          {
+            "line_end": 36,
+            "line_start": 24,
+            "path": "backend/src/auth/websocket.py",
+            "role": "guard_registration",
+            "source_sha256": "58a78f79bbcde4b09d9534ccada26277c87c4281afdce11eb66833ce5ee2dbcc"
+          },
+          {
+            "line_end": 21,
+            "line_start": 15,
+            "path": "backend/src/auth/websocket.py",
+            "role": "forbidden_condition",
+            "source_sha256": "58a78f79bbcde4b09d9534ccada26277c87c4281afdce11eb66833ce5ee2dbcc"
+          },
+          {
+            "line_end": 44,
+            "line_start": 38,
+            "path": "backend/src/auth/websocket.py",
+            "role": "commit_point",
+            "source_sha256": "58a78f79bbcde4b09d9534ccada26277c87c4281afdce11eb66833ce5ee2dbcc"
+          },
+          {
+            "line_end": 54,
+            "line_start": 46,
+            "path": "backend/src/auth/websocket.py",
+            "role": "commit_point",
+            "source_sha256": "58a78f79bbcde4b09d9534ccada26277c87c4281afdce11eb66833ce5ee2dbcc"
+          },
+          {
+            "line_end": 63,
+            "line_start": 55,
+            "path": "backend/src/auth/websocket.py",
+            "role": "commit_point",
+            "source_sha256": "58a78f79bbcde4b09d9534ccada26277c87c4281afdce11eb66833ce5ee2dbcc"
+          },
+          {
+            "line_end": 65,
+            "line_start": 65,
+            "path": "backend/src/auth/websocket.py",
+            "role": "commit_point",
+            "source_sha256": "58a78f79bbcde4b09d9534ccada26277c87c4281afdce11eb66833ce5ee2dbcc"
+          },
+          {
+            "line_end": 54,
+            "line_start": 50,
+            "path": "backend/main.py",
+            "role": "protected_operation",
+            "source_sha256": "905bac2e85d4682928271e229712a3bbdfbe83a3de434090c3f925bc1044715b"
+          }
+        ],
+        "forbidden_condition": "A websocket-scope request on a non-conversation path being passed through to the wrapped ASGI app (raw ADK and unknown WebSocket routes) without an authenticated manager session, or from an Origin outside auth_settings.allowed_origins.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which WebSocket routes the ADK app (get_fast_api_app) registers, and whether any gated route leads to agent tool execution or lifecycle hooks behind this guard.",
+          "Whether the websocket.close sends occur before the wrapped app accepts the socket (ASGI accept ordering not shown).",
+          "The mechanism protecting the exempted conversation and support WebSockets is not in the supplied source."
+        ],
+        "protected_operation": "WebSocket connection acceptance and handoff for non-application-owned routes at the application boundary.",
+        "protected_resource": "The ADK FastAPI application instance (get_fast_api_app in backend/main.py) and its non-conversation WebSocket endpoints, fronted by WebSocketRouteGuardMiddleware.",
+        "protection_obligation": "Every WebSocket connection whose path is not an application-owned conversation route (/ws/conversation, /ws/voice, /ws/support/*) must be closed before reaching the wrapped ADK FastAPI app unless it presents an Origin within the allowlist and a session cookie resolving to an authenticated MANAGER user; unauthenticated connections are closed with code 4401, and disallowed-origin or non-manager connections with code 4403.",
+        "scope_limits": [
+          "Conversation paths /ws/conversation, /ws/voice and the /ws/support/ prefix bypass this guard entirely (websocket.py lines 15-21, 32-36); protection of those agent-facing sockets is out of this contract's coverage.",
+          "Origin rejection applies only when an Origin header is present; a connection without Origin is not rejected on origin grounds (websocket.py line 41).",
+          "AuthSettings.bypass_user() can synthesize an identity that satisfies the guard when auth bypass is enabled (websocket.py line 50; main.py lines 44-48).",
+          "The guard performs boundary path/identity gating only; it does not authorize individual agent messages or tool calls."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "benefits.py lines 1621-1624: the guard branch precedes find_provider(service_or_cpt, member_id).",
+        "contract_id": "ecological-contract:f1550942aabdd30a8b07c2e2702cd751",
+        "declared_mechanism": "roi_permits_detail check returning roi_blocked_payload (session_context.py lines 32-41) before the member lookup, with a no_member short-circuit when the session subject is absent.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 1620,
+            "line_start": 1601,
+            "path": "backend/src/agents/benefits.py",
+            "role": "guard_registration",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 1624,
+            "line_start": 1621,
+            "path": "backend/src/agents/benefits.py",
+            "role": "commit_point",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 41,
+            "line_start": 28,
+            "path": "backend/src/agents/session_context.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6daf48700dc6084c87a6c64aaa28cfbfe6591f386053bc10fae6ed02441e9d6a"
+          },
+          {
+            "line_end": 1651,
+            "line_start": 1648,
+            "path": "backend/src/agents/benefits.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          },
+          {
+            "line_end": 1680,
+            "line_start": 1674,
+            "path": "backend/src/agents/benefits.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "22c0c72aaf1387469caef4d38b0941ed73cd70b682ca9bf7f874f08015420a7a"
+          }
+        ],
+        "forbidden_condition": "find_provider(service_or_cpt, member_id) executing and member-specific provider detail being returned while roi_permits_detail(state roi_status) is False, including when roi_status is absent from session state.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "find_provider_tool invocation performing member-specific provider lookup.",
+        "protected_resource": "Member record (member_id-keyed PCP resolution) and member-specific provider suggestions.",
+        "protection_obligation": "The provider-directory tool must not return member-specific provider suggestions (including the member's PCP and member-based ranking) unless the session ROI status is verified/not_required; it returns the blocked payload before invoking find_provider for the member.",
+        "scope_limits": [
+          "Non-member-specific provider information is not separately gated; the gate keys on the session subject member.",
+          "The tool is registered under the model-facing name find_provider via __name__ reassignment (benefits.py lines 1648-1651)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The reviewer's second obligation cites a readiness tool (screen_claim_readiness), but no readiness tool source is supplied; its existence and ROI gating cannot be verified from the supplied views.",
+      "The route table and handlers of the ADK app returned by get_fast_api_app are not supplied; which non-conversation WebSocket/HTTP routes exist behind the boundary guards, and whether they lead to agent tool or lifecycle-hook execution, is not established.",
+      "No supplied view constructs build_lookup_claim_story_tool or create_claim_story_agent with enforce_member_context=True; deployed enablement of the claim-story ROI and mismatch gates is unknown.",
+      "ClaimStoryService.prepare and the claims repository implementations are not supplied; what member data the guarded claim fetch returns is unknown.",
+      "The orchestrator composing the roi_gatekeeper, claim_story, and benefits agents (and any seeding of SUBJECT_MEMBER_ID or caller_id into session state) is not supplied.",
+      "AuthStore.resolve_session and AuthSettings.bypass_user implementations are not supplied; session validation strength and bypass semantics cannot be assessed.",
+      "Protection for the exempted conversation/voice WebSockets (/ws/conversation, /ws/voice, /ws/support/*) is not present in the supplied source.",
+      "Behavior labels and non-supplied repository views are unavailable per the unit scope; runtime prevalence or enforcement effectiveness is not determinable from this unit."
+    ],
+    "repository": "zhangdaniel62/humana-hackathon-2026",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7bdb835d4c462ac754f7ad4d58dcd584"
+  },
+  "request_sha256": "45cc895cc41318acba046e815e7e945054b38a6ce68c544198e7ab71bc08936c",
+  "response_sha256": "3a797977059b2a981c4a4b958b502c168f48327b2860b802283a23713993197c",
+  "state": "completed",
+  "tokens": 70410,
+  "unit": "v24-screen:7bdb835d4c462ac754f7ad4d58dcd584"
+}

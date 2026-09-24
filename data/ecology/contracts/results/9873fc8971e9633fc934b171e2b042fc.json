@@ -1,0 +1,364 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "agent.py lines 148-151: the require_confirmation=True declaration gates tool execution behind human confirmation before the tool function runs.",
+        "contract_id": "ecological-contract:17e9df0aa078a750d9a88daef8e38ade",
+        "declared_mechanism": "export_pricing_strategy wrapped as FunctionTool(export_pricing_strategy, require_confirmation=True) at agent.py lines 148-151 and registered in coordinator_agent's tools list (agent.py line 179); the role allow-list additionally restricts export_pricing_strategy to coordinator_agent (policies.yaml lines 23-28).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 151,
+            "line_start": 147,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 151,
+            "line_start": 148,
+            "path": "app/agent.py",
+            "role": "commit_point",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 173,
+            "line_start": 170,
+            "path": "app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 179,
+            "line_start": 179,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 28,
+            "line_start": 23,
+            "path": "app/policies.yaml",
+            "role": "forbidden_condition",
+            "source_sha256": "7fcdfa4cf19b61390cf0d2730227c63d688a80da21de9b775235b31916b1f3ea"
+          }
+        ],
+        "forbidden_condition": "export_pricing_strategy executing (writing the claimed production/database changes) without the human confirmation step required by its require_confirmation=True declaration.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Implementation of export_pricing_strategy (app/tools.py) is not supplied; the concrete database write target and semantics are unverified.",
+          "ADK runtime semantics of require_confirmation (how confirmation is elicited and that execution is withheld until confirmation) are framework behavior not demonstrated in supplied source.",
+          "Whether the FunctionTool wrapper reports tool.name 'export_pricing_strategy' to the domain_safety_guard role check."
+        ],
+        "protected_operation": "Invocation and execution of the export_pricing_strategy tool by coordinator_agent.",
+        "protected_resource": "Production pricing data modified by export_pricing_strategy (declared in source as 'active database modification').",
+        "protection_obligation": "export_pricing_strategy must not execute its production pricing modification without explicit human-in-the-loop confirmation; it is declared as a require_confirmation FunctionTool and is reachable only from coordinator_agent.",
+        "scope_limits": [
+          "The database effect stratum rests on the source comment 'Secures active database modification with HIL gate' (agent.py line 150) and the instruction text 'write changes to production' (agent.py line 173); the tool implementation is not in supplied sources.",
+          "Only coordinator_agent registers this tool (agent.py line 179); policies.yaml lists export_pricing_strategy solely under coordinator_agent (lines 23-28)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "safety.py lines 153-158: keyword match returns the blocking dict before the tool function executes.",
+        "contract_id": "ecological-contract:23681dc37a9507a8bb3515f151b5388c",
+        "declared_mechanism": "domain_safety_guard before_tool_callback -> validate_tool_call loads security.blocked_keywords from policies.yaml (config load at safety.py lines 26-29) and returns a blocking {'status': 'blocked'} dict when any keyword is a substring of the lowercased netloc (safety.py lines 149-158).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 41,
+            "line_start": 30,
+            "path": "app/policies.yaml",
+            "role": "forbidden_condition",
+            "source_sha256": "7fcdfa4cf19b61390cf0d2730227c63d688a80da21de9b775235b31916b1f3ea"
+          },
+          {
+            "line_end": 158,
+            "line_start": 149,
+            "path": "app/safety.py",
+            "role": "commit_point",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 59,
+            "line_start": 53,
+            "path": "app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 111,
+            "line_start": 110,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 176,
+            "line_start": 174,
+            "path": "app/safety.py",
+            "role": "guard_registration",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          }
+        ],
+        "forbidden_condition": "fetch_web_page invoked with a URL whose lowercased netloc contains any blocked keyword: facebook.com, twitter.com, x.com, instagram.com, linkedin.com, reddit.com, youtube.com, tiktok.com, pinterest.com, or tumblr.com.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The actual fetch effect in app/mcp_server.py is not supplied; the outbound HTTP effect is inferred only from the agent.py wrapper (lines 53-59).",
+          "Whether the agent.py wrapper resolves to the tool name 'fetch_web_page' required by the guard's check."
+        ],
+        "protected_operation": "Execution of the fetch_web_page tool (outbound web-page fetch by URL) declared on scout_agent.",
+        "protected_resource": "The outbound fetch target host (parsed netloc) of fetch_web_page.",
+        "protection_obligation": "fetch_web_page must not fetch URLs whose host (netloc) contains a blacklisted social-network/non-business domain keyword listed in policies.yaml security.blocked_keywords.",
+        "scope_limits": [
+          "The keyword check is substring containment on the lowercased netloc (safety.py lines 149-154) and only fires for tool.name == 'fetch_web_page'.",
+          "Blacklist contents are config-driven from policies.yaml lines 30-41; the fallback config used when policies.yaml fails to load yields empty lists, which would disable this check (safety.py lines 30-38)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "safety.py lines 142-147: scheme validation returns the blocking dict before the tool function executes.",
+        "contract_id": "ecological-contract:2e9bd92c98299b5342495a4ad0a9ec28",
+        "declared_mechanism": "domain_safety_guard before_tool_callback -> PolicyService.validate_tool_call: for tool.name == 'fetch_web_page' the url is parsed with urlparse and a blocking {'status': 'blocked'} dict is returned when parsed_url.scheme not in ('http', 'https') (safety.py lines 135-147).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 59,
+            "line_start": 53,
+            "path": "app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 112,
+            "line_start": 100,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 176,
+            "line_start": 174,
+            "path": "app/safety.py",
+            "role": "guard_registration",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 147,
+            "line_start": 135,
+            "path": "app/safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 147,
+            "line_start": 142,
+            "path": "app/safety.py",
+            "role": "commit_point",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 111,
+            "line_start": 110,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          }
+        ],
+        "forbidden_condition": "fetch_web_page invoked with a url argument whose urlparse scheme is not 'http' or 'https' (e.g., file:, data:, javascript:).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The concrete network fetch behind fetch_web_page is performed by mcp_fetch_web_page in app/mcp_server.py (imported and delegated at agent.py lines 45 and 59), which is not among the supplied sources; the actual HTTP client call is unverified.",
+          "Whether the wrapper function at agent.py lines 53-59 registers under the tool name 'fetch_web_page' that the guard's tool.name comparison requires."
+        ],
+        "protected_operation": "Execution of the fetch_web_page tool (outbound web-page fetch by URL) declared on scout_agent.",
+        "protected_resource": "The url argument of fetch_web_page and the outbound web fetch it triggers.",
+        "protection_obligation": "The fetch_web_page tool must only fetch URLs whose scheme is http or https; any other URL scheme must be rejected before the fetch executes.",
+        "scope_limits": [
+          "URL checks run only when tool.name == 'fetch_web_page' (safety.py line 135); no other tool receives URL validation.",
+          "The http/https allow-list is hardcoded in safety.py, not sourced from policies.yaml (the policies.yaml security section only defines blocked_keywords and blocked_tlds).",
+          "A missing url argument returns {'status': 'error'} rather than 'blocked' (safety.py lines 136-138); whether ADK treats the error status as halting execution is framework behavior not shown in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "safety.py validate_tool_call role check (lines 120-127): the blocking dict is returned before the tool function runs; None is returned only for authorized calls.",
+        "contract_id": "ecological-contract:8093855c77735b79474d07b76e02ad8f",
+        "declared_mechanism": "before_tool_callback=domain_safety_guard registered on each Agent (agent.py lines 111, 129, 144, 180); domain_safety_guard delegates to PolicyService.validate_tool_call, which calls is_tool_allowed(tool_context.agent_name, tool.name) against the policies.yaml role config and returns a blocking {'status': 'blocked'} dict for unauthorized combinations.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 112,
+            "line_start": 100,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 130,
+            "line_start": 115,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 145,
+            "line_start": 133,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 181,
+            "line_start": 153,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 176,
+            "line_start": 174,
+            "path": "app/safety.py",
+            "role": "guard_registration",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 55,
+            "line_start": 40,
+            "path": "app/safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 28,
+            "line_start": 7,
+            "path": "app/policies.yaml",
+            "role": "forbidden_condition",
+            "source_sha256": "7fcdfa4cf19b61390cf0d2730227c63d688a80da21de9b775235b31916b1f3ea"
+          },
+          {
+            "line_end": 127,
+            "line_start": 120,
+            "path": "app/safety.py",
+            "role": "commit_point",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 111,
+            "line_start": 110,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 180,
+            "line_start": 179,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          }
+        ],
+        "forbidden_condition": "An agent invoking a tool whose name is not present in that agent role's allowed_tools list in policies.yaml roles.*.allowed_tools (cross-role or unassigned tool use, e.g., scout_agent invoking export_pricing_strategy).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether the ADK-reported tool.name for the agent.py wrapper functions (e.g., fetch_web_page at agent.py lines 53-59) exactly matches the names listed in policies.yaml allowed_tools.",
+          "Whether tool_context.agent_name equals the policies.yaml role keys ('scout_agent', 'analyst_agent', 'db_analyst_agent', 'coordinator_agent') on all runtime paths, including sub_agents delegation wired at agent.py line 178.",
+          "Downstream effect strata for coordinator tools save_intelligence_report, export_pricing_strategy, and post_slack_notification cannot be confirmed because app/tools.py is not in the supplied sources."
+        ],
+        "protected_operation": "Agent tool invocation / ADK tool dispatch to tool-function execution on all four agents.",
+        "protected_resource": "The per-role agent tool catalog defined in policies.yaml: fetch_web_page (scout_agent); get_own_pricing_catalog, get_competitor_history, search_competitor_pricing_news (analyst_agent); query_pricing_db, generate_history_chart (db_analyst_agent); save_intelligence_report, export_pricing_strategy, post_slack_notification (coordinator_agent).",
+        "protection_obligation": "Every tool invocation by the four ADK agents (scout_agent, analyst_agent, db_analyst_agent, coordinator_agent) must be checked against the per-role allowed_tools list in policies.yaml before the tool function executes; only allow-listed agent-tool combinations may proceed (transfer_to_agent always allowed).",
+        "scope_limits": [
+          "The gate fires only for tool calls dispatched through agents that register before_tool_callback=domain_safety_guard; no other invocation path is shown as gated in supplied source.",
+          "transfer_to_agent is unconditionally allowed for every role (safety.py lines 52-54), bypassing the allow-list.",
+          "If tool_context.agent_name is empty the check falls back to 'root_agent', which has no policies.yaml role entry, so every tool would be blocked under that fallback (safety.py line 120; policies.yaml lines 7-28).",
+          "The same guard also rewrites tool args in place via sanitize_tool_args/resolve_context (safety.py lines 129-132) and deliberately passes unresolved [[PLACEHOLDER]] tokens through unchanged (safety.py line 80); this is a rewrite step, not a forbidden-condition block, so it is not emitted as a separate contract.",
+          "environments.local.blocked_tools declared in policies.yaml (lines 3-5) is never read by the supplied guard code."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "safety.py lines 162-167: TLD match returns the blocking dict before the tool function executes.",
+        "contract_id": "ecological-contract:bc9e70233f325b8c30daa15170cc6901",
+        "declared_mechanism": "domain_safety_guard before_tool_callback -> validate_tool_call loads security.blocked_tlds from policies.yaml (config load at safety.py lines 26-29) and returns a blocking {'status': 'blocked'} dict when the lowercased netloc ends with any listed TLD (safety.py lines 160-167).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 52,
+            "line_start": 42,
+            "path": "app/policies.yaml",
+            "role": "forbidden_condition",
+            "source_sha256": "7fcdfa4cf19b61390cf0d2730227c63d688a80da21de9b775235b31916b1f3ea"
+          },
+          {
+            "line_end": 167,
+            "line_start": 160,
+            "path": "app/safety.py",
+            "role": "commit_point",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          },
+          {
+            "line_end": 59,
+            "line_start": 53,
+            "path": "app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 111,
+            "line_start": 110,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f40f616683c9cb9c09257bde7c1e7e4a23264f07ab82177bb6dd17d70c9435"
+          },
+          {
+            "line_end": 176,
+            "line_start": 174,
+            "path": "app/safety.py",
+            "role": "guard_registration",
+            "source_sha256": "50a99ce5785eff66897a81d688489a416a8194c7e3d52a9ec5cd445f96de683f"
+          }
+        ],
+        "forbidden_condition": "fetch_web_page invoked with a URL whose lowercased netloc ends with any blocked TLD: .xyz, .top, .click, .gq, .cf, .tk, .ml, .fit, .loan, or .work.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The actual fetch effect in app/mcp_server.py is not supplied; the outbound HTTP effect is inferred only from the agent.py wrapper (lines 53-59).",
+          "Whether the agent.py wrapper resolves to the tool name 'fetch_web_page' required by the guard's check."
+        ],
+        "protected_operation": "Execution of the fetch_web_page tool (outbound web-page fetch by URL) declared on scout_agent.",
+        "protected_resource": "The outbound fetch target host suffix (parsed netloc) of fetch_web_page.",
+        "protection_obligation": "fetch_web_page must not fetch URLs whose host (netloc) ends with a blacklisted suspicious/untrusted TLD listed in policies.yaml security.blocked_tlds.",
+        "scope_limits": [
+          "The TLD check is a netloc.endswith(tld) suffix match (safety.py lines 161-163) and only fires for tool.name == 'fetch_web_page'.",
+          "Blacklist contents are config-driven from policies.yaml lines 42-52; the fallback config used when policies.yaml fails to load yields empty lists, which would disable this check (safety.py lines 30-38)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "app/tools.py is not among the supplied sources; the effects of save_intelligence_report, export_pricing_strategy, and post_slack_notification (file/database/communication strata) cannot be verified beyond the comment at agent.py line 150 and instruction lines 170-173.",
+      "app/mcp_server.py is not among the supplied sources; the concrete network fetch, SQLite query, and chart generation behind the MCP tool imports (agent.py lines 45-50) are unverified.",
+      "policies.yaml declares environments.local.blocked_tools (lines 3-5), but the supplied guard code (app/safety.py) never reads the 'environments' key; no supplied source shows enforcement of environment-level tool blocking.",
+      "ADK framework runtime behavior (before_tool_callback blocking semantics, require_confirmation confirmation flow, and tool.name derivation for plain-function wrappers and FunctionTool) is not demonstrated in the supplied source.",
+      "Whether tool_context.agent_name matches the policies.yaml role keys on every runtime/delegation path is not demonstrated in supplied source.",
+      "Behavior labels and prevalence data are unavailable per the stated scope; reviewer opinions cited tools.py and mcp_server.py lines that are not present in the supplied source views and were therefore not used as evidence."
+    ],
+    "repository": "harishkumar04/saas-pricing-scout-agent-kaggle",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:9873fc8971e9633fc934b171e2b042fc"
+  },
+  "request_sha256": "049aad92fb3d344fbbfe53c13fb348be8498d4c3efd68e5dc35a982695728e70",
+  "response_sha256": "fa0e4d0a0e46d4cc0a871c72fb13d15b54fd15f815561e702e1705834362628c",
+  "state": "completed",
+  "tokens": 27848,
+  "unit": "v24-screen:9873fc8971e9633fc934b171e2b042fc"
+}

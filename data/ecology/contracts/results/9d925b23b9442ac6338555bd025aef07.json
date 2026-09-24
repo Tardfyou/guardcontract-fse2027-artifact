@@ -1,0 +1,176 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The _verify_meta_signature(raw_body, signature) call at whatsapp.py lines 149-154, executed after reading the raw body (line 150) and before payload parsing (lines 156-158) and before svc.ingest (lines 211-225).",
+        "contract_id": "ecological-contract:2789845e5c09d12f3dc4e035d6a382e3",
+        "declared_mechanism": "_verify_meta_signature(raw_body, signature_header): fail-closed HMAC-SHA256 check of X-Hub-Signature-256 computed with hmac.new keyed by settings.whatsapp_app_secret and compared with hmac.compare_digest; HTTP 500 when the secret is unset, HTTP 400 when the header is missing, HTTP 403 on mismatch; invoked on the raw request body at the top of the POST handler before parsing.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 44,
+            "line_start": 36,
+            "path": "customer-success-fte/app/routers/whatsapp.py",
+            "role": "guard_registration",
+            "source_sha256": "c54b7de27a91506ff404767a111ee3c62fb14c50926cf8737a4b5a3adb29687c"
+          },
+          {
+            "line_end": 80,
+            "line_start": 45,
+            "path": "customer-success-fte/app/routers/whatsapp.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c54b7de27a91506ff404767a111ee3c62fb14c50926cf8737a4b5a3adb29687c"
+          },
+          {
+            "line_end": 132,
+            "line_start": 121,
+            "path": "customer-success-fte/app/routers/whatsapp.py",
+            "role": "guard_registration",
+            "source_sha256": "c54b7de27a91506ff404767a111ee3c62fb14c50926cf8737a4b5a3adb29687c"
+          },
+          {
+            "line_end": 154,
+            "line_start": 149,
+            "path": "customer-success-fte/app/routers/whatsapp.py",
+            "role": "commit_point",
+            "source_sha256": "c54b7de27a91506ff404767a111ee3c62fb14c50926cf8737a4b5a3adb29687c"
+          },
+          {
+            "line_end": 164,
+            "line_start": 156,
+            "path": "customer-success-fte/app/routers/whatsapp.py",
+            "role": "protected_operation",
+            "source_sha256": "c54b7de27a91506ff404767a111ee3c62fb14c50926cf8737a4b5a3adb29687c"
+          },
+          {
+            "line_end": 225,
+            "line_start": 211,
+            "path": "customer-success-fte/app/routers/whatsapp.py",
+            "role": "protected_operation",
+            "source_sha256": "c54b7de27a91506ff404767a111ee3c62fb14c50926cf8737a4b5a3adb29687c"
+          },
+          {
+            "line_end": 86,
+            "line_start": 84,
+            "path": "customer-success-fte/app/config.py",
+            "role": "guard_registration",
+            "source_sha256": "8a96f3c9e1dd8fb1156f0db2af8a8f75fa4cf60075fa0344c1c8e71fb19cb324"
+          }
+        ],
+        "forbidden_condition": "An inbound POST /webhooks/whatsapp request being parsed or ingested when its X-Hub-Signature-256 header is missing, when its HMAC-SHA256 over the raw body does not match the digest computed with settings.whatsapp_app_secret under hmac.compare_digest, or when whatsapp_app_secret is unset (verification must abort with HTTP 500 instead of proceeding).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source links MessageService.ingest (whatsapp.py lines 211-225) to the Kafka inbound topic or to run_support_agent; the Kafka worker source is not supplied, so agent mediation of this guard cannot be established.",
+          "Whether inbound Kafka publication occurs inside MessageService.ingest and strictly after signature verification is unverifiable from the supplied views.",
+          "Which specific mediation category (direct_tool, agent_lifecycle_hook, agent_generated_input_to_guarded_effect) would apply if a binding is later found is undetermined."
+        ],
+        "protected_operation": "Processing of inbound WhatsApp Cloud API events at POST /webhooks/whatsapp: raw-body parsing/validation via WhatsAppWebhookPayload.model_validate and message ingestion via MessageService.ingest.",
+        "protected_resource": "The WhatsApp webhook intake endpoint (/webhooks/whatsapp) and the inbound message records (and downstream inbound pipeline) it feeds via MessageService.ingest.",
+        "protection_obligation": "Merged from reviewer phase-1 and phase-2 wording: POST /webhooks/whatsapp must reject (fail closed, HTTP 400/403) any inbound WhatsApp webhook event whose X-Hub-Signature-256 header is absent or whose HMAC-SHA256 over the raw body does not verify under constant-time comparison keyed by settings.whatsapp_app_secret; verification must be performed on the raw body before the payload is parsed, before any message is ingested to the database, and before any downstream Kafka publication; if whatsapp_app_secret is unset the endpoint must fail closed (HTTP 500) rather than bypass verification.",
+        "scope_limits": [
+          "Covers POST /webhooks/whatsapp only; the GET webhook verification challenge (hub.verify_token comparison, whatsapp.py lines 86-118) is a separate mechanism not covered by this contract.",
+          "The whatsapp_rate_limit dependency (line 125) is separate infrastructure policy and is not part of this obligation.",
+          "The guard commits at HTTP request admission; the database ingest and any Kafka publication it precedes occur inside MessageService, whose source is not supplied, so downstream ordering is supported only up to the router boundary.",
+          "Supplied source contains no binding of this intake guard to an agent tool, agent lifecycle hook, or agent-generated input reaching a guarded effect; it may be ordinary webhook authentication outside the agent-DEC scope, hence agent_mediation is not_established and no agent_entry_binding evidence is cited.",
+          "The unset-secret branch yields HTTP 500 (lines 45-53); that is a fail-closed misconfiguration response, not a per-request authentication decision."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Input-guardrail evaluation gating Runner.run(support_agent, input=safe_content, context) at coordinator.py lines 279-284, with the tripwire exception caught at line 363; declared to execute before any LLM call (module docstring line 10).",
+        "contract_id": "ecological-contract:c3216149fce8739158f82cfb890ce6a2",
+        "declared_mechanism": "OpenAI Agents SDK input guardrails registered on the support_agent instance: input_guardrails=[pii_guardrail (non-blocking), keyword_escalation_guardrail (blocking), sentiment_guardrail (blocking)]; a trip raises InputGuardrailTripwireTriggered, which run_support_agent catches and routes to _handle_guardrail_escalation (ticket creation, Kafka escalation event, outbound auto-response) without a model call.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 13,
+            "line_start": 8,
+            "path": "customer-success-fte/app/agents/coordinator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6ef9fb351c48eda80db84f7e40e31b863b89a20ff9dc059fb82f77d7e1af39f7"
+          },
+          {
+            "line_end": 140,
+            "line_start": 123,
+            "path": "customer-success-fte/app/agents/coordinator.py",
+            "role": "guard_registration",
+            "source_sha256": "6ef9fb351c48eda80db84f7e40e31b863b89a20ff9dc059fb82f77d7e1af39f7"
+          },
+          {
+            "line_end": 139,
+            "line_start": 135,
+            "path": "customer-success-fte/app/agents/coordinator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6ef9fb351c48eda80db84f7e40e31b863b89a20ff9dc059fb82f77d7e1af39f7"
+          },
+          {
+            "line_end": 267,
+            "line_start": 252,
+            "path": "customer-success-fte/app/agents/coordinator.py",
+            "role": "protected_operation",
+            "source_sha256": "6ef9fb351c48eda80db84f7e40e31b863b89a20ff9dc059fb82f77d7e1af39f7"
+          },
+          {
+            "line_end": 284,
+            "line_start": 279,
+            "path": "customer-success-fte/app/agents/coordinator.py",
+            "role": "commit_point",
+            "source_sha256": "6ef9fb351c48eda80db84f7e40e31b863b89a20ff9dc059fb82f77d7e1af39f7"
+          },
+          {
+            "line_end": 388,
+            "line_start": 363,
+            "path": "customer-success-fte/app/agents/coordinator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6ef9fb351c48eda80db84f7e40e31b863b89a20ff9dc059fb82f77d7e1af39f7"
+          }
+        ],
+        "forbidden_condition": "Agent input that trips a blocking input guardrail \u2014 message content containing legal/financial escalation keywords (reason_code 'keyword_escalation') or a high anger/negative sentiment score \u2014 reaching model invocation through Runner.run; per the declared flow (module docstring lines 10-11) a tripped run must auto-escalate without invoking the LLM.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Exact keyword sets, sentiment scoring method, and thresholds used by the blocking guardrails (app/agents/guardrails.py) are not supplied.",
+          "Whether Runner.run guarantees input-guardrail evaluation before the first model call and before any tool execution is not verifiable from supplied source.",
+          "Whether the Kafka worker (not supplied) is the sole caller of run_support_agent, which would tie this contract to the webhook/web-form intake pipelines, is asserted only by docstrings (lines 4-6, 259).",
+          "Whether any additional tool-level guards exist inside app/agents/tools.py is unknown."
+        ],
+        "protected_operation": "Execution of the support agent run \u2014 Runner.run(support_agent, input=safe_content, context) \u2014 including its LLM invocation and the model-driven agent tool executions it would trigger.",
+        "protected_resource": "The support_agent run pipeline and its registered tools (create_ticket, search_knowledge_base, get_customer_history, escalate_to_human, resolve_ticket, send_response).",
+        "protection_obligation": "Customer message input submitted to the support_agent must not reach model invocation when it trips a blocking registered input guardrail (keyword_escalation_guardrail or sentiment_guardrail); a tripped run must divert to the auto-escalation path so the LLM is not invoked and no model-driven tool calls execute.",
+        "scope_limits": [
+          "pii_guardrail is registered non-blocking (line 136 comment 'log PII \u2014 non-blocking') and is excluded from this fail-closed obligation.",
+          "Trigger definitions (keyword lists, sentiment scoring/thresholds) live in app/agents/guardrails.py, which is not supplied; forbidden conditions are known only from registration comments (lines 137-138) and tripwire reason handling (lines 373-388).",
+          "The agent input is the PII-masked content produced by mask_pii (line 271, passed at line 282), so the guardrails evaluate masked text, not raw customer text.",
+          "The claim that guardrails execute before any LLM call comes from the module docstring (line 10) and SDK semantics; SDK internals are not in supplied source.",
+          "effect_stratum=tool_execution reflects that the guarded commit is the agent-run/model invocation itself (invocation-only); the downstream model API call and tool side effects span other strata and are not separate commit points of this guard.",
+          "A tripped run's auto-escalation path itself performs database writes and a Kafka escalation publish (lines 192-241); those are enforcement consequences, not guarded effects.",
+          "Non-tripped runs proceed to model-driven tool effects (database/communication) whose implementations in app/agents/tools.py are not supplied and are not covered by this contract's commit point."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "app/services/message_service.py is not supplied: the database commit behind MessageService.ingest and whether/where inbound Kafka publication occurs cannot be verified, so the 'before ... published to Kafka' ordering in the merged webhook obligation is supported only up to the router boundary.",
+      "app/agents/guardrails.py is not supplied: exact keyword lists, sentiment scoring, thresholds, and blocking semantics of keyword_escalation_guardrail and sentiment_guardrail are known only from registration comments and tripwire reason handling.",
+      "app/agents/tools.py is not supplied: implementations of create_ticket, search_knowledge_base, get_customer_history, escalate_to_human, resolve_ticket, and send_response \u2014 and any tool-level guards \u2014 are unverified, so no tool-stratum contracts could be compiled.",
+      "The Kafka worker source is not supplied: the ingestion \u2192 run_support_agent dataflow is asserted only by docstrings (coordinator.py lines 4-6 and 259), so agent mediation of the HTTP intake guards cannot be established from supplied views.",
+      "app/dependencies/auth.py and app/dependencies/rate_limiting.py are not supplied: require_api_key, web_rate_limit, and whatsapp_rate_limit semantics are unverified; these appear to be ordinary web authentication / infrastructure policy with no supplied agent binding (web_form.py lines 26-40; whatsapp.py line 125), so no contracts were emitted for them.",
+      "The GET /webhooks/whatsapp hub.verify_token challenge (whatsapp.py lines 86-118) is webhook setup authentication with no supplied agent binding; no contract was emitted for it.",
+      "Secret defaults in app/config.py are redacted in the supplied view (e.g., whatsapp_app_secret at line 86); only the fail-closed unset/missing/mismatch branches of the signature guard are source-supported.",
+      "Behavior labels and runtime prevalence data are unavailable for this unit; all contracts are compiled as static-source-supported hypotheses only, with no determination of violation, safety, or runtime behavior."
+    ],
+    "repository": "leenBaksh/The-Agent-Factory-Architecture",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:9d925b23b9442ac6338555bd025aef07"
+  },
+  "request_sha256": "52058de53398dd76217033cd79dea248d23dc163b79772687fdb9e2f8e299825",
+  "response_sha256": "b6ae0f78c914add1112bf736f03c1de1c2362cf0e11f73317ed12c6ac8fa7e8e",
+  "state": "completed",
+  "tokens": 32622,
+  "unit": "v24-screen:9d925b23b9442ac6338555bd025aef07"
+}

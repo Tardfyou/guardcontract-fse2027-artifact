@@ -1,0 +1,188 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guard substitutes the error ToolMessage at the guardrail branch (core/agent.py lines 1083-1095); the withheld create_ticket effect would otherwise commit at result = await handler(request) (core/agent.py lines 1102-1103).",
+        "contract_id": "ecological-contract:45b0a306bb811b707bcc9007e11266db",
+        "declared_mechanism": "apply_tool_guardrails returns a failure payload (success False, error duplicate_check_required, required_next_tool pointing at the sanitized duplicate-check tool, organization_number from known state) when the duplicate-check predicate fails; capturar_background_tools converts that payload via _guardrail_tool_message into a status=error ToolMessage and returns it, skipping handler(request) entirely.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 226,
+            "line_start": 216,
+            "path": "core/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 737,
+            "line_start": 722,
+            "path": "core/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 240,
+            "line_start": 229,
+            "path": "core/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 871,
+            "line_start": 851,
+            "path": "core/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 1057,
+            "line_start": 1050,
+            "path": "core/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 1095,
+            "line_start": 1083,
+            "path": "core/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 1103,
+            "line_start": 1102,
+            "path": "core/agent.py",
+            "role": "commit_point",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 1177,
+            "line_start": 1164,
+            "path": "core/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          }
+        ],
+        "forbidden_condition": "create_ticket invocation while _duplicate_check_done_for_current_job(state) is False, i.e. external_context.ticket_create_context lacks a truthy duplicate_check_success or its recorded (sanitized) turn-id value does not equal state.source_turn_id, evaluated only when tool_name is create_ticket and procedure_key is ticket_create.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Concrete identity of the sanitized duplicate-check tool (required_next_tool) and of the ticket_create_context turn-id key cannot be confirmed from sanitized source (core/agent.py lines 226, 734, 869).",
+          "Where start_turn/finalize_turn set procedure_key, source_turn_id and b_job_id into the background job state (core/run_turn.py not supplied).",
+          "Underlying transport and effect class of the create_ticket MCP write (core/mcp_loader.py not supplied)."
+        ],
+        "protected_operation": "create_ticket tool invocation under the ticket_create procedure, evaluated per tool call by apply_tool_guardrails inside capturar_background_tools.",
+        "protected_resource": "Ticket-creation write in the external ticketing system performed by the MCP create_ticket tool.",
+        "protection_obligation": "create_ticket, when dispatched by the background agent under procedure_key ticket_create, must not execute unless a duplicate check has succeeded for the current job's source turn (ticket_create_context.duplicate_check_success with the recorded turn id matching state.source_turn_id); otherwise capturar_background_tools must return a status=error ToolMessage carrying error duplicate_check_required instead of executing the tool.",
+        "scope_limits": [
+          "Duplicate-check gating fires only for tool_name create_ticket with procedure_key ticket_create (core/agent.py line 851); other write tools are not duplicate-check gated.",
+          "The permit predicate compares the recorded (sanitized) turn-id key against state.source_turn_id; duplicate_checked_job_id (state.b_job_id) is recorded at core/agent.py line 735 but is not compared by _duplicate_check_done_for_current_job.",
+          "The unlock state is written only by the sanitized duplicate-check tool's effect normalization under ticket_create (core/agent.py lines 722-737); the tool itself is outside supplied source.",
+          "Guard applies only to calls dispatched through the background agent middleware; pending-commit mcp_write replay in main.py _apply_tool_effects (lines 2147-2195) invokes tools without this guardrail.",
+          "Before gating, the middleware may rewrite create_ticket args (commoner_phone backfill from known caller state) at core/agent.py lines 854-857."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "result = await handler(request) inside capturar_background_tools (core/agent.py lines 1102-1103), where the gated tool execution would commit; release point is background_write_gate.set() after finalize_turn_preview and agent.commit in the connector branch (main.py lines 3915-3929).",
+        "contract_id": "ecological-contract:b7b13b1f009046714ca4a2ac54e8d960",
+        "declared_mechanism": "capturar_background_tools, declared with @wrap_tool_call and registered in _build_background_agent's create_agent middleware list, reads write_gate from request.state; for tool_name in WRITE_TOOL_NAMES with an unset asyncio.Event gate it logs WRITE_GATE and awaits write_gate.wait() before dispatching the handler. The gate is released only in main.py's connector branch of speak_and_commit, after finalize_turn_preview and agent.commit, via background_write_gate.set(), and is carried on the session by _attach_background_job as pending_b_write_gate.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 94,
+            "line_start": 86,
+            "path": "core/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 1054,
+            "line_start": 1050,
+            "path": "core/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 1100,
+            "line_start": 1097,
+            "path": "core/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 1103,
+            "line_start": 1102,
+            "path": "core/agent.py",
+            "role": "commit_point",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 1177,
+            "line_start": 1164,
+            "path": "core/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "130be56b92e37505d910dc25191c35be0d83df5e37f98791ea975e0dbf371535"
+          },
+          {
+            "line_end": 2376,
+            "line_start": 2365,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "e3f48b9e46b855b339929617dfef73383873040561df8ec82dd6ce796531c036"
+          },
+          {
+            "line_end": 3929,
+            "line_start": 3915,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "e3f48b9e46b855b339929617dfef73383873040561df8ec82dd6ce796531c036"
+          }
+        ],
+        "forbidden_condition": "Execution (handler dispatch) of any tool whose name is in WRITE_TOOL_NAMES while request.state write_gate is an asyncio.Event that is not set, i.e. the connector turn that spawned the background job has not yet been finalized and committed.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Creation of the write_gate asyncio.Event and its placement into agent state (write_gate) and into outcome.effects background_write_gate happens in core/run_turn.py (start_turn/finalize_turn), which is not supplied; only the consumption and release sites are visible.",
+          "Whether a background job spawned on a final or hangup turn ever carries a gate that is set: main.py reads background_write_gate only in the connector branch (lines 3925-3929); the final/hangup branch (lines 3860-3898) never sets it.",
+          "Underlying transport and external effect class (http or database) of the MCP write tools and of traspasar_llamada downstream, since core/mcp_loader.py and core/tools.py are not supplied."
+        ],
+        "protected_operation": "Tool invocation of write tools by the background (B) resolver agent, intercepted on every tool call by the wrap_tool_call middleware capturar_background_tools.",
+        "protected_resource": "External ticket mutations through MCP write tools (create_ticket, update_ticket_status, set_ticket_priority, classify_ticket, assign_ticket) and call-transfer initiation through traspasar_llamada.",
+        "protection_obligation": "Background-agent write tools - the MCP write set (create_ticket, update_ticket_status, set_ticket_priority, classify_ticket, assign_ticket) and the telephony write traspasar_llamada, together WRITE_TOOL_NAMES - must not execute until the connector turn has been spoken and the agent state committed, at which point main.py sets the background job's write_gate asyncio.Event; capturar_background_tools must hold every write-tool invocation at await write_gate.wait() until that release.",
+        "scope_limits": [
+          "Guard binds only tool calls dispatched through the background agent built by _build_background_agent; the small conversation agent executes no tools by design.",
+          "The wait applies only when tool_name is in WRITE_TOOL_NAMES AND request.state write_gate is an asyncio.Event that is not set; an absent or non-Event gate lets the write tool proceed without waiting (core/agent.py lines 1097-1098).",
+          "A guardrail payload (duplicate_check_required) returns before the gate wait, so a rejected create_ticket call never reaches the gate (core/agent.py lines 1083-1100).",
+          "Pending-commit mcp_write actions replayed in main.py _apply_tool_effects invoke tool.ainvoke directly (main.py lines 2147-2195) and do not pass through capturar_background_tools, so they are outside this gate.",
+          "The gate guards the tool invocation only; downstream session-level effects (for example _handoff_transfer issuing continue_in_dialplan after traspasar_llamada) occur later outside the middleware.",
+          "Once set, the gate event is not observed to be reset; the session drops its reference when the background job result commits (main.py lines 2253-2256)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "core/run_turn.py is not supplied: creation of the write_gate asyncio.Event, its insertion into agent state under write_gate and into outcome.effects background_write_gate, and the composition of outcome.effects (background_job, background_task, background_write_gate) are not directly visible; the only supplied gate-set point is main.py lines 3925-3929.",
+      "core/agent_model.py is not supplied: LuciaBState field declarations (write_gate, source_turn_id, b_job_id, external_context) are inferred from usage in the middleware and CallSession, not from the schema.",
+      "core/tools.py is not supplied: implementations and effect strata of traspasar_llamada and of the sanitized duplicate-check tool are unverified.",
+      "core/mcp_loader.py and core/mcp_auth.py are not supplied: the transport of MCP write tools is unverified, so both contracts classify the guarded commit at tool invocation (tool_execution) rather than naming an external transport stratum.",
+      "Sanitized identifiers: the duplicate-check tool name and the ticket_create_context turn-id key appear as <REDACTED> (core/agent.py lines 69, 79, 226, 722, 734, 869), preventing exact naming in the contracts.",
+      "No supplied source shows a write-gate release path for background jobs attached on final or hangup turns; main.py sets background_write_gate only in the connector branch (lines 3925-3929) while the final/hangup branch (lines 3860-3898) never reads it."
+    ],
+    "repository": "davidlaguillo/asistenteTFG",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:676e86605615c9a1a7b1bbda1d1fc44d"
+  },
+  "request_sha256": "74a7dc50791cc5c317e42ae5487783ba48489f53d365df540d305e0fa6791b9b",
+  "response_sha256": "fca6f8600c7b2ec78759ad4b9d6e0e9c2d0ec86fed7e27aae790db5ebbe3a139",
+  "state": "completed",
+  "tokens": 90714,
+  "unit": "v24-screen:676e86605615c9a1a7b1bbda1d1fc44d"
+}

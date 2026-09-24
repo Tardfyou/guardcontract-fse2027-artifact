@@ -1,0 +1,175 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "PhaseToolGate.__call__ returning the blocked dict (agents/gating.py:49-54) \u2014 the point at which the ADK callback short-circuits the tool invocation before the tool function runs.",
+        "contract_id": "ecological-contract:8bf17ea0769c7a211a8d7c98923d0bc6",
+        "declared_mechanism": "PhaseToolGate produced by make_gate(phase) and registered as the Agent's before_tool_callback in build_agent; per the ADK semantics stated in the gating module docstring, a callback returning a non-None dict short-circuits the tool, so the returned 'blocked' dict prevents the tool from executing.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 111,
+            "line_start": 98,
+            "path": "agents/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "b6394f8a943970761596963954811ab8eb1607eed12e4ebb8939f37240a31da6"
+          },
+          {
+            "line_end": 5,
+            "line_start": 1,
+            "path": "agents/gating.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d4df3bc99ca2a2a7414bf8a5a41de6054c9aef1afc9e0e6171cf1fb21fdc179f"
+          },
+          {
+            "line_end": 35,
+            "line_start": 29,
+            "path": "agents/gating.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d4df3bc99ca2a2a7414bf8a5a41de6054c9aef1afc9e0e6171cf1fb21fdc179f"
+          },
+          {
+            "line_end": 55,
+            "line_start": 47,
+            "path": "agents/gating.py",
+            "role": "commit_point",
+            "source_sha256": "d4df3bc99ca2a2a7414bf8a5a41de6054c9aef1afc9e0e6171cf1fb21fdc179f"
+          },
+          {
+            "line_end": 39,
+            "line_start": 38,
+            "path": "agents/gating.py",
+            "role": "protected_operation",
+            "source_sha256": "d4df3bc99ca2a2a7414bf8a5a41de6054c9aef1afc9e0e6171cf1fb21fdc179f"
+          },
+          {
+            "line_end": 68,
+            "line_start": 60,
+            "path": "agents/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "b6394f8a943970761596963954811ab8eb1607eed12e4ebb8939f37240a31da6"
+          },
+          {
+            "line_end": 111,
+            "line_start": 105,
+            "path": "agents/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b6394f8a943970761596963954811ab8eb1607eed12e4ebb8939f37240a31da6"
+          }
+        ],
+        "forbidden_condition": "An agent tool dispatch whose tool.name is not in PHASE_ALLOWLIST[phase] \u2014 in particular `create-index` or `drop-index` \u2014 reaching tool execution while the agent's phase is DIAGNOSE or APPROVE (i.e., anything other than VERIFY).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any production deployment constructs the agent with phase=Phase.VERIFY and registers `create-index`/`drop-index` as agent tools (contents of extra_tools and MCPToolset wiring into build_agent are not shown).",
+          "The definition of controller.phases.Phase and assert_phase_transition (referenced by the gate but not supplied).",
+          "Whether build_mcp_toolset (agents/agent.py:75-95) is ever attached to a gate-protected agent in production."
+        ],
+        "protected_operation": "ADK agent tool invocation: tool dispatch to the agent's registered tool functions/MCP tools during an agent run.",
+        "protected_resource": "The MongoDB index-mutation tools `create-index` and `drop-index` (and generally every tool not on the phase allowlist) dispatched by the DBRE ADK agent.",
+        "protection_obligation": "MongoDB index-write tool invocations (`create-index`, `drop-index`) \u2014 and any other tool not on the phase allowlist \u2014 must never be executed by the ADK agent outside Phase.VERIFY: in the DIAGNOSE and APPROVE phases the registered before_tool_callback gate must short-circuit the dispatch so the write tool never runs during diagnosis or while awaiting approval.",
+        "scope_limits": [
+          "Covers only tool dispatch through ADK Agent instances constructed by build_agent with before_tool_callback=make_gate(phase); direct controller/backend calls (e.g., McpBackend.apply_index / drop_index over MCP) bypass this gate and are addressed by a separate contract.",
+          "Enforcement is name-based string matching of tool.name against a static frozenset allowlist; a write tool exposed under a different name would not be matched.",
+          "root_agent is built with the default phase=Phase.DIAGNOSE (agents/agent.py:99,114); the DIAGNOSE/CANDIDATE/RATIONALE role toolsets statically contain only read tools, so write tools reach the agent only via extra_tools or MCP toolsets whose production wiring is not in the supplied views.",
+          "The 'returning a dict short-circuits the tool' behavior is asserted in the module docstring (agents/gating.py:1-4); the ADK library implementation is not part of the supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "controller/orchestrator.py:599 `await backend.apply_index(index_keys, index_name)` \u2014 the persistent database mutation realized by McpBackend.apply_index's `session.call_tool(\"create-index\", ...)` (agents/mcp_backend.py:99-102).",
+        "contract_id": "ecological-contract:b9e71174a4dd5705c18cc5d1475b1725",
+        "declared_mechanism": "Approval-ticket guard chain: issue_approval_ticket validates DIAGNOSED status, a pending approval gate, and hash equality against both gate.required_hash and pack.evidence_hash; _assert_ticket_allows_apply re-checks run_id/gate_id/evidence_hash/pending state inside apply_and_verify before the APPROVE\u2192VERIFY phase transitions and the apply call.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 277,
+            "line_start": 254,
+            "path": "controller/orchestrator.py",
+            "role": "guard_registration",
+            "source_sha256": "cb75ccf564fb39119af3094095076367b7de51b779cdc80c39e74ab41d2df866"
+          },
+          {
+            "line_end": 208,
+            "line_start": 196,
+            "path": "api/routes.py",
+            "role": "guard_registration",
+            "source_sha256": "041f24f245994576b5708fa697b05dcdd6fea47036637fc28879e120a2e63065"
+          },
+          {
+            "line_end": 290,
+            "line_start": 280,
+            "path": "controller/orchestrator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cb75ccf564fb39119af3094095076367b7de51b779cdc80c39e74ab41d2df866"
+          },
+          {
+            "line_end": 567,
+            "line_start": 565,
+            "path": "controller/orchestrator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cb75ccf564fb39119af3094095076367b7de51b779cdc80c39e74ab41d2df866"
+          },
+          {
+            "line_end": 564,
+            "line_start": 550,
+            "path": "controller/orchestrator.py",
+            "role": "protected_operation",
+            "source_sha256": "cb75ccf564fb39119af3094095076367b7de51b779cdc80c39e74ab41d2df866"
+          },
+          {
+            "line_end": 599,
+            "line_start": 597,
+            "path": "controller/orchestrator.py",
+            "role": "commit_point",
+            "source_sha256": "cb75ccf564fb39119af3094095076367b7de51b779cdc80c39e74ab41d2df866"
+          },
+          {
+            "line_end": 102,
+            "line_start": 99,
+            "path": "agents/mcp_backend.py",
+            "role": "commit_point",
+            "source_sha256": "090ac8f6ba6d47fbf9850e110a8d7d41b14781e5fe6cdde13f832f03d60db84b"
+          }
+        ],
+        "forbidden_condition": "backend.apply_index executing for a pack whose status is not PackStatus.DIAGNOSED, or with an approval ticket failing the run_id/gate_id/evidence_hash/pending-gate checks \u2014 i.e., any index application not backed by a matching approved evidence hash.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which concrete Engine and Backend implementations are wired into the API (get_store/get_engine raise NotImplementedError in the supplied view; the production binding is not shown).",
+          "Whether the ledger parameter is non-None in production apply runs (the guard chain does not depend on it, but application record writes do).",
+          "The contents of controller/phases.py (Phase enum, assert_phase_transition) that underlie the APPROVE\u2192VERIFY transition assertions."
+        ],
+        "protected_operation": "apply_and_verify's application of the recommended index (the post-approval mutation) followed by after-evidence verification.",
+        "protected_resource": "The MongoDB index created on database `sample_supplies`, collection `sales_agent_demo` via the MCP `create-index` tool call inside McpBackend.apply_index.",
+        "protection_obligation": "The MongoDB index mutation performed by the controller (backend.apply_index, realized as an MCP `create-index` call against sample_supplies.sales_agent_demo) must execute only after a valid approval ticket whose run_id, gate_id, and evidence_hash match a DIAGNOSED pack carrying a PENDING_APPROVAL gate, as part of the APPROVE\u2192VERIFY transition; applying an index outside this hash-matched human-approved path is forbidden.",
+        "scope_limits": [
+          "Covers the controller-driven apply path (HTTP POST /packs/{run_id}/decision \u2192 engine.apply_and_verify \u2192 backend.apply_index); this commit point is distinct from the agent-facing phase gate, whose tool_execution commit point is covered by a separate contract.",
+          "The evidence_hash binds only the (before-evidence, deterministic ESR recommendation) pair; agent-proposed indexes are validated against the deterministic result and may be recorded as ignored (_agent_phase_note, controller/orchestrator.py:194-207), so no supplied dataflow binds the mutated index spec to agent-generated input.",
+          "backend.drop_index (agents/mcp_backend.py:104-118) is defined but no supplied source shows it invoked in the orchestrator apply flow; index drops are guarded only at the agent tool-dispatch layer.",
+          "API-level token/identity checks (require_write_token, optional_dbre_identity) are ordinary web authentication wiring and are not part of this contract's declared mechanism."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "controller/phases.py source (Phase enum members and assert_phase_transition rules) \u2014 referenced by the gate and orchestrator but not supplied.",
+      "Production wiring that constructs build_agent with a non-default phase or supplies write tools via extra_tools; no supplied view shows MCPToolset attached to a gate-protected agent.",
+      "Concrete Engine/Backend/Store dependency bindings for api.routes get_engine/get_store in any deployment.",
+      "Any caller of McpBackend.drop_index within the controller flow; supplied views show only backend.apply_index invoked (controller/orchestrator.py:599).",
+      "ADK framework implementation confirming the documented short-circuit semantics of before_tool_callback (asserted only in the agents/gating.py module docstring)."
+    ],
+    "repository": "d3v07/googlecloudhack",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4391005d81eaa5615d083c1c208dd7cd"
+  },
+  "request_sha256": "86e118273a4059bc4be95d26d2f296c94c83741ddd75bb32223064a81ed499ac",
+  "response_sha256": "fee4e49087805726c85e43381572c12b67d77db976a9b8949eda41ccd02e2a1b",
+  "state": "completed",
+  "tokens": 25184,
+  "unit": "v24-screen:4391005d81eaa5615d083c1c208dd7cd"
+}

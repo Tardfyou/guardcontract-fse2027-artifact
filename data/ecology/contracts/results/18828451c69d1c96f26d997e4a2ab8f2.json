@@ -1,0 +1,256 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "conversations[request.agent_id].append(...) at main.py:142.",
+        "contract_id": "ecological-contract:1258434a267e347599bca67ad9489953",
+        "declared_mechanism": "Environment-variable presence check raising HTTPException(status_code=500) at main.py:137-139, sequenced before the append at main.py:142.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 139,
+            "line_start": 137,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 139,
+            "line_start": 138,
+            "path": "main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 145,
+            "line_start": 141,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 40,
+            "line_start": 40,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 142,
+            "line_start": 142,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          }
+        ],
+        "forbidden_condition": "os.getenv('TOGETHER_API_KEY') returns None/empty (not together_api_key) at chat time (main.py:137-138).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether TOGETHER_API_KEY is intended as a global or per-agent credential is undetermined from source.",
+          "No agent-binding evidence exists in the supplied view; agent_mediation stays not_established pending deployment context."
+        ],
+        "protected_operation": "Appending the inbound user message to the per-agent history inside chat_with_agent (main.py:141-145).",
+        "protected_resource": "The in-memory conversations store entry for request.agent_id (main.py:40, 142).",
+        "protection_obligation": "POST /chat-agent must refuse with HTTP 500 to mutate conversation history when TOGETHER_API_KEY is unset in the environment.",
+        "scope_limits": [
+          "The guard checks only that the variable is set, not that the credential is valid; an invalid key still permits the state mutation and fails later at the external call (main.py:163-165).",
+          "A parallel key check exists in POST /create-agent (main.py:63-66) protecting a different write path; it is not covered by this contract.",
+          "Single-process, in-memory semantics assumed; persistence behavior is unsupported by the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await client.post('https://api.together.xyz/v1/chat/completions', ...) dispatches the network request at main.py:149-161.",
+        "contract_id": "ecological-contract:485a6b362aa6ae548b9bf1905c70982b",
+        "declared_mechanism": "Presence guard raising HTTPException(404) at main.py:133-135, sequenced before the httpx.AsyncClient POST at main.py:149-161.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 135,
+            "line_start": 133,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 135,
+            "line_start": 134,
+            "path": "main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 161,
+            "line_start": 147,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 161,
+            "line_start": 149,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          }
+        ],
+        "forbidden_condition": "An outbound chat-completions request would be attempted for an agent_id not present in conversations (main.py:134).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No decorator, registration, tool dispatch, or concrete dataflow in the supplied view marks this outbound call as an agent tool effect; agent_mediation remains not_established.",
+          "The model sent at main.py:158 is a redacted hardcoded default despite the comment claiming reuse of the agent's creation model (main.py:157, 82); the actual model value is undetermined from the sanitized view.",
+          "Whether deployment policy designates this external call as the guarded effect for DEC purposes is a policy determination outside this compilation."
+        ],
+        "protected_operation": "The handler's transmission of the stored conversation history to the Together chat-completions API (main.py:147-161).",
+        "protected_resource": "The external endpoint https://api.together.xyz/v1/chat/completions as invoked with messages = conversations[request.agent_id] (main.py:151, 159).",
+        "protection_obligation": "POST /chat-agent must refuse with HTTP 404 to issue the outbound Together chat-completions request for any chat whose agent_id is absent from the conversations store.",
+        "scope_limits": [
+          "The guard gates only agent existence; it does not constrain the forwarded payload, and request.message (main.py:49) is appended unvalidated at main.py:142 and sent at main.py:159.",
+          "Response validation (main.py:163-165), the post-response history append (main.py:173), and exception mapping (main.py:177-180) occur at or after the commit point and are not protected by this guard.",
+          "Only the /chat-agent outbound call is covered; the /create-agent call (main.py:74-88) is a separate obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "conversations[request.agent_id].append({\"role\": \"user\", \"content\": request.message}) executes at main.py:142; this is the first store mutation in the handler.",
+        "contract_id": "ecological-contract:9eecc82ee1bb6dbd13e71c83bc17f874",
+        "declared_mechanism": "Presence guard 'if request.agent_id not in conversations: raise HTTPException(status_code=404, ...)' registered at the top of the handler (main.py:133-135), sequenced before the mutation.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 135,
+            "line_start": 133,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 135,
+            "line_start": 134,
+            "path": "main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 145,
+            "line_start": 141,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 40,
+            "line_start": 40,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 142,
+            "line_start": 142,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          }
+        ],
+        "forbidden_condition": "A chat request arrives with request.agent_id not present in the conversations dict (main.py:134).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No source establishes that POST /chat-agent callers are AI agents or that request.message is agent-generated; a deployment-side binding (tool registry, lifecycle hook, concrete dataflow) would be required to revise agent_mediation.",
+          "Whether conversations is mutated anywhere outside chat_with_agent and create_agent is undetermined from the supplied view.",
+          "Concurrent-request interleaving on the same history list is runtime behavior not determinable from static source."
+        ],
+        "protected_operation": "Appending the inbound user message to, and reading, the per-agent conversation history inside chat_with_agent (main.py:141-145).",
+        "protected_resource": "The in-memory conversations store (Dict[str, List[Dict]], main.py:40), specifically the history list at key request.agent_id.",
+        "protection_obligation": "POST /chat-agent must reject with HTTP 404 any chat request whose agent_id is not a key in the conversations store, before the handler mutates that agent's conversation history.",
+        "scope_limits": [
+          "Guard tests only dict-key presence of agent_id; no authentication, ownership, or session binding exists in the supplied handler (main.py:129-145), so any HTTP caller supplying a known agent_id is admitted.",
+          "The store is process-local memory (comment at main.py:39 notes a production app would use a database); no database-stratum effect is supported by the supplied source, so this contract is limited to the state stratum.",
+          "Covers only POST /chat-agent; the POST /create-agent write path (main.py:101-110) uses a freshly generated uuid key (main.py:98) and is outside this guard.",
+          "Behavior beyond the single supplied sanitized view (main.py:1-183) is unknown; additional writers of conversations cannot be confirmed or excluded."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await client.post('https://api.together.xyz/v1/chat/completions', ...) dispatches at main.py:149-161; the Authorization header carrying the key is committed with it.",
+        "contract_id": "ecological-contract:d8f6fb7ad2d57a9801e05faf6d264f17",
+        "declared_mechanism": "Environment-variable presence check raising HTTPException(500) at main.py:137-139, sequenced before the httpx POST at main.py:149-161.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 139,
+            "line_start": 137,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 139,
+            "line_start": 138,
+            "path": "main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 161,
+            "line_start": 147,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          },
+          {
+            "line_end": 161,
+            "line_start": 149,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "226a4d024f9e10b68b8ff2d5b9909ab1c7a9f05fab6070a5c204f4b97011a2a3"
+          }
+        ],
+        "forbidden_condition": "An outbound chat-completions request would be attempted without a set TOGETHER_API_KEY (main.py:137-138).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No agent tool dispatch, lifecycle hook, or agent-generated-input dataflow reaching this call appears in the supplied view; agent_mediation is not_established.",
+          "Whether the credential header handling matches deployment DEC policy is a policy question outside this compilation."
+        ],
+        "protected_operation": "The handler's authenticated transmission of stored history to the Together chat-completions API (main.py:147-161).",
+        "protected_resource": "The external endpoint https://api.together.xyz/v1/chat/completions and the Authorization bearer credential embedded in its headers (main.py:151-155).",
+        "protection_obligation": "POST /chat-agent must refuse with HTTP 500 to issue the outbound Together chat-completions request when TOGETHER_API_KEY is unset.",
+        "scope_limits": [
+          "The guard is the only precondition before dispatch; a non-empty but invalid key still reaches the commit point and is rejected only by the downstream status check (main.py:163-165).",
+          "Exception mapping for transport failures (main.py:177-180) occurs after the commit point.",
+          "Covers only the /chat-agent call; the /create-agent call (main.py:74-88) is a separate obligation."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The reviewer phase-first obligation (CORSMiddleware registration at main.py:24-30, together with the catch-all OPTIONS handler at main.py:32-36) is excluded from contracts: the supplied source contains no binding between the CORS layer and any agent tool, agent lifecycle hook, or agent-generated input reaching a guarded effect, and CORS is out of scope absent such a binding.",
+      "Analogous guards exist in POST /create-agent (TOGETHER_API_KEY check at main.py:63-66, outbound call at main.py:74-88, non-200 handling at main.py:92-95, store writes at main.py:101-110) but were not raised by any reviewer opinion; they are not compiled as contracts here.",
+      "No decorator, registration, callback wiring, tool dispatch, or concrete dataflow within main.py:1-183 establishes agent mediation for any guarded effect; all contracts therefore use agent_mediation not_established and omit the agent_entry_binding evidence role.",
+      "Repository enumeration is incomplete and behavior labels are unavailable; whether any server wiring, tool registry, or agent runtime outside the supplied view binds these routes to agent mediation is unknown.",
+      "Runtime properties (concurrency, prevalence of guard trips, actual environment variable state at deployment) are not determinable from static source and are not asserted."
+    ],
+    "repository": "joselynrianaaa/InstantAgent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:18828451c69d1c96f26d997e4a2ab8f2"
+  },
+  "request_sha256": "2690b1d2b91c4ee9299ca9d15d5e768c3ec91d7b163fc65f10b2de647e0d6b84",
+  "response_sha256": "91629b25b275c254cc1bdb492dcfcc067098cdcc31ea251beb9a1e42fce44ba4",
+  "state": "completed",
+  "tokens": 17320,
+  "unit": "v24-screen:18828451c69d1c96f26d997e4a2ab8f2"
+}

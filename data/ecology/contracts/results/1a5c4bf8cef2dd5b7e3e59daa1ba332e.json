@@ -1,0 +1,219 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The middleware's early return of the 413 JSONResponse (src/main.py:170-173), which occurs before await call_next(request) at src/main.py:216, so the request never reaches any route handler when the condition holds.",
+        "contract_id": "ecological-contract:69b182c59b7347f181fea8c4993f4f4f",
+        "declared_mechanism": "security_middleware registered on the app with @app.middleware('http') (src/main.py:161-162); it parses request.headers['content-length'] best-effort (defaulting to 0 on parse failure) and returns JSONResponse with status HTTP_413_REQUEST_ENTITY_TOO_LARGE when the declared size exceeds settings.max_file_size_bytes.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 162,
+            "line_start": 161,
+            "path": "src/main.py",
+            "role": "guard_registration",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 173,
+            "line_start": 163,
+            "path": "src/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 173,
+            "line_start": 170,
+            "path": "src/main.py",
+            "role": "commit_point",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 217,
+            "line_start": 216,
+            "path": "src/main.py",
+            "role": "protected_operation",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 134,
+            "line_start": 131,
+            "path": "config/config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7ffc30ecc870ab941395fc0ee945d818d6097ed39fa35c47c86a3be5e9aebf76"
+          }
+        ],
+        "forbidden_condition": "An inbound HTTP request whose Content-Length header parses to a positive value greater than settings.max_file_size_bytes (max_file_size_mb * 1024 * 1024; default 10 MB).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Deployed value of max_file_size_mb / max_file_size_bytes in target environments (env-driven via pydantic-settings).",
+          "Whether any deployment intends this branch to guard agent-mediated effects (tool invocations or agent input pipelines); no such binding appears in supplied source."
+        ],
+        "protected_operation": "Processing of any HTTP request through the middleware chain into route-handler execution via await call_next(request) on the app (all routes, including the /agents, /training, /rag, /evaluations, and /quick-start families).",
+        "protected_resource": "The FastAPI application's route handlers and request-body processing surface (the app defined in src/main.py and its included routers).",
+        "protection_obligation": "HTTP requests served by the FastAPI app must not exceed the configured maximum payload size; a request whose declared Content-Length exceeds settings.max_file_size_bytes must be rejected with HTTP 413 by the registered security_middleware before the route handler executes.",
+        "scope_limits": [
+          "Best-effort header check only: requests without a parseable Content-Length (missing, non-numeric, or '0', e.g. chunked transfers) are not rejected by this branch (src/main.py:164-167).",
+          "Endpoint-level re-checks of actually-read upload bytes (src/main.py:611-613 for images, 656-658 for audio) are separate handler-side validation outside this middleware contract's declared mechanism.",
+          "Supplied source binds this guard only to generic HTTP request handling; no agent tool dispatch, agent lifecycle hook, or agent-generated input flow reaches this branch, so agent mediation is not established and this generic application validation is out of established agent-DEC scope.",
+          "The threshold is environment-configurable (max_file_size_mb at config/config.py:56); the deployed value is not present in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The middleware's 401 JSONResponse returns for a missing/invalid header (src/main.py:236-239) and for verification failure (src/main.py:245-248), both occurring before return await call_next(request) at src/main.py:250.",
+        "contract_id": "ecological-contract:82cb97a45316f56135ccd2007891df4c",
+        "declared_mechanism": "api_key_middleware registered with @app.middleware('http') (src/main.py:220-221): require_api_key gate, whitelist-path and prefix exemptions, guarded-prefix allowlist, Bearer header parsing, and verify_api_key_token (SHA-256 hash plus hmac.compare_digest against the in-memory api_keys_store record, with active and expiry checks).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 221,
+            "line_start": 220,
+            "path": "src/main.py",
+            "role": "guard_registration",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 248,
+            "line_start": 234,
+            "path": "src/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 248,
+            "line_start": 236,
+            "path": "src/main.py",
+            "role": "commit_point",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 232,
+            "line_start": 226,
+            "path": "src/main.py",
+            "role": "protected_operation",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 533,
+            "line_start": 531,
+            "path": "src/main.py",
+            "role": "protected_operation",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 84,
+            "line_start": 67,
+            "path": "src/utils/auth_utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "40fb562c26b15d878558ee72589db63a0a9b07cb5ded9e3527fc623a029f9854"
+          }
+        ],
+        "forbidden_condition": "A request to a guarded prefix whose Authorization header is missing, does not start with 'bearer ' (case-insensitive), or whose token is rejected by verify_api_key_token as malformed (no '.'), unknown key id, inactive record, expired record, or hashed-secret mismatch.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether target deployments enable require_api_key (env-driven; not determinable from supplied source).",
+          "Whether the guarded routes' downstream effects (LLM provider calls from agent chat/invoke, and /training, /rag, /evaluations router behavior) are agent-mediated; the routers src/api/auth.py, src/api/evaluations.py, src/api/rag_api.py, src/api/training_endpoints.py, and src/api/council_api.py are imported (src/main.py:43-46, 50-51) but not supplied.",
+          "Whether any agent tool, agent lifecycle hook, or agent-generated input flow invokes these guarded HTTP routes; none appears in supplied source."
+        ],
+        "protected_operation": "Execution of route handlers under the guarded prefixes - agent creation/management, agent chat/invoke, multimodal processing, /quick-start chats, and the /training, /rag, /evaluations router endpoints (scope set by the prefix check; concrete guarded handlers include POST /agents/{agent_id}/chat, which invokes the agent with the request message).",
+        "protected_resource": "The app's agent-facing and feature API surface: the /agents, /training, /rag, /evaluations, and /quick-start route families (excluding whitelisted paths /, /health, /docs, /redoc, /openapi. and the /auth, /docs, /openapi prefixes).",
+        "protection_obligation": "When settings.require_api_key is enabled, HTTP requests to the guarded route prefixes (/agents, /training, /rag, /evaluations, /quick-start) must present a Bearer Authorization token that verify_api_key_token validates against an existing, active, non-expired key record with a matching hashed secret; all other such requests must be rejected with HTTP 401 by the registered api_key_middleware before the route handler executes.",
+        "scope_limits": [
+          "Enforcement is gated on settings.require_api_key, which defaults to False in supplied configuration (config/config.py:91-94); with the default the middleware passes every request through (src/main.py:223-224).",
+          "Paths /, /health, /docs, /redoc, /openapi. and prefixes /auth, /docs, /openapi are exempt (src/main.py:158, 227-228).",
+          "Only the five declared prefixes are guarded; any other app route is not covered by this middleware (src/main.py:230-232).",
+          "Credential verification uses the in-memory api_keys_store (src/utils/auth_utils.py:33-34); issue_api_key/revoke_api_key exist in supplied source but no persistence layer or admin issuance endpoint is shown.",
+          "This is ordinary bearer-key web authentication at the HTTP layer; supplied source does not bind it to agent tool dispatch, agent lifecycle hooks, or agent-generated input reaching the guarded effect, so agent mediation is not established and the obligation is out of established agent-DEC scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The middleware's early return of the 429 JSONResponse (src/main.py:210-214), which occurs before await call_next(request) at src/main.py:216.",
+        "contract_id": "ecological-contract:8c1f0905e4df806555e051c0d90e81be",
+        "declared_mechanism": "security_middleware registered with @app.middleware('http') (src/main.py:161-162) implementing a fixed-window per-client limiter: optional Redis backend (redis.asyncio INCR plus EXPIRE on 'rate:<host>') or in-process fallback (_rate_window_starts_at / _rate_counts), returning JSONResponse with status HTTP_429_TOO_MANY_REQUESTS when limited.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 162,
+            "line_start": 161,
+            "path": "src/main.py",
+            "role": "guard_registration",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 208,
+            "line_start": 175,
+            "path": "src/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 214,
+            "line_start": 210,
+            "path": "src/main.py",
+            "role": "commit_point",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 217,
+            "line_start": 216,
+            "path": "src/main.py",
+            "role": "protected_operation",
+            "source_sha256": "af548428397fbdea3f88d2ec78191838195da8664a9248581ca248e14c560bee"
+          },
+          {
+            "line_end": 53,
+            "line_start": 49,
+            "path": "config/config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7ffc30ecc870ab941395fc0ee945d818d6097ed39fa35c47c86a3be5e9aebf76"
+          }
+        ],
+        "forbidden_condition": "With settings.rate_limit_enabled true, a request that increments a client's fixed-window counter (Redis key 'rate:<host>' via INCR, or the in-process _rate_counts entry keyed by client host) to a value greater than settings.rate_limit_requests within settings.rate_limit_period; limiter errors are suppressed (fail-open).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the Redis backend (settings.redis_url) or the in-process fallback is active in target deployments (config/config.py:53).",
+          "Deployed values of rate_limit_requests and rate_limit_period.",
+          "Any intended linkage between this throttle and agent-mediated effects; none is established in supplied source."
+        ],
+        "protected_operation": "Processing of any HTTP request through the middleware chain into route-handler execution via await call_next(request) on the app (all routes app-wide).",
+        "protected_resource": "The FastAPI application's route handlers (all routes, including the /agents, /training, /rag, /evaluations, and /quick-start families).",
+        "protection_obligation": "HTTP requests served by the FastAPI app must not exceed the configured per-client rate limit; a request from a client whose fixed-window count exceeds settings.rate_limit_requests within settings.rate_limit_period must be rejected with HTTP 429 by the registered security_middleware before the route handler executes (when settings.rate_limit_enabled is true).",
+        "scope_limits": [
+          "Enforcement is conditional on settings.rate_limit_enabled (default true; config/config.py:50-52).",
+          "Fail-open behavior: any limiter exception sets limited=False and lets the request proceed (src/main.py:206-208).",
+          "The in-process fallback uses one global window (_rate_window_starts_at) cleared for all clients simultaneously, so its window semantics differ from the optional per-key Redis backend (src/main.py:194-205 vs 179-191).",
+          "Client key falls back to 'unknown' when request.client is unavailable (src/main.py:185, 196); no path whitelist applies to this middleware (unlike api_key_middleware).",
+          "Supplied source binds this guard only to generic HTTP request handling; no agent tool dispatch, agent lifecycle hook, or agent-generated input flow reaches this branch, so agent mediation is not established and this infrastructure throttling policy is out of established agent-DEC scope."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Router modules imported by the app (src/api/auth.py, src/api/evaluations.py, src/api/rag_api.py, src/api/training_endpoints.py, src/api/council_api.py - imported at src/main.py:43-46 and 50-51) are absent from supplied views, so the concrete effects behind the /training, /rag, /evaluations, /auth, and /council routes cannot be characterized or bound to the middleware guards.",
+      "Deployed/environment values for require_api_key, rate_limit_enabled, redis_url, rate_limit_requests, rate_limit_period, and max_file_size_mb are not in supplied source (loaded from environment via pydantic-settings, config/config.py:13-15).",
+      "No supplied source binds any of the compiled middleware guards to agent tool dispatch, agent lifecycle hooks, or agent-generated input reaching a guarded effect; agent_mediation is recorded as not_established for all three contracts and no agent_entry_binding evidence exists in the supplied views.",
+      "Behavior labels and runtime prevalence data are unavailable per the unit scope; nothing here asserts whether these guards hold at runtime or how often the guarded operations occur."
+    ],
+    "repository": "trademomentum-llc/multimodal-agent-builder",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1a5c4bf8cef2dd5b7e3e59daa1ba332e"
+  },
+  "request_sha256": "b57395be18a51795067c8f8f1a5efe93d6fe31a0b1eebead950bde381bb3c744",
+  "response_sha256": "ebdd27670a1152915fa1d2a9014e039fa404e9c4425970daa7cc93417c94c84f",
+  "state": "completed",
+  "tokens": 32776,
+  "unit": "v24-screen:1a5c4bf8cef2dd5b7e3e59daa1ba332e"
+}

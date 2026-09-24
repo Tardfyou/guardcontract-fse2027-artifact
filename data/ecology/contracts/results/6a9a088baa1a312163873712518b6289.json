@@ -1,0 +1,216 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The orchestrator's emission of the released report, reachable only across the graph edge (clinical_review_gate, triage_orchestrator); on reject the commit is prevented by ctx.end_invocation = True set before any release event is emitted.",
+        "contract_id": "ecological-contract:147aaac8bd1459a041f038d5838e20b0",
+        "declared_mechanism": "clinical_review_gate registered as a workflow node via @node(name=clinical_review_gate, rerun_on_resume=True) and wired in the Workflow edges between join_generate and triage_orchestrator; when _needs_review fires (urgent or confidence LOW/REVIEW) and ctx.resume_inputs is absent, it yields a RequestInput interrupt (interrupt_id clinical_review, response_schema enum approve/modify/reject), pausing the run through ResumabilityConfig(is_resumable=True); on resume with action reject it sets ctx.end_invocation = True so the orchestrator never runs; on approve/modify it releases the run to the orchestrator.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 64,
+            "line_start": 58,
+            "path": "app/review_gate.py",
+            "role": "guard_registration",
+            "source_sha256": "e13db73f2236311cb01b9e327c0b1ce665433bc839cb8c629c8a156491561f86"
+          },
+          {
+            "line_end": 152,
+            "line_start": 142,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "75e3be1659de80f54405e674582ca6e4f3ae862f1ef8d92eb34d0c5da4db769b"
+          },
+          {
+            "line_end": 172,
+            "line_start": 169,
+            "path": "app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "75e3be1659de80f54405e674582ca6e4f3ae862f1ef8d92eb34d0c5da4db769b"
+          },
+          {
+            "line_end": 55,
+            "line_start": 42,
+            "path": "app/review_gate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e13db73f2236311cb01b9e327c0b1ce665433bc839cb8c629c8a156491561f86"
+          },
+          {
+            "line_end": 94,
+            "line_start": 80,
+            "path": "app/review_gate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e13db73f2236311cb01b9e327c0b1ce665433bc839cb8c629c8a156491561f86"
+          },
+          {
+            "line_end": 132,
+            "line_start": 111,
+            "path": "app/review_gate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e13db73f2236311cb01b9e327c0b1ce665433bc839cb8c629c8a156491561f86"
+          },
+          {
+            "line_end": 152,
+            "line_start": 149,
+            "path": "app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "75e3be1659de80f54405e674582ca6e4f3ae862f1ef8d92eb34d0c5da4db769b"
+          },
+          {
+            "line_end": 152,
+            "line_start": 147,
+            "path": "app/agent.py",
+            "role": "commit_point",
+            "source_sha256": "75e3be1659de80f54405e674582ca6e4f3ae862f1ef8d92eb34d0c5da4db769b"
+          },
+          {
+            "line_end": 117,
+            "line_start": 113,
+            "path": "app/review_gate.py",
+            "role": "commit_point",
+            "source_sha256": "e13db73f2236311cb01b9e327c0b1ce665433bc839cb8c629c8a156491561f86"
+          },
+          {
+            "line_end": 152,
+            "line_start": 142,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "75e3be1659de80f54405e674582ca6e4f3ae862f1ef8d92eb34d0c5da4db769b"
+          }
+        ],
+        "forbidden_condition": "Release of the user-facing triage recommendation report to the PCP for a run flagged urgent (referral_order StatUrgent) or with routing confidence LOW/REVIEW before a clinical reviewer response is recorded via the clinical_review interrupt, or any release at all after the reviewer responds with action reject.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Exact emission implementation and output channel of triage_orchestrator (sub_agents source absent); if the released report is delivered to the PCP as an HTTP response via the ADK fast API app, an additional http-stratum contract may be warranted.",
+          "Mechanism by which the clinical reviewer's response is submitted and mapped into ctx.resume_inputs[clinical_review] (the client/API resume path is not in the supplied source).",
+          "Whether ResumabilityConfig checkpointing is the sole pause/resume mechanism or additional ADK 2.0 runtime behavior is involved (ADK internals not supplied)."
+        ],
+        "protected_operation": "Emission of the final recommendation output (Specialist Brief, clinical questions, routing) by the triage_orchestrator node at Phase 7 of the smart_care_triage ADK workflow graph.",
+        "protected_resource": "The user-facing triage recommendation report / clinical report shown to the PCP, produced by the triage_orchestrator node of the ADK run.",
+        "protection_obligation": "Triage recommendations for urgent / LOW / REVIEW referrals must not be released to the PCP until a clinical reviewer responds through the clinical_review_gate RequestInput interrupt, and referrals rejected by the reviewer must never be released (the orchestrator must not emit the user-facing report for them).",
+        "scope_limits": [
+          "Applies only when the deterministic gate condition fires: StatUrgent referral or routing confidence LOW/REVIEW (app/review_gate.py:42-55); clean referrals pass straight through with an auto_released state write and no interrupt (app/review_gate.py:67-78).",
+          "Enforcement is graph ordering plus a RequestInput interrupt inside the ADK workflow; the supplied source shows no serving path for the recommendation outside this gated run.",
+          "The triage_orchestrator node implementation (sub_agents) is not supplied, so the concrete emission code at the commit point is not visible; the commit is attested by the edge registration and gate comments only.",
+          "Reviewer responses are recorded in session state review and their persistence into decisions.l depends on the unsupplied DecisionGatePlugin; this contract covers only the in-run release, not the audit-row write (covered by a separate contract)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Resolution of log_path (decisions.l) followed by open(log_path, a) and f.write(.dumps(entry) + newline) in log_pcp_action; the blocked return at app/fast_api_app.py:163-169 prevents reaching this append.",
+        "contract_id": "ecological-contract:e8dbd33c1e6d3ebecefa325e946e17b5",
+        "declared_mechanism": "Server-side review enforcement inside log_pcp_action: _latest_decision_row(log_path, action_data.session_id) fetches the session's most recent machine-decision row; if its disposition equals Clinical Reviewer (HITL) and review.action is not in (approve, modify), the handler returns status blocked with an explanatory message before the entry is constructed or appended; the docstring declares the client-side button lock a courtesy, not the control.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 151,
+            "line_start": 138,
+            "path": "app/fast_api_app.py",
+            "role": "guard_registration",
+            "source_sha256": "d8e125743f0cccd0e4ac9c60bd2735a5b22a9e63617b52a6cb222ab20323cb11"
+          },
+          {
+            "line_end": 169,
+            "line_start": 159,
+            "path": "app/fast_api_app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d8e125743f0cccd0e4ac9c60bd2735a5b22a9e63617b52a6cb222ab20323cb11"
+          },
+          {
+            "line_end": 146,
+            "line_start": 138,
+            "path": "app/fast_api_app.py",
+            "role": "protected_operation",
+            "source_sha256": "d8e125743f0cccd0e4ac9c60bd2735a5b22a9e63617b52a6cb222ab20323cb11"
+          },
+          {
+            "line_end": 183,
+            "line_start": 171,
+            "path": "app/fast_api_app.py",
+            "role": "protected_operation",
+            "source_sha256": "d8e125743f0cccd0e4ac9c60bd2735a5b22a9e63617b52a6cb222ab20323cb11"
+          },
+          {
+            "line_end": 157,
+            "line_start": 157,
+            "path": "app/fast_api_app.py",
+            "role": "commit_point",
+            "source_sha256": "d8e125743f0cccd0e4ac9c60bd2735a5b22a9e63617b52a6cb222ab20323cb11"
+          },
+          {
+            "line_end": 187,
+            "line_start": 185,
+            "path": "app/fast_api_app.py",
+            "role": "commit_point",
+            "source_sha256": "d8e125743f0cccd0e4ac9c60bd2735a5b22a9e63617b52a6cb222ab20323cb11"
+          },
+          {
+            "line_end": 107,
+            "line_start": 100,
+            "path": "app/fast_api_app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d8e125743f0cccd0e4ac9c60bd2735a5b22a9e63617b52a6cb222ab20323cb11"
+          },
+          {
+            "line_end": 135,
+            "line_start": 117,
+            "path": "app/fast_api_app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d8e125743f0cccd0e4ac9c60bd2735a5b22a9e63617b52a6cb222ab20323cb11"
+          },
+          {
+            "line_end": 16,
+            "line_start": 14,
+            "path": "app/review_gate.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e13db73f2236311cb01b9e327c0b1ce665433bc839cb8c629c8a156491561f86"
+          },
+          {
+            "line_end": 167,
+            "line_start": 166,
+            "path": "app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "75e3be1659de80f54405e674582ca6e4f3ae862f1ef8d92eb34d0c5da4db769b"
+          }
+        ],
+        "forbidden_condition": "Appending a PCP sign-off entry to decisions.l via POST /pcp_action when the session-joined latest machine-decision row has disposition Clinical Reviewer (HITL) and its review.action is not approve or modify (i.e., no reviewer response, or a reviewer reject), or when no approval is recorded for a decision that required review.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Exact schema and write path of machine-decision rows produced by DecisionGatePlugin (fields care_path, disposition Clinical Reviewer (HITL), review.action) are attested only by comments and docstrings; the plugin source is not supplied.",
+          "Whether DecisionGatePlugin persists rows with review.action reject for rejected runs, so that rejected sessions remain blocked at /pcp_action, is inferred from the gate's state writes (app/review_gate.py:100-132) but the plugin write is unsupplied.",
+          "Whether log_pcp_action's append is the only commit path for PCP sign-off records in the deployed system (no other writer is visible in the supplied source)."
+        ],
+        "protected_operation": "Recording a PCP sign-off (action accept/override/override_signed with patient, specialty, specialist, selected questions, referral note) by appending a structured JSON entry to the local decisions.l audit log from the log_pcp_action handler.",
+        "protected_resource": "decisions.l, the local JSONL decision/action audit log at the repository root (resolved relative to the app package), joined to machine-decision rows by session_id.",
+        "protection_obligation": "POST /pcp_action must refuse to record a PCP sign-off for a triage session whose latest machine-decision row has disposition Clinical Reviewer (HITL) unless a clinical reviewer response with action approve or modify is already recorded in that row's review field, with the refusal executed before the decisions.l append; rejected referrals are thereby never signable.",
+        "scope_limits": [
+          "The guard fires only when action_data.session_id is provided and a machine-decision row containing care_path with a matching session_id exists in decisions.l; if session_id is omitted, the log is missing, or no row matches, decision_row is None and the append proceeds unguarded (app/fast_api_app.py:117-135, 159-160).",
+          "The check reads only the latest matching row per session (last-match semantics of _latest_decision_row); multi-run sessions depend on this ordering.",
+          "The endpoint is a plain FastAPI route, not an ADK tool; agent mediation rests solely on agent-generated decision-row fields (disposition, review.action) reaching the guard condition, not on tool dispatch.",
+          "No caller authentication or authorization is shown for POST /pcp_action (ordinary web auth is outside DEC scope); the guard is keyed entirely on the client-supplied session_id.",
+          "The protected effect is limited to the decisions.l append in log_pcp_action; no other PCP sign-off write path appears in the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source for sub_agents.create_orchestrator / the triage_orchestrator node is not supplied; the exact code that emits the released recommendation report, and whether that emission additionally constitutes an HTTP response effect served by the ADK fast API app, cannot be verified.",
+      "Source for hitl.DecisionGatePlugin is not supplied; the exact schema, field names (care_path, disposition, review), session_id/invocation_id join, and write commit for machine-decision rows in decisions.l are attested only by comments and docstrings (app/agent.py:166, app/review_gate.py:14-16, app/fast_api_app.py:100-103).",
+      "The client or API path that delivers the clinical reviewer's response into ctx.resume_inputs for the clinical_review RequestInput interrupt is not present in the supplied source.",
+      "No source shows whether DecisionGatePlugin writes an audit row for rejected runs carrying review.action reject, which the /pcp_action server-side guard relies on to keep rejected sessions blocked.",
+      "No authentication, authorization, or caller-identity mechanism for POST /pcp_action is shown in the supplied source (outside DEC scope, but relevant to how the client-supplied session_id join can be trusted)."
+    ],
+    "repository": "GaneshkrishnaL/multi-agent-referral-routing-poc",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:6a9a088baa1a312163873712518b6289"
+  },
+  "request_sha256": "0f154b30b13df5bc2b715c2cdc51a347c5b8a886ffc3ad6918f6eab8ced50a66",
+  "response_sha256": "1e140fa700568ef0ef982c2122f0696acb78df5f4b049dbb1f24615d91486339",
+  "state": "completed",
+  "tokens": 26714,
+  "unit": "v24-screen:6a9a088baa1a312163873712518b6289"
+}

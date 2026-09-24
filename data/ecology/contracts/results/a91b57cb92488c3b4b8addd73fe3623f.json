@@ -1,0 +1,333 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "agents/meta_agent/payments.py:58 \u2014 upgrade_user_plan(email, plan) invoked only after construct_event succeeds; persistence occurs at save_user (payments.py:43) inside upgrade_user_plan.",
+        "contract_id": "ecological-contract:4c5024c202560e2baa306d65e0dbdeee",
+        "declared_mechanism": "STRIPE_WEBHOOK_SECRET loaded from environment (payments.py:6); stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET) inside try/except (payments.py:49-52) returns (False, error) on any verification failure, and the /payments/webhook handler converts failure to HTTPException 400 (api.py:441-443), so the checkout.session.completed branch and upgrade_user_plan are unreachable for unverified payloads.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 52,
+            "line_start": 46,
+            "path": "agents/meta_agent/payments.py",
+            "role": "guard_registration",
+            "source_sha256": "942eeb2e823b7efe245a92c920fcba22311dfe0acd94c6e760fc2c7e572c6721"
+          },
+          {
+            "line_end": 444,
+            "line_start": 437,
+            "path": "agents/meta_agent/api.py",
+            "role": "guard_registration",
+            "source_sha256": "881a5810a3b94bd26076437c71c9af63f7614c52ce97f3b1c0782b0518eb2850"
+          },
+          {
+            "line_end": 52,
+            "line_start": 47,
+            "path": "agents/meta_agent/payments.py",
+            "role": "forbidden_condition",
+            "source_sha256": "942eeb2e823b7efe245a92c920fcba22311dfe0acd94c6e760fc2c7e572c6721"
+          },
+          {
+            "line_end": 58,
+            "line_start": 53,
+            "path": "agents/meta_agent/payments.py",
+            "role": "protected_operation",
+            "source_sha256": "942eeb2e823b7efe245a92c920fcba22311dfe0acd94c6e760fc2c7e572c6721"
+          },
+          {
+            "line_end": 44,
+            "line_start": 36,
+            "path": "agents/meta_agent/payments.py",
+            "role": "protected_operation",
+            "source_sha256": "942eeb2e823b7efe245a92c920fcba22311dfe0acd94c6e760fc2c7e572c6721"
+          },
+          {
+            "line_end": 58,
+            "line_start": 58,
+            "path": "agents/meta_agent/payments.py",
+            "role": "commit_point",
+            "source_sha256": "942eeb2e823b7efe245a92c920fcba22311dfe0acd94c6e760fc2c7e572c6721"
+          }
+        ],
+        "forbidden_condition": "A webhook payload whose stripe-signature header fails verification (or is absent, or STRIPE_WEBHOOK_SECRET is unconfigured) being processed into a plan change \u2014 i.e., construct_event raising, or the secret being missing, must preclude upgrade_user_plan from executing.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Persistence backend and true effect stratum of auth.load_users/save_user (agents/meta_agent/auth.py not supplied).",
+          "Whether any agent-mediated flow (agent tool, lifecycle hook, or agent-generated input) can trigger the webhook path or the unguarded /payments/upgrade path."
+        ],
+        "protected_operation": "Processing of Stripe checkout.session.completed events into plan changes: handle_webhook extracts customer_email/metadata.plan from the verified event and calls upgrade_user_plan(email, plan), which sets user['plan'] and persists via save_user.",
+        "protected_resource": "Persistent user plan records mutated via auth.save_user inside upgrade_user_plan (backend module agents/meta_agent/auth.py not supplied).",
+        "protection_obligation": "Stripe-driven plan upgrades must commit only after webhook signature verification: POST /payments/webhook must verify the raw payload against the stripe-signature header via stripe.Webhook.construct_event with STRIPE_WEBHOOK_SECRET (rejecting with HTTP 400 on failure) before handle_webhook invokes upgrade_user_plan for checkout.session.completed events.",
+        "scope_limits": [
+          "Payment/billing infrastructure; supplied source shows no agent tool, agent lifecycle hook, or agent-generated input bound to this path, so it sits outside agent-DEC scope unless such binding is later established.",
+          "The signature gate covers only the /payments/webhook path; the separate manual endpoint POST /payments/upgrade (api.py:446-451) invokes upgrade_user_plan with no guard shown in supplied source \u2014 that distinct exposure is not covered by this contract.",
+          "The 'file' stratum is a hypothesis: auth.save_user's storage backend is not shown in supplied source (cf. the memory/users.l pattern in admin.py:11); confirm before treating this as a filesystem commit."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "rewrite_l(USERS_FILE, users) truncating and rewriting the user store \u2014 admin.py:173 (plan update) and admin.py:190 (suspend).",
+        "contract_id": "ecological-contract:5821494974a1f86691a093b0cfbffe19",
+        "declared_mechanism": "verify_admin(authorization: str = Header(...)) defined at admin.py:19-21, raising HTTPException 403 'Admin access denied' on mismatch; invoked as the first statement of each mutating handler (admin.py:158 and admin.py:178).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 21,
+            "line_start": 19,
+            "path": "agents/meta_agent/admin.py",
+            "role": "guard_registration",
+            "source_sha256": "512bc2161962787a097988e0456d67fce908e20ea77721570e1c678fc77de2eb"
+          },
+          {
+            "line_end": 17,
+            "line_start": 17,
+            "path": "agents/meta_agent/admin.py",
+            "role": "guard_registration",
+            "source_sha256": "512bc2161962787a097988e0456d67fce908e20ea77721570e1c678fc77de2eb"
+          },
+          {
+            "line_end": 21,
+            "line_start": 20,
+            "path": "agents/meta_agent/admin.py",
+            "role": "forbidden_condition",
+            "source_sha256": "512bc2161962787a097988e0456d67fce908e20ea77721570e1c678fc77de2eb"
+          },
+          {
+            "line_end": 174,
+            "line_start": 156,
+            "path": "agents/meta_agent/admin.py",
+            "role": "protected_operation",
+            "source_sha256": "512bc2161962787a097988e0456d67fce908e20ea77721570e1c678fc77de2eb"
+          },
+          {
+            "line_end": 192,
+            "line_start": 176,
+            "path": "agents/meta_agent/admin.py",
+            "role": "protected_operation",
+            "source_sha256": "512bc2161962787a097988e0456d67fce908e20ea77721570e1c678fc77de2eb"
+          },
+          {
+            "line_end": 174,
+            "line_start": 171,
+            "path": "agents/meta_agent/admin.py",
+            "role": "commit_point",
+            "source_sha256": "512bc2161962787a097988e0456d67fce908e20ea77721570e1c678fc77de2eb"
+          },
+          {
+            "line_end": 192,
+            "line_start": 188,
+            "path": "agents/meta_agent/admin.py",
+            "role": "commit_point",
+            "source_sha256": "512bc2161962787a097988e0456d67fce908e20ea77721570e1c678fc77de2eb"
+          }
+        ],
+        "forbidden_condition": "Any request whose Authorization header does not equal 'Bearer ' + ADMIN_SECRET (admin.py:20) reaching the user-store mutation or rewrite; note ADMIN_SECRET falls back to a hard-coded default literal when ADMIN_SECRET_KEY is unset (admin.py:17), which conditions the guard's real strength.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, workflow, or lifecycle hook invokes the /admin/* endpoints (none shown in supplied source).",
+          "Deployment posture of ADMIN_SECRET_KEY: the guard compares against a literal default fallback when the environment variable is unset (admin.py:17); confirm the production secret configuration."
+        ],
+        "protected_operation": "Admin user-plan update (POST /admin/user/update-plan: load memory/users.l, set plan/plan_updated_at/plan_updated_by, rewrite store) and admin user suspension/unsuspension (POST /admin/user/suspend: set suspended/suspension_reason/suspended_at, rewrite store).",
+        "protected_resource": "memory/users.l (USERS_FILE, admin.py:11) persistent user records rewritten via rewrite_l.",
+        "protection_obligation": "Administrative mutations of the persistent user store must require admin authorization: POST /admin/user/update-plan and POST /admin/user/suspend must invoke verify_admin and reject any request whose Authorization header is not exactly 'Bearer ' + ADMIN_SECRET (HTTP 403) before rewrite_l(USERS_FILE) commits the user-record rewrite.",
+        "scope_limits": [
+          "This is ordinary web authentication on admin HTTP endpoints; supplied source shows no binding of these endpoints to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect, so it sits outside agent-DEC scope unless such binding is later established. Router registration into the FastAPI app (api.py:48, api.py:78) is framework wiring only and does not establish mediation.",
+          "Read-only admin endpoints (overview, users list, user detail, tickets, revenue) share verify_admin but involve no mutation commit point; they are covered by the same guard obligation and not compiled as separate contracts.",
+          "Plan-value validation at admin.py:159-160 is generic application validation, not part of this authorization contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "agents/runtime/agent_runtime.py:98 \u2014 claude.call(task_instruction, system=system_prompt, max_tokens=token_budget // 4); both is_safe checks (api.py:260-262 and agent_runtime.py:51-58) precede it and terminate the flow on failure.",
+        "contract_id": "ecological-contract:595b2fb4278badccb7156f1e1c918d2f",
+        "declared_mechanism": "self_defence.injection_detector.is_safe applied at two layers: HTTP handler layer (api.py:260-262, raises 400 'Task blocked: ' + reason before runtime.run_task) and runtime layer (agent_runtime.py:51-58, writes TASK_BLOCKED audit entry and returns FAILED before sandbox checks, budget checks, and claude.call at line 98).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 58,
+            "line_start": 51,
+            "path": "agents/runtime/agent_runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "3f4e9f034f36a4142fccd31b2596027edfac6e5103e2d29ff02f1190e16e0004"
+          },
+          {
+            "line_end": 262,
+            "line_start": 260,
+            "path": "agents/meta_agent/api.py",
+            "role": "guard_registration",
+            "source_sha256": "881a5810a3b94bd26076437c71c9af63f7614c52ce97f3b1c0782b0518eb2850"
+          },
+          {
+            "line_end": 51,
+            "line_start": 36,
+            "path": "self_defence/injection_detector.py",
+            "role": "guard_registration",
+            "source_sha256": "b72c85d469a89236c10642557c65a98d90ae7381fc799b964d52dd5b831069d8"
+          },
+          {
+            "line_end": 33,
+            "line_start": 9,
+            "path": "self_defence/injection_detector.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b72c85d469a89236c10642557c65a98d90ae7381fc799b964d52dd5b831069d8"
+          },
+          {
+            "line_end": 50,
+            "line_start": 46,
+            "path": "self_defence/injection_detector.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b72c85d469a89236c10642557c65a98d90ae7381fc799b964d52dd5b831069d8"
+          },
+          {
+            "line_end": 263,
+            "line_start": 254,
+            "path": "agents/meta_agent/api.py",
+            "role": "protected_operation",
+            "source_sha256": "881a5810a3b94bd26076437c71c9af63f7614c52ce97f3b1c0782b0518eb2850"
+          },
+          {
+            "line_end": 49,
+            "line_start": 36,
+            "path": "agents/runtime/agent_runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3f4e9f034f36a4142fccd31b2596027edfac6e5103e2d29ff02f1190e16e0004"
+          },
+          {
+            "line_end": 98,
+            "line_start": 96,
+            "path": "agents/runtime/agent_runtime.py",
+            "role": "commit_point",
+            "source_sha256": "3f4e9f034f36a4142fccd31b2596027edfac6e5103e2d29ff02f1190e16e0004"
+          }
+        ],
+        "forbidden_condition": "Task text matching any INJECTION_PATTERNS regex or exceeding MAX_INPUT_LENGTH (default 10000) \u2014 is_safe returns False \u2014 reaching the agent's model invocation (claude.call) or being logged as TASK_STARTED.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether runtime.run_task has agent-side callers (e.g., meta_agent_graph nodes or agent tool surfaces) that would strengthen or change the mediation classification.",
+          "Whether execute_code (agents.runtime.code_executor, not supplied) applies its own screening to LLM-generated code before execution.",
+          "Confirmation from ai_clients.py that claude.call is a network API effect (http stratum)."
+        ],
+        "protected_operation": "Agent task execution: POST /agents/{agent_name}/run dispatching body.task via runtime.run_task(agent_name, task) for a registry-resolved agent, culminating in claude.call(task_instruction, system=agent_system_prompt, max_tokens=...) at agent_runtime.py:98.",
+        "protected_resource": "The registered agent's execution context in AgentRuntime (agent identity from the registry, capability sandbox, token budget, agent-scoped system prompt) and the external model endpoint invoked via ClaudeClient.call.",
+        "protection_obligation": "Task instructions dispatched to a registered agent must be screened before the agent's model call: both the /agents/{agent_name}/run handler (api.py:260-262) and AgentRuntime.run_task (agent_runtime.py:51-58) must reject any task text for which self_defence.is_safe returns False (HTTP 400 at the API layer; TASK_BLOCKED audit entry and FAILED status at the runtime layer), before ClaudeClient.call transmits the instruction to the external model.",
+        "scope_limits": [
+          "Per supplied source the only caller of runtime.run_task is the HTTP endpoint api.py:263 with caller-supplied task text; no agent-internal or inter-agent tool-dispatch caller is shown. The direct_tool classification rests on the run-agent dispatch path into a registry-resolved agent's execution and should be revisited if the study requires agent-generated input for mediation.",
+          "agents/runtime/ai_clients.py (ClaudeClient internals) is not supplied; the http stratum for claude.call is inferred from the LLM client call signature (prompt/system/max_tokens) and token accounting, not from client source.",
+          "The instruction-level is_safe checks do not screen LLM-generated code blocks that run_task may execute (agent_runtime.py:139-156, execute_code at line 151); guard coverage of that sink is a separate unresolved question.",
+          "Rate limiting at api.py:258-259 is separate infrastructure policy and is not compiled here."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "agents/meta_agent/api.py:192 \u2014 meta_agent_graph.invoke(initial_state, config=config); the guard decision and HTTP 400 rejection at api.py:152-156 strictly precede and block this invocation.",
+        "contract_id": "ecological-contract:c90ea47cd5ce79056d677376d0e902a0",
+        "declared_mechanism": "gateway.validate_and_admit calls self_defence.injection_detector.is_safe(request, agent_id='gateway'); on False the detector logs INJECTION_BLOCKED (or INPUT_TOO_LONG for overlength), the gateway writes a GATEWAY_BLOCKED_INJECTION audit entry and returns (None, errors), and the /agents/create handler raises HTTPException 400 (api.py:155-156), making meta_agent_graph.invoke unreachable for blocked requests. is_safe matches compiled INJECTION_PATTERNS case-insensitively and enforces the MAX_INPUT_LENGTH environment cap.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 37,
+            "line_start": 26,
+            "path": "agents/meta_agent/task_gateway.py",
+            "role": "guard_registration",
+            "source_sha256": "6e32e39b1ef2c9647c826adf24fd48d941a89b5196d0c0ae5bec7b60990d7db6"
+          },
+          {
+            "line_end": 51,
+            "line_start": 36,
+            "path": "self_defence/injection_detector.py",
+            "role": "guard_registration",
+            "source_sha256": "b72c85d469a89236c10642557c65a98d90ae7381fc799b964d52dd5b831069d8"
+          },
+          {
+            "line_end": 33,
+            "line_start": 9,
+            "path": "self_defence/injection_detector.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b72c85d469a89236c10642557c65a98d90ae7381fc799b964d52dd5b831069d8"
+          },
+          {
+            "line_end": 50,
+            "line_start": 46,
+            "path": "self_defence/injection_detector.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b72c85d469a89236c10642557c65a98d90ae7381fc799b964d52dd5b831069d8"
+          },
+          {
+            "line_end": 141,
+            "line_start": 138,
+            "path": "agents/meta_agent/api.py",
+            "role": "protected_operation",
+            "source_sha256": "881a5810a3b94bd26076437c71c9af63f7614c52ce97f3b1c0782b0518eb2850"
+          },
+          {
+            "line_end": 156,
+            "line_start": 152,
+            "path": "agents/meta_agent/api.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "881a5810a3b94bd26076437c71c9af63f7614c52ce97f3b1c0782b0518eb2850"
+          },
+          {
+            "line_end": 165,
+            "line_start": 161,
+            "path": "agents/meta_agent/api.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "881a5810a3b94bd26076437c71c9af63f7614c52ce97f3b1c0782b0518eb2850"
+          },
+          {
+            "line_end": 195,
+            "line_start": 191,
+            "path": "agents/meta_agent/api.py",
+            "role": "commit_point",
+            "source_sha256": "881a5810a3b94bd26076437c71c9af63f7614c52ce97f3b1c0782b0518eb2850"
+          }
+        ],
+        "forbidden_condition": "A request body whose text matches any compiled INJECTION_PATTERNS regex (e.g. 'ignore previous instructions', 'reveal your prompt', '__import__', 'DROP TABLE') or whose length exceeds MAX_INPUT_LENGTH (default 10000) \u2014 i.e. is_safe returns False \u2014 being admitted (task envelope returned / GATEWAY_ADMITTED logged) and driving execution of the meta-agent creation graph.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "What effects meta_agent_graph.invoke actually commits (model API calls, file writes, registry writes, code execution) \u2014 agents/meta_agent/graph.py is not supplied; if evidenced, separate contracts per stratum would be required.",
+          "Whether agent_lifecycle_hook is the correct mediation category (guard wired as the admission gate of the agent-creation lifecycle) versus another category depends on graph internals not supplied."
+        ],
+        "protected_operation": "Admission of a founder request into the agent-creation pipeline: POST /agents/create handler accepting CreateAgentRequest, calling gateway.validate_and_admit, and on success invoking meta_agent_graph.invoke(initial_state) with the request text bound as founder_request in the graph state.",
+        "protected_resource": "The meta_agent_graph agent-creation pipeline and its invocation at agents/meta_agent/api.py:192 (downstream effects of the graph asserted by the reviewer \u2014 external model calls, generated agent files, agent registration, generated-code execution \u2014 are not evidenced in the supplied source views).",
+        "protection_obligation": "Admission to the meta-agent creation pipeline must be gated on prompt-injection and input-length screening: POST /agents/create must pass every request through TaskEntryGateway.validate_and_admit, and the gateway must reject (return no task envelope, log GATEWAY_BLOCKED_INJECTION) any request for which self_defence.is_safe returns False, with the API surfacing the rejection as HTTP 400 before control reaches meta_agent_graph.invoke.",
+        "scope_limits": [
+          "effect_stratum tool_execution reflects the guarded commit as the in-process invocation of the agent-creation graph (invocation-only at this commit point); downstream strata of the graph are unresolved pending graph.py.",
+          "The reviewer's characterization of the graph's downstream effects (Claude/OpenAI API calls, generated agent file writes, agent registration, generated-code execution) is recorded as asserted, not supported by supplied source; agents/meta_agent/graph.py is not supplied.",
+          "Gateway rate-limit (task_gateway.py:39-42) and daily-token-budget (task_gateway.py:44-47) checks are separate infrastructure-policy obligations and are not compiled here.",
+          "Only the /agents/create admission path is evidenced for this guard; any other entry into meta_agent_graph is not shown in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "agents/meta_agent/graph.py is not supplied: the second reviewer's claims that meta_agent_graph performs external Claude/OpenAI API calls, writes generated agent files, registers agents, and can execute generated code are unsupported by the supplied views (only the invocation site api.py:192 is shown); downstream commit points and strata remain unverified.",
+      "agents/runtime/ai_clients.py (ClaudeClient) is not supplied; the http stratum of claude.call at agent_runtime.py:98 is inferred from the call signature and token accounting, not from client source.",
+      "agents/runtime/code_executor.py (execute_code) is not supplied; whether LLM-generated code blocks extracted at agent_runtime.py:139-156 are screened by any guard before execution is unknown.",
+      "agents/meta_agent/auth.py is not supplied; the storage backend of load_users/save_user (and therefore the true effect stratum of plan-upgrade persistence) is unknown.",
+      "No supplied source shows the /admin/* endpoints or the payment endpoints exposed as agent tools, wired to agent lifecycle hooks, or receiving agent-generated input; agent_mediation is not_established for the admin and Stripe contracts, and router registration (api.py:48, api.py:78) is framework metadata only.",
+      "The second reviewer cites deployment posture (Dockerfile CMD, ENVIRONMENT=production); no Dockerfile or deployment configuration is present in the supplied source views.",
+      "Whether runtime.run_task has callers other than api.py:263 (e.g., graph nodes or agent tool surfaces) is not shown in supplied source.",
+      "Gateway rate-limit and daily-budget checks (task_gateway.py:39-47) and the CORS configuration (api.py:87-93) are treated as out-of-scope infrastructure/generic policy per study scope and were not compiled into contracts.",
+      "Behavior labels are unavailable for this unit (per supplied scope statement), so all contracts are compiled from source text alone."
+    ],
+    "repository": "zhugang-kevin/dorjea",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a91b57cb92488c3b4b8addd73fe3623f"
+  },
+  "request_sha256": "373489cbc75369275514fa69fd9d9db8d2f6fa9d9a80ed39453e4159d868e3b8",
+  "response_sha256": "5dfa9e97b7954edfd44288d79a6cdc454539197e0fa26f28f84ceec68cbdd274",
+  "state": "completed",
+  "tokens": 41727,
+  "unit": "v24-screen:a91b57cb92488c3b4b8addd73fe3623f"
+}

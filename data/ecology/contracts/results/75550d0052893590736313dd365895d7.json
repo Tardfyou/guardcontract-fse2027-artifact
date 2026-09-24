@@ -1,0 +1,114 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "gmail_client.py:68-71 \u2014 self.service.users().messages().send(userId='me', body={'raw': raw}).execute(), reached from the send_email tool body at tools.py:367.",
+        "contract_id": "ecological-contract:4d1825343e6ae2bcf321d6e7f6c3e3d6",
+        "declared_mechanism": "HumanInTheLoopMiddleware registered in build_agent's middleware list with interrupt_on={'send_email': True} (agent.py:51-59): the agent graph surfaces __interrupt__ before send_email executes; each supplied frontend then obtains an explicit decision and resumes with Command(resume={'decisions': [...]}), where approve (app.py:87-93) or edit (app_streamlit.py:222-234) is required for the send to proceed and reject (app.py:94-100; app_streamlit.py:229-234) resumes without sending.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 59,
+            "line_start": 51,
+            "path": "agent.py",
+            "role": "guard_registration",
+            "source_sha256": "7b5f050bd825af3d7e6e89c30923d925802bd459a8f9a7059ad6428ce0609eec"
+          },
+          {
+            "line_end": 49,
+            "line_start": 46,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7b5f050bd825af3d7e6e89c30923d925802bd459a8f9a7059ad6428ce0609eec"
+          },
+          {
+            "line_end": 44,
+            "line_start": 43,
+            "path": "agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7b5f050bd825af3d7e6e89c30923d925802bd459a8f9a7059ad6428ce0609eec"
+          },
+          {
+            "line_end": 367,
+            "line_start": 345,
+            "path": "tools.py",
+            "role": "protected_operation",
+            "source_sha256": "c265d62a85c75e03e3b1053f3b0f185eea5d1f6e24d052a95420493805214073"
+          },
+          {
+            "line_end": 499,
+            "line_start": 491,
+            "path": "tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c265d62a85c75e03e3b1053f3b0f185eea5d1f6e24d052a95420493805214073"
+          },
+          {
+            "line_end": 73,
+            "line_start": 61,
+            "path": "gmail_client.py",
+            "role": "commit_point",
+            "source_sha256": "afe55b801ceb730d3347cc02a5fb1284fd4942e60ca48772200f61b4cc43bb9e"
+          },
+          {
+            "line_end": 100,
+            "line_start": 79,
+            "path": "app.py",
+            "role": "guard_registration",
+            "source_sha256": "55ed06b48f8567f3749dc82aeed99adefb926ac278c0fdf9717b7c6497a65f47"
+          },
+          {
+            "line_end": 255,
+            "line_start": 252,
+            "path": "app_streamlit.py",
+            "role": "guard_registration",
+            "source_sha256": "6c10751e0337f5d430a968d78a1ca67e5d6c759b2c9bb7f8eac74b0b74352e3d"
+          },
+          {
+            "line_end": 238,
+            "line_start": 178,
+            "path": "app_streamlit.py",
+            "role": "guard_registration",
+            "source_sha256": "6c10751e0337f5d430a968d78a1ca67e5d6c759b2c9bb7f8eac74b0b74352e3d"
+          }
+        ],
+        "forbidden_condition": "Committing the Gmail send API call as part of a send_email tool invocation that has not been interrupted and resumed with an explicit human approve/edit decision \u2014 i.e., a send that executes with no human approval, or continuation of a send after a reject decision.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The implementation of langchain.agents.middleware.HumanInTheLoopMiddleware is not in supplied source; that interrupt_on={'send_email': True} blocks tool execution until resume, and that a reject decision suppresses the send, are library-behavior assumptions not verifiable from the supplied views.",
+          "Whether the installed middleware accepts the exact resume payloads used by the frontends \u2014 {'type': 'approve'} (app.py:91), {'type': 'reject'} (app.py:98), and {'type': 'edit', 'edited_action': ...} (app_streamlit.py:222-233) \u2014 is determined by library internals not supplied.",
+          "Whether any code path outside the supplied views can resume an interrupted thread or invoke GmailClient.send_email / the send_email tool directly (bypassing the agent graph) cannot be confirmed without complete repository enumeration.",
+          "Runtime behavior of the InMemorySaver checkpointer and Streamlit session lifecycle (e.g., an interrupted send lost on process/session restart) is not decidable from source."
+        ],
+        "protected_operation": "Agent-dispatched invocation of the send_email tool (tools.py:345-367), whose body terminates in GmailClient.send_email's Gmail API send request (gmail_client.py:61-73).",
+        "protected_resource": "The authenticated user's Gmail outgoing-mail channel: Gmail API users().messages().send for userId='me' (the ability to dispatch an email from the account).",
+        "protection_obligation": "The send_email agent tool must not execute its Gmail send effect without explicit human approval: HumanInTheLoopMiddleware registers an interrupt on send_email so the agent run halts before the tool executes, and the send effect commits only after the user resumes the graph with an approve/edit decision; a reject decision resumes the run without sending.",
+        "scope_limits": [
+          "Only the send_email tool is gated: agent.py:54-55 explicitly configures check_inbox and read_email as non-interrupting; their Gmail read/list effects are outside this contract.",
+          "The declared guard is the middleware interrupt; the system-prompt rule 'Never send an email without explicit user approval' (agent.py:44) is declarative guidance and is not relied on as enforcement.",
+          "Only the two supplied frontends (CLI app.py:79-100 and Streamlit app_streamlit.py:178-238, 252-255) are assessed as approval surfaces; any other host or resume path is out of scope.",
+          "The Streamlit 'Save Draft' action (app_streamlit.py:239-241) mutates only session-state draft arguments and does not commit a send or resume the graph.",
+          "The reminders. filesystem writes (tools.py:221-225, 452-453) and Gmail search/read effects are separate obligations not covered by this contract.",
+          "The contract binds to the Gmail API request commit point visible in source; any downstream server-side message delivery after execute() returns is not separately observable."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source for langchain.agents.middleware.HumanInTheLoopMiddleware (decision schema, interrupt/resume semantics, reject handling) is not supplied; behavior labels are unavailable for the installed version.",
+      "Repository enumeration is not complete: absence of additional callers of GmailClient.send_email or the send_email tool outside the supplied views (scripts, tests, other hosts) is unconfirmed.",
+      "auth.py (get_credentials) is not supplied; the Gmail OAuth scopes granted to the client, which bound the reachable protected resource, are unknown.",
+      "Runtime persistence semantics of InMemorySaver across frontend restarts or Streamlit session resets are not decidable from the supplied source."
+    ],
+    "repository": "Manyagoel14/AI-MailAssistant",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:75550d0052893590736313dd365895d7"
+  },
+  "request_sha256": "bbf03e1ffde1008f9fec22ecc3dd8993abd122d93d0a115954a3e923bc99c338",
+  "response_sha256": "e86c90e509a946872115dda57e99e89fb5231034b2fab5928b64b3329e54e766",
+  "state": "completed",
+  "tokens": 21739,
+  "unit": "v24-screen:75550d0052893590736313dd365895d7"
+}

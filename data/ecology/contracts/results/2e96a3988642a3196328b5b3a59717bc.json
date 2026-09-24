@@ -1,0 +1,369 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "vector_search.py:111 result = vector_store.query(vsq) \u2014 execution of the Milvus query with the filter-bearing VectorStoreQuery constructed at vector_search.py:103-109.",
+        "contract_id": "ecological-contract:13bb32d30d1c776708fafa20e2c800d2",
+        "declared_mechanism": "milvus_search resolves owner_user_id server-side via langgraph_runtime_user_id() and returns a refusal when it is None (vector_search.py:249-254); search_user_knowledge_vectors_sync unconditionally prepends MetadataFilter(key='owner_user_id', operator=FilterOperator.EQ) while caller metadata_filters are restricted to a fixed allow-list, then builds VectorStoreQuery(filters=meta) before querying (vector_search.py:61-93, 103-111).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 238,
+            "line_start": 232,
+            "path": "src/agent/tools/vector_search.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3907ae247c8eeec0b25d08e5173a3adf5bb76ecd3fa74750822048dd1420b5a1"
+          },
+          {
+            "line_end": 241,
+            "line_start": 239,
+            "path": "src/agent/tools/vector_search.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3907ae247c8eeec0b25d08e5173a3adf5bb76ecd3fa74750822048dd1420b5a1"
+          },
+          {
+            "line_end": 254,
+            "line_start": 249,
+            "path": "src/agent/tools/vector_search.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3907ae247c8eeec0b25d08e5173a3adf5bb76ecd3fa74750822048dd1420b5a1"
+          },
+          {
+            "line_end": 67,
+            "line_start": 61,
+            "path": "src/agent/tools/vector_search.py",
+            "role": "guard_registration",
+            "source_sha256": "3907ae247c8eeec0b25d08e5173a3adf5bb76ecd3fa74750822048dd1420b5a1"
+          },
+          {
+            "line_end": 262,
+            "line_start": 255,
+            "path": "src/agent/tools/vector_search.py",
+            "role": "protected_operation",
+            "source_sha256": "3907ae247c8eeec0b25d08e5173a3adf5bb76ecd3fa74750822048dd1420b5a1"
+          },
+          {
+            "line_end": 111,
+            "line_start": 103,
+            "path": "src/agent/tools/vector_search.py",
+            "role": "commit_point",
+            "source_sha256": "3907ae247c8eeec0b25d08e5173a3adf5bb76ecd3fa74750822048dd1420b5a1"
+          }
+        ],
+        "forbidden_condition": "A Milvus hybrid retrieval that (a) reaches vector_store.query without the server-derived owner_user_id EQ filter, (b) uses a tenant identity selectable by the model, or (c) proceeds when langgraph_runtime_user_id() returns None.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether milvus_search is a member of ALL_AGENT_TOOLS bound on the production graph (agent/tools package init not supplied).",
+          "Source of langgraph_runtime_user_id and its binding to the authenticated session / LangGraph configurable.user_id."
+        ],
+        "protected_operation": "Hybrid (dense+BM25) knowledge-base retrieval via the milvus_search agent tool \u2192 search_user_knowledge_vectors_sync against Milvus.",
+        "protected_resource": "User-owned knowledge-base vectors/documents in the Milvus vector store (owner_user_id metadata; optional knowledge_base_id narrowing).",
+        "protection_obligation": "Knowledge-base vector retrieval must be scoped to the server-resolved logged-in user: an owner_user_id equality metadata filter is mandatory, the model may not choose the tenant, and retrieval must be refused when the login user context cannot be resolved.",
+        "scope_limits": [
+          "Identity resolution (agent.tools.runtime_user.langgraph_runtime_user_id) is unsupplied; that it reflects the authenticated FastAPI session rests on docstring claims (graph.py:3, vector_search.py:239-241).",
+          "search_user_knowledge_vectors_raw (vector_search.py:151-229) accepts caller-supplied owner_user_id with no runtime-user check and per its docstring serves the Reranker (vector_search.py:159); its agent mediation is not established.",
+          "Caller-supplied metadata_filters values are combined additively with the owner filter and limited to allow-listed keys (vector_search.py:77-92).",
+          "Ingestion-side tagging of owner_user_id metadata on stored Milvus vectors is not shown in supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "tool_policy.py:46 msg.model_copy(update={'tool_calls': kept}) and return of the stripped response at tool_policy.py:72-73 \u2014 after these points no disallowed tool_call remains in the model output.",
+        "contract_id": "ecological-contract:6aca483eddcd355964e03485ad3ea4c1",
+        "declared_mechanism": "@wrap_model_call middleware strip_tool_calls_not_in_enabled_list (tool_policy.py:64-73) reads configurable.enabled_tools and rewrites responses via _strip_ai_tool_calls/_strip_model_response so only allow-listed tool_calls remain (tool_policy.py:26-61); registered on the production graph (graph.py:21, 69).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 4,
+            "line_start": 1,
+            "path": "src/agent/middleware/tool_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b5fa20f38f772b727461abb6da3ad0b2a3b27b111da4ebbefa7c5d684a3d6355"
+          },
+          {
+            "line_end": 73,
+            "line_start": 64,
+            "path": "src/agent/middleware/tool_policy.py",
+            "role": "protected_operation",
+            "source_sha256": "b5fa20f38f772b727461abb6da3ad0b2a3b27b111da4ebbefa7c5d684a3d6355"
+          },
+          {
+            "line_end": 65,
+            "line_start": 64,
+            "path": "src/agent/middleware/tool_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "b5fa20f38f772b727461abb6da3ad0b2a3b27b111da4ebbefa7c5d684a3d6355"
+          },
+          {
+            "line_end": 46,
+            "line_start": 32,
+            "path": "src/agent/middleware/tool_policy.py",
+            "role": "commit_point",
+            "source_sha256": "b5fa20f38f772b727461abb6da3ad0b2a3b27b111da4ebbefa7c5d684a3d6355"
+          },
+          {
+            "line_end": 73,
+            "line_start": 72,
+            "path": "src/agent/middleware/tool_policy.py",
+            "role": "commit_point",
+            "source_sha256": "b5fa20f38f772b727461abb6da3ad0b2a3b27b111da4ebbefa7c5d684a3d6355"
+          },
+          {
+            "line_end": 74,
+            "line_start": 68,
+            "path": "src/agent/core/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "207657a2d88e53e88ac60fa86a1e6b76c8c777efc1578f6f60d59b31c6bba162"
+          }
+        ],
+        "forbidden_condition": "An AIMessage tool_call whose name is not in configurable.enabled_tools surviving model-response processing into ToolNode execution.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The ToolNode execution path is not supplied; the downstream execution commit that stripping prevents is not directly evidenced."
+        ],
+        "protected_operation": "Processing of the model response (ModelResponse/AIMessage tool_calls) inside the agent's model-call hook, prior to tool execution.",
+        "protected_resource": "The tool-call channel from model output to the agent's ToolNode.",
+        "protection_obligation": "Model-generated tool_calls naming tools outside configurable.enabled_tools must be removed from the model response before any tool execution phase is reached.",
+        "scope_limits": [
+          "Pass-through when configurable.enabled_tools is None (tool_policy.py:70-71).",
+          "structured_response is carried through unfiltered (tool_policy.py:55-58); stripping applies only to AIMessage.tool_calls.",
+          "Matching is by tool-name string equality only."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tenant_store.py:437 await store.abatch(sub_ops) \u2014 dispatch to the per-tenant PostgresStore, reached only after per-op validation (raises at tenant_store.py:380-392, 401-405).",
+        "contract_id": "ecological-contract:9c53a31f02ec9272f148aebf3cfd04e2",
+        "declared_mechanism": "TenantRoutingStore.abatch resolves each op's namespace via _op_namespace and validates it via _resolve_user_id (raising InvalidNamespaceError on malformed namespaces and on ListNamespacesOp), then dispatches per-user sub-batches to the resolved PostgresStore (tenant_store.py:374-441).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 393,
+            "line_start": 374,
+            "path": "src/infra/langgraph/tenant_store.py",
+            "role": "guard_registration",
+            "source_sha256": "135a8ba8f20ff479100d1bddcbfca6c64fd3c1031b5669b0c0ced1b34983131a"
+          },
+          {
+            "line_end": 406,
+            "line_start": 396,
+            "path": "src/infra/langgraph/tenant_store.py",
+            "role": "guard_registration",
+            "source_sha256": "135a8ba8f20ff479100d1bddcbfca6c64fd3c1031b5669b0c0ced1b34983131a"
+          },
+          {
+            "line_end": 392,
+            "line_start": 380,
+            "path": "src/infra/langgraph/tenant_store.py",
+            "role": "forbidden_condition",
+            "source_sha256": "135a8ba8f20ff479100d1bddcbfca6c64fd3c1031b5669b0c0ced1b34983131a"
+          },
+          {
+            "line_end": 405,
+            "line_start": 401,
+            "path": "src/infra/langgraph/tenant_store.py",
+            "role": "forbidden_condition",
+            "source_sha256": "135a8ba8f20ff479100d1bddcbfca6c64fd3c1031b5669b0c0ced1b34983131a"
+          },
+          {
+            "line_end": 429,
+            "line_start": 420,
+            "path": "src/infra/langgraph/tenant_store.py",
+            "role": "protected_operation",
+            "source_sha256": "135a8ba8f20ff479100d1bddcbfca6c64fd3c1031b5669b0c0ced1b34983131a"
+          },
+          {
+            "line_end": 437,
+            "line_start": 434,
+            "path": "src/infra/langgraph/tenant_store.py",
+            "role": "commit_point",
+            "source_sha256": "135a8ba8f20ff479100d1bddcbfca6c64fd3c1031b5669b0c0ced1b34983131a"
+          },
+          {
+            "line_end": 6,
+            "line_start": 4,
+            "path": "src/infra/langgraph/tenant_store.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "135a8ba8f20ff479100d1bddcbfca6c64fd3c1031b5669b0c0ced1b34983131a"
+          },
+          {
+            "line_end": 17,
+            "line_start": 15,
+            "path": "src/infra/langgraph/tenant_store.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "135a8ba8f20ff479100d1bddcbfca6c64fd3c1031b5669b0c0ced1b34983131a"
+          },
+          {
+            "line_end": 67,
+            "line_start": 62,
+            "path": "src/agent/core/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "207657a2d88e53e88ac60fa86a1e6b76c8c777efc1578f6f60d59b31c6bba162"
+          }
+        ],
+        "forbidden_condition": "Dispatch of a store Op whose namespace has fewer than 2 segments, whose namespace[1] is not a positive-integer user_id string, or of a ListNamespacesOp (cross-tenant enumeration deemed unsafe), to an underlying per-tenant PostgresStore.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Sources of the named callers (LangMem manage/search tools, AdvancedMemoryManager, memory_*_node) are not supplied; the concrete construction of namespace[1] from the authenticated user is not evidenced.",
+          "Implementation of get_langgraph_store() is not supplied; that it returns TenantRoutingStore rests on the module docstring (tenant_store.py:15-17)."
+        ],
+        "protected_operation": "Tenant-scoped store operations (GetOp/PutOp/SearchOp/ListNamespacesOp) batched through TenantRoutingStore.batch/abatch.",
+        "protected_resource": "Per-user Postgres schemas mem_u{user_id}_v{version} (store / store_vectors) behind TenantRoutingStore, the only BaseStore handed to LangGraph.",
+        "protection_obligation": "Every LangGraph store operation routed through TenantRoutingStore must carry a well-formed per-tenant namespace (namespace[1] = positive-integer user_id), and cross-tenant namespace listing (ListNamespacesOp) must be rejected outright.",
+        "scope_limits": [
+          "Validation is shape-only: _resolve_user_id accepts any positive integer uid and does not compare namespace[1] with the authenticated caller; tenant isolation therefore depends on callers deriving namespace[1] from the logged-in user (tenant_store.py:4-6, 374-393).",
+          "ListNamespacesOp is rejected unconditionally (tenant_store.py:401-405).",
+          "DualWriteStore (migration path) adds no namespace validation of its own; it only receives sub-ops already validated by TenantRoutingStore (tenant_store.py:290-337, 434-437)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The per-request model call inside create_agent where tools are bound; the concrete interception code is not present in supplied source (see missing_information).",
+        "contract_id": "ecological-contract:d39b414a11c18a3aec44395cd4aa5db8",
+        "declared_mechanism": "filter_tools_by_enabled_config registered as agent middleware on create_agent (graph.py:20, 68-74); per the tool_policy.py module docstring it 'limits bind_tools' to enabled tools (tool_policy.py:1-4). Its implementation is not among the supplied views.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 4,
+            "line_start": 4,
+            "path": "src/agent/core/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "207657a2d88e53e88ac60fa86a1e6b76c8c777efc1578f6f60d59b31c6bba162"
+          },
+          {
+            "line_end": 4,
+            "line_start": 1,
+            "path": "src/agent/middleware/tool_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b5fa20f38f772b727461abb6da3ad0b2a3b27b111da4ebbefa7c5d684a3d6355"
+          },
+          {
+            "line_end": 66,
+            "line_start": 62,
+            "path": "src/agent/core/graph.py",
+            "role": "protected_operation",
+            "source_sha256": "207657a2d88e53e88ac60fa86a1e6b76c8c777efc1578f6f60d59b31c6bba162"
+          },
+          {
+            "line_end": 20,
+            "line_start": 20,
+            "path": "src/agent/core/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "207657a2d88e53e88ac60fa86a1e6b76c8c777efc1578f6f60d59b31c6bba162"
+          },
+          {
+            "line_end": 74,
+            "line_start": 68,
+            "path": "src/agent/core/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "207657a2d88e53e88ac60fa86a1e6b76c8c777efc1578f6f60d59b31c6bba162"
+          },
+          {
+            "line_end": 74,
+            "line_start": 68,
+            "path": "src/agent/core/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "207657a2d88e53e88ac60fa86a1e6b76c8c777efc1578f6f60d59b31c6bba162"
+          }
+        ],
+        "forbidden_condition": "A tool whose name is not in configurable.enabled_tools being included in the bind_tools set presented to the model.",
+        "missing_evidence_roles": [
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "Whether filter_tools_by_enabled_config is a wrap_model_call middleware and at exactly which point it filters bind_tools.",
+          "Ordering interaction with strip_tool_calls_not_in_enabled_list, which is registered immediately before it (graph.py:69-70)."
+        ],
+        "protected_operation": "Tool binding for model invocation on the create_agent graph (tools=ALL_AGENT_TOOLS).",
+        "protected_resource": "The production agent graph's model-bind tool surface.",
+        "protection_obligation": "On the production agent graph, only tool names listed in RunnableConfig.configurable.enabled_tools may participate in model binding; when enabled_tools is absent all tools are available, and [] disables all tools (graph.py:4).",
+        "scope_limits": [
+          "Configuration-conditional guard: enabled_tools=None permits every tool; [] disables all tools (graph.py:4).",
+          "Declared behavior of filter_tools_by_enabled_config rests on the tool_policy.py:1-4 docstring and its registration; the mechanism code is unsupplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tool.py:26 return await handler(request) \u2014 the delegation that executes the tool; blocked calls return at tool.py:22-25 without reaching it.",
+        "contract_id": "ecological-contract:e3f1b187d7abbc7c61bc25ab54c7abec",
+        "declared_mechanism": "@wrap_tool_call middleware block_disabled_tool_execution (tool.py:11-26): when configurable.enabled_tools is a list and the requested tool name is not in it, returns a refusal ToolMessage without invoking the handler; otherwise delegates to handler(request).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 12,
+            "line_start": 11,
+            "path": "src/agent/middleware/tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fd43abf3cff1a14e2027d8f65fd8c5205260de4ce8078932d257a5f7176b5b75"
+          },
+          {
+            "line_end": 26,
+            "line_start": 11,
+            "path": "src/agent/middleware/tool.py",
+            "role": "guard_registration",
+            "source_sha256": "fd43abf3cff1a14e2027d8f65fd8c5205260de4ce8078932d257a5f7176b5b75"
+          },
+          {
+            "line_end": 25,
+            "line_start": 19,
+            "path": "src/agent/middleware/tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fd43abf3cff1a14e2027d8f65fd8c5205260de4ce8078932d257a5f7176b5b75"
+          },
+          {
+            "line_end": 29,
+            "line_start": 29,
+            "path": "src/agent/core/graph.py",
+            "role": "protected_operation",
+            "source_sha256": "207657a2d88e53e88ac60fa86a1e6b76c8c777efc1578f6f60d59b31c6bba162"
+          },
+          {
+            "line_end": 26,
+            "line_start": 26,
+            "path": "src/agent/middleware/tool.py",
+            "role": "commit_point",
+            "source_sha256": "fd43abf3cff1a14e2027d8f65fd8c5205260de4ce8078932d257a5f7176b5b75"
+          }
+        ],
+        "forbidden_condition": "Execution of a disabled agent tool (name not in configurable.enabled_tools) via the tool-call handler.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Where, if anywhere, block_disabled_tool_execution is added to an agent's middleware list."
+        ],
+        "protected_operation": "Agent tool execution dispatch (wrap_tool_call handler invocation for model-requested tool calls).",
+        "protected_resource": "The execution layer of the agent's tool set (tools=ALL_AGENT_TOOLS on the graph).",
+        "protection_obligation": "A tool call naming a tool outside configurable.enabled_tools must not be dispatched to the tool handler for execution; it must receive a refusal ToolMessage instead.",
+        "scope_limits": [
+          "block_disabled_tool_execution does not appear in the production graph middleware list (graph.py:68-74 lists only strip_tool_calls_not_in_enabled_list, filter_tools_by_enabled_config, short_term_message_window, token_level_pause_middleware, inject_llm_from_global_settings); its activation on any graph is not evidenced.",
+          "Pass-through when configurable.enabled_tools is None (tool.py:16-17)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Implementation source of agent.middleware.filter_tools_by_enabled_config is not supplied; its bind_tools-filtering behavior is asserted only by the tool_policy.py:1-4 docstring and its registration (graph.py:20, 68-74).",
+      "Registration site for block_disabled_tool_execution is unknown; it does not appear in the production middleware list (graph.py:68-74), so its active application to any graph is unverified.",
+      "Source of agent.tools.runtime_user.langgraph_runtime_user_id and any FastAPI-authenticated-user \u2192 RunnableConfig.configurable.user_id wiring; the session binding is docstring-only (graph.py:3).",
+      "Contents of agent.tools.ALL_AGENT_TOOLS; milvus_search membership in the production tool set is not shown in supplied views.",
+      "Implementation of get_langgraph_store() confirming that TenantRoutingStore is the returned store.",
+      "Sources of LangMem manage_memory/search_memory tools, AdvancedMemoryManager, and memory_*_node showing how namespace[1] is derived from the authenticated user.",
+      "ToolNode execution path and the internal bind_tools step of create_agent; the downstream commit points for tool binding/execution are not in the supplied views.",
+      "Milvus ingestion-side code that writes owner_user_id metadata onto stored vectors, which the retrieval-side equality filter depends on."
+    ],
+    "repository": "sqleo/fastapi-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:2e96a3988642a3196328b5b3a59717bc"
+  },
+  "request_sha256": "655c5d09904832116a70d0d28d900e0124750a06a2efe89b9c8b38b0ff1cf6d4",
+  "response_sha256": "12a17a7b1c13bc91d94b2fc3cb3a6c2ce932a888a5273527d902bfabe6bad332",
+  "state": "completed",
+  "tokens": 34571,
+  "unit": "v24-screen:2e96a3988642a3196328b5b3a59717bc"
+}

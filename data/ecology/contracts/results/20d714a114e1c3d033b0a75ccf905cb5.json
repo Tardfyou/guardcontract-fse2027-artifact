@@ -1,0 +1,599 @@
+{
+  "attempt": "complete_shard_reconciliation",
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Not shown in the supplied views: the supplied source defines the check functions but not the enforcement call site that gates SQL execution.",
+        "contract_id": "ecological-contract:06151d555a33826270538eb1916b2808",
+        "declared_mechanism": "PermissionService._evaluate_table_access returns a PermissionHitAudit with allowed=False and hit_rule_type 'deny' for blacklisted tables or 'default_deny' when no allowlist pattern matches; check_table_access exposes the (allowed, reason) decision.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 324,
+            "line_start": 316,
+            "path": "app/services/permission_service.py",
+            "role": "protected_operation",
+            "source_sha256": "79de231009c617830b8cbb2db9265778847740339d46667116175079ca47c0e6"
+          },
+          {
+            "line_end": 360,
+            "line_start": 316,
+            "path": "app/services/permission_service.py",
+            "role": "guard_registration",
+            "source_sha256": "79de231009c617830b8cbb2db9265778847740339d46667116175079ca47c0e6"
+          },
+          {
+            "line_end": 337,
+            "line_start": 326,
+            "path": "app/services/permission_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "79de231009c617830b8cbb2db9265778847740339d46667116175079ca47c0e6"
+          },
+          {
+            "line_end": 360,
+            "line_start": 351,
+            "path": "app/services/permission_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "79de231009c617830b8cbb2db9265778847740339d46667116175079ca47c0e6"
+          },
+          {
+            "line_end": 380,
+            "line_start": 362,
+            "path": "app/services/permission_service.py",
+            "role": "guard_registration",
+            "source_sha256": "79de231009c617830b8cbb2db9265778847740339d46667116175079ca47c0e6"
+          }
+        ],
+        "forbidden_condition": "Access to a table whose schema.table full name is in ctx.denied_tables (hit_rule_type 'deny') or that matches no allowlist pattern of the data role (hit_rule_type 'default_deny').",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "The caller that invokes check_table_access/_evaluate_table_access before query execution is not present in the supplied views.",
+          "Whether check_and_rewrite_sql (called by evaluate_sql_policy in the data agent chain) invokes PermissionService checks is unconfirmed."
+        ],
+        "protected_operation": "Data-role-gated table access during analytics SQL query evaluation.",
+        "protected_resource": "Analytics database tables governed by data-role permissions (schema.table, with wildcard allowlist patterns).",
+        "protection_obligation": "Table access evaluated under a data-role permission context must be denied for tables listed in the context's denied_tables and, under default-deny semantics, for tables matching no allowed_tables pattern of the user's data role, per PermissionService.check_table_access/_evaluate_table_access.",
+        "scope_limits": [
+          "Allowlist patterns support '*' full-table and SQL LIKE '%' wildcards, with the schema portion required to match exactly (permission_service.py:382-410)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.commit() after the _persist_canonical_document_no_commit loop (app/services/document_memory_service.py:1222-1223); non-accept decisions return at document_memory_service.py:1164-1167 before persistence.",
+        "contract_id": "ecological-contract:29b93029df61c8884f95ece156a0c8a5",
+        "declared_mechanism": "MemorySensitiveGuardService regex rules are applied per memory item by apply_sensitive_guard, which returns a reject decision ('sensitive_info_blocked') on any hit; flush_canonical_memory normalizes the decision contract and returns 0 (no persistence, no commit) for any non-accept contract, and rejects atomic batches with item_errors before persistence.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 18,
+            "path": "app/services/memory_sensitive_guard_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "303b2f4100c4d2c570a29bfd0b3445525077cf7be0015461cc392faf4e367e57"
+          },
+          {
+            "line_end": 526,
+            "line_start": 503,
+            "path": "app/services/memory_intent_llm_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b8a7f4bab4cd9b8e8fea3ee90d78bc49640325b64123134dbdab5d1c3845effd"
+          },
+          {
+            "line_end": 542,
+            "line_start": 527,
+            "path": "app/services/memory_intent_llm_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b8a7f4bab4cd9b8e8fea3ee90d78bc49640325b64123134dbdab5d1c3845effd"
+          },
+          {
+            "line_end": 1155,
+            "line_start": 1137,
+            "path": "app/services/document_memory_service.py",
+            "role": "protected_operation",
+            "source_sha256": "17c952254748a25134c9f930627f0d70a06be88305a3a2f38b21287ed012d955"
+          },
+          {
+            "line_end": 1167,
+            "line_start": 1155,
+            "path": "app/services/document_memory_service.py",
+            "role": "guard_registration",
+            "source_sha256": "17c952254748a25134c9f930627f0d70a06be88305a3a2f38b21287ed012d955"
+          },
+          {
+            "line_end": 1223,
+            "line_start": 1196,
+            "path": "app/services/document_memory_service.py",
+            "role": "commit_point",
+            "source_sha256": "17c952254748a25134c9f930627f0d70a06be88305a3a2f38b21287ed012d955"
+          }
+        ],
+        "forbidden_condition": "Persisting canonical memory documents/chunks under a decision contract whose decision is not 'accept', including contracts rejected for sensitive-info hits ('sensitive_info_blocked') or atomic-batch item errors.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view shows the caller that passes the LLM memory-intent decision through apply_sensitive_guard into flush_canonical_memory; the agent-mediation binding (which agent lifecycle or tool path supplies user_text and triggers persistence) is not established."
+        ],
+        "protected_operation": "flush_canonical_memory persisting canonical_text into the user memory document and chunk tables.",
+        "protected_resource": "User memory document and chunk tables (document/chunk Two tables).",
+        "protection_obligation": "User memory documents must not be persisted when the user text, canonical text, or evidence span hits high-sensitivity rules (ID number, bank card, password, verification code): apply_sensitive_guard must convert the decision contract to a rejection with reason_code 'sensitive_info_blocked', and flush_canonical_memory must refuse every non-accept decision contract before any database commit.",
+        "scope_limits": [
+          "The accept-only gate applies only when decision_contract is provided; the contract-less path persists via _persist_canonical_document_no_commit without this gate (document_memory_service.py:1259-1263).",
+          "db.commit() is skipped when manage_transaction=False, leaving commit responsibility with the caller (document_memory_service.py:1222).",
+          "The guard can be constructed disabled, in which case detect returns sensitive_hit=False with reason 'guard_disabled' (memory_sensitive_guard_service.py:55-62, 82-87)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Not shown in the supplied views: the enforcement call site that applies this precondition before query execution is absent from the supplied source.",
+        "contract_id": "ecological-contract:4f70ea36f12fa62dd357b13cc12a196a",
+        "declared_mechanism": "PermissionService.validate_query_context returns (False, reason) naming the user and data_role when the default department isolation precondition fails; users with dept_code or explicit row filters are allowed.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 239,
+            "line_start": 235,
+            "path": "app/services/permission_service.py",
+            "role": "protected_operation",
+            "source_sha256": "79de231009c617830b8cbb2db9265778847740339d46667116175079ca47c0e6"
+          },
+          {
+            "line_end": 263,
+            "line_start": 235,
+            "path": "app/services/permission_service.py",
+            "role": "guard_registration",
+            "source_sha256": "79de231009c617830b8cbb2db9265778847740339d46667116175079ca47c0e6"
+          },
+          {
+            "line_end": 263,
+            "line_start": 241,
+            "path": "app/services/permission_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "79de231009c617830b8cbb2db9265778847740339d46667116175079ca47c0e6"
+          }
+        ],
+        "forbidden_condition": "Executing a query when ctx.default_dept_scope is set, ctx.has_dept_code() is false, and ctx.row_filters contain no explicit row-level rules.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "The enforcement call site binding validate_query_context to query execution is not shown.",
+          "Whether the data graph's evaluate_sql_policy chain reaches validate_query_context is unconfirmed in the supplied views."
+        ],
+        "protected_operation": "Analytics SQL queries evaluated under data-role permission contexts (validate_query_context is documented as validating default permission preconditions before SQL queries).",
+        "protected_resource": "Analytics database queries subject to default department isolation.",
+        "protection_obligation": "SQL queries under a default department isolation policy must be denied when the user's permission context lacks dept_code and no explicit row-level filters provide an alternative scope, per PermissionService.validate_query_context (a stated precondition check before SQL queries).",
+        "scope_limits": [
+          "Users whose context has default_dept_scope unset are allowed (permission_service.py:241-242).",
+          "Explicit row-level filters bypass the dept_code requirement (permission_service.py:247-253)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "analytics_engine.connect() / conn.execute(text(sql_query)) inside sql_inter (app/ai/tools/chatTools.py:206-207).",
+        "contract_id": "ecological-contract:7d5680f6bfc73f7d356de4ad0842476c",
+        "declared_mechanism": "LangGraph interrupt() human-approval gate inside sql_inter with review_configs allowed_decisions [approve, edit, reject]; 'reject' returns a JSON error with rejected=true before execution; 'edit' substitutes the reviewed SQL for execution.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 144,
+            "line_start": 143,
+            "path": "app/ai/tools/chatTools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2af7e7c548f71cf4f8731aa303eb07897a72e24f8b5c6348a18f8524193a282"
+          },
+          {
+            "line_end": 157,
+            "line_start": 143,
+            "path": "app/ai/tools/chatTools.py",
+            "role": "protected_operation",
+            "source_sha256": "b2af7e7c548f71cf4f8731aa303eb07897a72e24f8b5c6348a18f8524193a282"
+          },
+          {
+            "line_end": 188,
+            "line_start": 173,
+            "path": "app/ai/tools/chatTools.py",
+            "role": "guard_registration",
+            "source_sha256": "b2af7e7c548f71cf4f8731aa303eb07897a72e24f8b5c6348a18f8524193a282"
+          },
+          {
+            "line_end": 202,
+            "line_start": 190,
+            "path": "app/ai/tools/chatTools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b2af7e7c548f71cf4f8731aa303eb07897a72e24f8b5c6348a18f8524193a282"
+          },
+          {
+            "line_end": 207,
+            "line_start": 204,
+            "path": "app/ai/tools/chatTools.py",
+            "role": "commit_point",
+            "source_sha256": "b2af7e7c548f71cf4f8731aa303eb07897a72e24f8b5c6348a18f8524193a282"
+          }
+        ],
+        "forbidden_condition": "Executing the SQL query when the required human review has not approved it, in particular after a 'reject' decision (or via the default 'accept' response type when the interrupt response lacks a type).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether DataAccessControl.validate_sql or safety checks are re-applied to the SQL substituted by an 'edit' decision is not shown in the cited range (chatTools.py:196-207)."
+        ],
+        "protected_operation": "The sql_inter tool executing a SQL query against the analytics PostgreSQL engine.",
+        "protected_resource": "Analytics PostgreSQL database tables reachable through analytics_engine.",
+        "protection_obligation": "When ai_config.SQL_REQUIRE_APPROVAL is enabled, the sql_inter agent tool must not execute a SQL query until the LangGraph human review interrupt resolves to approve or edit; a reject decision must terminate the request before the execution block.",
+        "scope_limits": [
+          "The gate is conditional on ai_config.SQL_REQUIRE_APPROVAL; when disabled the interrupt is skipped entirely (chatTools.py:174).",
+          "A missing/empty response type defaults to 'accept' (chatTools.py:191), so the denial applies only to explicit reject decisions."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "_wrap/_awrap invoke execute(request) only when _maybe_block returns None (app/ai/workflow/multi_agent_graph.py:5674-5684); blocked calls receive the ToolMessage instead of tool execution.",
+        "contract_id": "ecological-contract:9cd8a0150a34883d0dbb79cb088f6257",
+        "declared_mechanism": "_build_runtime_tool_call_wrapper builds _maybe_block/_wrap/_awrap interceptors; _maybe_block evaluates _is_tool_entry_runtime_visible against request state and, if not visible, returns a denial ToolMessage (built by _build_runtime_tool_denied_message, 'Not authorized yet:Please call first load_skills ...') instead of running the tool; the interceptors are wired into the production ToolNode via wrap_tool_call/awrap_tool_call.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 5602,
+            "line_start": 5580,
+            "path": "app/ai/workflow/multi_agent_graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ace68e123e7b0023fda0cc5d11726bd414fe56d9c76fbbda28abcd8fd513e273"
+          },
+          {
+            "line_end": 5577,
+            "line_start": 5559,
+            "path": "app/ai/workflow/multi_agent_graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ace68e123e7b0023fda0cc5d11726bd414fe56d9c76fbbda28abcd8fd513e273"
+          },
+          {
+            "line_end": 5648,
+            "line_start": 5631,
+            "path": "app/ai/workflow/multi_agent_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "ace68e123e7b0023fda0cc5d11726bd414fe56d9c76fbbda28abcd8fd513e273"
+          },
+          {
+            "line_end": 5672,
+            "line_start": 5650,
+            "path": "app/ai/workflow/multi_agent_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "ace68e123e7b0023fda0cc5d11726bd414fe56d9c76fbbda28abcd8fd513e273"
+          },
+          {
+            "line_end": 5618,
+            "line_start": 5605,
+            "path": "app/ai/workflow/multi_agent_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "ace68e123e7b0023fda0cc5d11726bd414fe56d9c76fbbda28abcd8fd513e273"
+          },
+          {
+            "line_end": 6794,
+            "line_start": 6786,
+            "path": "app/ai/workflow/multi_agent_graph.py",
+            "role": "protected_operation",
+            "source_sha256": "ace68e123e7b0023fda0cc5d11726bd414fe56d9c76fbbda28abcd8fd513e273"
+          },
+          {
+            "line_end": 5684,
+            "line_start": 5674,
+            "path": "app/ai/workflow/multi_agent_graph.py",
+            "role": "commit_point",
+            "source_sha256": "ace68e123e7b0023fda0cc5d11726bd414fe56d9c76fbbda28abcd8fd513e273"
+          },
+          {
+            "line_end": 6797,
+            "line_start": 6789,
+            "path": "app/ai/workflow/multi_agent_graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ace68e123e7b0023fda0cc5d11726bd414fe56d9c76fbbda28abcd8fd513e273"
+          },
+          {
+            "line_end": 6820,
+            "line_start": 6815,
+            "path": "app/ai/workflow/multi_agent_graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ace68e123e7b0023fda0cc5d11726bd414fe56d9c76fbbda28abcd8fd513e273"
+          }
+        ],
+        "forbidden_condition": "Invoking a tool through the supervisor ToolNode when _is_tool_entry_runtime_visible returns False for its entry ('after_load' tools whose required tools are not a subset of allowed tools; 'catalog_after_load' gated tools not yet loaded; or a handoff target outside the dispatch queue's allowed_agents).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The concrete composition of handoff_tool_entries and supervisor_simple_tool_entries (which entries are 'after_load'/'catalog_after_load' or handoff targets) is not shown in the cited ranges."
+        ],
+        "protected_operation": "Execution of supervisor-registered tools (handoff tools, decompose_goals, and supervisor simple tools) via ToolNode dispatch into _wrap/_awrap and execute(request).",
+        "protected_resource": "The supervisor ToolNode tool-execution surface registered in create_multi_agent_graph.",
+        "protection_obligation": "Supervisor agent tool calls dispatched through the multi-agent ToolNode must be blocked with a denial ToolMessage when the tool entry is not runtime-visible: skill-load-gated tools ('after_load'/'catalog_after_load') whose required runtime tools are not yet authorized in the session, or handoff tools whose target agent is outside the active goals' allowed_agents.",
+        "scope_limits": [
+          "Tool calls whose name is not found in the entry index are not blocked (_maybe_block returns None at multi_agent_graph.py:5654-5655).",
+          "Entries without a 'runtime_visibility' flag default to 'always' and are gated only by handoff goal visibility (multi_agent_graph.py:5584, 5602).",
+          "The handoff goal-visibility check passes through when the state has neither a dispatch queue nor latest user text (multi_agent_graph.py:5566-5568)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "analytics_engine.connect() / conn.execute(text(sql_query)) inside sql_inter (app/ai/tools/chatTools.py:206-207).",
+        "contract_id": "ecological-contract:cfae97fc8040d77ac809094f36ab1c0b",
+        "declared_mechanism": "Inside sql_inter, DataAccessControl.validate_sql (backed by sqlglot-based extract_tables_from_sql) is invoked before execution; on failure the tool returns a JSON payload with access_denied=true and never reaches the execution block.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 144,
+            "line_start": 143,
+            "path": "app/ai/tools/chatTools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2af7e7c548f71cf4f8731aa303eb07897a72e24f8b5c6348a18f8524193a282"
+          },
+          {
+            "line_end": 157,
+            "line_start": 143,
+            "path": "app/ai/tools/chatTools.py",
+            "role": "protected_operation",
+            "source_sha256": "b2af7e7c548f71cf4f8731aa303eb07897a72e24f8b5c6348a18f8524193a282"
+          },
+          {
+            "line_end": 171,
+            "line_start": 162,
+            "path": "app/ai/tools/chatTools.py",
+            "role": "guard_registration",
+            "source_sha256": "b2af7e7c548f71cf4f8731aa303eb07897a72e24f8b5c6348a18f8524193a282"
+          },
+          {
+            "line_end": 256,
+            "line_start": 208,
+            "path": "app/ai/semantic/data_access_control.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9524b33bae69b0830d99603825b0a3fb78e791bc22462658d2281c4da5e18cdd"
+          },
+          {
+            "line_end": 293,
+            "line_start": 276,
+            "path": "app/ai/semantic/data_access_control.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9524b33bae69b0830d99603825b0a3fb78e791bc22462658d2281c4da5e18cdd"
+          },
+          {
+            "line_end": 274,
+            "line_start": 258,
+            "path": "app/ai/semantic/data_access_control.py",
+            "role": "guard_registration",
+            "source_sha256": "9524b33bae69b0830d99603825b0a3fb78e791bc22462658d2281c4da5e18cdd"
+          },
+          {
+            "line_end": 207,
+            "line_start": 204,
+            "path": "app/ai/tools/chatTools.py",
+            "role": "commit_point",
+            "source_sha256": "b2af7e7c548f71cf4f8731aa303eb07897a72e24f8b5c6348a18f8524193a282"
+          }
+        ],
+        "forbidden_condition": "Executing SQL on the analytics engine whose extracted table set fails DataAccessControl.validate_sql/check_table_access: system-schema-blacklisted schema, schema not in the analytics allowlist, blacklisted table, or table not present in the loaded whitelist when a whitelist is configured.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied view binds the sql_inter @tool to a specific agent graph or ToolNode in production; direct_tool mediation rests on the @tool registration itself."
+        ],
+        "protected_operation": "The sql_inter tool executing a SQL query against the analytics PostgreSQL engine via SQLAlchemy (analytics_engine connection).",
+        "protected_resource": "Analytics PostgreSQL database tables reachable through analytics_engine.",
+        "protection_obligation": "SQL submitted to the sql_inter agent tool must be denied before execution on the analytics PostgreSQL database when any table it references is rejected by DataAccessControl (schema in the system-schema blacklist, schema outside the analytics schema allowlist, table in the table blacklist, or table absent from the enabled table whitelist).",
+        "scope_limits": [
+          "The guard is skipped entirely if importing app.ai.semantic.data_access_control raises ImportError (chatTools.py:170-171), so the obligation holds only where the module imports successfully.",
+          "This guard enforces table/schema access only; read-only/dangerous-keyword enforcement is not shown inside the cited sql_inter body.",
+          "The human-approval path can replace sql_query with user-edited SQL (chatTools.py:196-200); the cited range shows no re-invocation of validate_sql after the edit."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The exam_generation_job_repo.create_job persistence call in create_job (app/services/exam_generation_service.py:76-82); the repository's internal db.commit is not shown in the supplied views.",
+        "contract_id": "ecological-contract:e29416e0ce9baf5bf6d821362acb7321",
+        "declared_mechanism": "ExamGenerationService.enforce_access_policy gate invoked at the top of create_job; disallowed requests raise HTTPException (403 for non-admin, 400 for total-question bound, 429 for active-job limit) before repo.create_job is called.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 63,
+            "line_start": 55,
+            "path": "app/services/exam_generation_service.py",
+            "role": "guard_registration",
+            "source_sha256": "22444cb9c42a6928418d7beb35fb648b6af62acc1bfb988413185e13f8cfcecf"
+          },
+          {
+            "line_end": 62,
+            "line_start": 56,
+            "path": "app/services/exam_generation_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "22444cb9c42a6928418d7beb35fb648b6af62acc1bfb988413185e13f8cfcecf"
+          },
+          {
+            "line_end": 74,
+            "line_start": 65,
+            "path": "app/services/exam_generation_service.py",
+            "role": "guard_registration",
+            "source_sha256": "22444cb9c42a6928418d7beb35fb648b6af62acc1bfb988413185e13f8cfcecf"
+          },
+          {
+            "line_end": 82,
+            "line_start": 76,
+            "path": "app/services/exam_generation_service.py",
+            "role": "protected_operation",
+            "source_sha256": "22444cb9c42a6928418d7beb35fb648b6af62acc1bfb988413185e13f8cfcecf"
+          },
+          {
+            "line_end": 82,
+            "line_start": 76,
+            "path": "app/services/exam_generation_service.py",
+            "role": "commit_point",
+            "source_sha256": "22444cb9c42a6928418d7beb35fb648b6af62acc1bfb988413185e13f8cfcecf"
+          }
+        ],
+        "forbidden_condition": "Creating an exam generation job when ExamGenerationService.enforce_access_policy disallows it: user role is not 'admin'; total_question_count <= 0 or > MAX_TOTAL_QUESTIONS; or count_active_jobs_by_user >= MAX_ACTIVE_JOBS_PER_USER.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view binds exam job creation to an agent tool, agent lifecycle hook, or agent-generated input; agent mediation is not established.",
+          "The db.commit inside exam_generation_job_repo.create_job is not shown in the supplied views."
+        ],
+        "protected_operation": "ExamGenerationService.create_job persisting a new exam generation job via exam_generation_job_repo.create_job.",
+        "protected_resource": "Exam generation job records (exam_generation_job_repo store).",
+        "protection_obligation": "AI exam-generation job creation must be denied before the job record is persisted when the requester is not an admin, the requested total question count is outside 1..MAX_TOTAL_QUESTIONS, or the user's active job count has reached MAX_ACTIVE_JOBS_PER_USER.",
+        "scope_limits": [
+          "HTTP status selection relies on substring matching of policy.reason ('upper limit' -> 429, 'total number of questions' -> 400, else 403) (exam_generation_service.py:67-74).",
+          "The admin router-level Depends(get_admin_user) dependency on exam_admin_router is ordinary web authentication and outside this contract's scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Invocation of the sql_execute node after the safety->execute conditional edge (app/ai/workflow/data_graph.py:4587, 4634-4642); the concrete database call inside sql_execute is not shown in the supplied views.",
+        "contract_id": "ecological-contract:f40bfcb5c41cae01fdac9ffe292248f0",
+        "declared_mechanism": "Graph-registered gate: add_node(\"safety\", sql_safety_check) with generate->safety edge and safety conditional routing to execute/clarify; sql_safety_check invokes evaluate_sql_policy(sql, user_id, auto_limit=True, limit=1000), which runs sanitize_sql safety checks then check_and_rewrite_sql permission checks; on denial the node returns clarification_needed with pending_sql=None so route_after_safety routes to clarify rather than execute; qualifying SQL may be rewritten (e.g., LIMIT added) instead of denied.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 4573,
+            "line_start": 4573,
+            "path": "app/ai/workflow/data_graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "826e5a08391a5089c828a7b2493c3c9f24d101c9d7865a59bf6c4c3ecdc4b7bc"
+          },
+          {
+            "line_end": 4632,
+            "line_start": 4631,
+            "path": "app/ai/workflow/data_graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "826e5a08391a5089c828a7b2493c3c9f24d101c9d7865a59bf6c4c3ecdc4b7bc"
+          },
+          {
+            "line_end": 3045,
+            "line_start": 3043,
+            "path": "app/ai/workflow/data_graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "826e5a08391a5089c828a7b2493c3c9f24d101c9d7865a59bf6c4c3ecdc4b7bc"
+          },
+          {
+            "line_end": 3056,
+            "line_start": 3043,
+            "path": "app/ai/workflow/data_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "826e5a08391a5089c828a7b2493c3c9f24d101c9d7865a59bf6c4c3ecdc4b7bc"
+          },
+          {
+            "line_end": 4587,
+            "line_start": 4585,
+            "path": "app/ai/workflow/data_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "826e5a08391a5089c828a7b2493c3c9f24d101c9d7865a59bf6c4c3ecdc4b7bc"
+          },
+          {
+            "line_end": 4642,
+            "line_start": 4634,
+            "path": "app/ai/workflow/data_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "826e5a08391a5089c828a7b2493c3c9f24d101c9d7865a59bf6c4c3ecdc4b7bc"
+          },
+          {
+            "line_end": 84,
+            "line_start": 78,
+            "path": "app/ai/utils/sql_policy_decision.py",
+            "role": "guard_registration",
+            "source_sha256": "12795e3e4ca2775a579b5c911493704283c07247fe6e1265437f772d9f7b3bf3"
+          },
+          {
+            "line_end": 108,
+            "line_start": 86,
+            "path": "app/ai/utils/sql_policy_decision.py",
+            "role": "forbidden_condition",
+            "source_sha256": "12795e3e4ca2775a579b5c911493704283c07247fe6e1265437f772d9f7b3bf3"
+          },
+          {
+            "line_end": 137,
+            "line_start": 122,
+            "path": "app/ai/utils/sql_policy_decision.py",
+            "role": "forbidden_condition",
+            "source_sha256": "12795e3e4ca2775a579b5c911493704283c07247fe6e1265437f772d9f7b3bf3"
+          },
+          {
+            "line_end": 176,
+            "line_start": 121,
+            "path": "app/ai/utils/sql_safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a97cd3685d36a58d90ea40a61a19c90647ec94d94206c188f93e41f0c2f86704"
+          },
+          {
+            "line_end": 3077,
+            "line_start": 3065,
+            "path": "app/ai/workflow/data_graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "826e5a08391a5089c828a7b2493c3c9f24d101c9d7865a59bf6c4c3ecdc4b7bc"
+          },
+          {
+            "line_end": 4587,
+            "line_start": 4587,
+            "path": "app/ai/workflow/data_graph.py",
+            "role": "protected_operation",
+            "source_sha256": "826e5a08391a5089c828a7b2493c3c9f24d101c9d7865a59bf6c4c3ecdc4b7bc"
+          },
+          {
+            "line_end": 4642,
+            "line_start": 4634,
+            "path": "app/ai/workflow/data_graph.py",
+            "role": "commit_point",
+            "source_sha256": "826e5a08391a5089c828a7b2493c3c9f24d101c9d7865a59bf6c4c3ecdc4b7bc"
+          }
+        ],
+        "forbidden_condition": "Reaching the sql_execute node with SQL that evaluate_sql_policy denies (reason_code empty_sql or safety_rejected at the safety stage; permission_rejected at the permission stage; deny_overrides_allow).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The body of sql_execute (the concrete DB execution call) and the implementations of sanitize_sql and check_and_rewrite_sql are absent from the supplied views; their exact linkage to check_sql_safety and PermissionService is unconfirmed."
+        ],
+        "protected_operation": "Execution of generated/pending SQL by the 'execute' node (sql_execute) of the data agent graph.",
+        "protected_resource": "Analytics database accessed by the data agent workflow.",
+        "protection_obligation": "In the data agent graph, SQL must pass the registered 'safety' node (sql_safety_check -> evaluate_sql_policy) between SQL generation and the execute node: SQL denied at the safety stage (non-SELECT-only, dangerous keywords, sensitive tables, schema outside whitelist/blacklist, multiple statements, parameter placeholders) or at the permission stage (data-role table/row/column checks via check_and_rewrite_sql) must be denied by clearing pending_sql and routing to clarify instead of reaching sql_execute.",
+        "scope_limits": [
+          "The metric and training degradation routes also feed the safety node (data_graph.py:4609-4626); SQL on those routes derives from metric templates or training-query logs rather than fresh LLM generation.",
+          "sql_safety_check returns {} without gating when neither pending_sql nor generated_sql is present (data_graph.py:3045-3047).",
+          "Auto-LIMIT rewriting modifies rather than denies SQL that passes the safety stage (data_graph.py:3082-3089)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Binding of the sql_inter @tool to a concrete agent runtime (graph or ToolNode) is not shown; direct_tool mediation for the sql_inter contracts rests on the @tool registration itself.",
+      "Enforcement call sites for PermissionService.validate_query_context / check_table_access are not present in the supplied views, so their commit points and any agent binding (e.g., via check_and_rewrite_sql) are not established.",
+      "No supplied source binds the v1 API router Depends(get_current_user)/Depends(get_admin_user) guards (app/api/v1/router.py:28-74, app/api/deps.py:15-59) to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded endpoints; the corresponding authentication obligation is treated as out-of-scope ordinary web authentication and is not compiled as a contract.",
+      "No supplied view shows the caller that passes the LLM memory-intent decision through apply_sensitive_guard into flush_canonical_memory, so agent mediation for the sensitive-memory persistence guard is not established.",
+      "The body of the data graph's sql_execute node and the implementations of sanitize_sql and check_and_rewrite_sql are absent from the supplied views; the concrete analytics database call at the execute commit point and the linkage from evaluate_sql_policy to check_sql_safety / PermissionService are unconfirmed.",
+      "The concrete composition of supervisor tool entries (which entries carry 'after_load'/'catalog_after_load' visibility or are handoff targets) is not shown in the cited ranges.",
+      "The internal commit inside exam_generation_job_repo.create_job is not shown; the exam contract's commit point is stated only up to the repository persistence call.",
+      "Whether sql_inter re-runs DataAccessControl.validate_sql or safety checks on SQL substituted by the human-approval 'edit' decision is not determinable from the cited range (chatTools.py:196-207)."
+    ],
+    "repository": "jijingkun-commits/fastapi",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:20d714a114e1c3d033b0a75ccf905cb5"
+  },
+  "request_sha256": "98964daa10daccf27e0f995ca9c077da5151cab527c6e105dee8856592de4d79",
+  "response_sha256": "8b50508d4478ad04d2c53c4f52d3b89fe5425c55e6f83ddbcfe3041beffcf6ce",
+  "shard_provenance": [
+    {
+      "attempt": 0,
+      "request_sha256": "3c0d56375347f046d7f22c23d297b3282b543f0f1005ce6320b7a8b4f67e5b52",
+      "response_sha256": "1321a6a0f01b5ceb57e3bea2fc42c99ef726675638542616ebba094a247fb264",
+      "result_sha256": "d63bc63046b858117a248fb913db93746337b3c956a26f6213cfb4bcdfb08285",
+      "tokens": 56318,
+      "unit": "v24-screen:20d714a114e1c3d033b0a75ccf905cb5-p000"
+    }
+  ],
+  "state": "completed",
+  "tokens": 56318,
+  "unit": "v24-screen:20d714a114e1c3d033b0a75ccf905cb5"
+}

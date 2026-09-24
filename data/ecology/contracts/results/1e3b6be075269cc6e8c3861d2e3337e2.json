@@ -1,0 +1,208 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "app.py:353-358 \u2014 update_chat_turn(turn_index, assistant=response, handoffs=turn_handoffs), the post-stream final commit of the response into the chat turn; on a tripped output tripwire the handler at app.py:371-379 empties text_placeholder and commits fallback_message instead via update_chat_turn(assistant=fallback_message).",
+        "contract_id": "ecological-contract:56ca777a871a8663f03bed6884bcea53",
+        "declared_mechanism": "restaurant_output_guardrail declared via @output_guardrail(name='restaurant_output_guardrail') (guardrails.py:415-428); it classifies the extracted agent output against the output safety policy (guardrails.py:154-172) using an LLM classifier agent and returns GuardrailFunctionOutput(tripwire_triggered=not decision.allow). The guardrail is attached to agents via the output_guardrails list (triage_agent.py:11). app.py catches OutputGuardrailTripwireTriggered, empties handoff and text placeholders, and writes/commits the extracted fallback message (app.py:368-379, fallback extraction at app.py:209-217).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 428,
+            "line_start": 415,
+            "path": "challenge/8/restaurant_bot/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "04603941c2d532ab61cb36bdcb69564ef851dad1c28faead6a9426d077ea385b"
+          },
+          {
+            "line_end": 172,
+            "line_start": 154,
+            "path": "challenge/8/restaurant_bot/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "04603941c2d532ab61cb36bdcb69564ef851dad1c28faead6a9426d077ea385b"
+          },
+          {
+            "line_end": 12,
+            "line_start": 6,
+            "path": "challenge/8/restaurant_bot/bot_agents/triage_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "145227a34ca22f6c4375dfebfe0c3d33a9b949a7f13b09b7eca6ab41325a3d7f"
+          },
+          {
+            "line_end": 358,
+            "line_start": 339,
+            "path": "challenge/8/restaurant_bot/app.py",
+            "role": "protected_operation",
+            "source_sha256": "a77f8141683b49071561badd7caadd67ac55734bc6a41a8974f2e4ee1a882e74"
+          },
+          {
+            "line_end": 358,
+            "line_start": 353,
+            "path": "challenge/8/restaurant_bot/app.py",
+            "role": "commit_point",
+            "source_sha256": "a77f8141683b49071561badd7caadd67ac55734bc6a41a8974f2e4ee1a882e74"
+          },
+          {
+            "line_end": 380,
+            "line_start": 368,
+            "path": "challenge/8/restaurant_bot/app.py",
+            "role": "commit_point",
+            "source_sha256": "a77f8141683b49071561badd7caadd67ac55734bc6a41a8974f2e4ee1a882e74"
+          }
+        ],
+        "forbidden_condition": "An assistant response whose output-guardrail decision is allow=false (violations such as rude_tone or internal_info_exposure) being finalized into the user-facing chat turn as the assistant reply (update_chat_turn(turn_index, assistant=response) committing the offending response).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm output_guardrails=[restaurant_output_guardrail] on the remaining bot_agents modules referenced by AGENT_REGISTRY; only triage_agent.py is supplied.",
+          "Runtime ordering between output guardrail execution and streamed delta rendering inside Runner.run_streamed is not shown in the supplied source."
+        ],
+        "protected_operation": "Finalization and display of the streamed assistant response in run_agent: accumulation of response output_text deltas and the post-stream commit of the full response into the current chat turn and its text placeholder.",
+        "protected_resource": "The user-facing chat turn for the current exchange (chat_turns application state and the st.chat_message assistant placeholder).",
+        "protection_obligation": "The registered restaurant_output_guardrail must gate the finalization of every assistant response produced by the guarded agents so that a response judged rude/unprofessional or disclosing internal information (prompt text, hidden instructions, routing logic, handoff mechanics, SDK behavior, system rules, tools, guardrails, backend implementation details) is never committed as the final user-facing assistant turn; run_agent must empty the streamed placeholder and commit the declared fallback message instead. (Merges duplicate reviewer wording about the response-commit point in app.py.)",
+        "scope_limits": [
+          "Streaming deltas are rendered and written into the turn incrementally (app.py:342-345) before the output guardrail decision completes; this contract covers the final response commit, not transient streaming frames.",
+          "Classification of rudeness/internal-info exposure is performed by an LLM classifier (guardrails.py:174-193); its judgment quality is not adjudicated.",
+          "Forbidden content categories are exactly those enumerated in the classifier instruction (guardrails.py:159-164); other content policies are out of scope.",
+          "Handoff-trace rendering is covered only insofar as the tripwire handler clears it."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "app.py:374-380 \u2014 await session.add_items([build_assistant_message_item(fallback_message)]) commits the fallback assistant item for the tripped turn.",
+        "contract_id": "ecological-contract:70c272797adcb2ce5eb3cd4d41cb954a",
+        "declared_mechanism": "Same restaurant_output_guardrail (@output_guardrail, guardrails.py:415-428) attached via the output_guardrails list (triage_agent.py:11); on OutputGuardrailTripwireTriggered, the app.py handler extracts the fallback message (app.py:209-217, 369) and commits build_assistant_message_item(fallback_message) via await session.add_items (app.py:380).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 428,
+            "line_start": 415,
+            "path": "challenge/8/restaurant_bot/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "04603941c2d532ab61cb36bdcb69564ef851dad1c28faead6a9426d077ea385b"
+          },
+          {
+            "line_end": 172,
+            "line_start": 154,
+            "path": "challenge/8/restaurant_bot/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "04603941c2d532ab61cb36bdcb69564ef851dad1c28faead6a9426d077ea385b"
+          },
+          {
+            "line_end": 12,
+            "line_start": 6,
+            "path": "challenge/8/restaurant_bot/bot_agents/triage_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "145227a34ca22f6c4375dfebfe0c3d33a9b949a7f13b09b7eca6ab41325a3d7f"
+          },
+          {
+            "line_end": 330,
+            "line_start": 324,
+            "path": "challenge/8/restaurant_bot/app.py",
+            "role": "protected_operation",
+            "source_sha256": "a77f8141683b49071561badd7caadd67ac55734bc6a41a8974f2e4ee1a882e74"
+          },
+          {
+            "line_end": 380,
+            "line_start": 374,
+            "path": "challenge/8/restaurant_bot/app.py",
+            "role": "commit_point",
+            "source_sha256": "a77f8141683b49071561badd7caadd67ac55734bc6a41a8974f2e4ee1a882e74"
+          }
+        ],
+        "forbidden_condition": "An offending assistant response (output-guardrail decision allow=false: rude/unprofessional tone or internal information disclosure) being persisted as the assistant message for the turn in the persistent conversation session.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether a tripped output guardrail prevents, or leaves residue of, the offending assistant message in the session's stored items depends on Runner internals not present in the supplied source.",
+          "Confirm guardrail registration on the remaining bot_agents modules referenced by AGENT_REGISTRY; only triage_agent.py is supplied."
+        ],
+        "protected_operation": "Persistence of the assistant reply into the SQLiteSession-backed conversation history: the turn's run is bound to the session (Runner.run_streamed(..., session=session)) and the assistant message item for the turn is committed via session.add_items.",
+        "protected_resource": "The persistent chat-history SQLite session (SQLiteSession('chat-history', restaurant-bot-memory.db)) conversation history.",
+        "protection_obligation": "The registered restaurant_output_guardrail must gate persistence of the assistant reply into the persistent conversation session so that a response judged rude or internal-info-disclosing is never the persisted assistant message for the turn; the tripwire handler must persist the fallback assistant message item instead.",
+        "scope_limits": [
+          "The supplied source shows only the handler's fallback add_items; whether the Runner itself auto-persists the offending assistant message to the session before the output tripwire aborts is runtime behavior not decidable here.",
+          "normalize_session_history / hydrate_chat_turns rewrite session items (app.py:220-287) but are not part of this guard obligation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The guarded run is initiated at Runner.run_streamed (app.py:325-330), which issues the model request for the user's message; a tripped input tripwire aborts the streamed run, and the except handler at app.py:368-381 is the point where only the fallback turn is committed (fallback written to the placeholder, chat turn updated with fallback_message, empty handoff history, fallback assistant item added to the session, active agent reset).",
+        "contract_id": "ecological-contract:e0e2cc64866d8098aaff1e20f6101565",
+        "declared_mechanism": "restaurant_input_guardrail declared via @input_guardrail(name='restaurant_input_guardrail', run_in_parallel=False) (guardrails.py:398-412); it classifies the latest user turn using keyword heuristics plus an LLM classifier agent whose policy marks off_topic and inappropriate_language as allow=false (guardrails.py:123-152), and returns GuardrailFunctionOutput(tripwire_triggered=not decision.allow). The guardrail is attached to agents through the Agent constructor input_guardrails list (triage_agent.py:10). app.py catches InputGuardrailTripwireTriggered and substitutes a fallback-only turn (app.py:368-381, fallback text selected at app.py:209-217).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 412,
+            "line_start": 398,
+            "path": "challenge/8/restaurant_bot/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "04603941c2d532ab61cb36bdcb69564ef851dad1c28faead6a9426d077ea385b"
+          },
+          {
+            "line_end": 152,
+            "line_start": 123,
+            "path": "challenge/8/restaurant_bot/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "04603941c2d532ab61cb36bdcb69564ef851dad1c28faead6a9426d077ea385b"
+          },
+          {
+            "line_end": 12,
+            "line_start": 6,
+            "path": "challenge/8/restaurant_bot/bot_agents/triage_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "145227a34ca22f6c4375dfebfe0c3d33a9b949a7f13b09b7eca6ab41325a3d7f"
+          },
+          {
+            "line_end": 330,
+            "line_start": 309,
+            "path": "challenge/8/restaurant_bot/app.py",
+            "role": "protected_operation",
+            "source_sha256": "a77f8141683b49071561badd7caadd67ac55734bc6a41a8974f2e4ee1a882e74"
+          },
+          {
+            "line_end": 330,
+            "line_start": 324,
+            "path": "challenge/8/restaurant_bot/app.py",
+            "role": "commit_point",
+            "source_sha256": "a77f8141683b49071561badd7caadd67ac55734bc6a41a8974f2e4ee1a882e74"
+          }
+        ],
+        "forbidden_condition": "A user message whose input-guardrail decision is allow=false (category off_topic or inappropriate_language) proceeding into the guarded agent run, i.e. Runner.run_streamed executing the turn with that disallowed message.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm input_guardrails=[restaurant_input_guardrail] on the remaining bot_agents modules referenced by AGENT_REGISTRY (app.py:12); only triage_agent.py is supplied.",
+          "Exact ordering guarantees between the input guardrail (declared run_in_parallel=False) and the model request/stream inside Runner.run_streamed come from SDK semantics not shown in the supplied source.",
+          "Whether Runner session auto-persistence leaves the user message in session history when the input tripwire aborts is not determinable from supplied source."
+        ],
+        "protected_operation": "Execution of an agent turn for user chat input: run_agent invoking Runner.run_streamed(starting_agent, message, context=run_context, session=session) with the user's chat message, reachable from st.chat_input via main().",
+        "protected_resource": "The registered restaurant agent's run processing the user's chat message (the model invocation for the turn and any output derived from it).",
+        "protection_obligation": "Every agent turn run from the app must be gated by the registered restaurant_input_guardrail so that user input classified as off_topic or inappropriate_language trips the input tripwire and aborts the run before the agent processes the message; run_agent must then commit only the declared fallback turn instead of any agent output. (Merges the first-phase and second-phase reviewer wording about off-topic/abusive input aborting the run.)",
+        "scope_limits": [
+          "Source-verified registration covers triage_agent only; registration of the same guardrail on the other agents in AGENT_REGISTRY is asserted by reviewers but those module files are not in the supplied source.",
+          "Keyword allowlists (complaint, order, menu, reservation, contextual allow) are part of the declared mechanism; their classification quality is not adjudicated here.",
+          "Only the abort-and-substitute behavior is covered; correctness of fallback wording is out of scope.",
+          "Whether the aborted run persists the user message or any partial content to the SQLite session before the tripwire aborts is runtime behavior not decidable from the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "bot_agents module files for agents other than triage_agent are not in the supplied source, so guardrail registration across all agents in AGENT_REGISTRY (reviewers claim five agents) cannot be verified.",
+      "Runner/Agents-SDK runtime ordering is not shown in supplied source: whether the input guardrail (declared run_in_parallel=False) completes before the model request starts, and whether the output guardrail runs before or after streamed deltas are rendered.",
+      "Whether an aborted run (input or output tripwire) leaves the user message or the offending assistant message persisted in the SQLite session via Runner auto-persistence; the supplied source only shows the handler's fallback add_items (app.py:380).",
+      "Behavior/tripping labels and prevalence data are unavailable per the stated scope, so runtime guardrail effectiveness and frequency cannot be characterized."
+    ],
+    "repository": "Yu-Jaeyoung/ai-agent-tutorial",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1e3b6be075269cc6e8c3861d2e3337e2"
+  },
+  "request_sha256": "3a9c7b3f4d3501592819122abe40801074d30d51c938117f38b255c4044fee3d",
+  "response_sha256": "9fcecbb9fcac08b1b9e617a5373e829dab7b0a8b31b0445252835a52dafe0b1a",
+  "state": "completed",
+  "tokens": 26927,
+  "unit": "v24-screen:1e3b6be075269cc6e8c3861d2e3337e2"
+}

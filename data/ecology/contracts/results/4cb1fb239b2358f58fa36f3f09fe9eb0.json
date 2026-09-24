@@ -1,0 +1,173 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "response = client.get(checked) at src/domain_expantion/specialists/web_fetch.py:94; the post-redirect re-validation of the final URL executes at lines 95-99, after this commit.",
+        "contract_id": "ecological-contract:33d486e5405613307e2b5e9797ff078b",
+        "declared_mechanism": "validate_fetch_url (lines 43-62) enforcing the scheme allowlist, credential rejection, BLOCKED_HOSTS/'.localhost' hostname rejection, and literal-IP private-range rejection, plus _assert_resolved_public (lines 65-73) resolving the host via socket.getaddrinfo and rejecting private/loopback/link-local/multicast/reserved results; both invoked before client.get (lines 84-87) and re-applied to the post-redirect final URL (lines 95-99).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 62,
+            "line_start": 43,
+            "path": "src/domain_expantion/specialists/web_fetch.py",
+            "role": "guard_registration",
+            "source_sha256": "7e40b236abef7fa1e14ee937ef4e11792505883478873ca60097ee5073233f46"
+          },
+          {
+            "line_end": 73,
+            "line_start": 65,
+            "path": "src/domain_expantion/specialists/web_fetch.py",
+            "role": "guard_registration",
+            "source_sha256": "7e40b236abef7fa1e14ee937ef4e11792505883478873ca60097ee5073233f46"
+          },
+          {
+            "line_end": 61,
+            "line_start": 45,
+            "path": "src/domain_expantion/specialists/web_fetch.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7e40b236abef7fa1e14ee937ef4e11792505883478873ca60097ee5073233f46"
+          },
+          {
+            "line_end": 15,
+            "line_start": 15,
+            "path": "src/domain_expantion/specialists/web_fetch.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7e40b236abef7fa1e14ee937ef4e11792505883478873ca60097ee5073233f46"
+          },
+          {
+            "line_end": 87,
+            "line_start": 84,
+            "path": "src/domain_expantion/specialists/web_fetch.py",
+            "role": "guard_registration",
+            "source_sha256": "7e40b236abef7fa1e14ee937ef4e11792505883478873ca60097ee5073233f46"
+          },
+          {
+            "line_end": 94,
+            "line_start": 88,
+            "path": "src/domain_expantion/specialists/web_fetch.py",
+            "role": "protected_operation",
+            "source_sha256": "7e40b236abef7fa1e14ee937ef4e11792505883478873ca60097ee5073233f46"
+          },
+          {
+            "line_end": 94,
+            "line_start": 94,
+            "path": "src/domain_expantion/specialists/web_fetch.py",
+            "role": "commit_point",
+            "source_sha256": "7e40b236abef7fa1e14ee937ef4e11792505883478873ca60097ee5073233f46"
+          },
+          {
+            "line_end": 99,
+            "line_start": 95,
+            "path": "src/domain_expantion/specialists/web_fetch.py",
+            "role": "guard_registration",
+            "source_sha256": "7e40b236abef7fa1e14ee937ef4e11792505883478873ca60097ee5073233f46"
+          },
+          {
+            "line_end": 118,
+            "line_start": 114,
+            "path": "src/domain_expantion/specialists/web_fetch.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7e40b236abef7fa1e14ee937ef4e11792505883478873ca60097ee5073233f46"
+          }
+        ],
+        "forbidden_condition": "client.get in fetch_url_text issuing a request whose URL fails validate_fetch_url (scheme outside {http, https}, parsed.username/password present, host in BLOCKED_HOSTS or ending '.localhost', or a literal IP that is private/loopback/link-local/multicast/reserved), or any address returned by socket.getaddrinfo for the request host \u2014 initial or post-redirect final \u2014 being private/loopback/link-local/multicast/reserved.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any other agent-reachable code path performs outbound HTTP without routing through validate_fetch_url/_assert_resolved_public.",
+          "Whether transport-level enforcement (e.g., pinning httpx connections to pre-validated addresses) exists outside the supplied views to close the DNS re-resolution gap.",
+          "Whether the post-redirect checks are intended to prevent the redirect fetch itself or only to gate consumption of the final response body."
+        ],
+        "protected_operation": "Outbound HTTP GET performed by the httpx client in fetch_url_text on behalf of the fetch_url tool (follow_redirects=True, max_redirects=3).",
+        "protected_resource": "Outbound HTTP(S) network requests issued via httpx.Client.get inside fetch_url_text (src/domain_expantion/specialists/web_fetch.py).",
+        "protection_obligation": "The fetch_url agent tool and its fetch_url_text implementation must not issue outbound HTTP fetches to non-http(s) URLs, URLs embedding credentials, blocked/internal hostnames (BLOCKED_HOSTS, any '.localhost' suffix), or any host \u2014 including the post-redirect final host \u2014 that resolves to a private, loopback, link-local, multicast, or reserved IP address; validation must run before the HTTP GET and be re-applied to the final redirected URL.",
+        "scope_limits": [
+          "Guard is enforced only inside fetch_url_text/fetch_url as shown; the supplied views contain no other HTTP fetch path.",
+          "Post-redirect re-validation (lines 95-99) runs after client.get returns, i.e., after redirect responses were already fetched under follow_redirects=True (lines 90, 92); the source shows no per-hop gating before each redirect request commits.",
+          "Pre-fetch resolution uses socket.getaddrinfo (line 67) while httpx performs its own resolution for the connection; no binding between the checked addresses and the addresses httpx connects to is shown.",
+          "The hostname blocklist is the fixed set {localhost, metadata.google.internal} plus any '.localhost' suffix (lines 15, 52).",
+          "Validation failures are converted into an error string returned by fetch_url (lines 119-120) rather than raised to the caller."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "result = runner(cleaned) at src/domain_expantion/registry.py:118.",
+        "contract_id": "ecological-contract:5ddc0d128e6b553e16f42139450bce21",
+        "declared_mechanism": "Status gate in Registry.invoke \u2014 'if spec.status != \"live\":' returning a STUB notice (lines 97-105) \u2014 followed by the runtime-presence gate 'if runner is None:' returning a no-runtime notice (lines 107-112), both evaluated before the runner call.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 105,
+            "line_start": 97,
+            "path": "src/domain_expantion/registry.py",
+            "role": "guard_registration",
+            "source_sha256": "b83a144f96239770c1b6cd3280aa2b8208f260b5b41531e1a31159e8fc722174"
+          },
+          {
+            "line_end": 112,
+            "line_start": 107,
+            "path": "src/domain_expantion/registry.py",
+            "role": "guard_registration",
+            "source_sha256": "b83a144f96239770c1b6cd3280aa2b8208f260b5b41531e1a31159e8fc722174"
+          },
+          {
+            "line_end": 112,
+            "line_start": 97,
+            "path": "src/domain_expantion/registry.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b83a144f96239770c1b6cd3280aa2b8208f260b5b41531e1a31159e8fc722174"
+          },
+          {
+            "line_end": 118,
+            "line_start": 113,
+            "path": "src/domain_expantion/registry.py",
+            "role": "protected_operation",
+            "source_sha256": "b83a144f96239770c1b6cd3280aa2b8208f260b5b41531e1a31159e8fc722174"
+          },
+          {
+            "line_end": 118,
+            "line_start": 118,
+            "path": "src/domain_expantion/registry.py",
+            "role": "commit_point",
+            "source_sha256": "b83a144f96239770c1b6cd3280aa2b8208f260b5b41531e1a31159e8fc722174"
+          }
+        ],
+        "forbidden_condition": "Reaching runner(cleaned) in Registry.invoke when spec.status != 'live' (refusal path lines 97-105) or when self._runners has no entry for spec.name (refusal path lines 107-112).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds Registry.invoke to an agent tool dispatch, agent lifecycle hook, or agent-generated input dataflow, so agent mediation cannot be established; the caller of Registry.invoke (agent loop vs. CLI) is not shown.",
+          "Runner implementations (domain_expantion.specialists.architecture.run, domain_expantion.specialists.research.run) are not supplied, so whether their effects route through guarded paths such as fetch_url_text is unbound."
+        ],
+        "protected_operation": "Invocation of the registered specialist runner: result = runner(cleaned) inside Registry.invoke.",
+        "protected_resource": "Specialist runner execution dispatched from Registry.invoke (registered runnables such as the architecture/research run functions wired by _default_runners).",
+        "protection_obligation": "Registry.invoke must execute a specialist runner only when the resolved AgentSpec has status 'live' and a runtime runner is registered for that specialist name; otherwise it must refuse with a stub or no-runtime response and not reach the runner invocation.",
+        "scope_limits": [
+          "The gate protects only the in-process runner invocation at line 118; downstream effects performed inside runner bodies are not covered by this contract.",
+          "Unknown-agent and empty-brief refusals (lines 85-95) precede the status gate and are not part of this obligation.",
+          "Status values are loaded from SPEC.toml and constrained to {stub, live, planned} (lines 126-134); the gate trusts that loaded status."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source shows Registry.invoke being reached via an agent tool decorator, tool dispatch, lifecycle hook, or agent-generated dataflow; agent mediation of the registry gate is unsupported by the provided views.",
+      "The runner modules referenced by _default_runners (domain_expantion/specialists/architecture.py, domain_expantion/specialists/research.py) are not supplied; their effect strata and internal guards are unknown.",
+      "No transport- or connection-level SSRF enforcement is visible in the supplied views; whether the pre-resolution socket.getaddrinfo check binds to the addresses httpx ultimately connects to (DNS rebinding/TOCTOU window) cannot be determined from source.",
+      "Whether additional outbound HTTP code paths exist outside the two supplied views is unknown (repository enumeration is not complete)."
+    ],
+    "repository": "KarlinNaidoo/DomainExpantion",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4cb1fb239b2358f58fa36f3f09fe9eb0"
+  },
+  "request_sha256": "fa7a6af92cc89f66ee53524177e9b6ae03e7624d7342e6e986427670c2bcb8e4",
+  "response_sha256": "a1bf8a8b3b73796373406761c9e3ca85b495a42048dc729a21854ac0daecf03c",
+  "state": "completed",
+  "tokens": 13628,
+  "unit": "v24-screen:4cb1fb239b2358f58fa36f3f09fe9eb0"
+}

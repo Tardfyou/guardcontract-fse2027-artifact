@@ -1,0 +1,329 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "workers/payment_investigation_worker.py main(): the `with payment_investigation_worker_advisory_lock(...) as acquired` gate (line 211) with the exit-3 refusal (lines 212-214) precedes store construction and run_worker_loop (lines 215-217); the guarded run-processing effects commit in database writes inside run_one.",
+        "contract_id": "ecological-contract:08735daa476575a4a76d86081c2bf397",
+        "declared_mechanism": "payment_investigation_worker_advisory_lock contextmanager: a dedicated NullPool connection executes SELECT pg_try_advisory_lock(:key) with PAYMENT_INVESTIGATION_WORKER_LOCK_KEY=318546792104, yields the acquired flag, and unlocks in finally; main() returns 3 when not acquired and runs run_worker_loop only inside the context.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 22,
+            "line_start": 22,
+            "path": "workers/payment_investigation_worker.py",
+            "role": "guard_registration",
+            "source_sha256": "a232b02011cf9b9d2700ca46e3c173f53d76ecbae7755eca6bf37a0d0fbe4874"
+          },
+          {
+            "line_end": 106,
+            "line_start": 75,
+            "path": "workers/payment_investigation_worker.py",
+            "role": "guard_registration",
+            "source_sha256": "a232b02011cf9b9d2700ca46e3c173f53d76ecbae7755eca6bf37a0d0fbe4874"
+          },
+          {
+            "line_end": 214,
+            "line_start": 212,
+            "path": "workers/payment_investigation_worker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a232b02011cf9b9d2700ca46e3c173f53d76ecbae7755eca6bf37a0d0fbe4874"
+          },
+          {
+            "line_end": 217,
+            "line_start": 211,
+            "path": "workers/payment_investigation_worker.py",
+            "role": "commit_point",
+            "source_sha256": "a232b02011cf9b9d2700ca46e3c173f53d76ecbae7755eca6bf37a0d0fbe4874"
+          },
+          {
+            "line_end": 129,
+            "line_start": 109,
+            "path": "workers/payment_investigation_worker.py",
+            "role": "protected_operation",
+            "source_sha256": "a232b02011cf9b9d2700ca46e3c173f53d76ecbae7755eca6bf37a0d0fbe4874"
+          },
+          {
+            "line_end": 191,
+            "line_start": 183,
+            "path": "workers/payment_investigation_worker.py",
+            "role": "protected_operation",
+            "source_sha256": "a232b02011cf9b9d2700ca46e3c173f53d76ecbae7755eca6bf37a0d0fbe4874"
+          }
+        ],
+        "forbidden_condition": "A second concurrent payment investigation worker instance processing payment investigation runs (claiming pending/recoverable runs, executing the investigation runner, or formalizing completed runs) while lock key 318546792104 is held by another instance; the not-acquired branch must return exit code 3 before the loop starts.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the runner's external model/provider calls constitute additional protected strata (e.g., communication) is not fully supported by supplied source.",
+          "An agent_entry_binding for this guard (tool dispatch or lifecycle wiring) is absent from supplied views."
+        ],
+        "protected_operation": "Payment investigation run processing in run_one/run_worker_loop: claim_pending_payment_agent_run / claim_recoverable_payment_agent_run / completed-run recovery, PaymentInvestigationRunner execution, formalize_payment_investigation, and _materialize_post_formalization.",
+        "protected_resource": "Payment investigation AgentRun records and their derived durable records (InvestigationReport, RootCauseDecision, PaymentRiskDecision, PaymentHumanReview, PaymentInvestigationFactAssessment) plus the advisory lock key 318546792104.",
+        "protection_obligation": "The payment investigation worker must run as a single instance: it must acquire the PostgreSQL advisory lock pg_try_advisory_lock on fixed key 318546792104 before its processing loop, and a process that fails to acquire the lock must refuse to start (exit code 3), so no second worker instance concurrently claims or executes payment investigation agent runs (runner execution, formalization, post-formalization materialization). (Merges two reviewer statements of the same obligation, phase-first and phase-second wording.)",
+        "scope_limits": [
+          "The runner additionally performs model/provider calls via PaymentInvestigationProviderClient; those effects are outside the supplied source detail and outside this contract's declared stratum.",
+          "Run-claim exclusivity also relies on database row locks (with_for_update skip_locked) inside store claim methods; this contract covers only the process-level advisory lock.",
+          "Although the worker executes an agent runner, no supplied decorator, registration, tool dispatch, or lifecycle hook binds this guard itself to agent mediation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "agents/user_agent/engine.py line 212 \u2014 `tool_result = await tool.execute(parsed)`; the role gate (lines 180-190) must `continue` before this call for any non-merchant role, so the database mutation inside execute() (e.g., set_price/add_product/restock) is the guarded effect commit.",
+        "contract_id": "ecological-contract:31d54767fd232054fc52a272309a2fc2",
+        "declared_mechanism": "Code-level role gate composed of: (1) BaseTool.allowed_roles declaration (protocol.py lines 36-39); (2) per-tool registration allowed_roles={'merchant'} on UpdatePriceTool, AddProductTool, and RestockProductTool; (3) schema-visibility filtering in run_query (lines 146-152) so non-merchant roles never see the tools; and (4) a fail-closed pre-execution re-check (lines 180-190) that rejects with an is_error ToolResultBlock ('insufficient role' message) and skips tool.execute() on any role/allowed_roles mismatch.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 36,
+            "path": "agents/user_agent/tools/protocol.py",
+            "role": "guard_registration",
+            "source_sha256": "a085f3c26d2358d3b1f9fd72da822bdf68179e7aba972e91f8c2d82423721430"
+          },
+          {
+            "line_end": 297,
+            "line_start": 289,
+            "path": "agents/user_agent/tools/commerce.py",
+            "role": "guard_registration",
+            "source_sha256": "2136878a4e17d60b046eabd3f41a333bd19aeec565067a13941443e8eac3775f"
+          },
+          {
+            "line_end": 327,
+            "line_start": 318,
+            "path": "agents/user_agent/tools/commerce.py",
+            "role": "guard_registration",
+            "source_sha256": "2136878a4e17d60b046eabd3f41a333bd19aeec565067a13941443e8eac3775f"
+          },
+          {
+            "line_end": 368,
+            "line_start": 357,
+            "path": "agents/user_agent/tools/commerce.py",
+            "role": "guard_registration",
+            "source_sha256": "2136878a4e17d60b046eabd3f41a333bd19aeec565067a13941443e8eac3775f"
+          },
+          {
+            "line_end": 152,
+            "line_start": 146,
+            "path": "agents/user_agent/engine.py",
+            "role": "guard_registration",
+            "source_sha256": "064f015dc967f5be3eaaf7a5102149c26eabba8252815bc8dab643b76450b964"
+          },
+          {
+            "line_end": 190,
+            "line_start": 180,
+            "path": "agents/user_agent/engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "064f015dc967f5be3eaaf7a5102149c26eabba8252815bc8dab643b76450b964"
+          },
+          {
+            "line_end": 212,
+            "line_start": 212,
+            "path": "agents/user_agent/engine.py",
+            "role": "commit_point",
+            "source_sha256": "064f015dc967f5be3eaaf7a5102149c26eabba8252815bc8dab643b76450b964"
+          },
+          {
+            "line_end": 178,
+            "line_start": 170,
+            "path": "agents/user_agent/engine.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "064f015dc967f5be3eaaf7a5102149c26eabba8252815bc8dab643b76450b964"
+          },
+          {
+            "line_end": 462,
+            "line_start": 450,
+            "path": "agents/user_agent/tools/commerce.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2136878a4e17d60b046eabd3f41a333bd19aeec565067a13941443e8eac3775f"
+          },
+          {
+            "line_end": 5752,
+            "line_start": 5703,
+            "path": "business/postgres_store.py",
+            "role": "protected_operation",
+            "source_sha256": "5767d74fb2016d8611bc6b18523c3433c1fb7d18636f0a115cee6e106c0b694d"
+          }
+        ],
+        "forbidden_condition": "A run_query session whose config.role is not a member of the tool's allowed_roles (i.e., any non-'merchant' role) causing update_price, add_product, or restock_product to reach execution; the gate at engine.py lines 180-190 must intercept any such model-fabricated tool call and return an error ToolResultBlock instead of invoking tool.execute().",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Source establishing how config.role ('merchant' vs 'user') is authenticated/assigned per session is not supplied.",
+          "Whether every entry point that constructs QueryEngine/RunConfig routes exclusively through run_query's gated loop is not shown in supplied views."
+        ],
+        "protected_operation": "Execution of the merchant-only write tools update_price, add_product, and restock_product inside the run_query agent tool-use loop, whose execute() calls store.set_price / store.add_product / store.restock and mutates product price, product catalog, and inventory rows.",
+        "protected_resource": "Merchant-only write tools (update_price, add_product, restock_product) and the tenant-scoped product/inventory database records they mutate.",
+        "protection_obligation": "Non-merchant sessions must be forbidden from executing the merchant-only write tools update_price, add_product, and restock_product: each tool declares allowed_roles={'merchant'}, run_query filters these tools out of the model-visible schema for other roles, and a fail-closed pre-execution role gate re-checks the session role before the commit point at tool.execute(). (Merges the single reviewer statement of this obligation.)",
+        "scope_limits": [
+          "Gate applies only to tool invocations routed through run_query's tool-use loop; direct Store calls or non-agent HTTP/CLI paths to set_price/add_product/restock are not covered by this contract.",
+          "The guard checks config.role as supplied to RunConfig/QueryEngine; how that role is derived or authenticated is outside the supplied source and outside this contract.",
+          "The separate is_write confirmation gate (config.confirm, engine.py lines 204-210) is a distinct mechanism and is not part of this obligation.",
+          "Read-only tools and user-role write tools (place_order, cancel_order) are not covered by this merchant-only obligation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "workers/outbox_worker.py main(): the `with outbox_worker_advisory_lock(database_url) as acquired` gate (lines 374-377) precedes run_worker_loop (line 391); the guarded delivery effect commits inside store.deliver_order_paid_event during the loop (line 243).",
+        "contract_id": "ecological-contract:5c15c2dd3f051bf11772b926ccb501ef",
+        "declared_mechanism": "outbox_worker_advisory_lock contextmanager: a dedicated NullPool connection executes SELECT pg_try_advisory_lock(:lock_key) with OUTBOX_WORKER_LOCK_KEY=823675129381, yields the acquired flag, and unlocks via pg_advisory_unlock in finally; main() runs run_worker_loop only inside the context and returns 3 with worker_status=already_running when the lock is not acquired.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 22,
+            "line_start": 21,
+            "path": "workers/outbox_worker.py",
+            "role": "guard_registration",
+            "source_sha256": "a46f4d3f5c20a839f78fd6f92c1a10e12fc5a1b15ff6a44525ebf8be6f1523a3"
+          },
+          {
+            "line_end": 107,
+            "line_start": 68,
+            "path": "workers/outbox_worker.py",
+            "role": "guard_registration",
+            "source_sha256": "a46f4d3f5c20a839f78fd6f92c1a10e12fc5a1b15ff6a44525ebf8be6f1523a3"
+          },
+          {
+            "line_end": 377,
+            "line_start": 375,
+            "path": "workers/outbox_worker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a46f4d3f5c20a839f78fd6f92c1a10e12fc5a1b15ff6a44525ebf8be6f1523a3"
+          },
+          {
+            "line_end": 391,
+            "line_start": 374,
+            "path": "workers/outbox_worker.py",
+            "role": "commit_point",
+            "source_sha256": "a46f4d3f5c20a839f78fd6f92c1a10e12fc5a1b15ff6a44525ebf8be6f1523a3"
+          },
+          {
+            "line_end": 257,
+            "line_start": 235,
+            "path": "workers/outbox_worker.py",
+            "role": "protected_operation",
+            "source_sha256": "a46f4d3f5c20a839f78fd6f92c1a10e12fc5a1b15ff6a44525ebf8be6f1523a3"
+          },
+          {
+            "line_end": 5353,
+            "line_start": 5305,
+            "path": "business/postgres_store.py",
+            "role": "protected_operation",
+            "source_sha256": "5767d74fb2016d8611bc6b18523c3433c1fb7d18636f0a115cee6e106c0b694d"
+          }
+        ],
+        "forbidden_condition": "A second concurrent outbox worker instance executing its delivery/verification processing loop while another instance holds advisory lock key 823675129381; the not-acquired branch must exit(3) instead of running the loop.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent runtime or tool invocation triggers this worker process (an agent mediation binding) is absent from supplied source.",
+          "Whether operational deployments share the same PostgreSQL cluster so the advisory lock key is globally visible is not established by source."
+        ],
+        "protected_operation": "Outbox worker processing loop execution, concretely store.deliver_order_paid_event(event_id) for pending and dead-letter-replay outbox events (and the loop's associated release/recovery/verification scans).",
+        "protected_resource": "The outbox ORDER_PAID event delivery pipeline (OutboxDeliveryAttempt creation, ConsumerInbox/FulfillmentTask creation, OutboxEvent status transitions, Incident creation) and the advisory lock key 823675129381.",
+        "protection_obligation": "The outbox worker must run as a single instance: a worker process must acquire the fixed PostgreSQL advisory lock (pg_try_advisory_lock on key 823675129381) before entering its processing loop, and a process that fails to acquire the lock must refuse to run (exit code 3, worker_status=already_running) before any outbox delivery or verification effect occurs. (Merges two reviewer statements of the same obligation, phase-first and phase-second wording.)",
+        "scope_limits": [
+          "The advisory lock is a process-level single-instance gate; per-row DB locks (for-update/skip-locked) in store methods are separate mechanisms not covered here.",
+          "The worker loop also performs payment-timeout release, incident recovery, incident lifecycle advance, and verification scans; this contract covers the concurrency exclusion of the loop, not the correctness of those scans.",
+          "No supplied evidence binds this guard to an agent tool dispatch or agent lifecycle hook."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "business/postgres_store.py lines 4019-4045: `attempt = self._prepare_outbox_delivery_attempt_in_session(session, outbox.id)` (line 4019) followed by ActionExecution status 'succeeded' and Verification creation, committed with the enclosing transaction; reached only in the outcome.allowed else-branch after the guard at lines 3949-3994.",
+        "contract_id": "ecological-contract:ddc93b22f7e5c178122ef3ec4d253e6e",
+        "declared_mechanism": "Fail-closed precondition gate: execute_approved_incident_action loads tenant-scoped, row-locked current state (approval, policy decision, incident, order, payments, reservations, outbox, latest attempt, inbox, fulfillment tasks) and calls evaluate_execution_preconditions (which recomputes the action hash and returns deterministic failure codes) inside the same transaction; only the allowed branch reaches delivery-attempt preparation, and the risk policy upstream restricts allowed_actions to REPLAY_OUTBOX_DELIVERY with approval_required.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 147,
+            "line_start": 42,
+            "path": "business/incidents/execution_preconditions.py",
+            "role": "guard_registration",
+            "source_sha256": "ca14764935d411968fbdb596a763e0f1daafcabbfb6fc56ec1907d30eff57857"
+          },
+          {
+            "line_end": 141,
+            "line_start": 81,
+            "path": "business/incidents/execution_preconditions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ca14764935d411968fbdb596a763e0f1daafcabbfb6fc56ec1907d30eff57857"
+          },
+          {
+            "line_end": 3930,
+            "line_start": 3803,
+            "path": "business/postgres_store.py",
+            "role": "guard_registration",
+            "source_sha256": "5767d74fb2016d8611bc6b18523c3433c1fb7d18636f0a115cee6e106c0b694d"
+          },
+          {
+            "line_end": 3994,
+            "line_start": 3949,
+            "path": "business/postgres_store.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5767d74fb2016d8611bc6b18523c3433c1fb7d18636f0a115cee6e106c0b694d"
+          },
+          {
+            "line_end": 4045,
+            "line_start": 4019,
+            "path": "business/postgres_store.py",
+            "role": "commit_point",
+            "source_sha256": "5767d74fb2016d8611bc6b18523c3433c1fb7d18636f0a115cee6e106c0b694d"
+          },
+          {
+            "line_end": 5092,
+            "line_start": 5027,
+            "path": "business/postgres_store.py",
+            "role": "protected_operation",
+            "source_sha256": "5767d74fb2016d8611bc6b18523c3433c1fb7d18636f0a115cee6e106c0b694d"
+          },
+          {
+            "line_end": 132,
+            "line_start": 100,
+            "path": "business/incidents/risk_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "cd7c911b42ce5f86714cedd0656fd92ba3caeb3acc299e970958c5518d1fdddd"
+          }
+        ],
+        "forbidden_condition": "Replay execution proceeding when outcome.allowed is False for any stable failure code (FEATURE_DISABLED, APPROVAL_NOT_APPROVED, ACTION_NOT_ALLOWED, ACTION_PRECONDITION_CHANGED, INCIDENT_NOT_EXECUTABLE, TENANT_ASSOCIATION_MISMATCH, OUTBOX_NOT_DEAD_LETTER, BUSINESS_EFFECT_ALREADY_EXISTS); in that branch the ActionExecution is recorded failed with the failure_code, the incident moves to needs_human_review, and _prepare_outbox_delivery_attempt_in_session is never called.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which entry points invoke execute_approved_incident_action (HTTP route, worker, or agent tool) are not present in supplied views; this is required to classify agent mediation.",
+          "Whether the approval actor inputs (actor_id/actor_role) consumed by the guarded flow can be agent-generated is not supported by supplied source."
+        ],
+        "protected_operation": "execute_approved_incident_action performing REPLAY_OUTBOX_DELIVERY: preparing a new pending OutboxDeliveryAttempt for the dead-lettered event and marking the ActionExecution succeeded with a pending Verification, all committed in one transaction.",
+        "protected_resource": "The tenant-scoped dead-lettered ORDER_PAID outbox event, its ActionExecution/OutboxDeliveryAttempt rows, and the downstream ConsumerInbox/FulfillmentTask business effects its replay would create.",
+        "protection_obligation": "Executing an approved REPLAY_OUTBOX_DELIVERY (re-delivering a dead-lettered ORDER_PAID outbox event, which creates consumer-inbox/fulfillment business effects) is forbidden unless evaluate_execution_preconditions passes inside PostgresStore.execute_approved_incident_action \u2014 approval status 'approved' and policy-allowed with the latest policy decision, incident executable, tenant associations consistent, outbox still dead_letter, no inbox/fulfillment effect already existing, and all approved facts equal to current tenant-scoped DB state \u2014 with the guard enforced fail-closed in the same transaction before any delivery attempt is prepared.",
+        "scope_limits": [
+          "This guard governs the replay execution/preparation inside one transaction at execution time; the later actual delivery performed by the outbox worker and its advisory-lock guard are separate commit points and mechanisms.",
+          "Approval recording (record_incident_approval) and risk-policy decision creation are distinct obligations/commit points and are not covered here beyond their role as precondition inputs.",
+          "No supplied evidence ties this execution path to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source establishes how the agent session role ('merchant' vs 'user') is authenticated or assigned before being passed into QueryEngine/RunConfig.",
+      "No supplied source shows the callers of PostgresStore.execute_approved_incident_action or record_incident_approval (HTTP routes, workers, or agent tools), so agent mediation of the replay-execution guard is not established.",
+      "No supplied source shows any agent tool registry or lifecycle hook binding the worker advisory-lock guards or the replay guard to agent mediation; only the merchant-tool role gate is bound via tool registration and tool-use dispatch.",
+      "PaymentInvestigationRunner internals (model/provider call surface and its effects) are not supplied, so additional effect strata for the payment investigation worker cannot be enumerated.",
+      "Repository enumeration is not complete and behavior labels are unavailable; no claims about runtime behavior, violation status, or prevalence are made."
+    ],
+    "repository": "xinyu-u/payment-investigation-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:868807c6519e6860ecc9094c4d2e6201"
+  },
+  "request_sha256": "c03a68d0b0b7b3c2ff80fb2c7107519d69a82403f2523388003d446cd94cea91",
+  "response_sha256": "d84065d85db7181421c794ce9c595284d38a125b1ede78395a691abc8689058a",
+  "state": "completed",
+  "tokens": 124621,
+  "unit": "v24-screen:868807c6519e6860ecc9094c4d2e6201"
+}

@@ -1,0 +1,330 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "task.status = new_status.value assigned at task_service.py:121 and persisted by db.flush() at task_service.py:127 inside transition(), reached from complete() at task_service.py:253 with TaskStatus.COMPLETED.",
+        "contract_id": "ecological-contract:5f52d8dcf90de2b1c2cfd57e1f4c299f",
+        "declared_mechanism": "task_service.complete() runs evaluate_completion (acceptance-criteria check, test-evidence check, pull-request-claim check, deployment-claim check, errors_or_warnings check), applies the evidence to the task, and on any blocking reason flushes a task.complete_blocked audit record with outcome DENIED and raises CompletionBlocked; only otherwise does it call transition(), which additionally enforces the ALLOWED_TRANSITIONS state machine (raising TransitionError on disallowed moves).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 253,
+            "line_start": 231,
+            "path": "backend/app/services/task_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b52a7877db923eb805fe8edfb70d6c4c73de5eadd6961d0158e31461d631316b"
+          },
+          {
+            "line_end": 202,
+            "line_start": 141,
+            "path": "backend/app/services/task_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b52a7877db923eb805fe8edfb70d6c4c73de5eadd6961d0158e31461d631316b"
+          },
+          {
+            "line_end": 9,
+            "line_start": 1,
+            "path": "backend/app/services/task_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b52a7877db923eb805fe8edfb70d6c4c73de5eadd6961d0158e31461d631316b"
+          },
+          {
+            "line_end": 236,
+            "line_start": 231,
+            "path": "backend/app/services/task_service.py",
+            "role": "protected_operation",
+            "source_sha256": "b52a7877db923eb805fe8edfb70d6c4c73de5eadd6961d0158e31461d631316b"
+          },
+          {
+            "line_end": 127,
+            "line_start": 113,
+            "path": "backend/app/services/task_service.py",
+            "role": "commit_point",
+            "source_sha256": "b52a7877db923eb805fe8edfb70d6c4c73de5eadd6961d0158e31461d631316b"
+          }
+        ],
+        "forbidden_condition": "Marking a Task COMPLETED when evaluate_completion returns any blocking reason: a missing or False acceptance-criterion result, missing or non-passing unit tests for a software task, any failing recorded test result, pull_request_merged claimed without a pull_request_url, a deployment claimed without a provider-confirmed success status, or unresolved errors_or_warnings present \u2014 i.e., completion asserted from natural-language success claims without structural evidence.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which agent tool, lifecycle hook, or route invokes task_service.complete() \u2014 required to establish agent mediation (direct_tool or agent_generated_input_to_guarded_effect).",
+          "Whether CompletionEvidence fields are validated as agent-generated inputs at any dispatch boundary; no such validation surface is shown in the supplied views."
+        ],
+        "protected_operation": "The task completion transition: task_service.complete() evaluating CompletionEvidence and, only on success, calling transition() to set TaskStatus.COMPLETED.",
+        "protected_resource": "Task status/state records (status, completed_at, and the persisted evidence fields written by _apply_evidence).",
+        "protection_obligation": "A Task may transition to COMPLETED only through task_service.complete(), which commits the transition only when deterministic, structurally supplied evidence passes evaluation: every acceptance criterion has a True recorded result, required test evidence is present and passing, pull-request-merge and deployment claims are provider-backed, and no unresolved errors_or_warnings remain; otherwise complete() records a DENIED audit event and raises CompletionBlocked instead of committing. (Reviewer-2 obligation; the reviewer's claim that this check is agent-invoked is not established by the supplied source.)",
+        "scope_limits": [
+          "No caller of task_service.complete() (agent tool, lifecycle hook, or API route) appears in the supplied views; the agent-mediation framing exists only as module-docstring narrative, so no agent_entry_binding evidence is cited.",
+          "partially_complete() and fail() intentionally bypass the completion checks and are outside this contract.",
+          "The transition() state machine (ALLOWED_TRANSITIONS) is a secondary layer; only its role in gating COMPLETED is in scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "service.events().delete(calendarId='primary', eventId=payload['event_id']).execute() at backend/app/agents/specialists/calendar_agent.py:134 (cancellation) and service.events().patch(calendarId='primary', eventId=payload['event_id'], body=body).execute() at backend/app/agents/specialists/calendar_agent.py:142 (modification).",
+        "contract_id": "ecological-contract:7bbf4d120b3275d99e61c7639c3563d8",
+        "declared_mechanism": "apply_calendar_change_impl calls approval_service.is_executable (invalidates on non-APPROVED status or payload drift), returns BLOCKED when the payload has no event_id, then calls require_connection(..., need_write=True), which raises PermissionDenied with an audit DENIED record on non-ownership, non-CONNECTED status, or write disabled; the Calendar SDK is built only after all checks pass.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 147,
+            "line_start": 114,
+            "path": "backend/app/agents/specialists/calendar_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "851d9f45082404791b139c6a3e255e31746534fea69fac1206321b3081795861"
+          },
+          {
+            "line_end": 125,
+            "line_start": 114,
+            "path": "backend/app/agents/specialists/calendar_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "851d9f45082404791b139c6a3e255e31746534fea69fac1206321b3081795861"
+          },
+          {
+            "line_end": 176,
+            "line_start": 164,
+            "path": "backend/app/services/approval_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "628989547e75f603647adc68a30a4efc09e85e5136c771fa00d2b98e3e57496f"
+          },
+          {
+            "line_end": 72,
+            "line_start": 35,
+            "path": "backend/app/agents/permissions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "99eaa9758702c241b9ebc6345756c48073de2032639541ff314591e799607f29"
+          },
+          {
+            "line_end": 143,
+            "line_start": 131,
+            "path": "backend/app/agents/specialists/calendar_agent.py",
+            "role": "commit_point",
+            "source_sha256": "851d9f45082404791b139c6a3e255e31746534fea69fac1206321b3081795861"
+          },
+          {
+            "line_end": 181,
+            "line_start": 177,
+            "path": "backend/app/agents/specialists/calendar_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "851d9f45082404791b139c6a3e255e31746534fea69fac1206321b3081795861"
+          },
+          {
+            "line_end": 195,
+            "line_start": 184,
+            "path": "backend/app/agents/specialists/calendar_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "851d9f45082404791b139c6a3e255e31746534fea69fac1206321b3081795861"
+          }
+        ],
+        "forbidden_condition": "Deleting or patching a calendar event when the referenced ApprovalRequest is not APPROVED or its current payload hash differs from approval.payload_hash, when the approval payload lacks event_id, or when executing through a calendar ServiceConnection that is missing, owned by a different agent, not CONNECTED, or has write_enabled false.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether apply_calendar_change_impl can be invoked outside agent tool dispatch; no other caller appears in the supplied views.",
+          "is_executable does not itself verify the approval's action_type matches a calendar change; whether action_type binding is enforced elsewhere is not shown."
+        ],
+        "protected_operation": "Agent-triggered calendar change/cancellation via the apply_calendar_change function tool, dispatched to apply_calendar_change_impl, which executes events().delete or events().patch against the user's primary Google Calendar per the frozen approval payload.",
+        "protected_resource": "The user's primary Google Calendar events, accessed via the calendar ServiceConnection.",
+        "protection_obligation": "Google Calendar event cancellation or modification by the Calendar Agent is permitted only when, immediately before the provider call, approval_service.is_executable confirms the referenced ApprovalRequest is APPROVED with an unchanged payload hash (and the payload carries an event_id), and permissions.require_connection(need_write=True) confirms the executing agent owns a CONNECTED calendar ServiceConnection with write enabled; the change may commit only at the Google Calendar API delete/patch invocation. (Merges the two reviewers' overlapping wording for the calendar effect.)",
+        "scope_limits": [
+          "Verified only against the supplied calendar_agent.py view; the docstring claim that the Chief of Staff is barred from calendar writes is narrative and no Chief-of-Staff source is supplied.",
+          "The read path (get_agenda, detect_calendar_conflicts) and the approval-request path (request_calendar_change) do not commit calendar mutations; they are covered by the connection-authorization contract.",
+          "The dashboard decision flow that sets the approval to APPROVED is outside this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The provider SDK invocations executed only after require_connection returns, e.g. gmail users().messages().list(...).execute() at email_agent.py:45 and calendar events().list(...).execute() at calendar_agent.py:44-48 (read path); the write-path commit points are declared in the Gmail-send and calendar-change contracts.",
+        "contract_id": "ecological-contract:828f26f063bd30f92900fdd483dfbe68",
+        "declared_mechanism": "permissions.require_connection looks up the connection filtered by user_id and provider, fails closed with PermissionDenied and audit_service.record DENIED entries (connection.access_denied / connection.write_denied) on non-ownership/missing connection, non-CONNECTED status, or write not enabled, and only then returns the connection to the caller; each guarded tool calls it as its first statement before any provider SDK use.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 76,
+            "line_start": 25,
+            "path": "backend/app/agents/permissions.py",
+            "role": "guard_registration",
+            "source_sha256": "99eaa9758702c241b9ebc6345756c48073de2032639541ff314591e799607f29"
+          },
+          {
+            "line_end": 46,
+            "line_start": 35,
+            "path": "backend/app/agents/permissions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "99eaa9758702c241b9ebc6345756c48073de2032639541ff314591e799607f29"
+          },
+          {
+            "line_end": 72,
+            "line_start": 61,
+            "path": "backend/app/agents/permissions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "99eaa9758702c241b9ebc6345756c48073de2032639541ff314591e799607f29"
+          },
+          {
+            "line_end": 45,
+            "line_start": 30,
+            "path": "backend/app/agents/specialists/email_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "07686ef35df9f2b87f3ebb060e3a840a8c501d2376b84fd415d1ec532c4828c4"
+          },
+          {
+            "line_end": 48,
+            "line_start": 26,
+            "path": "backend/app/agents/specialists/calendar_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "851d9f45082404791b139c6a3e255e31746534fea69fac1206321b3081795861"
+          },
+          {
+            "line_end": 45,
+            "line_start": 44,
+            "path": "backend/app/agents/specialists/email_agent.py",
+            "role": "commit_point",
+            "source_sha256": "07686ef35df9f2b87f3ebb060e3a840a8c501d2376b84fd415d1ec532c4828c4"
+          },
+          {
+            "line_end": 48,
+            "line_start": 44,
+            "path": "backend/app/agents/specialists/calendar_agent.py",
+            "role": "commit_point",
+            "source_sha256": "851d9f45082404791b139c6a3e255e31746534fea69fac1206321b3081795861"
+          },
+          {
+            "line_end": 138,
+            "line_start": 134,
+            "path": "backend/app/agents/specialists/email_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "07686ef35df9f2b87f3ebb060e3a840a8c501d2376b84fd415d1ec532c4828c4"
+          },
+          {
+            "line_end": 153,
+            "line_start": 150,
+            "path": "backend/app/agents/specialists/calendar_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "851d9f45082404791b139c6a3e255e31746534fea69fac1206321b3081795861"
+          },
+          {
+            "line_end": 172,
+            "line_start": 163,
+            "path": "backend/app/agents/specialists/email_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "07686ef35df9f2b87f3ebb060e3a840a8c501d2376b84fd415d1ec532c4828c4"
+          },
+          {
+            "line_end": 195,
+            "line_start": 184,
+            "path": "backend/app/agents/specialists/calendar_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "851d9f45082404791b139c6a3e255e31746534fea69fac1206321b3081795861"
+          }
+        ],
+        "forbidden_condition": "Accessing a ServiceConnection where no matching (user_id, provider) connection exists or conn.owner_agent_id differs from the calling agent_id; accessing a connection whose status is not CONNECTED; or requesting need_write on a connection whose write_enabled flag is false.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether HTTP routes or other callers invoke these impl functions directly outside function_tool dispatch; the guard would still apply, but tool-dispatch binding is only evidenced for the registered tools."
+        ],
+        "protected_operation": "Tool-mediated use of external provider connections in the supplied views: Gmail reads (list_recent_emails_impl), Gmail draft-approval creation (draft_external_email_impl), Gmail sends (send_approved_email_impl), calendar reads (get_agenda_impl), calendar change requests (request_calendar_change_impl), and calendar applies (apply_calendar_change_impl).",
+        "protected_resource": "ServiceConnection records scoped by (user_id, provider) and the external provider APIs (Gmail, Google Calendar) whose access they authorize.",
+        "protection_obligation": "Every tool execution that touches an external provider connection must first pass permissions.require_connection: an agent may not access a ServiceConnection it does not own, use a connection that is not CONNECTED, or perform write access when write_enabled is false; denial is fail-closed (PermissionDenied plus an audit record) and cannot be altered by model output or routing decisions.",
+        "scope_limits": [
+          "The supplied views demonstrate the guard on six tools across email_agent.py and calendar_agent.py; the module docstring claim that every connection-touching tool calls require_connection cannot be verified repository-wide.",
+          "Write-path enforcement for the gmail send and calendar apply is co-declared in those two contracts; this contract states the standalone connection-access authorization obligation, including reads.",
+          "Audit-record emission on denial is part of the mechanism; audit delivery reliability is not verifiable from the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "service.users().messages().send(userId='me', body={'raw': raw}).execute() at backend/app/agents/specialists/email_agent.py:124; the subsequent conn.last_used_at update and db.flush() at lines 126-127 are post-commit bookkeeping.",
+        "contract_id": "ecological-contract:9fafb2f0566584ad703b4ac38352f499",
+        "declared_mechanism": "Fail-closed code checks executed inside send_approved_email_impl before any provider call: approval_service.is_executable(...) returns False (and invalidates the approval with reason 'payload changed before execution') on non-APPROVED status or payload-hash mismatch (approval_service.py:164-176); permissions.require_connection(..., need_write=True) raises PermissionDenied and writes an audit DENIED record when the connection is missing, not owned by the calling agent, not CONNECTED, or write is not enabled (permissions.py:25-76). Both checks must pass before the Gmail SDK call; a missing OAuth token short-circuits to BLOCKED.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 131,
+            "line_start": 101,
+            "path": "backend/app/agents/specialists/email_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "07686ef35df9f2b87f3ebb060e3a840a8c501d2376b84fd415d1ec532c4828c4"
+          },
+          {
+            "line_end": 110,
+            "line_start": 101,
+            "path": "backend/app/agents/specialists/email_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "07686ef35df9f2b87f3ebb060e3a840a8c501d2376b84fd415d1ec532c4828c4"
+          },
+          {
+            "line_end": 176,
+            "line_start": 164,
+            "path": "backend/app/services/approval_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "628989547e75f603647adc68a30a4efc09e85e5136c771fa00d2b98e3e57496f"
+          },
+          {
+            "line_end": 72,
+            "line_start": 35,
+            "path": "backend/app/agents/permissions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "99eaa9758702c241b9ebc6345756c48073de2032639541ff314591e799607f29"
+          },
+          {
+            "line_end": 124,
+            "line_start": 112,
+            "path": "backend/app/agents/specialists/email_agent.py",
+            "role": "commit_point",
+            "source_sha256": "07686ef35df9f2b87f3ebb060e3a840a8c501d2376b84fd415d1ec532c4828c4"
+          },
+          {
+            "line_end": 160,
+            "line_start": 156,
+            "path": "backend/app/agents/specialists/email_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "07686ef35df9f2b87f3ebb060e3a840a8c501d2376b84fd415d1ec532c4828c4"
+          },
+          {
+            "line_end": 172,
+            "line_start": 163,
+            "path": "backend/app/agents/specialists/email_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "07686ef35df9f2b87f3ebb060e3a840a8c501d2376b84fd415d1ec532c4828c4"
+          }
+        ],
+        "forbidden_condition": "Sending a Gmail message when the referenced ApprovalRequest is not in APPROVED status (pending, expired, rejected, or never approved) or when the hash of the current payload differs from approval.payload_hash (payload drift); or sending through a gmail ServiceConnection that is missing, owned by a different agent (owner_agent_id mismatch), not CONNECTED, or has write_enabled false.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether send_approved_email_impl can be invoked outside agent tool dispatch; no other caller appears in the supplied views.",
+          "is_executable verifies status and payload hash but the supplied views show no explicit check binding the approval's action_type or agent_id to the executing send; whether such binding is enforced elsewhere is not shown."
+        ],
+        "protected_operation": "Agent-triggered external email send via the send_approved_email function tool, dispatched to send_approved_email_impl, which builds the MIME message solely from approval.payload and sends it via the Gmail API.",
+        "protected_resource": "The user's Gmail account (ServiceConnection with provider 'gmail') and outgoing Gmail messages sent on the user's behalf.",
+        "protection_obligation": "Outbound Gmail message send by the Email Agent is permitted only when, immediately before the provider call, approval_service.is_executable confirms the referenced ApprovalRequest is APPROVED with an unchanged payload hash, and permissions.require_connection(need_write=True) confirms the executing agent owns a CONNECTED gmail ServiceConnection with write enabled; the send may commit only at the Gmail API invocation. (Merges the two reviewers' overlapping wording for the email-send effect.)",
+        "scope_limits": [
+          "Verified only against the supplied email_agent.py view; reviewer-cited executing tools for stock trades, bids/posts, and deployment confirmation (portfolio_agent.py, business_development_agent.py, app_manager_agent.py) are not in the supplied sources and are not covered here.",
+          "Covers the send path only; draft_external_email creates an ApprovalRequest and never sends, and list_recent_emails is a read covered by the connection-authorization contract.",
+          "The dashboard-side decision flow (approval_service.decide) that moves an ApprovalRequest to APPROVED is outside this contract; this contract covers only the execution-time recheck in the tool."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Sources cited by the reviewers but not supplied: backend/app/agents/specialists/portfolio_agent.py (lines 80-83), backend/app/agents/specialists/business_development_agent.py (lines 163-166), and backend/app/agents/specialists/app_manager_agent.py (lines 85-87). The stock-trade, freelancer-bid/public-post, and deployment-execution guard obligations asserted in both opinions cannot be verified against supplied source; approval_service.py:29-42 only lists the corresponding action_type names for risk classification and contains no executing tool.",
+      "No caller of task_service.complete() appears in the supplied views, so agent mediation of the task-completion obligation is not established and the agent_entry_binding evidence role was omitted for that contract.",
+      "The dashboard route/controller that calls approval_service.decide() is not in the supplied views; the invariants that decide() is the only path to APPROVED, that reauthentication is required for high-risk approvals, and that SMS/email replies are never an approval path are documented in docstrings (approval_service.py:10-12, 118-120, 132-133) but their call-site wiring is unverified.",
+      "The repository-wide claim that every connection-touching tool calls require_connection first (permissions.py:3-4) cannot be verified; only the six tools in the supplied email_agent.py and calendar_agent.py views are evidenced.",
+      "Behavior/prevalence labels are unavailable per the stated scope; this compilation makes no determination of DEC violation, runtime behavior, or how often these guards are exercised."
+    ],
+    "repository": "fortiz772/business-Site",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:248bd45651eec9ed8ff2b22aa5678b9e"
+  },
+  "request_sha256": "9026e93ccd502da58571247a0ba82fbec1d731d0f481b13aa346b82bdc4e38d0",
+  "response_sha256": "0429778cb7dc0afb8cdb8469c0ed65913c4888e0117cba68e2ed7fd6049a62f7",
+  "state": "completed",
+  "tokens": 30052,
+  "unit": "v24-screen:248bd45651eec9ed8ff2b22aa5678b9e"
+}

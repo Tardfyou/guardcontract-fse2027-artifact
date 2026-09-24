@@ -1,0 +1,770 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.model.predict(batch_pairs, ...) at tilellm/tools/reranker.py:936-941 (reached via run_on_gpu routing) and encode_batch_fn(batch_texts) at tilellm/tools/sparse_encoders.py:154-158 (reached via aencode_* routing).",
+        "contract_id": "ecological-contract:34dfa32598f99a95c94ad5d37616a931",
+        "declared_mechanism": "Async wrappers route local-model work through run_on_gpu (arerank_documents at reranker.py:1017-1024; aencode_documents/aencode_queries at sparse_encoders.py:644-667), with the batch helpers documented as always running on the single _GPU_EXECUTOR thread so no lock is taken.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 37,
+            "line_start": 31,
+            "path": "tilellm/tools/reranker.py",
+            "role": "guard_registration",
+            "source_sha256": "bb108cbef099ef9a502e9f979a80c24d4c1a46b0aaa4bd61b2bb6acb57bd3e7f"
+          },
+          {
+            "line_end": 900,
+            "line_start": 890,
+            "path": "tilellm/tools/reranker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "bb108cbef099ef9a502e9f979a80c24d4c1a46b0aaa4bd61b2bb6acb57bd3e7f"
+          },
+          {
+            "line_end": 941,
+            "line_start": 931,
+            "path": "tilellm/tools/reranker.py",
+            "role": "commit_point",
+            "source_sha256": "bb108cbef099ef9a502e9f979a80c24d4c1a46b0aaa4bd61b2bb6acb57bd3e7f"
+          },
+          {
+            "line_end": 1024,
+            "line_start": 1017,
+            "path": "tilellm/tools/reranker.py",
+            "role": "guard_registration",
+            "source_sha256": "bb108cbef099ef9a502e9f979a80c24d4c1a46b0aaa4bd61b2bb6acb57bd3e7f"
+          },
+          {
+            "line_end": 158,
+            "line_start": 153,
+            "path": "tilellm/tools/sparse_encoders.py",
+            "role": "commit_point",
+            "source_sha256": "a4fa77c12bbeeab9ffb1c93d81b631d5a2a5397c196ed775df92632e048e99f9"
+          },
+          {
+            "line_end": 667,
+            "line_start": 644,
+            "path": "tilellm/tools/sparse_encoders.py",
+            "role": "guard_registration",
+            "source_sha256": "a4fa77c12bbeeab9ffb1c93d81b631d5a2a5397c196ed775df92632e048e99f9"
+          }
+        ],
+        "forbidden_condition": "Concurrent CUDA inference \u2014 model.predict or sparse encode_batch_fn executing on the GPU from more than one thread, or GPU inference running outside the single _GPU_EXECUTOR thread on the async paths.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "run_on_gpu/_GPU_EXECUTOR implementation confirming single-threaded execution.",
+          "Whether all production call sites of CrossEncoder/sparse encode route through the async run_on_gpu wrappers.",
+          "Agent binding, if any, for rerank/encode invocation paths."
+        ],
+        "protected_operation": "GPU-bound rerank (CrossEncoder predict) and sparse encoding (Splade/BGE-M3 encode) invocations on the async entry points.",
+        "protected_resource": "The CUDA device/GPU memory and the local models loaded on it (CrossEncoder, SpladeEncoder, BGEM3FlagModel).",
+        "protection_obligation": "Local CUDA model invocations (TileReranker CrossEncoder rerank; TiledeskSpladeEncoder/TiledeskBGEM3 sparse encode) must be serialized through the single-thread GPU executor via run_on_gpu, so that no two threads run model.predict/encode on the GPU concurrently.",
+        "scope_limits": [
+          "Synchronous entry points (rerank_documents called directly, e.g., RerankedRetriever at reranker.py:1066/1091) are not shown to route through run_on_gpu; the single-thread invariant is documented for the executor thread.",
+          "tilellm/tools/_gpu_concurrency.py (run_on_gpu/_GPU_EXECUTOR implementation) is not supplied; the single-thread property is taken from import-site documentation.",
+          "TEI/Pinecone remote paths are explicitly excluded (asyncio.to_thread / native HTTP)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Eviction mutation under lock: tilellm/tools/reranker.py:774-781 (pop + torch.cuda.empty_cache()) and tilellm/tools/sparse_encoders.py:620-625 (pop + cuda_empty_cache_safe()).",
+        "contract_id": "ecological-contract:4f836aedd42f58580593c2f246578280",
+        "declared_mechanism": "Class-level threading.Lock attributes (_cache_lock = Lock() at reranker.py:707 and sparse_encoders.py:574) with 'with cls._cache_lock:' wrapping the full get/load/evict bodies of _get_cached_model, _get_cached_encoder, and the structural clear in clear_cache.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 707,
+            "line_start": 707,
+            "path": "tilellm/tools/reranker.py",
+            "role": "guard_registration",
+            "source_sha256": "bb108cbef099ef9a502e9f979a80c24d4c1a46b0aaa4bd61b2bb6acb57bd3e7f"
+          },
+          {
+            "line_end": 771,
+            "line_start": 767,
+            "path": "tilellm/tools/reranker.py",
+            "role": "guard_registration",
+            "source_sha256": "bb108cbef099ef9a502e9f979a80c24d4c1a46b0aaa4bd61b2bb6acb57bd3e7f"
+          },
+          {
+            "line_end": 781,
+            "line_start": 773,
+            "path": "tilellm/tools/reranker.py",
+            "role": "commit_point",
+            "source_sha256": "bb108cbef099ef9a502e9f979a80c24d4c1a46b0aaa4bd61b2bb6acb57bd3e7f"
+          },
+          {
+            "line_end": 574,
+            "line_start": 574,
+            "path": "tilellm/tools/sparse_encoders.py",
+            "role": "guard_registration",
+            "source_sha256": "a4fa77c12bbeeab9ffb1c93d81b631d5a2a5397c196ed775df92632e048e99f9"
+          },
+          {
+            "line_end": 628,
+            "line_start": 593,
+            "path": "tilellm/tools/sparse_encoders.py",
+            "role": "commit_point",
+            "source_sha256": "a4fa77c12bbeeab9ffb1c93d81b631d5a2a5397c196ed775df92632e048e99f9"
+          }
+        ],
+        "forbidden_condition": "Concurrent mutation of TileReranker._model_cache or TiledeskSparseEncoders._encoder_cache (insertion, pop-based LRU eviction, VRAM-releasing empty_cache, or clear) occurring outside cls._cache_lock.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Agent binding, if any, for cache-mutating call paths.",
+          "Whether eviction-time empty_cache outside the lock is an accepted residual (the comment scopes the lock to the LRU structure)."
+        ],
+        "protected_operation": "Model/encoder cache load, eviction, and clear operations for the class-level LRU caches.",
+        "protected_resource": "TileReranker._model_cache and TiledeskSparseEncoders._encoder_cache (class-level OrderedDicts, max size 2) and the GPU memory freed during eviction.",
+        "protection_obligation": "LRU model/encoder cache mutations \u2014 cache load, LRU eviction including the VRAM-releasing torch.cuda.empty_cache()/cuda_empty_cache_safe(), and clear_cache \u2014 must hold the class-level _cache_lock in TileReranker and TiledeskSparseEncoders; unsynchronized concurrent cache mutation is forbidden.",
+        "scope_limits": [
+          "The lock protects the in-process cache structures; GPU inference serialization is covered by a separate contract.",
+          "In clear_cache implementations the empty_cache call runs after the with-block (reranker.py:1030-1033; sparse_encoders.py:673-675), so only the structural clear is lock-scoped.",
+          "Locking is per-process; multi-process deployments are outside these locks."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "task = await process_pdf_document_task.kiq(doc_id=..., bucket_name=None, object_name=None, webhook_url=..., config=task_payload) at tilellm/modules/pdf_ocr/services/taskiq_service.py:160-166.",
+        "contract_id": "ecological-contract:5316a2ef67b2ff132bbaedbfb1106418",
+        "declared_mechanism": "get_doc_state pre-check returning already_processed/already_queued short-circuit dicts, plus set_queued's atomic Redis SET NX EX claim (fail-open when Redis is unavailable); a lost race re-checks state and skips dispatch.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 30,
+            "line_start": 26,
+            "path": "tilellm/modules/pdf_ocr/services/pdf_dedup_service.py",
+            "role": "guard_registration",
+            "source_sha256": "e13f77e79db613626de269fcf2a460d97ae8ffae1410b3c0e6f3352eb91b8426"
+          },
+          {
+            "line_end": 81,
+            "line_start": 64,
+            "path": "tilellm/modules/pdf_ocr/services/pdf_dedup_service.py",
+            "role": "guard_registration",
+            "source_sha256": "e13f77e79db613626de269fcf2a460d97ae8ffae1410b3c0e6f3352eb91b8426"
+          },
+          {
+            "line_end": 145,
+            "line_start": 96,
+            "path": "tilellm/modules/pdf_ocr/services/taskiq_service.py",
+            "role": "guard_registration",
+            "source_sha256": "f9c71100185563178f499d1fbd13056e9e61c9ebc1a708bca744bbf0ccd6701c"
+          },
+          {
+            "line_end": 166,
+            "line_start": 148,
+            "path": "tilellm/modules/pdf_ocr/services/taskiq_service.py",
+            "role": "commit_point",
+            "source_sha256": "f9c71100185563178f499d1fbd13056e9e61c9ebc1a708bca744bbf0ccd6701c"
+          },
+          {
+            "line_end": 90,
+            "line_start": 78,
+            "path": "tilellm/modules/pdf_ocr/controllers.py",
+            "role": "protected_operation",
+            "source_sha256": "8d771b3684361c506889bd317fd157d677cb422a548b78f8ad56abed5b6495e6"
+          }
+        ],
+        "forbidden_condition": "Duplicate dispatch of PDF processing for the same (namespace, doc_id) \u2014 process_pdf_document_task.kiq executing when get_doc_state returns 'completed'/'queued'/'processing', or when the concurrent NX claim returns False.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool or agent-generated flow submits PDF scraping requests to /api/pdf/scrape.",
+          "TTL values are env-configurable (PDF_OCR_DEDUP_*); deployed values unverified."
+        ],
+        "protected_operation": "Taskiq dispatch (kiq) of the PDF OCR ingestion task for a document.",
+        "protected_resource": "Redis dedup key pdf_ocr:state:{namespace}:{doc_id} and the TaskIQ queue ingress for process_pdf_document_task.",
+        "protection_obligation": "A PDF OCR processing task must not be dispatched via process_pdf_document_task.kiq for a (namespace, doc_id) whose Redis dedup state is already 'completed' or 'queued'/'processing'; TaskiqService.submit must short-circuit such requests and, for new work, must win the atomic Redis SET NX claim (set_queued) before dispatching.",
+        "scope_limits": [
+          "Fail-open design: Redis unavailability yields True from set_queued and None from get_doc_state, so dispatch proceeds (pdf_dedup_service.py:13, 70-80).",
+          "force_reprocess=True intentionally bypasses the guard by resetting state (taskiq_service.py:105-108); a 'failed' state is reset for re-dispatch after cooldown (127-131).",
+          "The legacy pipeline path in controllers (queue_service.submit at controllers.py:110) is not covered by this TaskIQ guard."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "results = await repository._execute_query(cypher_query, {}, namespace=namespace, graph_name=graph_name) at tilellm/modules/knowledge_graph_falkor/agents/nodes.py:182.",
+        "contract_id": "ecological-contract:65049de4c2c9ae8f74491696cde48b55",
+        "declared_mechanism": "Prefix validation in executor_node (query_upper = cypher_query.strip().upper(); startswith MATCH/WITH/CALL/RETURN) returning error state with query_results=None and a logged security violation, skipping the repository call.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 103,
+            "line_start": 95,
+            "path": "tilellm/modules/knowledge_graph_falkor/agents/nodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8cb8ed768ec51fdfdcd53fc312f091700330628452946b5488cae6b15d579179"
+          },
+          {
+            "line_end": 146,
+            "line_start": 140,
+            "path": "tilellm/modules/knowledge_graph_falkor/agents/nodes.py",
+            "role": "protected_operation",
+            "source_sha256": "8cb8ed768ec51fdfdcd53fc312f091700330628452946b5488cae6b15d579179"
+          },
+          {
+            "line_end": 151,
+            "line_start": 147,
+            "path": "tilellm/modules/knowledge_graph_falkor/agents/nodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8cb8ed768ec51fdfdcd53fc312f091700330628452946b5488cae6b15d579179"
+          },
+          {
+            "line_end": 176,
+            "line_start": 152,
+            "path": "tilellm/modules/knowledge_graph_falkor/agents/nodes.py",
+            "role": "guard_registration",
+            "source_sha256": "8cb8ed768ec51fdfdcd53fc312f091700330628452946b5488cae6b15d579179"
+          },
+          {
+            "line_end": 182,
+            "line_start": 179,
+            "path": "tilellm/modules/knowledge_graph_falkor/agents/nodes.py",
+            "role": "commit_point",
+            "source_sha256": "8cb8ed768ec51fdfdcd53fc312f091700330628452946b5488cae6b15d579179"
+          }
+        ],
+        "forbidden_condition": "Execution, via repository._execute_query, of an agent-generated Cypher statement whose stripped uppercase form does not start with MATCH/WITH/CALL/RETURN (non-read Cypher).",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Compiled graph/entry point for the falkor Graph Specialist Agent.",
+          "Whether other call sites execute agent-generated Cypher without this gate.",
+          "Whether repository-level read-only enforcement exists beyond this node check."
+        ],
+        "protected_operation": "Execution of agent-generated Cypher against the FalkorDB graph in the agent's executor_node.",
+        "protected_resource": "FalkorDB graph data for the state's namespace/graph_name.",
+        "protection_obligation": "Cypher reaching the FalkorDB repository from the Graph Specialist Agent must be read-only: executor_node must refuse any agent-generated query not starting with MATCH, WITH, CALL, or RETURN and must not invoke repository._execute_query for it.",
+        "scope_limits": [
+          "Prefix check is not full Cypher parsing: a read-prefixed statement containing write clauses (e.g., MATCH ... DELETE) would pass this gate; the mechanism forbids only non-read-prefixed queries.",
+          "The graph assembly that wires create_nodes into a compiled agent graph is not supplied; mediation is established by the in-file LLM \u2192 state \u2192 executor dataflow.",
+          "AsyncFalkorGraphRepository._execute_query internals are not supplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.client.remove_object(self.bucket_name, obj.object_name) inside the deletion loop at tilellm/modules/knowledge_graph_falkor/services/minio_storage.py:273-276.",
+        "contract_id": "ecological-contract:9f550b421dca3b470a4069d06a12e1ae",
+        "declared_mechanism": "confirm_destroy: bool = False parameter with PermissionError raised at method entry before the list/remove loop, backed by the module's documented snapshot-durability policy ('nothing may delete them implicitly'; 'Deleting must be a decision, never a side effect').",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 25,
+            "line_start": 22,
+            "path": "tilellm/modules/knowledge_graph_falkor/services/minio_storage.py",
+            "role": "forbidden_condition",
+            "source_sha256": "816d8f832565cdb4badbac6dc00839377a173fb298898880257f5c7d2684dbd1"
+          },
+          {
+            "line_end": 48,
+            "line_start": 39,
+            "path": "tilellm/modules/knowledge_graph_falkor/services/minio_storage.py",
+            "role": "forbidden_condition",
+            "source_sha256": "816d8f832565cdb4badbac6dc00839377a173fb298898880257f5c7d2684dbd1"
+          },
+          {
+            "line_end": 261,
+            "line_start": 254,
+            "path": "tilellm/modules/knowledge_graph_falkor/services/minio_storage.py",
+            "role": "protected_operation",
+            "source_sha256": "816d8f832565cdb4badbac6dc00839377a173fb298898880257f5c7d2684dbd1"
+          },
+          {
+            "line_end": 267,
+            "line_start": 262,
+            "path": "tilellm/modules/knowledge_graph_falkor/services/minio_storage.py",
+            "role": "guard_registration",
+            "source_sha256": "816d8f832565cdb4badbac6dc00839377a173fb298898880257f5c7d2684dbd1"
+          },
+          {
+            "line_end": 276,
+            "line_start": 269,
+            "path": "tilellm/modules/knowledge_graph_falkor/services/minio_storage.py",
+            "role": "commit_point",
+            "source_sha256": "816d8f832565cdb4badbac6dc00839377a173fb298898880257f5c7d2684dbd1"
+          }
+        ],
+        "forbidden_condition": "Implicit or unconfirmed deletion of the community-report restore-point artifacts \u2014 any self.client.remove_object for objects under community_reports/{graph_name}/ reached without confirm_destroy=True.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Caller/tool bindings for delete_community_reports.",
+          "Whether MinIO bucket policies add independent deletion controls."
+        ],
+        "protected_operation": "Deletion of all community report files for a graph via delete_community_reports.",
+        "protected_resource": "MinIO objects under prefix community_reports/{graph_name}/ (level_NN.parquet community-report snapshots, the restore point used by /reimport).",
+        "protection_obligation": "Community-report Parquet snapshot files under the MinIO prefix community_reports/{graph_name}/ must not be deleted unless the caller explicitly passes confirm_destroy=True; MinIOStorageService.delete_community_reports must raise PermissionError before any object removal otherwise.",
+        "scope_limits": [
+          "Checkpoints under checkpoints/ are explicitly excluded from this policy; delete_checkpoints needs no confirmation (module docstring lines 49-52).",
+          "The docstring records the method had zero callers when written; no caller (agent or otherwise) appears in the supplied views.",
+          "Covers only the falkor-module delete_community_reports; base-class delete_artifacts is a separate contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.client.remove_object(self.bucket_name, obj_name) inside the deletion loop at tilellm/shared/minio_storage.py:677-683.",
+        "contract_id": "ecological-contract:9ff32f747030df460b3df37a0b60b896",
+        "declared_mechanism": "confirm_destroy: bool = False parameter with PermissionError ('they are a restore point. Pass confirm_destroy=True if you really mean it.') raised after the index_name/index_type requirement and before list/remove.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 633,
+            "line_start": 626,
+            "path": "tilellm/shared/minio_storage.py",
+            "role": "protected_operation",
+            "source_sha256": "3d953a5201c6f9333c55576302f3f9b44e3594b0b062c379eefe2ea279a61f3e"
+          },
+          {
+            "line_end": 641,
+            "line_start": 636,
+            "path": "tilellm/shared/minio_storage.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3d953a5201c6f9333c55576302f3f9b44e3594b0b062c379eefe2ea279a61f3e"
+          },
+          {
+            "line_end": 662,
+            "line_start": 657,
+            "path": "tilellm/shared/minio_storage.py",
+            "role": "guard_registration",
+            "source_sha256": "3d953a5201c6f9333c55576302f3f9b44e3594b0b062c379eefe2ea279a61f3e"
+          },
+          {
+            "line_end": 683,
+            "line_start": 669,
+            "path": "tilellm/shared/minio_storage.py",
+            "role": "commit_point",
+            "source_sha256": "3d953a5201c6f9333c55576302f3f9b44e3594b0b062c379eefe2ea279a61f3e"
+          }
+        ],
+        "forbidden_condition": "Implicit deletion of namespace restore-point artifacts \u2014 remove_object executing for the namespace artifact prefix (including across ALL timestamps when timestamp is None) without confirm_destroy=True.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Caller/tool bindings for delete_artifacts.",
+          "Whether any agent lifecycle path can reach artifact deletion without confirm_destroy."
+        ],
+        "protected_operation": "Deletion of MinIO-stored GraphRAG artifacts for a namespace (specific timestamp or all timestamps) via delete_artifacts.",
+        "protected_resource": "MinIO bucket objects under {index_name}/{index_type}/{namespace}/{timestamp}/ \u2014 the parquet restore point.",
+        "protection_obligation": "GraphRAG Parquet artifacts stored for a namespace under {index_name}/{index_type}/{namespace}/ must not be deleted from MinIO unless delete_artifacts is called with confirm_destroy=True; a PermissionError must be raised before any remove_object otherwise.",
+        "scope_limits": [
+          "Method is inherited unchanged by the falkor subclass per module docstrings (shared/minio_storage.py:6-13; falkor module docstring 42-45).",
+          "Docstrings note zero callers at time of writing; no caller appears in the supplied views.",
+          "delete_checkpoints in the falkor subclass is a distinct, unprotected-by-design path excluded from this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await delete_namespace(namespace_to_delete) at tilellm/__main__.py:1326; await delete_chunk_id_from_namespace(repository_engine, chunk_id, namespace) at :1363; await delete_id_from_namespace(item_to_delete, metadata_id, namespace) at :1391.",
+        "contract_id": "ecological-contract:a6bd6a2b49227d3d5a7f9f0824189af8",
+        "declared_mechanism": "In-handler path-token validation: decode_jwt(token) followed by Engine(**engine_dec['engine']) or RepositoryEngine(**engine_dec) reconstruction inside the handler try-block; a decode failure raises before the delete statement, and the handler returns an error response without executing the repository delete.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1313,
+            "line_start": 1312,
+            "path": "tilellm/__main__.py",
+            "role": "protected_operation",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1324,
+            "line_start": 1321,
+            "path": "tilellm/__main__.py",
+            "role": "guard_registration",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1326,
+            "line_start": 1326,
+            "path": "tilellm/__main__.py",
+            "role": "commit_point",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1350,
+            "line_start": 1347,
+            "path": "tilellm/__main__.py",
+            "role": "protected_operation",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1361,
+            "line_start": 1360,
+            "path": "tilellm/__main__.py",
+            "role": "guard_registration",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1363,
+            "line_start": 1363,
+            "path": "tilellm/__main__.py",
+            "role": "commit_point",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1375,
+            "line_start": 1374,
+            "path": "tilellm/__main__.py",
+            "role": "protected_operation",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1389,
+            "line_start": 1385,
+            "path": "tilellm/__main__.py",
+            "role": "guard_registration",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1391,
+            "line_start": 1391,
+            "path": "tilellm/__main__.py",
+            "role": "commit_point",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          }
+        ],
+        "forbidden_condition": "A delete_namespace / delete_chunk_id_from_namespace / delete_id_from_namespace call executing against the vector store for a request whose path token fails decode_jwt validation \u2014 i.e., destructive deletion proceeding without a valid engine-bearing token.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, workflow, or agent-generated request path invokes these DELETE endpoints (would move mediation off not_established).",
+          "decode_jwt(token) behavior on invalid/expired tokens (raises vs returns) to confirm the abort path.",
+          "Whether controller.delete_namespace / delete_chunk_id_from_namespace / delete_id_from_namespace independently enforce the engine claims."
+        ],
+        "protected_operation": "Authenticated deletion of a namespace, chunk id, or document id in the vector store through the three DELETE endpoint handlers.",
+        "protected_resource": "Vector-store data addressed by {namespace}, {chunk_id}, or {metadata_id} (namespace contents, chunks, and document items).",
+        "protection_obligation": "Destructive vector-store deletion via the three token-bearing DELETE endpoints (DELETE /api/namespace/{namespace}/{token}, DELETE /api/chunk/{chunk_id}/namespace/{namespace}/{token}, DELETE /api/id/{metadata_id}/namespace/{namespace}/{token}) must not commit unless the path JWT decodes via decode_jwt(token) and the Engine/RepositoryEngine is rebuilt from the decoded claims before the awaited repository delete executes.",
+        "scope_limits": [
+          "Ordinary web path-token authentication on HTTP endpoints; no supplied source binds these endpoints to an agent tool, agent lifecycle hook, or agent-generated input \u2014 included on reviewer proposal with mediation unresolved.",
+          "decode_jwt implementation and failure semantics are not in the supplied views (tilellm/shared/utility.py not provided).",
+          "Scope covers only the three token-bearing DELETE endpoints; the legacy POST /api/delete/namespace and POST /api/delete/id handlers (tilellm/__main__.py:1094-1160) perform equivalent deletes with no token parameter and are outside this guard."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The MAX_ATTEMPTS poison-pill branch and early return at tilellm/modules/task_executor/tasks.py:692-722, ahead of the _process_pdf_document_task_inner invocation at tasks.py:724-733.",
+        "contract_id": "ecological-contract:b8bdd50fa47fedd2b56b39b525334149",
+        "declared_mechanism": "attempt_tracker helpers (MAX_ATTEMPTS, incr_attempt, clear_attempts) with the counter incremented before the dangerous work and the 'if attempt > MAX_ATTEMPTS' branch returning a failure result instead of raising, so the message is ACKed and never redelivered.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 672,
+            "line_start": 650,
+            "path": "tilellm/modules/task_executor/tasks.py",
+            "role": "protected_operation",
+            "source_sha256": "e9b04240ced5a424c924570400d129de238c3bd70fd4160f9087f7b750f59ca7"
+          },
+          {
+            "line_end": 692,
+            "line_start": 684,
+            "path": "tilellm/modules/task_executor/tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "e9b04240ced5a424c924570400d129de238c3bd70fd4160f9087f7b750f59ca7"
+          },
+          {
+            "line_end": 722,
+            "line_start": 692,
+            "path": "tilellm/modules/task_executor/tasks.py",
+            "role": "commit_point",
+            "source_sha256": "e9b04240ced5a424c924570400d129de238c3bd70fd4160f9087f7b750f59ca7"
+          },
+          {
+            "line_end": 733,
+            "line_start": 724,
+            "path": "tilellm/modules/task_executor/tasks.py",
+            "role": "protected_operation",
+            "source_sha256": "e9b04240ced5a424c924570400d129de238c3bd70fd4160f9087f7b750f59ca7"
+          }
+        ],
+        "forbidden_condition": "Re-execution of the PDF processing body beyond MAX_ATTEMPTS for the same (namespace, doc_id) \u2014 unbounded retry/redelivery loops on crash-prone documents (e.g., OOM-killed workers).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "attempt_tracker internals (persistence semantics of incr_attempt).",
+          "Agent binding, if any, for PDF OCR task flows."
+        ],
+        "protected_operation": "PDF OCR processing attempts for a document under TaskIQ retry/redelivery, via _process_pdf_document_task_inner.",
+        "protected_resource": "The PDF processing pipeline for (namespace, doc_id) and the broker redelivery loop driving its retries.",
+        "protection_obligation": "process_pdf_document_task must bound PDF OCR reprocessing with a persisted attempt counter: the counter must be incremented before the processing body, and once attempts exceed MAX_ATTEMPTS the task must take the poison-pill path \u2014 mark the doc failed, clear the counter, notify the webhook, and return (ACK) without re-running the processing body.",
+        "scope_limits": [
+          "The guarded body performs database/vector-store and webhook effects; this contract bounds invocation attempts, not those inner effects directly.",
+          "attempt_tracker implementation (MAX_ATTEMPTS value, persistence of incr_attempt across worker crashes) is not supplied.",
+          "Reviewer support is via the opinion rationale and citation range rather than a standalone obligation statement."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "result = await get_listitems_namespace(repository_engine, namespace, True) at tilellm/__main__.py:1279.",
+        "contract_id": "ecological-contract:d119dd3996bac3244f11b0fa442259e4",
+        "declared_mechanism": "FastAPI HTTPBearer security dependency registered as security = HTTPBearer() and applied as credentials: HTTPAuthorizationCredentials = Depends(security) on the handler, plus in-handler decode_jwt(credentials.credentials) before the listing call.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 163,
+            "line_start": 163,
+            "path": "tilellm/__main__.py",
+            "role": "guard_registration",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1265,
+            "line_start": 1259,
+            "path": "tilellm/__main__.py",
+            "role": "guard_registration",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1272,
+            "line_start": 1264,
+            "path": "tilellm/__main__.py",
+            "role": "protected_operation",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1278,
+            "line_start": 1276,
+            "path": "tilellm/__main__.py",
+            "role": "guard_registration",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          },
+          {
+            "line_end": 1279,
+            "line_start": 1279,
+            "path": "tilellm/__main__.py",
+            "role": "commit_point",
+            "source_sha256": "44cfcea23fa72547eb052fb8083621ec7ba33c6e7d8fe813356cc1efb5397fb4"
+          }
+        ],
+        "forbidden_condition": "get_listitems_namespace(repository_engine, namespace, True) executing \u2014 exposing raw namespace items in the HTTP response \u2014 for a request lacking a bearer credential or whose bearer token fails decode_jwt.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Agent binding for this endpoint, if any.",
+          "HTTPBearer missing-credential behavior (framework default) is not shown explicitly.",
+          "Controller-level get_listitems_namespace internals are not supplied."
+        ],
+        "protected_operation": "Raw full-text listing of all items in a namespace via the bearer-protected GET listing endpoint.",
+        "protected_resource": "Raw vector-store item content for {namespace} returned in the endpoint response.",
+        "protection_obligation": "Raw chunk listing via GET /{namespace}/all (route literal partially redacted in the supplied view) must not execute get_listitems_namespace (returning full item text) unless a valid HTTPBearer credential is resolved via Depends(security) and the bearer token decodes to an engine via decode_jwt.",
+        "scope_limits": [
+          "Conventional web bearer authentication of an HTTP read endpoint; no supplied source binds it to an agent tool, lifecycle hook, or agent-generated input.",
+          "The route literal is partially redacted in the source view ('<REDACTED>{namespace}/all'); the full path string is unverified.",
+          "Token-in-path listing endpoints (e.g., /api/listitems/namespace/{namespace}/{token} at 1235-1256) use the same decode pattern but are separate registrations; this contract covers only the Depends(security) endpoint."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The 'guardia' conditional-edge routing decision wired at tilellm/agents/workflow.py:49-53 that either admits the question to intent_router ('procedi') or terminates at END ('rifiuta').",
+        "contract_id": "ecological-contract:d82ae16ae8da8377f6f59a3ec9dc56d6",
+        "declared_mechanism": "LangGraph registration: workflow.add_node('guardia', input_guard_node); workflow.set_entry_point('guardia'); workflow.add_conditional_edges('guardia', lambda x: 'procedi' if x.get('is_on_topic') != 'no' else 'rifiuta', {'procedi': 'intent_router', 'rifiuta': END}).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 3,
+            "line_start": 3,
+            "path": "tilellm/agents/workflow.py",
+            "role": "guard_registration",
+            "source_sha256": "67b0746c439dadcdf76db13ad7a9abdf57d03400a2e12ab20d241b1ae3becb09"
+          },
+          {
+            "line_end": 36,
+            "line_start": 34,
+            "path": "tilellm/agents/workflow.py",
+            "role": "guard_registration",
+            "source_sha256": "67b0746c439dadcdf76db13ad7a9abdf57d03400a2e12ab20d241b1ae3becb09"
+          },
+          {
+            "line_end": 53,
+            "line_start": 47,
+            "path": "tilellm/agents/workflow.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "67b0746c439dadcdf76db13ad7a9abdf57d03400a2e12ab20d241b1ae3becb09"
+          },
+          {
+            "line_end": 53,
+            "line_start": 49,
+            "path": "tilellm/agents/workflow.py",
+            "role": "commit_point",
+            "source_sha256": "67b0746c439dadcdf76db13ad7a9abdf57d03400a2e12ab20d241b1ae3becb09"
+          }
+        ],
+        "forbidden_condition": "An off-topic question (state is_on_topic == 'no') passing the 'guardia' entry node and being admitted into intent_router and the downstream RAG pipeline.",
+        "missing_evidence_roles": [
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Concrete invocation site(s) of the compiled workflow app / simple_app (api_v2 controllers not supplied).",
+          "input_guard_node logic: what sets is_on_topic and whether the guard can fail open.",
+          "Whether /api/v2/query ingress carries agent-external callers or only agent-internal flows."
+        ],
+        "protected_operation": "Invocation of the compiled agentic QA pipeline for user questions (the node sequence downstream of the guard).",
+        "protected_resource": "The agent QA pipeline (LangGraph StateGraph compiled to app in tilellm/agents/workflow.py) and the retrieval/LLM effects it performs for a question.",
+        "protection_obligation": "In the full agentic question-answering workflow, a user question must not proceed from the graph entry point into downstream processing (intent_router \u2192 cache/hyde \u2192 rag_core/raptor \u2192 validator) unless the input_guard_node leaves is_on_topic != 'no'; off-topic questions must be routed to END at the guard's conditional edge.",
+        "scope_limits": [
+          "input_guard_node implementation (tilellm/agents/nodes.py) is not in the supplied views; the guard's decision semantics are unverified.",
+          "Binding of this compiled graph to the /api/v2/query endpoint is attested only by an in-source comment (workflow.py:31); no controller view is supplied.",
+          "The simple_workflow variant (workflow.py:108-166) routes around the guard when the payload sets use_guard=False (_simple_guard_router), so guard enforcement there is conditional.",
+          "The rejection edge fires only on the exact state value 'no' for is_on_topic."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "result = await falkor_logic.create_graph(request) at tilellm/modules/task_executor/tasks.py:243, gated by the duplicate check/return at tasks.py:218-224.",
+        "contract_id": "ecological-contract:ec0270eea95cb6c6a094b7553013b78c",
+        "declared_mechanism": "_result_already_stored(ctx) checking broker.result_backend.is_result_ready(ctx.message.task_id) as the task's first action; on True the task logs and returns 'skipped_duplicate' before importing/running the graph logic.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 210,
+            "line_start": 193,
+            "path": "tilellm/modules/task_executor/tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "e9b04240ced5a424c924570400d129de238c3bd70fd4160f9087f7b750f59ca7"
+          },
+          {
+            "line_end": 224,
+            "line_start": 213,
+            "path": "tilellm/modules/task_executor/tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "e9b04240ced5a424c924570400d129de238c3bd70fd4160f9087f7b750f59ca7"
+          },
+          {
+            "line_end": 243,
+            "line_start": 241,
+            "path": "tilellm/modules/task_executor/tasks.py",
+            "role": "commit_point",
+            "source_sha256": "e9b04240ced5a424c924570400d129de238c3bd70fd4160f9087f7b750f59ca7"
+          }
+        ],
+        "forbidden_condition": "Re-running falkor_logic.create_graph for a re-delivered task_id whose result is already stored \u2014 re-execution that the task's own skip branch warns 'would wipe the graph it just built'.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool or lifecycle path enqueues falkor_graph_create tasks.",
+          "Broker re-delivery idle-timeout and result-backend configuration values."
+        ],
+        "protected_operation": "FalkorDB community-graph creation/import for a namespace via task_falkor_graph_create.",
+        "protected_resource": "FalkorDB graph contents for the request's namespace built by falkor_logic.create_graph.",
+        "protection_obligation": "On duplicate delivery of task_falkor_graph_create (a result already stored for the same task_id), the task must not re-execute the destructive falkor_logic.create_graph; it must return {'status': 'skipped_duplicate'} before any graph work.",
+        "scope_limits": [
+          "Best-effort guard: an unreachable result backend returns False and the task proceeds (tasks.py:205-210).",
+          "The check is registered only on task_falkor_graph_create; other falkor/neo4j tasks in this module lack it in the supplied view.",
+          "Duplicate detection depends on TaskIQ xautoclaim re-delivery semantics described in the helper docstring (193-204); broker internals are not supplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "result = session.run(query, parameters) at tilellm/modules/knowledge_graph/repository/repository.py:782 executing the WHERE-filtered 'WITH n LIMIT 10000 / DETACH DELETE n' query built at 774-779.",
+        "contract_id": "ecological-contract:fa0ba97c2affe4468cbbb1143b551801",
+        "declared_mechanism": "Accumulation of where_clauses from the optional filter parameters with an early return ('If no parameters provided, don't delete everything (safety)' \u2192 return {'nodes_deleted': 0, 'reports_deleted': 0} plus warning log) before the DETACH DELETE query is built and run.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 744,
+            "line_start": 723,
+            "path": "tilellm/modules/knowledge_graph/repository/repository.py",
+            "role": "protected_operation",
+            "source_sha256": "49bf9ced439541c88e3e7c700435d6f3ba81b70cef9f4be29f6dea3023b82d44"
+          },
+          {
+            "line_end": 765,
+            "line_start": 746,
+            "path": "tilellm/modules/knowledge_graph/repository/repository.py",
+            "role": "guard_registration",
+            "source_sha256": "49bf9ced439541c88e3e7c700435d6f3ba81b70cef9f4be29f6dea3023b82d44"
+          },
+          {
+            "line_end": 769,
+            "line_start": 766,
+            "path": "tilellm/modules/knowledge_graph/repository/repository.py",
+            "role": "guard_registration",
+            "source_sha256": "49bf9ced439541c88e3e7c700435d6f3ba81b70cef9f4be29f6dea3023b82d44"
+          },
+          {
+            "line_end": 782,
+            "line_start": 774,
+            "path": "tilellm/modules/knowledge_graph/repository/repository.py",
+            "role": "commit_point",
+            "source_sha256": "49bf9ced439541c88e3e7c700435d6f3ba81b70cef9f4be29f6dea3023b82d44"
+          }
+        ],
+        "forbidden_condition": "A MATCH ... DETACH DELETE executing with an empty WHERE clause (no metadata filters), which would delete every node matched by the query.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Callers of delete_nodes_by_metadata / delete_nodes_by_metadata_id (agent tools? controllers?).",
+          "Whether Neo4j credentials/roles restrict writes independently."
+        ],
+        "protected_operation": "Metadata-filtered bulk deletion of graph nodes and their relationships in Neo4j.",
+        "protected_resource": "Neo4j graph nodes and relationships in the connected database.",
+        "protection_obligation": "GraphRepository.delete_nodes_by_metadata must refuse to run an unfiltered bulk DETACH DELETE: when none of namespace, index_name, engine_name, engine_type, or metadata_id is supplied, it must skip deletion and return zero counts instead of executing the delete query.",
+        "scope_limits": [
+          "Deletion is batched per run via WITH n LIMIT 10000 (repository.py:777).",
+          "An identical early-return guard exists in delete_nodes_by_metadata_id (repository.py:835-838); the cited evidence covers the delete_nodes_by_metadata instance proposed by reviewers.",
+          "No caller of delete_nodes_by_metadata appears in the supplied views; agent binding not established."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "decode_jwt implementation and failure semantics (tilellm/shared/utility.py) not supplied \u2014 needed to confirm the abort path of the token-gated DELETE/listing guards.",
+      "input_guard_node implementation (tilellm/agents/nodes.py) not supplied \u2014 decision semantics of the agentic entry guard are unverified.",
+      "api_v2 controllers or other invocation sites binding the compiled LangGraph workflows (workflow.app / simple_app) to HTTP endpoints are not supplied.",
+      "tilellm/tools/_gpu_concurrency.py (run_on_gpu, _GPU_EXECUTOR, cuda_empty_cache_safe, is_cuda_oom) not supplied.",
+      "tilellm.controller.controller implementations of delete_namespace / delete_chunk_id_from_namespace / delete_id_from_namespace / get_listitems_namespace not supplied; vector-store commit internals unverified.",
+      "tilellm/modules/pdf_ocr/services/attempt_tracker.py (MAX_ATTEMPTS, incr_attempt, clear_attempts) not supplied.",
+      "LangGraph assembly consuming knowledge_graph_falkor.agents.nodes.create_nodes (compiled Graph Specialist Agent graph) not supplied.",
+      "No supplied source establishes agent mediation (agent tool, lifecycle hook, or agent-generated input) for: the token-gated DELETE/listing HTTP endpoints, the MinIO confirm_destroy deletion guards, the Neo4j unfiltered-delete refusal, the PDF dedup dispatch gate, the falkor duplicate-delivery guard, the PDF attempt poison pill, or the GPU/cache concurrency locks.",
+      "TaskIQ broker configuration (re-delivery idle timeout, result backend) not supplied.",
+      "Callers of delete_community_reports / delete_artifacts / delete_nodes_by_metadata are absent from the supplied views (docstrings state zero callers at time of writing)."
+    ],
+    "repository": "Tiledesk/tiledesk-llm",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:8f41a2dead9bdef59cddd8d323be1186"
+  },
+  "request_sha256": "2c6f6e8775e48b04880b6a56d9f9086c27e45a948b906fd753539bca4cddbb3b",
+  "response_sha256": "bc6f97a018bad90b043375640ec3697ee1b397308dc4b0c8e2e862fe04063c97",
+  "state": "completed",
+  "tokens": 140217,
+  "unit": "v24-screen:8f41a2dead9bdef59cddd8d323be1186"
+}

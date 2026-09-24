@@ -1,0 +1,101 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Binding of the role-filtered tool list into the agent: construction of LangGraphAGUIAgent(..., graph=get_agent(tools, checkpointer), ...) (app/api/routes.py:44-48), after which the run started at agent.run(input_data) (routes.py:55) can invoke only the bound tools.",
+        "contract_id": "ecological-contract:e3e0c8341ba44dea21d8cb870f205732",
+        "declared_mechanism": "get_mcp_tools(role) (app/agent/mcp.py:59-74) filters the MCP client's tool list against the ROLE_TOOL_NAMES allowlist (app/agent/mcp.py:13-28): tools are kept only if tool.name is in the role's enumerated set; unknown roles yield [] (default-deny, mcp.py:71-72); the 'admin' role (map value None) yields the full tool set (mcp.py:68-69). The endpoint applies the filter per request with the authenticated caller's role: mcp_tools = await get_mcp_tools(current_user.role) (routes.py:41), then tools = local_tools + mcp_tools (routes.py:42), where current_user comes from Depends(get_auth_context) (routes.py:34) and its role is the required 'role' JWT claim (auth.py:96).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 28,
+            "line_start": 13,
+            "path": "app/agent/mcp.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ccf0f70f18c77815fe948a3b8d7d1b18f3d0e49a4a0b7d97c682938984f3fcd3"
+          },
+          {
+            "line_end": 74,
+            "line_start": 59,
+            "path": "app/agent/mcp.py",
+            "role": "guard_registration",
+            "source_sha256": "ccf0f70f18c77815fe948a3b8d7d1b18f3d0e49a4a0b7d97c682938984f3fcd3"
+          },
+          {
+            "line_end": 36,
+            "line_start": 30,
+            "path": "app/api/routes.py",
+            "role": "protected_operation",
+            "source_sha256": "c5742468f3f1ba058f7f67523d0c75131ddb9ab6cf2e2595bf7a35cfca472307"
+          },
+          {
+            "line_end": 42,
+            "line_start": 40,
+            "path": "app/api/routes.py",
+            "role": "guard_registration",
+            "source_sha256": "c5742468f3f1ba058f7f67523d0c75131ddb9ab6cf2e2595bf7a35cfca472307"
+          },
+          {
+            "line_end": 48,
+            "line_start": 44,
+            "path": "app/api/routes.py",
+            "role": "commit_point",
+            "source_sha256": "c5742468f3f1ba058f7f67523d0c75131ddb9ab6cf2e2595bf7a35cfca472307"
+          },
+          {
+            "line_end": 55,
+            "line_start": 40,
+            "path": "app/api/routes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c5742468f3f1ba058f7f67523d0c75131ddb9ab6cf2e2595bf7a35cfca472307"
+          },
+          {
+            "line_end": 102,
+            "line_start": 92,
+            "path": "app/core/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fca26b587c6f166833af56bcaf380b9f7eee50e0a90cad76c66dc5ef35eebe80"
+          }
+        ],
+        "forbidden_condition": "A run of the /oh_my_agent agent being granted (bound) any MCP tool outside the authenticated caller's ROLE_TOOL_NAMES set \u2014 e.g., a 'buyer' run bound API_POST_SI_CREATE or API_POST_MAIL_SEND \u2014 or any MCP tool being bound for a role not present in ROLE_TOOL_NAMES (unknown roles must receive zero MCP tools per the default-deny branch).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether JWT signature verification (deferred via TODO at app/core/auth.py:92) is intended to gate the 'role' claim before it keys the ROLE_TOOL_NAMES filter, given the role currently derives from an unverified token payload (auth.py:33-52, 94-96).",
+          "Contents and guarding of get_local_tools in app/agent/tools.py (not supplied), which is merged into the same tool set at routes.py:42.",
+          "Whether get_agent(tools, checkpointer) in app/agent/agent.py (not supplied) binds the passed tools verbatim or applies any additional filtering before the commit point at routes.py:48.",
+          "Effect semantics and strata of each named MCP tool (which downstream external effect each API_* tool commits, and on which side of the MCP boundary) \u2014 required if separate downstream-effect contracts are to be emitted.",
+          "Whether the agent run's tool dispatch path can invoke capabilities beyond the bound tool list (no evidence in supplied source either way)."
+        ],
+        "protected_operation": "Per-request selection and registration of MCP tools into the tool set of the agent run at POST /oh_my_agent (selection via get_mcp_tools(current_user.role), merging into tools, and binding into the agent graph), which fixes which MCP tools the run can invoke during agent.run(input_data).",
+        "protected_resource": "The MCP tool surface of the LangGraph agent run at the /oh_my_agent endpoint (tools served by the 'conarum-mcp' MultiServerMCPClient connection configured in app/agent/mcp.py).",
+        "protection_obligation": "Merged from both reviewer opinions (first and second phase): MCP tools provisioned to an agent run at POST /oh_my_agent must be limited to exactly the set enumerated for the authenticated caller's role in ROLE_TOOL_NAMES \u2014 known roles receive only their enumerated tools (e.g., 'buyer' only API_GET_PO_DETAIL/API_POST_PO_CONFIRM/API_GET_SI_DETAIL; 'logistics' may not receive API_POST_MAIL_SEND), roles absent from the map receive an empty MCP tool set, and only the 'admin' role (mapped to None) receives the full set \u2014 enforced by get_mcp_tools(role) filtering applied per request before the filtered tool list is bound into the agent run and becomes invocable by it.",
+        "scope_limits": [
+          "This contract guards tool provisioning/invocability for the agent run only; it does not assert contracts over the downstream effects of the named MCP tools (API_GET_MAIL_READ, API_POST_MAIL_SEND, API_GET_PO_DETAIL, API_POST_PO_CONFIRM, API_GET_SI_DETAIL, API_POST_SI_CREATE), whose implementations execute on the remote MCP server ('conarum-mcp', mcp.py:31-56) and are not present in supplied source, so their effect strata are not determinable here.",
+          "Only MCP tools are covered; local tools from get_local_tools(current_user.role) (routes.py:40) are concatenated into the same tool set, but app/agent/tools.py is not in supplied source, so no contract is asserted for local tools.",
+          "The 'admin' role receiving the full MCP tool set is the declared policy (mcp.py:14, 68-69), not a violation of this obligation.",
+          "The role=None early return in get_mcp_tools returning all tools (mcp.py:62-63) is not reachable from this endpoint per supplied source, because get_auth_context requires a non-empty 'role' claim (auth.py:55-62, 96).",
+          "Enforcement is at tool-selection/binding time only; no per-invocation role re-check inside the tool execution path is shown in supplied source.",
+          "Upstream JWT signature verification is deferred (auth.py:92 TODO; payload decoded without verification at auth.py:33-52); authentication correctness itself is out of scope for this contract, but the guard's reliance on the resulting role value is flagged in pending_binding_information."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "app/agent/tools.py (get_local_tools) is not in supplied source; whether local tools carry an equivalent role allowlist is unknown.",
+      "app/agent/agent.py (get_agent) is not in supplied source; how the passed tool list is bound into the graph is unknown.",
+      "Implementations of the named MCP tools (API_GET_MAIL_READ, API_POST_MAIL_SEND, API_GET_PO_DETAIL, API_POST_PO_CONFIRM, API_GET_SI_DETAIL, API_POST_SI_CREATE) reside behind the remote MCP server and are not in supplied source; their downstream effect types and strata are unknown.",
+      "No supplied source shows whether any per-invocation authorization re-check exists in the MCP tool execution path; behavior labels are unavailable per the stated scope."
+    ],
+    "repository": "git03-Nguyen/oh-my-agent-backend",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a652144232a67139087e6b487bae94e0"
+  },
+  "request_sha256": "bea9e11054ded8fb1c34b8c71c1fbc5df1aee792bb4b57ec233f7caef5e27522",
+  "response_sha256": "8b245a5108a799d23b5f536833867c6d0101a1ec479cb18727c374101f819835",
+  "state": "completed",
+  "tokens": 15912,
+  "unit": "v24-screen:a652144232a67139087e6b487bae94e0"
+}

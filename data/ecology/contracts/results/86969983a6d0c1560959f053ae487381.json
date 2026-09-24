@@ -1,0 +1,186 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "ingest_pdf(context.pdf_bytes) at tools.py:80, whose external write commits at PineconeVectorStore.from_documents(...) (ingest.py:58-63); within the same guarded flow, index creation can additionally commit at _ensure_pinecone_index / pc.create_index (ingest.py:17-26, invoked at ingest.py:55).",
+        "contract_id": "ecological-contract:d5270ee39147f32b99bcd69df44c83ec",
+        "declared_mechanism": "Pre-commit refusal guards inside the @tool index_document: early return when context.indexed is true (tools.py:63-69) and when context.index_count >= MAX_INDEX_CALLS (tools.py:70-76); MAX_INDEX_CALLS = 1 is defined in context.py:7 and the flag/counter live on AgentContext (context.py:18,23). The counter is incremented before the effect (tools.py:78) and decremented on exception so a failed attempt may be retried (tools.py:88).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 76,
+            "line_start": 63,
+            "path": "backend/rag/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          },
+          {
+            "line_end": 7,
+            "line_start": 7,
+            "path": "backend/rag/context.py",
+            "role": "guard_registration",
+            "source_sha256": "2bec98b400943f4da5a327a584a7bae6a42d4050f62cdea49a3c9f223885c001"
+          },
+          {
+            "line_end": 23,
+            "line_start": 18,
+            "path": "backend/rag/context.py",
+            "role": "guard_registration",
+            "source_sha256": "2bec98b400943f4da5a327a584a7bae6a42d4050f62cdea49a3c9f223885c001"
+          },
+          {
+            "line_end": 62,
+            "line_start": 62,
+            "path": "backend/rag/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          },
+          {
+            "line_end": 86,
+            "line_start": 78,
+            "path": "backend/rag/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          },
+          {
+            "line_end": 80,
+            "line_start": 80,
+            "path": "backend/rag/tools.py",
+            "role": "commit_point",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          },
+          {
+            "line_end": 63,
+            "line_start": 58,
+            "path": "backend/rag/ingest.py",
+            "role": "commit_point",
+            "source_sha256": "33a1b95ab15ae3123dc46eb6c4027656bdb733e899cdd8e16e2ccfa33c3a7aaf"
+          },
+          {
+            "line_end": 61,
+            "line_start": 60,
+            "path": "backend/rag/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          },
+          {
+            "line_end": 147,
+            "line_start": 141,
+            "path": "backend/rag/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          }
+        ],
+        "forbidden_condition": "A second execution of the indexing effect after the document is already indexed (context.indexed == True) or after the one-call budget is exhausted (context.index_count >= MAX_INDEX_CALLS with MAX_INDEX_CALLS = 1), i.e., any repeat index_document invocation that would re-run ingest_pdf and re-write the PDF chunks to Pinecone.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Reviewer wording 'per session' presumes AgentContext is created once per session; the creating code (session_manager) is outside the supplied views, so only per-context-instance scope is evidenced.",
+          "The @tool decorator and the returned tool list establish tool registration; the LangGraph agent node that actually dispatches these tools at runtime is not in the supplied views.",
+          "Whether the side-effecting index creation _ensure_pinecone_index (ingest.py:17-26) should be tracked as its own commit point contract; it commits in the same database stratum under the same guard, so it is folded into this contract pending reviewer guidance."
+        ],
+        "protected_operation": "Agent invocation of the index_document tool that performs indexing of the uploaded PDF (tools.py index_document -> ingest_pdf(context.pdf_bytes), then binding context.retriever and setting context.indexed).",
+        "protected_resource": "External Pinecone vector store: index config.PINECONE_INDEX_NAME, per-PDF namespace derived as sha256(pdf_bytes)[:16] (ingest.py:29-30), holding the chunk embeddings of the uploaded PDF.",
+        "protection_obligation": "Merged from both reviewers: the agent tool index_document must refuse re-indexing \u2014 returning a refusal when context.indexed is already true or when context.index_count >= MAX_INDEX_CALLS (= 1) \u2014 so that the external Pinecone write performed by ingest_pdf / PineconeVectorStore.from_documents commits at most once per session (once per AgentContext/tool-set instance).",
+        "scope_limits": [
+          "Guarantee is scoped to the AgentContext instance passed to create_agent_tools (tools.py:31); no cross-session or cross-process deduplication is shown, and no idempotency check on an existing namespace is shown (namespace is content-derived, ingest.py:29-30).",
+          "Because a failed attempt decrements index_count (tools.py:88), at-most-once applies to committed writes; exactly one new attempt is permitted after each failure.",
+          "Guards return JSON refusal payloads to the model rather than raising; only the tool execution path is constrained, and only callers via this tool closure are shown.",
+          "No supplied code path resets context.indexed after success, so the post-success refusal is permanent for the context lifetime.",
+          "Same commit point and same stratum; the search-budget, validate, reject, and ask_human count guards in the same file are distinct mechanisms not merged into this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "docs = context.retriever.invoke(query) at tools.py:118 \u2014 the outbound retrieval query to the Pinecone-backed store.",
+        "contract_id": "ecological-contract:f1911408328ce5dcf42f6eb89e4b5cdc",
+        "declared_mechanism": "Precondition guard inside the @tool search_documents: early string refusal when context.retriever is None (tools.py:108-109). A separate MAX_SEARCH_CALLS = 6 budget guard (tools.py:111-115, context.py:8) caps total searches but is not the obligation compiled here.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 109,
+            "line_start": 108,
+            "path": "backend/rag/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          },
+          {
+            "line_end": 16,
+            "line_start": 16,
+            "path": "backend/rag/context.py",
+            "role": "guard_registration",
+            "source_sha256": "2bec98b400943f4da5a327a584a7bae6a42d4050f62cdea49a3c9f223885c001"
+          },
+          {
+            "line_end": 107,
+            "line_start": 107,
+            "path": "backend/rag/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          },
+          {
+            "line_end": 119,
+            "line_start": 117,
+            "path": "backend/rag/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          },
+          {
+            "line_end": 118,
+            "line_start": 118,
+            "path": "backend/rag/tools.py",
+            "role": "commit_point",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          },
+          {
+            "line_end": 106,
+            "line_start": 105,
+            "path": "backend/rag/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          },
+          {
+            "line_end": 147,
+            "line_start": 141,
+            "path": "backend/rag/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7cd69ed08dce5c5832d2153ac40a51b77c16111f28af80662ead968efeacece7"
+          }
+        ],
+        "forbidden_condition": "Executing the retrieval (context.retriever.invoke(query)) before index_document has completed and set context.retriever, i.e., search_documents invoked while context.retriever is None ('Document is not indexed yet').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether search_documents is dispatched by the LangGraph agent loop and whether queries originate from model output \u2014 tool registration is evidenced (@tool decorator, returned list), but the runtime dispatch path is not in the supplied views.",
+          "Whether read-only vector-store queries should be tracked under a database stratum instead of http; compiled as http (network API request effect) because the query mutates nothing."
+        ],
+        "protected_operation": "Agent invocation of the search_documents tool performing retrieval over the indexed PDF (tools.py search_documents -> context.retriever.invoke(query)).",
+        "protected_resource": "The Pinecone-backed VectorStoreRetriever bound on AgentContext.retriever after indexing (context.py:16), targeting the per-PDF namespace of config.PINECONE_INDEX_NAME.",
+        "protection_obligation": "From the first reviewer: the agent tool search_documents must refuse retrieval before indexing has bound a retriever \u2014 when context.retriever is None it must return a refusal instead of executing context.retriever.invoke(query) against the Pinecone store.",
+        "scope_limits": [
+          "Classified as http because the retrieval is a non-mutating network/API request to the Pinecone service; it is not a persistent database mutation.",
+          "Guard is scoped to the AgentContext instance passed to create_agent_tools (tools.py:31); session-level lifetime is not shown in supplied views.",
+          "The precondition only verifies that a retriever object is bound; it does not verify namespace contents beyond the assignment at tools.py:81-82.",
+          "The MAX_SEARCH_CALLS budget refusal (tools.py:111-115) is a separate rate-limit mechanism, not merged into this obligation.",
+          "The refusal is a plain string response to the model; only the tool execution path is constrained."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "backend/services/session_manager.py and the agent/graph construction code are not among the supplied views, so the binding of the HTTP session lifecycle to AgentContext (the reviewers' 'per session' scope) and the wiring from the /chat route to the agent tool loop cannot be verified from supplied source.",
+      "The companion API-layer precondition cited by the second reviewer (backend/api/routes.py:120-123, chat gated on doc_status in ('valid', 'approved') and agent_interrupt clear) is not compiled as a contract: supplied source does not bind session_manager.send_message (routes.py:125) to an agent tool dispatch, lifecycle hook, or agent-generated input reaching a guarded effect, so it remains out-of-scope application validation pending that binding.",
+      "backend/rag/validation.py is not supplied, so the effect stratum of the validate_document tool's run_validation call is undetermined; no contract is compiled for its MAX_VALIDATE_CALLS guard (tools.py:35-46) since no reviewer proposed an obligation for it."
+    ],
+    "repository": "abhishekanand-02/Legal_RAG",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:86969983a6d0c1560959f053ae487381"
+  },
+  "request_sha256": "4a269aee467d4665e19a6391cd4475267cb8acbb01b9bdb4cb346ac168f2ba69",
+  "response_sha256": "c3cef246104e44dfab5dfdec179dcf4e2558583a1e7a8fc3cc818a10719ef782",
+  "state": "completed",
+  "tokens": 18497,
+  "unit": "v24-screen:86969983a6d0c1560959f053ae487381"
+}

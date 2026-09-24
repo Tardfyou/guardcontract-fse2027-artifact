@@ -1,0 +1,139 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "src/convfinqa/evaluation/golden.py:111 \u2014 path.write_text(dataset.model_dump_(indent=2)), the filesystem write that the exists()/FileExistsError guard at lines 106-109 must precede.",
+        "contract_id": "ecological-contract:724252e452076fc003f103c633e524cb",
+        "declared_mechanism": "save_golden performs a path.exists() check and raises FileExistsError ('golden versions are immutable; bump golden_version and write a new file') before any write occurs.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 109,
+            "line_start": 104,
+            "path": "src/convfinqa/evaluation/golden.py",
+            "role": "guard_registration",
+            "source_sha256": "a2410de2554ba1322fe17f0a5bc1ffedd1338b3275b8817ebf9d07b2ce43fb17"
+          },
+          {
+            "line_end": 11,
+            "line_start": 11,
+            "path": "src/convfinqa/evaluation/golden.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a2410de2554ba1322fe17f0a5bc1ffedd1338b3275b8817ebf9d07b2ce43fb17"
+          },
+          {
+            "line_end": 111,
+            "line_start": 110,
+            "path": "src/convfinqa/evaluation/golden.py",
+            "role": "commit_point",
+            "source_sha256": "a2410de2554ba1322fe17f0a5bc1ffedd1338b3275b8817ebf9d07b2ce43fb17"
+          },
+          {
+            "line_end": 38,
+            "line_start": 37,
+            "path": "scripts/build_golden.py",
+            "role": "protected_operation",
+            "source_sha256": "732473bc4dc978339cc7b24965c375085aeb2fe6595a706d51eab8825aa3769a"
+          }
+        ],
+        "forbidden_condition": "An existing golden dataset file (e.g. data/golden/golden_{split}_{version}.) being overwritten or mutated by a save \u2014 i.e., a golden version being edited in place rather than a new version file being created.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, agent lifecycle hook, or agent-generated input can invoke save_golden or control its path argument (none appears in the supplied views).",
+          "Complete call-site inventory for save_golden beyond the supplied views; the scope states repository enumeration is not complete."
+        ],
+        "protected_operation": "Writing a new golden dataset artifact to disk via save_golden (GoldenDataset serialized to JSON).",
+        "protected_resource": "Versioned golden dataset files under data/golden/ (golden_{split}_{version}.), as targeted by scripts/build_golden.py.",
+        "protection_obligation": "Golden dataset version files are immutable: save_golden must raise FileExistsError instead of overwriting an existing golden dataset path, so a frozen golden version is never overwritten or mutated in place (a new version is a new file, never an edit).",
+        "scope_limits": [
+          "The guard exists only inside save_golden; any write to a golden path that bypasses save_golden is not covered by the supplied source.",
+          "The exists()-then-write sequence declares no locking or atomic write; the source does not address a race between the check (line 106) and the commit (line 111).",
+          "scripts/rerun_infra.py's in-place artifact patch (scripts/rerun_infra.py:128) is a different write path governed by its own config asserts; it is not covered by this mechanism.",
+          "No supplied view binds this operation to an agent tool, agent lifecycle hook, or agent-generated input; scripts/build_golden.py is a directly invoked CLI."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "src/convfinqa/evaluation/golden.py:122 \u2014 return dataset, the point at which the parsed golden file is released into application state for evaluation use; the checksum gate at lines 117-121 raises before this point.",
+        "contract_id": "ecological-contract:cd1578beb3cbc2fbb48c4e5e4596781f",
+        "declared_mechanism": "load_golden parses the file, recomputes GoldenDataset.compute_checksum() over the conversations payload, compares it to the stored checksum field, and raises GoldenIntegrityError on mismatch.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 121,
+            "line_start": 114,
+            "path": "src/convfinqa/evaluation/golden.py",
+            "role": "guard_registration",
+            "source_sha256": "a2410de2554ba1322fe17f0a5bc1ffedd1338b3275b8817ebf9d07b2ce43fb17"
+          },
+          {
+            "line_end": 61,
+            "line_start": 53,
+            "path": "src/convfinqa/evaluation/golden.py",
+            "role": "guard_registration",
+            "source_sha256": "a2410de2554ba1322fe17f0a5bc1ffedd1338b3275b8817ebf9d07b2ce43fb17"
+          },
+          {
+            "line_end": 10,
+            "line_start": 10,
+            "path": "src/convfinqa/evaluation/golden.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a2410de2554ba1322fe17f0a5bc1ffedd1338b3275b8817ebf9d07b2ce43fb17"
+          },
+          {
+            "line_end": 122,
+            "line_start": 122,
+            "path": "src/convfinqa/evaluation/golden.py",
+            "role": "commit_point",
+            "source_sha256": "a2410de2554ba1322fe17f0a5bc1ffedd1338b3275b8817ebf9d07b2ce43fb17"
+          },
+          {
+            "line_end": 102,
+            "line_start": 93,
+            "path": "scripts/rerun_infra.py",
+            "role": "protected_operation",
+            "source_sha256": "b783606c940a3ace01ef2edcda30d01d6d99e25144c467242f34ead6f2cd4a25"
+          }
+        ],
+        "forbidden_condition": "A golden dataset file whose stored checksum does not match the recomputed checksum over its conversations (i.e., the file was modified or hand-edited after creation) being loaded and used as evaluation ground truth.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, agent lifecycle hook, or agent-generated input can reach load_golden or influence the golden path/file contents before load (none appears in the supplied views).",
+          "How the loaded dataset is consumed downstream in src/convfinqa/evaluation/runner.py (_golden_conversations/_gold_turns, imported at scripts/rerun_infra.py:32 but not supplied).",
+          "Complete call-site inventory for load_golden beyond the supplied views; the scope states repository enumeration is not complete."
+        ],
+        "protected_operation": "Loading a golden dataset from disk via load_golden for evaluation use (scripts/rerun_infra.py loads settings.golden_path to source gold conversations before re-running and patching the artifact).",
+        "protected_resource": "The golden dataset file (e.g., data/golden/golden_{split}_{version}. at settings.golden_path) and the parsed GoldenDataset consumed as pinned ground truth by evaluation runs.",
+        "protection_obligation": "Golden dataset integrity at load: load_golden must raise GoldenIntegrityError when a golden file's stored checksum does not match its content, so a golden file modified after creation is rejected before it is used for evaluation.",
+        "scope_limits": [
+          "The checksum is an unkeyed sha256 over the conversations payload only (golden.py:53-61); the source frames the threat as accidental hand-edits ('the file was hand-edited', golden.py:10), not adversarial tampering that also recomputes and rewrites the checksum field.",
+          "The guard fires only at load time; modification of the dataset after a successful load is not detected by this mechanism.",
+          "No supplied view binds load_golden to an agent tool, agent lifecycle hook, or agent-generated input; the agent built at scripts/rerun_infra.py:108 is constructed after load_golden (line 94) and only runs conversations."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source view registers save_golden or load_golden as an agent tool, agent lifecycle hook, or agent-generated-input consumer, so agent mediation for both compiled contracts is not_established.",
+      "Call-site inventories for save_golden and load_golden beyond the supplied views (the scope notes that repository enumeration is not complete).",
+      "src/convfinqa/evaluation/runner.py is imported (scripts/rerun_infra.py:32) but not supplied, so the downstream guarded effect of a loaded golden dataset beyond the return at golden.py:122 cannot be pinned.",
+      "The second reviewer opinion's rationale cites scripts/rerun_infra.py env/config asserts (lines 88-97) around its in-place artifact patch (line 128), but neither opinion states this as a distinct obligation; whether it constitutes a separate protection contract is unresolved by the supplied opinions."
+    ],
+    "repository": "shekhardudi/financial-qa-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:ad625be466638e2612e71624c249c87c"
+  },
+  "request_sha256": "81943302997e8eedac39897480213b51b0aae3cd7c015b0ffb845d81ec4430c8",
+  "response_sha256": "d73e9ba77147996133216ccbe76ec94ae428a91e3dc3313d4b650f3918c0948e",
+  "state": "completed",
+  "tokens": 17873,
+  "unit": "v24-screen:ad625be466638e2612e71624c249c87c"
+}

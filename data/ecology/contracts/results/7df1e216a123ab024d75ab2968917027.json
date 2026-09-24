@@ -1,0 +1,172 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The handler's guard at backend/app.py:297-301 executes before the return of the StreamingResponse (backend/app.py:305-319), the point at which the request is committed into the streaming run.",
+        "contract_id": "ecological-contract:1fcadec59804ff2dcff975b0a34553f1",
+        "declared_mechanism": "The execute_task handler performs an explicit readiness check \u2014 'if not app_state.initialized: raise HTTPException(status_code=HTTP_503_SERVICE_UNAVAILABLE, ...)' \u2014 before constructing or returning the StreamingResponse; app_state.initialized is set True only at the end of AppState.initialize after computer_instance.__aenter__ succeeds, with an idempotency early-return if already initialized.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 301,
+            "line_start": 293,
+            "path": "backend/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ff44e65848fb7e49f05bb23e5c391325d95539f24f959bc61641c367b29f502"
+          },
+          {
+            "line_end": 301,
+            "line_start": 297,
+            "path": "backend/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ff44e65848fb7e49f05bb23e5c391325d95539f24f959bc61641c367b29f502"
+          },
+          {
+            "line_end": 319,
+            "line_start": 305,
+            "path": "backend/app.py",
+            "role": "commit_point",
+            "source_sha256": "5ff44e65848fb7e49f05bb23e5c391325d95539f24f959bc61641c367b29f502"
+          },
+          {
+            "line_end": 243,
+            "line_start": 209,
+            "path": "backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "5ff44e65848fb7e49f05bb23e5c391325d95539f24f959bc61641c367b29f502"
+          },
+          {
+            "line_end": 101,
+            "line_start": 97,
+            "path": "backend/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ff44e65848fb7e49f05bb23e5c391325d95539f24f959bc61641c367b29f502"
+          },
+          {
+            "line_end": 125,
+            "line_start": 121,
+            "path": "backend/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ff44e65848fb7e49f05bb23e5c391325d95539f24f959bc61641c367b29f502"
+          },
+          {
+            "line_end": 243,
+            "line_start": 239,
+            "path": "backend/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5ff44e65848fb7e49f05bb23e5c391325d95539f24f959bc61641c367b29f502"
+          },
+          {
+            "line_end": 70,
+            "line_start": 68,
+            "path": "backend/engine/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b0227fd74ab0191ad6636936d958e8b3b7cfdc2feecb287020fca7637a60c612"
+          }
+        ],
+        "forbidden_condition": "A POST /api/execute request being admitted into task execution (StreamingResponse of stream_agent_responses) while app_state.initialized is False \u2014 i.e., before the session/artifact services, the runner, and the computer instance have been fully initialized.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any code path can reset app_state.initialized to False after startup (none is visible in supplied source), i.e., whether the forbidden window is startup-only.",
+          "Whether the single pre-stream check is sufficient against state changes during an active stream depends on FastAPI/ASGI concurrency behavior not determinable from supplied source.",
+          "Whether the lifespan guarantee (initialize before serving requests) holds under the actual deployment configuration \u2014 deployment configuration is not supplied."
+        ],
+        "protected_operation": "Task execution: the execute_task handler's StreamingResponse wrapping stream_agent_responses, which ensures a session, captures computer_instance.current_state(), and streams app_state.runner.run_async events.",
+        "protected_resource": "The global app_state agent stack (runner, computer_instance, session_service) and the POST /api/execute execution path of the Computer Use Agent API.",
+        "protection_obligation": "Task execution via POST /api/execute must be rejected with HTTP 503 while app_state.initialized is false, so that no streaming run is admitted that would drive app_state.runner.run_async and the shared PlaywrightComputer before initialization completes.",
+        "scope_limits": [
+          "The guard is a single pre-stream check; stream_agent_responses performs no re-check of app_state.initialized during streaming (backend/app.py:209-261).",
+          "Only POST /api/execute is gated on initialization; /api/reset-session (backend/app.py:321-341) and / have no explicit initialized guard, and /health merely reports the flag.",
+          "The guard also covers the direct, non-agent-mediated current_state() call at backend/app.py:222 inside the same stream; agent mediation characterizes the runner-driven portion of the guarded region, not that direct sensing call.",
+          "CORS middleware and generic request validation are outside this obligation's scope.",
+          "Compiled from the second-phase reviewer opinion; no supplied metadata confirms intent as a safety contract versus availability handling."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Construction of self._tools in ComputerToolSet.get_tools (backend/engine/toolset.py:131-138), which fixes the filtered tool set, followed by process_llm_request inserting those tools into llm_request.tools_dict (backend/engine/toolset.py:156-162), where they become LLM-invocable.",
+        "contract_id": "ecological-contract:a96a07f0d0a846318872e74d65a2746b",
+        "declared_mechanism": "ComputerToolSet.get_tools enumerates methods via dir(BaseComputer) and skips any name found in the module-level EXCLUDED_METHODS blocklist before constructing ComputerTool instances; ComputerToolSet.process_llm_request then only copies tools from the resulting filtered self._tools list into llm_request.tools_dict.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 16,
+            "line_start": 15,
+            "path": "backend/engine/toolset.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6f26030847a4d3c573eb02e62e2100de1f21a08e8bf1a3c417bcb9e6178b80c9"
+          },
+          {
+            "line_end": 122,
+            "line_start": 115,
+            "path": "backend/engine/toolset.py",
+            "role": "guard_registration",
+            "source_sha256": "6f26030847a4d3c573eb02e62e2100de1f21a08e8bf1a3c417bcb9e6178b80c9"
+          },
+          {
+            "line_end": 138,
+            "line_start": 131,
+            "path": "backend/engine/toolset.py",
+            "role": "commit_point",
+            "source_sha256": "6f26030847a4d3c573eb02e62e2100de1f21a08e8bf1a3c417bcb9e6178b80c9"
+          },
+          {
+            "line_end": 162,
+            "line_start": 156,
+            "path": "backend/engine/toolset.py",
+            "role": "commit_point",
+            "source_sha256": "6f26030847a4d3c573eb02e62e2100de1f21a08e8bf1a3c417bcb9e6178b80c9"
+          },
+          {
+            "line_end": 45,
+            "line_start": 40,
+            "path": "backend/engine/toolset.py",
+            "role": "protected_operation",
+            "source_sha256": "6f26030847a4d3c573eb02e62e2100de1f21a08e8bf1a3c417bcb9e6178b80c9"
+          },
+          {
+            "line_end": 70,
+            "line_start": 68,
+            "path": "backend/engine/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b0227fd74ab0191ad6636936d958e8b3b7cfdc2feecb287020fca7637a60c612"
+          }
+        ],
+        "forbidden_condition": "Any method whose name is a member of EXCLUDED_METHODS (backend/engine/toolset.py:16) being wrapped as a ComputerTool from the bound BaseComputer instance and added to the LLM-visible tool dictionary (llm_request.tools_dict), which would make it invocable by the model.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether ComputerToolSet.get_tools is invoked once and cached (early return of self._tools at toolset.py:104-105) versus per model request, and whether any code path could rebuild the tool list without the exclusion \u2014 ADK toolset lifecycle is not supplied.",
+          "Whether the concrete computer instance passed to ComputerToolSet is always the PlaywrightComputer created in get_agent_and_computer \u2014 only the construction at backend/engine/agent.py:35-38 and binding at backend/engine/agent.py:68-70 are visible."
+        ],
+        "protected_operation": "LLM-driven tool invocation against the bound PlaywrightComputer instance \u2014 ComputerTool.run_async dispatching the wrapped computer method via super().run_async(args, tool_context) \u2014 restricted so that only non-excluded computer-control methods participate in the model-facing tool surface.",
+        "protected_resource": "The bound PlaywrightComputer instance's lifecycle and sensing operations (screen_size, environment, close, initialize, current_state) and the agent's LLM-visible tool registry (self._tools / llm_request.tools_dict).",
+        "protection_obligation": "The PlaywrightComputer lifecycle/sensing methods named in EXCLUDED_METHODS ('screen_size', 'environment', 'close', 'initialize', 'current_state') must never be registered as LLM-invocable ComputerTool instances on the agent's tool surface, so the model cannot trigger computer lifecycle effects such as closing or re-initializing the bound browser connection.",
+        "scope_limits": [
+          "Only the five names in EXCLUDED_METHODS are excluded; every other public BaseComputer method is registered as an LLM-invocable ComputerTool.",
+          "The guard operates at tool-registration time only; it does not police non-LLM invocations of the same methods \u2014 backend/app.py:222 calls computer_instance.current_state() directly, and toolset.py:95 and 110 call initialize()/screen_size() internally.",
+          "The concrete downstream effects of the excluded methods on the remote browser are not present in supplied source, so the contract is pinned at the registration/tool-registry state commit.",
+          "Compiled from the first-phase reviewer opinion; no supplied metadata confirms the blocklist is maintained as a deliberate security contract versus developer convenience."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "PlaywrightComputer and BaseComputer internals (backend/computer/*) are not supplied, so the concrete external effects of the excluded lifecycle methods (close, initialize, current_state, screen_size, environment) cannot be classified into effect strata.",
+      "ADK framework internals (Runner.run_async, Agent toolset dispatch timing, FunctionTool.run_async, invocation of process_llm_request/get_tools) are not supplied; tool registration timing is inferred from visible call sites only.",
+      "backend/engine/model_callbacks.py (before_model_modifier) and the Opik tracer callback bodies registered at backend/engine/agent.py:61-66 are not supplied; whether they carry additional protection obligations cannot be assessed.",
+      "No runtime/behavior labels or deployment configuration are supplied; declared versus observed enforcement cannot be distinguished, and repository enumeration is not complete per the unit scope."
+    ],
+    "repository": "aniketmishr/adk-cua",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7df1e216a123ab024d75ab2968917027"
+  },
+  "request_sha256": "0c39f503026eee5ddcfcbc17cd9944e0aa7e7e9061f5994a58f846910e5a601b",
+  "response_sha256": "a7a42d92e0e21a9012e8324c01b3339c00a5532e7c88e0b37f4531cd3cf8ccf7",
+  "state": "completed",
+  "tokens": 29109,
+  "unit": "v24-screen:7df1e216a123ab024d75ab2968917027"
+}

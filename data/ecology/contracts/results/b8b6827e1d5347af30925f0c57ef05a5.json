@@ -1,0 +1,153 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tools.py lines 106-107: order.status = 'cancelled' followed by save_order(order) inside the cancel_order tool body.",
+        "contract_id": "ecological-contract:3a953eef32d601df370c64a8dcab1c3a",
+        "declared_mechanism": "HumanInTheLoopMiddleware registered in build_agent via create_agent's middleware list with interrupt_on={'cancel_order': True}, which pauses the agent before the cancel_order tool body executes; the paused thread resumes only when resume_turn supplies {'decisions': [{'type': 'approve'|'reject'}]}, mapping a human 'yes' answer to approve (agent.py 81-93; cli.py 69-72).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 60,
+            "line_start": 53,
+            "path": "src/customerordersupportagent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "a1140bded9c8425a3fb480acdbcb649109d15119e06cdbad961961ec2d49079d"
+          },
+          {
+            "line_end": 46,
+            "line_start": 44,
+            "path": "src/customerordersupportagent/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a1140bded9c8425a3fb480acdbcb649109d15119e06cdbad961961ec2d49079d"
+          },
+          {
+            "line_end": 98,
+            "line_start": 91,
+            "path": "src/customerordersupportagent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "cc58da218c80020b2b57909e7f3a3fe317642a813128cf0f1ac87608f8b3e976"
+          },
+          {
+            "line_end": 107,
+            "line_start": 106,
+            "path": "src/customerordersupportagent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "cc58da218c80020b2b57909e7f3a3fe317642a813128cf0f1ac87608f8b3e976"
+          },
+          {
+            "line_end": 51,
+            "line_start": 49,
+            "path": "src/customerordersupportagent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a1140bded9c8425a3fb480acdbcb649109d15119e06cdbad961961ec2d49079d"
+          }
+        ],
+        "forbidden_condition": "Executing the cancel_order tool body \u2014 including mutating order.status to 'cancelled' and calling save_order(order) \u2014 without a human 'approve' decision for the cancel_order interrupt; per the declared guard, the tool body never runs otherwise.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether data_access.save_order performs a persistent database write, a filesystem write, or an in-memory store update; data_access.py is not supplied, so the 'state' stratum reflects only the in-process order-object mutation shown at tools.py 106-107.",
+          "Whether the middleware's reject path is guaranteed to skip the tool body in all cases; this is asserted only by docstrings (agent.py 44-46, tools.py 95-97).",
+          "Whether decision ordering in {'decisions': [...]} correctly matches multiple pending action_requests if the agent chains more than one gated action; cli.py handles one interrupt at a time and agent.py 85-89 asserts ordering by docstring only."
+        ],
+        "protected_operation": "Agent-invoked execution of the cancel_order LangChain tool, which fetches the order, checks can_cancel eligibility, then mutates and persists the order.",
+        "protected_resource": "The customer order record identified by the order_id argument, scoped to hardcoded CUSTOMER_ID 'CUST501', whose status field is set to 'cancelled' and saved.",
+        "protection_obligation": "The agent-gated cancel_order tool execution must not run its body or commit and persist the order status mutation via save_order unless the HumanInTheLoopMiddleware interrupt raised for cancel_order has been resolved with an explicit human approve decision.",
+        "scope_limits": [
+          "Only cancel_order and return_order are gated; update_shipping_address and the read-only tools (view_order, view_orders, list_my_orders) are explicitly not gated (agent.py 39-42, 55-58).",
+          "The guard binds tool execution through the create_agent/LangGraph runtime tool dispatch; direct calls to the cancel_order function outside the agent runtime are not intercepted by this middleware registration.",
+          "Eligibility check can_cancel runs before the interrupt and is distinct from the human approval gate; business_rules.py is not supplied.",
+          "Customer scoping relies on a hardcoded module-level CUSTOMER_ID rather than an authenticated session (tools.py 18-20, 35).",
+          "Middleware pause/resume semantics are asserted by repository docstrings; the HumanInTheLoopMiddleware library implementation is not supplied."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tools.py lines 128-129: order.status = 'cancelled' followed by save_order(order) inside the return_order tool body.",
+        "contract_id": "ecological-contract:78b9acf55c6c88dee3e8e72c96a5e2b9",
+        "declared_mechanism": "HumanInTheLoopMiddleware registered in build_agent via create_agent's middleware list with interrupt_on={'return_order': True}, which pauses the agent before the return_order tool body executes; the paused thread resumes only when resume_turn supplies {'decisions': [{'type': 'approve'|'reject'}]}, mapping a human 'yes' answer to approve (agent.py 81-93; cli.py 69-72).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 60,
+            "line_start": 53,
+            "path": "src/customerordersupportagent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "a1140bded9c8425a3fb480acdbcb649109d15119e06cdbad961961ec2d49079d"
+          },
+          {
+            "line_end": 8,
+            "line_start": 4,
+            "path": "src/customerordersupportagent/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a1140bded9c8425a3fb480acdbcb649109d15119e06cdbad961961ec2d49079d"
+          },
+          {
+            "line_end": 116,
+            "line_start": 115,
+            "path": "src/customerordersupportagent/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cc58da218c80020b2b57909e7f3a3fe317642a813128cf0f1ac87608f8b3e976"
+          },
+          {
+            "line_end": 117,
+            "line_start": 111,
+            "path": "src/customerordersupportagent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "cc58da218c80020b2b57909e7f3a3fe317642a813128cf0f1ac87608f8b3e976"
+          },
+          {
+            "line_end": 129,
+            "line_start": 128,
+            "path": "src/customerordersupportagent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "cc58da218c80020b2b57909e7f3a3fe317642a813128cf0f1ac87608f8b3e976"
+          },
+          {
+            "line_end": 51,
+            "line_start": 49,
+            "path": "src/customerordersupportagent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a1140bded9c8425a3fb480acdbcb649109d15119e06cdbad961961ec2d49079d"
+          }
+        ],
+        "forbidden_condition": "Executing the return_order tool body \u2014 including mutating order.status to 'cancelled' (the repo's simplification of return) and calling save_order(order) \u2014 without a human 'approve' decision for the return_order interrupt; per the declared guard, the function body runs only after approval.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether data_access.save_order performs a persistent database write, a filesystem write, or an in-memory store update; data_access.py is not supplied, so the 'state' stratum reflects only the in-process order-object mutation shown at tools.py 128-129.",
+          "Whether the middleware's reject path is guaranteed to skip the tool body in all cases; this is asserted only by docstrings (agent.py 4-8, tools.py 115-116).",
+          "Whether decision ordering in {'decisions': [...]} correctly matches multiple pending action_requests if the agent chains more than one gated action; cli.py handles one interrupt at a time and agent.py 85-89 asserts ordering by docstring only."
+        ],
+        "protected_operation": "Agent-invoked execution of the return_order LangChain tool, which fetches the order, checks can_return eligibility, then mutates and persists the order.",
+        "protected_resource": "The customer order record identified by the order_id argument, scoped to hardcoded CUSTOMER_ID 'CUST501', whose status field is set to 'cancelled' and saved.",
+        "protection_obligation": "The agent-gated return_order tool execution must not run its body or commit and persist the order status mutation via save_order unless the HumanInTheLoopMiddleware interrupt raised for return_order has been resolved with an explicit human approve decision.",
+        "scope_limits": [
+          "Only cancel_order and return_order are gated; update_shipping_address and the read-only tools (view_order, view_orders, list_my_orders) are explicitly not gated (agent.py 39-42, 55-58).",
+          "The guard binds tool execution through the create_agent/LangGraph runtime tool dispatch; direct calls to the return_order function outside the agent runtime are not intercepted by this middleware registration.",
+          "Eligibility check can_return runs before the interrupt and is distinct from the human approval gate; business_rules.py is not supplied.",
+          "Customer scoping relies on a hardcoded module-level CUSTOMER_ID rather than an authenticated session (tools.py 18-20, 35).",
+          "Middleware pause/resume semantics are asserted by repository docstrings; the HumanInTheLoopMiddleware library implementation is not supplied."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "data_access.py is not supplied; the implementation of save_order (and get_order/get_customer_orders) is unverified. The 'state' effect stratum reflects the in-process order-object mutation visible in tools.py; if save_order performs a persistent database write, the same commit points (tools.py 106-107 and 128-129) would additionally constitute database-stratum effects.",
+      "The HumanInTheLoopMiddleware library implementation is not supplied; pause-before-tool-body semantics and reject-path behavior (tool body never runs without approval) are asserted only by repository docstrings and comments (agent.py 4-8, 44-47, 85-89; tools.py 95-97, 115-116).",
+      "business_rules.py and models.py are not supplied; can_cancel/can_return eligibility logic and tool argument schemas are unverified. These checks run before the interrupt and are not the human approval gate itself.",
+      "No supplied source demonstrates runtime behavior of multi-interrupt decision ordering; cli.py processes one interrupt at a time, and the ordering guarantee for {'decisions': [...]} versus multiple action_requests exists only as a docstring claim (agent.py 85-89)."
+    ],
+    "repository": "harleenkaur13/Customer-Order-Support-Agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b8b6827e1d5347af30925f0c57ef05a5"
+  },
+  "request_sha256": "39648bc4735fecdd4324c40e3f404c56dcce8b42422ac09b92431f3e8a12c32c",
+  "response_sha256": "b06f5db1d877c057cbb97b45c1d4f19e602aa424d843b8540dade4a183a613a3",
+  "state": "completed",
+  "tokens": 15654,
+  "unit": "v24-screen:b8b6827e1d5347af30925f0c57ef05a5"
+}

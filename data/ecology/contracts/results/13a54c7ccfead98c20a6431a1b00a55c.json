@@ -1,0 +1,142 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "before_tool_callback returns the dict produced by _arch_review_gate_blocks (callbacks.py:148-150); per the gate's contract, the returned dict short-circuits the tool call and the runtime uses it as the tool's response (callbacks.py:84-89), so the gated tool body never executes.",
+        "contract_id": "ecological-contract:8431647e8e9dadc34585b21908aa8f5e",
+        "declared_mechanism": "before_tool_callback=before_tool_callback wired onto the root Agent (agent.py:175). The callback invokes _arch_review_gate_blocks first (callbacks.py:145-150), which consults _ARCH_REVIEW_GATED_TOOLS = {'validate_sow_content','generate_sow_document'} (callbacks.py:74-76), exempts validate_sow_content unless the resolved stage is 'full' (callbacks.py:93-98), and returns a blocking ToolError dict unless is_architecture_review_approved(tool_context.state) confirms the 'phase.architecture_review_approved' stamp (callbacks.py:100-128); that stamp is written by confirm_phase_completion after workflow-order prerequisite checks (confirm_phase.py:91-115) and read via the is_architecture_review_approved accessor imported by the callback module (confirm_phase.py:136-143, imported at callbacks.py:29). generate_sow_document independently re-checks stage=='full' before rendering as defense-in-depth (generate_sow_document.py:90-105).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 176,
+            "line_start": 172,
+            "path": "agents/pre-sales/app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ba84a828e78d553f10edf4e427b81d2f2b1c9f1d01e299d3a29790fe5faf276b"
+          },
+          {
+            "line_end": 176,
+            "line_start": 172,
+            "path": "agents/pre-sales/app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ba84a828e78d553f10edf4e427b81d2f2b1c9f1d01e299d3a29790fe5faf276b"
+          },
+          {
+            "line_end": 157,
+            "line_start": 116,
+            "path": "agents/pre-sales/app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ba84a828e78d553f10edf4e427b81d2f2b1c9f1d01e299d3a29790fe5faf276b"
+          },
+          {
+            "line_end": 150,
+            "line_start": 131,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "guard_registration",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 128,
+            "line_start": 79,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "guard_registration",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 76,
+            "line_start": 74,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 101,
+            "line_start": 90,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 150,
+            "line_start": 145,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 89,
+            "line_start": 84,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 56,
+            "line_start": 49,
+            "path": "agents/pre-sales/app/tools/sow/confirm_phase.py",
+            "role": "protected_operation",
+            "source_sha256": "d4d0c91b1d7542969632832ba216c0d0621e2f02aa18cd24b0fd21098d690180"
+          },
+          {
+            "line_end": 115,
+            "line_start": 89,
+            "path": "agents/pre-sales/app/tools/sow/confirm_phase.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d4d0c91b1d7542969632832ba216c0d0621e2f02aa18cd24b0fd21098d690180"
+          },
+          {
+            "line_end": 143,
+            "line_start": 136,
+            "path": "agents/pre-sales/app/tools/sow/confirm_phase.py",
+            "role": "guard_registration",
+            "source_sha256": "d4d0c91b1d7542969632832ba216c0d0621e2f02aa18cd24b0fd21098d690180"
+          },
+          {
+            "line_end": 105,
+            "line_start": 90,
+            "path": "agents/pre-sales/app/tools/sow/generate_sow_document.py",
+            "role": "forbidden_condition",
+            "source_sha256": "327d91b4f40b29797a553afd4a2370c37624dd10fb641910abb38ad4fcc5eadd"
+          }
+        ],
+        "forbidden_condition": "A gated tool call \u2014 'generate_sow_document', or 'validate_sow_content' with resolved stage='full' \u2014 proceeding to execution while session state lacks a truthy 'phase.architecture_review_approved' stamp (i.e., is_architecture_review_approved(state) returns False). For validate_sow_content the forbidden condition is scoped to stage='full' only; stage='content' pre-architecture validation is explicitly out of the forbidden set.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "validate_sow_content's implementation source is not supplied; its registration path is not visible in the root _TOOLS list (agent.py:116-157), and it is presumably reached inside the sow_quality_loop AgentTool (agent.py:138-156) \u2014 confirm how it is dispatched.",
+          "Whether the runtime invokes the root Agent's before_tool_callback for tool calls that occur inside AgentTool-wrapped sub-agents (sow_quality_loop) is a framework dispatch semantic not shown in the supplied views, so interception of a nested validate_sow_content call is presumed from the gate's explicit handling (callbacks.py:95-98) but not proven.",
+          "validate_sow_content's own default stage value is assumed from the gate's parsing ('full' when omitted, callbacks.py:96); the tool's actual signature is unsupplied.",
+          "Whether any code path other than confirm_phase_completion (confirm_phase.py:115) writes or clears 'phase.architecture_review_approved', and how the stamp persists across sessions or resumed runs, is not established by the supplied views."
+        ],
+        "protected_operation": "Root-agent tool invocation of the Phase 3 final-document tools: generate_sow_document and validate_sow_content(stage='full'), dispatched through the root Agent's tool-execution path where before_tool_callback runs before every tool call.",
+        "protected_resource": "The Phase 3 SOW final-document workflow: the final .docx SOW document rendered by generate_sow_document (and its downstream file/artifact outputs) and the full-stage SOW validation run.",
+        "protection_obligation": "The root Agent's registered before_tool_callback must block (short-circuit) tool invocations of 'generate_sow_document' and of 'validate_sow_content' when its resolved stage is 'full' (omitted stage defaults to 'full') unless the user has explicitly approved the Architecture Review, as evidenced by the 'phase.architecture_review_approved' session-state stamp that only confirm_phase_completion writes. The gate must run ahead of the other pre-tool guards and return a ToolError dict that the runtime uses as the tool's response, so the blocked tool body never executes.",
+        "scope_limits": [
+          "Enforcement commits at the tool-invocation boundary via a lifecycle-hook guard; downstream effects reached only when the gate passes (the .docx file write at generate_sow_document.py:290, artifact save at 302, state write at 293) are not separately contracted here.",
+          "validate_sow_content is gated only when its resolved stage is 'full' (an omitted stage defaults to 'full' per callbacks.py:96); stage='content' validation used in Phase 2 Step 1.5 is intentionally unblocked (callbacks.py:69-73, 93-98).",
+          "The gate runs first, ahead of the sow_data size guard and JSON-parse guard in the same callback (callbacks.py:152-180); those size/JSON guards are distinct mechanisms outside this obligation.",
+          "The 'content_review_approved' stamp gates the Phase 3 tools only indirectly, as a workflow-order prerequisite for writing 'architecture_review_approved' inside confirm_phase_completion (confirm_phase.py:27-30, 91-113); it does not itself gate the tools.",
+          "generate_sow_document's in-tool re-check (generate_sow_document.py:90-105) validates the stage only and does not re-verify the approval stamp, so it is defense-in-depth, not the declared approval gate.",
+          "The obligation covers tool calls dispatched through the root Agent's tool-execution path; direct in-process calls to the tool functions outside ADK dispatch are not shown and not covered."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source for tools/sow/validate_sow_content is not supplied: its stage parameter default, its own effects at stage='full', and its registration path (it is absent from the root _TOOLS list at agent.py:116-157) cannot be verified.",
+      "Framework dispatch semantics for whether the root Agent's before_tool_callback fires for tools invoked inside the sow_quality_loop AgentTool (agent.py:156) are not present in the supplied views.",
+      "The persistence and mutation semantics of the 'phase.architecture_review_approved' session-state stamp across sessions, resumptions, or other writers are not shown; confirm_phase.py:115 is the only writer visible in the supplied source.",
+      "Behavior labels and repository enumeration are unavailable per the stated scope, so prevalence or runtime attestation of the gate cannot be assessed."
+    ],
+    "repository": "dajr-gft/pre-sales-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:13a54c7ccfead98c20a6431a1b00a55c"
+  },
+  "request_sha256": "0ee55e347390e1370a41abda2ac0ec5b1b9aa024487ed4a7509ab4b665433ab0",
+  "response_sha256": "5bffbc102e60ab96490ef38ec2d82799f2dfd323e9fab34eca83b33aa4cc8577",
+  "state": "completed",
+  "tokens": 29145,
+  "unit": "v24-screen:13a54c7ccfead98c20a6431a1b00a55c"
+}

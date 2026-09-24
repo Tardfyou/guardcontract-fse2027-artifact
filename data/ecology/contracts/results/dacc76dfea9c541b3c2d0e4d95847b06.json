@@ -1,0 +1,188 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The detected_topic branch of forbidden_topic_tool_guardrail returning the non-None error dict (utils/callbacks.py:62-68) \u2014 under before_tool_callback semantics this return value replaces tool execution, so the tool body never runs for forbidden-topic content.",
+        "contract_id": "ecological-contract:ab0edf6bff428d08879820c454a9433d",
+        "declared_mechanism": "forbidden_topic_tool_guardrail (utils/callbacks.py:42-71) registered as before_tool_callback on both agents (agents/blog.py:18, agents/linkedin.py:17); on detection it sets a tool_context state flag and returns {\"status\": \"error\", \"error_message\": \"Policy restriction: ...\"} instead of allowing the tool to run.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 18,
+            "line_start": 17,
+            "path": "agents/blog.py",
+            "role": "guard_registration",
+            "source_sha256": "2e1cb7dfa860084b43ec7f1ce56066f1a444410b678f14818975fbe3d1d48f0b"
+          },
+          {
+            "line_end": 18,
+            "line_start": 18,
+            "path": "agents/blog.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2e1cb7dfa860084b43ec7f1ce56066f1a444410b678f14818975fbe3d1d48f0b"
+          },
+          {
+            "line_end": 17,
+            "line_start": 17,
+            "path": "agents/blog.py",
+            "role": "protected_operation",
+            "source_sha256": "2e1cb7dfa860084b43ec7f1ce56066f1a444410b678f14818975fbe3d1d48f0b"
+          },
+          {
+            "line_end": 17,
+            "line_start": 16,
+            "path": "agents/linkedin.py",
+            "role": "guard_registration",
+            "source_sha256": "50aece4ea4da102d173ec1b925244b5c6b0fcc5cf03552b568e51abb0fe38e70"
+          },
+          {
+            "line_end": 17,
+            "line_start": 17,
+            "path": "agents/linkedin.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "50aece4ea4da102d173ec1b925244b5c6b0fcc5cf03552b568e51abb0fe38e70"
+          },
+          {
+            "line_end": 16,
+            "line_start": 16,
+            "path": "agents/linkedin.py",
+            "role": "protected_operation",
+            "source_sha256": "50aece4ea4da102d173ec1b925244b5c6b0fcc5cf03552b568e51abb0fe38e70"
+          },
+          {
+            "line_end": 48,
+            "line_start": 42,
+            "path": "utils/callbacks.py",
+            "role": "guard_registration",
+            "source_sha256": "1fb96acb42d93158c20057e56aa87d392970713834a6dd669191fbdeda2d193e"
+          },
+          {
+            "line_end": 47,
+            "line_start": 45,
+            "path": "utils/callbacks.py",
+            "role": "protected_operation",
+            "source_sha256": "1fb96acb42d93158c20057e56aa87d392970713834a6dd669191fbdeda2d193e"
+          },
+          {
+            "line_end": 60,
+            "line_start": 54,
+            "path": "utils/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1fb96acb42d93158c20057e56aa87d392970713834a6dd669191fbdeda2d193e"
+          },
+          {
+            "line_end": 68,
+            "line_start": 62,
+            "path": "utils/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "1fb96acb42d93158c20057e56aa87d392970713834a6dd669191fbdeda2d193e"
+          }
+        ],
+        "forbidden_condition": "Invocation of a guarded content-generation tool whose 'text_content' argument contains the substring 'politics' (case-insensitive check: forbidden_topic in args.get(\"text_content\", \"\").lower()).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Bodies of generate_blog_post / generate_linkedin_post (tools/social_media_tools.py) are not supplied, so the downstream effect the blocked invocation would have committed (e.g., network publish, file write) is unverified; the contract is limited to blocking the invocation itself.",
+          "Whether any dispatch path could reach these tools without passing the sub-agents' before_tool_callback registration is not determinable from supplied source.",
+          "Exact state flag key names are redacted, preventing identification of downstream enforcement readers of the guardrail flag."
+        ],
+        "protected_operation": "Execution of the generate_blog_post tool on the blog_post_agent and the generate_linkedin_post tool on the linkedin_post_agent.",
+        "protected_resource": "The generate_blog_post and generate_linkedin_post tools registered on the blog_post_agent (agents/blog.py:17) and linkedin_post_agent (agents/linkedin.py:16) agents.",
+        "protection_obligation": "When the generate_blog_post or generate_linkedin_post tool is invoked with a text_content argument containing the forbidden topic 'politics', the tool invocation must be blocked before the tool executes, returning a policy-restriction error result in place of the tool run (merged from phase-first and phase-second reviewer wording, which state the same obligation).",
+        "scope_limits": [
+          "Applies only to the two tools on the two agents that register the callback in supplied source (agents/blog.py:18, agents/linkedin.py:17); no other tools or agents are shown to be covered.",
+          "Only the 'text_content' argument is inspected (args.get(\"text_content\", \"\")); other tool arguments are not checked.",
+          "Detection is a single case-insensitive substring match for the literal 'politics'; no other topics or semantic topic detection are supported by the source.",
+          "Non-matching invocations return None and proceed unblocked (utils/callbacks.py:69-71).",
+          "The state flag key written on block is redacted ('<REDACTED>' at utils/callbacks.py:64); its downstream consumers are unknown."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The short-input branch of input_length_guardrail returning the non-None LlmResponse (utils/callbacks.py:31-37), which short-circuits the model call so the canned model-role response is committed in place of any LLM request.",
+        "contract_id": "ecological-contract:afd272d6d1989f09b129a8e9e4b736fb",
+        "declared_mechanism": "input_length_guardrail (utils/callbacks.py:11-40) registered as before_model_callback on social_media_coordinator_v3 (agents/coordinator.py:23); on short input it sets a callback_context state flag and returns an LlmResponse carrying a 'provide at least 30 characters' message instead of permitting the model call.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 23,
+            "line_start": 23,
+            "path": "agents/coordinator.py",
+            "role": "guard_registration",
+            "source_sha256": "b81b11a190bab19b3eddc3ee69af4d22201a6149d2986f4d79f73d513e8c079d"
+          },
+          {
+            "line_end": 23,
+            "line_start": 23,
+            "path": "agents/coordinator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b81b11a190bab19b3eddc3ee69af4d22201a6149d2986f4d79f73d513e8c079d"
+          },
+          {
+            "line_end": 12,
+            "line_start": 10,
+            "path": "agents/coordinator.py",
+            "role": "protected_operation",
+            "source_sha256": "b81b11a190bab19b3eddc3ee69af4d22201a6149d2986f4d79f73d513e8c079d"
+          },
+          {
+            "line_end": 16,
+            "line_start": 11,
+            "path": "utils/callbacks.py",
+            "role": "guard_registration",
+            "source_sha256": "1fb96acb42d93158c20057e56aa87d392970713834a6dd669191fbdeda2d193e"
+          },
+          {
+            "line_end": 29,
+            "line_start": 20,
+            "path": "utils/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1fb96acb42d93158c20057e56aa87d392970713834a6dd669191fbdeda2d193e"
+          },
+          {
+            "line_end": 37,
+            "line_start": 30,
+            "path": "utils/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "1fb96acb42d93158c20057e56aa87d392970713834a6dd669191fbdeda2d193e"
+          }
+        ],
+        "forbidden_condition": "A pending LLM call whose most recent user message text \u2014 the first text part of the last 'user'-role content in llm_request.contents \u2014 after stripping whitespace is fewer than 30 characters (len(last_user_message_text.strip()) < min_length with min_length = 30).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether before_model_callback on the coordinator also gates delegated sub-agent LLM calls (blog_post_agent / linkedin_post_agent) is framework dispatch semantics not shown in the supplied source.",
+          "The resolved model identifier/endpoint behind MODEL_GEMINI_2_5_FLASH (config.py) is not supplied, so the concrete network target of the blocked LLM call is unverified."
+        ],
+        "protected_operation": "The model invocation performed by the social_media_coordinator_v3 agent during its turn (Agent configured with model=LiteLlm(MODEL_GEMINI_2_5_FLASH)).",
+        "protected_resource": "The LLM call of the social_media_coordinator_v3 coordinator agent (agents/coordinator.py:10-12).",
+        "protection_obligation": "LLM (model) calls made by the social_media_coordinator_v3 agent must be blocked when the latest user input text is shorter than 30 characters, returning a canned clarification response in place of the model call (merged from phase-first and phase-second reviewer wording, which state the same obligation).",
+        "scope_limits": [
+          "Registered in supplied source only on social_media_coordinator_v3 (agents/coordinator.py:23); coverage of delegated sub-agent model calls is not established by the supplied source.",
+          "Only content.parts[0].text of the last 'user'-role content is measured (utils/callbacks.py:21-26); non-text parts and earlier user messages are ignored.",
+          "Threshold is a fixed 30 characters applied to stripped text (utils/callbacks.py:28-29).",
+          "When input length is adequate the guard returns None and the model call proceeds (utils/callbacks.py:38-40).",
+          "The state flag key written on block is redacted ('<REDACTED>' at utils/callbacks.py:31)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Implementations of generate_blog_post and generate_linkedin_post (tools/social_media_tools.py) are not supplied, so the concrete downstream effect of the guarded tool invocations beyond the invocation itself is unknown.",
+      "The value of MODEL_GEMINI_2_5_FLASH (config.py) is not supplied, so the concrete model provider/endpoint for the guarded LLM call is unknown.",
+      "State flag key names are redacted in utils/callbacks.py (lines 31 and 64), so downstream consumers of the guardrail flags cannot be identified.",
+      "google.adk framework dispatch semantics (scope of before_model_callback across sub-agents and the exact before_tool_callback short-circuit behavior) are library behavior not present in the supplied source.",
+      "No runner/entrypoint source is supplied showing how user input reaches the coordinator agent, so end-to-end dataflow from user input to the guarded effects is not directly evidenced; agent mediation rests on the constructor-level callback wiring shown in agents/blog.py:18, agents/linkedin.py:17, and agents/coordinator.py:23."
+    ],
+    "repository": "RedsAnalysis/Agent-adk-automated",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:dacc76dfea9c541b3c2d0e4d95847b06"
+  },
+  "request_sha256": "9f50dc21081630573428b0ed9402ab68af9fa623171f9d2acae1a5878fb7f022",
+  "response_sha256": "624cc88c38a8752311841a90b3f06c33119d3ef3173766df001e7bdc5a34fd66",
+  "state": "completed",
+  "tokens": 11924,
+  "unit": "v24-screen:dacc76dfea9c541b3c2d0e4d95847b06"
+}

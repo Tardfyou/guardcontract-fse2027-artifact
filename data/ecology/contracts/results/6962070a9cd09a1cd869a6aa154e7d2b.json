@@ -1,0 +1,92 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "cur.execute(query, params) at backend/app/agents/tools/sql_tool.py:121 inside PostgresTool._execute_query (immediately after the hardcoded 'SET search_path TO eudl, public;' at line 120), where the query built from the validated free-text arguments is submitted to the database; results are fetched at line 123.",
+        "contract_id": "ecological-contract:d8de833c2fa36d75b2fac3dd0dc3d960",
+        "declared_mechanism": "Pydantic @field_validator('search_term', 'author_name') named security_check on SearchPapersSchema, which raises ValueError('Security: Forbidden SQL keywords detected.') when any forbidden keyword substring is present. The schema is declared at tool entry via @tool(args_schema=SearchPapersSchema) and is re-applied inside the tool body by re-instantiating SearchPapersSchema from the raw tool arguments before _db.smart_search is called.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 63,
+            "line_start": 56,
+            "path": "backend/app/agents/tools/sql_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "262e0b93ad7346fc3cc9f45eb65aef93749cd4e276d734039ee86329fa95fad2"
+          },
+          {
+            "line_end": 62,
+            "line_start": 60,
+            "path": "backend/app/agents/tools/sql_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "262e0b93ad7346fc3cc9f45eb65aef93749cd4e276d734039ee86329fa95fad2"
+          },
+          {
+            "line_end": 269,
+            "line_start": 260,
+            "path": "backend/app/agents/tools/sql_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "262e0b93ad7346fc3cc9f45eb65aef93749cd4e276d734039ee86329fa95fad2"
+          },
+          {
+            "line_end": 338,
+            "line_start": 326,
+            "path": "backend/app/agents/tools/sql_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "262e0b93ad7346fc3cc9f45eb65aef93749cd4e276d734039ee86329fa95fad2"
+          },
+          {
+            "line_end": 209,
+            "line_start": 133,
+            "path": "backend/app/agents/tools/sql_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "262e0b93ad7346fc3cc9f45eb65aef93749cd4e276d734039ee86329fa95fad2"
+          },
+          {
+            "line_end": 123,
+            "line_start": 113,
+            "path": "backend/app/agents/tools/sql_tool.py",
+            "role": "commit_point",
+            "source_sha256": "262e0b93ad7346fc3cc9f45eb65aef93749cd4e276d734039ee86329fa95fad2"
+          }
+        ],
+        "forbidden_condition": "Any search_term or author_name value containing one of the forbidden keywords (matched case-insensitively as substrings with trailing space: 'drop ', 'delete ', 'truncate ', 'update ', 'alter ') reaching the tool's query execution path instead of being rejected with 'Security: Forbidden SQL keywords detected.'",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied source shows an agent, executor, graph, or tool-dispatch layer that registers or invokes search_papers_tool (e.g., bind_tools, AgentExecutor, tool list); the direct_tool mediation rests solely on the langchain @tool decorator registration and the tool-body dataflow.",
+          "Whether langchain's args_schema validation runs on every invocation path, in addition to the directly visible in-body SearchPapersSchema re-instantiation (lines 326-336), is framework behavior not established by the supplied source.",
+          "The database target identity depends on ImperialTunnelManager (backend/app/agents/tools/sql_connection.py), which is not supplied; DB_USER/DB_PASS/DB_NAME environment values (lines 94-96) are unresolved, and the 'eudl database' designation rests on 'SET search_path TO eudl, public;' (line 120) and the eudl-prefixed SQL in smart_search."
+        ],
+        "protected_operation": "Invocation of search_papers_tool and its downstream query-execution path: tool body validation via SearchPapersSchema, PostgresTool.smart_search query construction from the validated arguments, and submission of the built SQL through PostgresTool._execute_query.",
+        "protected_resource": "The eudl PostgreSQL schema/database (eudl.content, eudl.author, eudl.publication, eudl.map_content_author, eudl.map_publication_content, eudl.content_type) reached via the pooled psycopg2 connection inside PostgresTool._execute_query after 'SET search_path TO eudl, public;'.",
+        "protection_obligation": "The free-text arguments search_term and author_name of the agent-registered tool search_papers_tool must be rejected (ValueError 'Security: Forbidden SQL keywords detected.') by the SearchPapersSchema.security_check field validator whenever they contain a forbidden SQL mutation keyword ('drop ', 'delete ', 'truncate ', 'update ', 'alter '), before the tool's search query is executed against the eudl PostgreSQL database.",
+        "scope_limits": [
+          "The validator covers only the search_term and author_name fields; other free-text fields such as venue_or_publication are not validated by security_check in the supplied source.",
+          "The keyword list is exactly ['drop ', 'delete ', 'truncate ', 'update ', 'alter '] matched case-insensitively as substrings requiring a trailing space; other mutation or injection syntax (e.g., 'DROP(' or 'DELETE;' without a trailing space, comment/stacked-query syntax, INSERT/GRANT/COPY) is outside the declared guard, and legitimate search text containing these substrings would also be rejected.",
+          "The validator is a rejection guard (raises ValueError); it does not sanitize, escape, or transform accepted values, and the query itself is built with parameterization (plainto_tsquery / %s placeholders) in smart_search.",
+          "The contract covers only the search_papers_tool -> smart_search -> _execute_query path; PaperIDSchema is declared but no tool or guarded effect using it appears in the supplied source, and no other _execute_query callers are shown.",
+          "No claim is made about runtime effectiveness, prevalence, actual agent usage, or whether an executed statement would in fact mutate persistent data; this records the source-declared guard hypothesis only."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Supplied source contains only backend/app/agents/tools/sql_tool.py; no agent construction, executor, graph, or tool-dispatch wiring that invokes search_papers_tool at runtime is supplied, so actual agent usage cannot be confirmed from source.",
+      "backend/app/agents/tools/sql_connection.py (ImperialTunnelManager) is referenced (lines 29-32) but not supplied; tunnel/database connection behavior beyond db_config (lines 91-98) is unsupported.",
+      "The two reviewer opinions (first and second phase) describe the same operational obligation (keyword rejection via security_check before query execution) and have been merged into a single contract; no distinct second commit point or stratum is supported by the supplied source.",
+      "PaperIDSchema (lines 65-67) is declared but no tool, guard, or guarded effect using it appears in the supplied lines; any obligation attached to it cannot be compiled from the supplied source.",
+      "The RotatingFileHandler SQL logging path (lines 14-26, 211-228) writes to a filesystem log but no reviewer obligation or guard covers that effect; it is out of scope for the compiled contract."
+    ],
+    "repository": "MaximeSemblat/eudl_librarian_agent_project",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:6962070a9cd09a1cd869a6aa154e7d2b"
+  },
+  "request_sha256": "cc51dccc944604174d63435b604e706b7cb9f96b206f23ba769a85178e028cb4",
+  "response_sha256": "51f817330969809bebbd1f5695f6e87df991c02819feeb2188ba27992b9e88d8",
+  "state": "completed",
+  "tokens": 16245,
+  "unit": "v24-screen:6962070a9cd09a1cd869a6aa154e7d2b"
+}

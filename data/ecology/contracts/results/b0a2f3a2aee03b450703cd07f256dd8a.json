@@ -1,0 +1,139 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The ADK tool-execution step for the trader agent's place_order/modify_order call: a dict return from risk_manager_callback (callbacks.py:45-51, 58-64, 73-79, 90-97, 101-104) causes tool execution to be skipped before any order request is forwarded to the angel_one_mcp.server process; a None return (callbacks.py:35, 106) lets execution proceed.",
+        "contract_id": "ecological-contract:2b6273a628ece11a7e8d031778e036b2",
+        "declared_mechanism": "LlmAgent(before_tool_callback=risk_manager_callback) on the trader agent (trader.py:41-48); the callback returns None to allow a call, or a {'status': 'REJECTED', 'reason': ...} dict which, per its documented contract, makes ADK skip tool execution and surface the dict as the tool result (callbacks.py:18-22).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 48,
+            "line_start": 41,
+            "path": "odta/agents/trader.py",
+            "role": "guard_registration",
+            "source_sha256": "038d583d95afd9a8900990f3b2a3cff1baab7db0dce7a32ee56bad804530c84d"
+          },
+          {
+            "line_end": 46,
+            "line_start": 45,
+            "path": "odta/agents/trader.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "038d583d95afd9a8900990f3b2a3cff1baab7db0dce7a32ee56bad804530c84d"
+          },
+          {
+            "line_end": 44,
+            "line_start": 38,
+            "path": "odta/agents/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "963dfc44a7c909c9bd97b07ecc9e5e3240881c06d974248f4e86dd0d17977a03"
+          },
+          {
+            "line_end": 35,
+            "line_start": 15,
+            "path": "odta/agents/root_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "963dfc44a7c909c9bd97b07ecc9e5e3240881c06d974248f4e86dd0d17977a03"
+          },
+          {
+            "line_end": 35,
+            "line_start": 29,
+            "path": "odta/risk/callbacks.py",
+            "role": "protected_operation",
+            "source_sha256": "f53adf267262c6e64eff7ca47f46f987660812264254cc9f2e8d7717e63fe8d4"
+          },
+          {
+            "line_end": 22,
+            "line_start": 18,
+            "path": "odta/risk/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "f53adf267262c6e64eff7ca47f46f987660812264254cc9f2e8d7717e63fe8d4"
+          },
+          {
+            "line_end": 51,
+            "line_start": 41,
+            "path": "odta/risk/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f53adf267262c6e64eff7ca47f46f987660812264254cc9f2e8d7717e63fe8d4"
+          },
+          {
+            "line_end": 64,
+            "line_start": 53,
+            "path": "odta/risk/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f53adf267262c6e64eff7ca47f46f987660812264254cc9f2e8d7717e63fe8d4"
+          },
+          {
+            "line_end": 79,
+            "line_start": 66,
+            "path": "odta/risk/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f53adf267262c6e64eff7ca47f46f987660812264254cc9f2e8d7717e63fe8d4"
+          },
+          {
+            "line_end": 97,
+            "line_start": 81,
+            "path": "odta/risk/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f53adf267262c6e64eff7ca47f46f987660812264254cc9f2e8d7717e63fe8d4"
+          },
+          {
+            "line_end": 104,
+            "line_start": 99,
+            "path": "odta/risk/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f53adf267262c6e64eff7ca47f46f987660812264254cc9f2e8d7717e63fe8d4"
+          },
+          {
+            "line_end": 123,
+            "line_start": 109,
+            "path": "odta/risk/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f53adf267262c6e64eff7ca47f46f987660812264254cc9f2e8d7717e63fe8d4"
+          }
+        ],
+        "forbidden_condition": "Execution of a place_order/modify_order broker tool call where any of the following holds: (1) session daily P&L <= -max daily loss (callbacks.py:41-51); (2) for place_order only, open position count >= max open positions (callbacks.py:53-64); (3) current IST HH:MM >= square-off time and transactiontype/transaction_type is BUY (callbacks.py:66-79); (4) tradingsymbol/symbol ends with an equity suffix (-EQ/-BE/-BL/-AF/-IQ/-RL) or is not a CE/PE option symbol, when a symbol argument is present (callbacks.py:81-97); (5) the symbol prefix-matches a ban_list entry for today's date (callbacks.py:99-104, 109-123).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The skip-on-dict semantics of before_tool_callback are asserted only by the callback docstring (callbacks.py:20-22); the google.adk framework source is not supplied to confirm ADK skips execution (including for McpToolset tools) when a dict is returned.",
+          "Whether McpToolset-provided tools surface tool.name as exactly 'place_order'/'modify_order' to match ORDER_TOOLS is not demonstrated in supplied source; MCP tool wrapping/naming lives in the unsupplied SDK.",
+          "Real-time correctness of DAILY_PNL, OPEN_POSITIONS_COUNT, and APP_* state keys depends on updater code outside the supplied views.",
+          "The binding from 'tool execution skipped' to 'no order reaches the broker' relies on angel_one_mcp.server behavior that is not in supplied source; if the study classifies the protected effect by the broker-side mutation rather than the gated tool invocation, that stratum binding (network/external) is unverified.",
+          "The trader_instruction content (odta.prompts.trader) that would govern whether the agent reliably supplies symbol/transaction-type arguments is not supplied."
+        ],
+        "protected_operation": "Tool dispatch of place_order or modify_order from the Angel One broker McpToolset during trader LlmAgent execution (tools=[broker_tools] + native_tools); non-order tools deliberately pass through unguarded (callbacks.py:29-35).",
+        "protected_resource": "The Angel One broker order channel exposed via McpToolset(StdioConnectionParams(command='python', args=['-m','angel_one_mcp.server'])) (root_agent.py:15-35), together with the session-state counters and limit overrides (DAILY_PNL, OPEN_POSITIONS_COUNT, APP_MAX_DAILY_LOSS, APP_MAX_OPEN_POSITIONS, APP_SQUARE_OFF_TIME) and the ban_list table consulted by the guard.",
+        "protection_obligation": "The risk_manager_callback, registered as before_tool_callback on the 'trader' LlmAgent that carries the Angel One broker MCP toolset, must reject any place_order/modify_order tool call that violates the daily-loss limit, the max-open-positions cap (new orders only), the post-square-off BUY restriction, the options-only symbol rule, or the F&O ban list; per the callback's documented contract a returned dict makes ADK skip tool execution, so the non-compliant order is never dispatched to the broker MCP server.",
+        "scope_limits": [
+          "Guard fires only for tools named 'place_order' or 'modify_order' (callbacks.py:29-35); every other trader tool \u2014 including remaining Angel One MCP tools such as search_scrip and the paper-mode tools get_paper_positions/record_paper_trade \u2014 receives no risk checks.",
+          "The position-cap rule applies only to place_order; modify_order bypasses it (callbacks.py:53-57).",
+          "The square-off BUY check and the symbol/ban checks depend on args keys transactiontype/transaction_type and tradingsymbol/symbol; calls omitting these keys skip the corresponding checks (callbacks.py:66-104).",
+          "Enforcement inputs come from tool_context.state (DAILY_PNL, OPEN_POSITIONS_COUNT, APP_* overrides with constant defaults); the state-writer code and the odta.constants values are not in supplied source.",
+          "The ban check delegates to odta.db.connection.get_db_connection and a ban_list table using prefix matching (callbacks.py:109-123); neither the connection module nor table population is supplied.",
+          "The guard does not cover broker-side server configuration such as the DRY_RUN_MODE and MAX_ORDER_QUANTITY env passed to the MCP server (root_agent.py:26-32); any enforcement there lives in the unsupplied MCP server.",
+          "The time check compares IST HH:MM strings lexicographically against square_off_time; boundary behavior (equality counts as past square-off) is as coded and assumes a trusted clock."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "google.adk framework source confirming before_tool_callback dict-return skip semantics and the .name values exposed for McpToolset-provided tools.",
+      "odta.constants definitions (StateKeys, IST, DEFAULT_MAX_DAILY_LOSS, DEFAULT_MAX_OPEN_POSITIONS, SQUARE_OFF_TIME_STR).",
+      "Code that writes StateKeys.DAILY_PNL, StateKeys.OPEN_POSITIONS_COUNT, and the APP_* override keys into session state.",
+      "odta.db.connection.get_db_connection implementation and the ban_list table schema/population.",
+      "angel_one_mcp.server source implementing place_order/modify_order and any DRY_RUN_MODE / MAX_ORDER_QUANTITY enforcement.",
+      "odta.prompts.trader instruction text for the trader agent."
+    ],
+    "repository": "bhavesh0009/options-day-trader-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b0a2f3a2aee03b450703cd07f256dd8a"
+  },
+  "request_sha256": "86402b09dfb835f3717f7e8318b3fbdda08335deaa5c0e5329ed749dddb985c7",
+  "response_sha256": "0b9f940d858f10aa265b41c96d1ba47a2644bc20a2d3dc8dda7aed85d88a5367",
+  "state": "completed",
+  "tokens": 17662,
+  "unit": "v24-screen:b0a2f3a2aee03b450703cd07f256dd8a"
+}

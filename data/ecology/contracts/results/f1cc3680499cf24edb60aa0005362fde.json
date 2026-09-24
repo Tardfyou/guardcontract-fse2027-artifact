@@ -1,0 +1,97 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "possible_path.open(\"rb\") at src/agent/callbacks.py:81 with bytes read at line 82; admitted content is subsequently persisted via callback_context.save_artifact(filename=\"user:current_medical_image\", ...) at callbacks.py:88-90.",
+        "contract_id": "ecological-contract:0558b1a3a15b5eea9d08ee7310b881d0",
+        "declared_mechanism": "Pre-open path-containment check: possible_path = Path(match.group(1)).resolve() (callbacks.py:65), then `if not possible_path.is_relative_to(Path.cwd())` triggers logger.warning(\"Access denied: Path ... is outside the working directory.\") and `continue` (callbacks.py:68-73), skipping the open for non-contained paths.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 29,
+            "line_start": 29,
+            "path": "src/agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f9535af5bf5aee6dd002d760853f43efb1f4e232f999026279f81b15a103d6ed"
+          },
+          {
+            "line_end": 33,
+            "line_start": 30,
+            "path": "src/agent/callbacks.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 62,
+            "line_start": 51,
+            "path": "src/agent/callbacks.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 73,
+            "line_start": 65,
+            "path": "src/agent/callbacks.py",
+            "role": "guard_registration",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 73,
+            "line_start": 66,
+            "path": "src/agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 83,
+            "line_start": 75,
+            "path": "src/agent/callbacks.py",
+            "role": "protected_operation",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 90,
+            "line_start": 81,
+            "path": "src/agent/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          }
+        ],
+        "forbidden_condition": "Opening/reading a local image file whose path was extracted from user prompt text when the resolved path is not relative to Path.cwd() (i.e., possible_path.is_relative_to(Path.cwd()) evaluates False), meaning the path resolves outside the current working directory.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the runtime working directory (Path.cwd()) is pinned to an approved root at deployment; no configuration in the supplied source sets or constrains it.",
+          "Whether load_image_artifact (callbacks.py:99-122), which appends the saved 'user:current_medical_image' artifact to LLM requests, is registered anywhere; it is not referenced in the supplied src/agent/agent.py.",
+          "Whether the sub-agents (icd10, image_analysis, soap wired via AgentTool at agent.py:35-37) register save_image_to_artifact or perform their own local-path file reads; the sub_agents module sources are not supplied."
+        ],
+        "protected_operation": "Local filesystem open/read of the regex-extracted image path inside save_image_to_artifact: possible_path.open(\"rb\") and f.read() (src/agent/callbacks.py:81-82), which feeds construction of the image Part.",
+        "protected_resource": "Local image files on the host filesystem addressed by user-supplied path strings embedded in prompt text; files resolving outside the current working directory must not be readable through this callback path.",
+        "protection_obligation": "In save_image_to_artifact (registered as a root-agent before_agent_callback at src/agent/agent.py:29), a local image file path extracted from user prompt text may only be opened and read if its resolved path is contained within the current working directory; otherwise access must be denied (logged and skipped) before any local file read or downstream artifact ingestion.",
+        "scope_limits": [
+          "Guard applies only to text parts whose stripped text ends with .jpg/.jpeg/.png and from which the regex at callbacks.py:60-62 extracts a path; inline_data image parts are saved unconditionally with no path check (callbacks.py:35-48).",
+          "Containment reference is the process working directory (Path.cwd()) at runtime; no additional allowlist, content validation, or symlink-specific policy is declared in the supplied source.",
+          "Guard runs only inside save_image_to_artifact wired to the root agent's before_agent_callback (agent.py:29); the other registered callbacks (LoggingCallbacks, add_session_to_memory) perform logging/memory persistence and guard nothing.",
+          "The deny action is `continue` (skip the offending part), not an agent-invocation abort; whether skipping is sufficient containment for the overall run is not decided here.",
+          "The chained save_artifact write (callbacks.py:88-90) is a state-stratum effect reached only for admitted paths; it is gated by this same pre-open check and has no independently declared guard mechanism."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Deployment/runtime configuration constraining Path.cwd() to a policy-defined root (no such source supplied).",
+      "Registration site(s) for load_image_artifact (callbacks.py:99-122), which is defined but not referenced in the supplied src/agent/agent.py.",
+      "Sources for src/agent/sub_agents/icd10.py, src/agent/sub_agents/image_analysis.py, and src/agent/sub_agents/soap.py to confirm whether they add lifecycle hooks or local-file access paths."
+    ],
+    "repository": "QueryPlanner/medical-agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:f1cc3680499cf24edb60aa0005362fde"
+  },
+  "request_sha256": "0bb90c97d6ff0ff23f60554a52d7c8d9b36c59b275b5dfea7c0ee0d7ec1b7a96",
+  "response_sha256": "7e00f8a8267a6888a5780e4e98985e9a19692219a8b61667e353d84abc3c118a",
+  "state": "completed",
+  "tokens": 12009,
+  "unit": "v24-screen:f1cc3680499cf24edb60aa0005362fde"
+}

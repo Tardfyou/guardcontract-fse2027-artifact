@@ -1,0 +1,105 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "agent.run(request.question) at main.py:353 (/ask) and agent.run(memory_query) at main.py:413 (/sessions/{session_id}/memory); the guarded invocation commits only after the 404 session-existence check passes.",
+        "contract_id": "ecological-contract:ced8dadb6279e1bcab41b8cf482418dc",
+        "declared_mechanism": "Session-existence check in get_or_create_agent (main.py:238-251): when session_id is absent from the agents cache, the function verifies session_id in sessions and raises HTTPException(status_code=404, detail='Session not found') before constructing or returning the agent.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 243,
+            "line_start": 238,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "1eeada15ade95e47c36639fc692388e78c66afcd011d0d403eecddd7a9fe133d"
+          },
+          {
+            "line_end": 243,
+            "line_start": 240,
+            "path": "main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1eeada15ade95e47c36639fc692388e78c66afcd011d0d403eecddd7a9fe133d"
+          },
+          {
+            "line_end": 353,
+            "line_start": 334,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "1eeada15ade95e47c36639fc692388e78c66afcd011d0d403eecddd7a9fe133d"
+          },
+          {
+            "line_end": 413,
+            "line_start": 403,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "1eeada15ade95e47c36639fc692388e78c66afcd011d0d403eecddd7a9fe133d"
+          },
+          {
+            "line_end": 353,
+            "line_start": 353,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "1eeada15ade95e47c36639fc692388e78c66afcd011d0d403eecddd7a9fe133d"
+          },
+          {
+            "line_end": 413,
+            "line_start": 413,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "1eeada15ade95e47c36639fc692388e78c66afcd011d0d403eecddd7a9fe133d"
+          },
+          {
+            "line_end": 353,
+            "line_start": 349,
+            "path": "main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1eeada15ade95e47c36639fc692388e78c66afcd011d0d403eecddd7a9fe133d"
+          },
+          {
+            "line_end": 413,
+            "line_start": 406,
+            "path": "main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1eeada15ade95e47c36639fc692388e78c66afcd011d0d403eecddd7a9fe133d"
+          }
+        ],
+        "forbidden_condition": "Executing agent.run for a session_id that is not present in the sessions registry, i.e., reaching the agent invocation without the get_or_create_agent 'Session not found' (HTTP 404) rejection having fired.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the agents-cache path (main.py:240) satisfies the obligation when a session_id exists in agents but has been removed from sessions.",
+          "Which downstream strata (http/communication, database) agent.run commits internally (model API call, DuckDuckGo tool search, SqliteDb memory persistence configured at main.py:163-177), to determine whether separate per-stratum contracts are required.",
+          "Whether the /memory endpoint's agent.run with the fixed memory_query string (main.py:410-413) is intended to carry the same obligation as /ask's user-supplied question.",
+          "Confirm that guarding the direct agent.run invocation (rather than a registered lifecycle hook or tool-dispatch callback) is the intended agent-mediation binding for this contract."
+        ],
+        "protected_operation": "Running the GibsonAI documentation agent for a client-supplied session_id via agent.run in POST /ask (main.py:353) and GET /sessions/{session_id}/memory (main.py:413).",
+        "protected_resource": "Per-session agent execution: Agent instances dispatched through get_or_create_agent and gated by the sessions registry (main.py:61-64, 238-251).",
+        "protection_obligation": "For both agent-invoking endpoints (POST /ask and GET /sessions/{session_id}/memory), the agent must not be run for a session_id absent from the sessions registry: get_or_create_agent must reject with HTTP 404 before any agent.run call commits.",
+        "scope_limits": [
+          "Covers only agent invocations reached through get_or_create_agent; the direct create_agent call in /health (main.py:376-378) never invokes agent.run and is not gated by this mechanism.",
+          "The sessions-registry check executes only when session_id is absent from the agents cache (main.py:240-243); a session_id found in the agents cache is returned without re-checking sessions.",
+          "The contract is stated at the agent.run invocation commit point; downstream effects committed inside the un-supplied agno library (model API calls, DuckDuckGo tool network effects, SqliteDb memory writes) are not separately contracted.",
+          "The guard validates registry membership only; no authentication or possession check on session_id is covered by this contract.",
+          "Reviewer-proposed CORS middleware obligation (app.add_middleware(CORSMiddleware, allow_origins=[...], allow_credentials=True), main.py:277-290) is excluded as out-of-scope ordinary CORS: supplied source contains no binding of it to an agent tool, agent lifecycle hook, or agent-generated input reaching a guarded effect."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Both reviewers' CORS obligation (CORSMiddleware registration with allowlisted origins and allow_credentials=True, main.py:277-290) is ordinary CORS enforced at the HTTP middleware layer across all routes; supplied source does not explicitly bind it to an agent tool, agent lifecycle hook, or agent-generated input reaching a guarded effect, so it is excluded from contracts per scope rules rather than emitted.",
+      "The external effects committed inside agent.run (OpenAIChat model API calls, DuckDuckGoTools web searches, SqliteDb memory persistence, configured at main.py:163-177) occur within the un-supplied agno library; no line-supported commit point exists for any per-stratum internal effect, so no separate http/communication/database contracts are emitted.",
+      "No runtime or deployment evidence is supplied beyond the main.py source view (behavior labels unavailable); actual enforcement behavior of the 404 guard or middleware under operation cannot be confirmed from the supplied material."
+    ],
+    "repository": "Boburmirzo/gibsonai-docs-ai-assistant",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:e542e91c8eebf6c7f1185531cf4db7af"
+  },
+  "request_sha256": "37e93064f8bfb6123a96d0c7a4cfba40f18c265b03817c081d99cb19bda4a34a",
+  "response_sha256": "7be8b95e27009cc18890a5c2a086e385e553b9b8427b363fd3f3d773979d176a",
+  "state": "completed",
+  "tokens": 21882,
+  "unit": "v24-screen:e542e91c8eebf6c7f1185531cf4db7af"
+}

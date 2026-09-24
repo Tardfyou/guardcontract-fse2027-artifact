@@ -1,0 +1,189 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "GuideGeneratorFlow.validate_inputs (main.py:74-105): sanitized URL lists are committed to self.state.youtube_links/webpage_links/research_paper_links (main.py:80-82) and the no-surviving-source ValueError abort fires (main.py:94-105) before run_research_crew (@listen(validate_inputs), main.py:121-145) passes the lists to ResearchCrew().crew_for_sources(...).kickoff(...). Within validate_urls itself, the guarded requests.head probe (input_validation.py:40) executes only after the per-URL private-IP rejection at input_validation.py:34-37.",
+        "contract_id": "ecological-contract:16417e75c9f5700ef224481cb893b471",
+        "declared_mechanism": "validate_urls (input_validation.py:14-55) extracts each URL hostname via urlparse and rejects it when _is_private_ip (security.py:26-31: socket.gethostbyname resolution + ipaddress membership against _PRIVATE_RANGES, security.py:8-16) returns True, logging 'SSRF: rejected private IP URL' and emitting emit_input_rejected; the guard is wired into GuideGeneratorFlow.validate_inputs, the @start() step (main.py:64-65), which replaces the three state URL lists with survivors (main.py:80-82) and raises ValueError when no sources remain (main.py:94-105).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 16,
+            "line_start": 8,
+            "path": "src/guide_creator_flow/security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2d3e0544c28949eab4107161f6910ef3850a254b789eadf317768c62521ad174"
+          },
+          {
+            "line_end": 31,
+            "line_start": 26,
+            "path": "src/guide_creator_flow/security.py",
+            "role": "guard_registration",
+            "source_sha256": "2d3e0544c28949eab4107161f6910ef3850a254b789eadf317768c62521ad174"
+          },
+          {
+            "line_end": 37,
+            "line_start": 26,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "guard_registration",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 44,
+            "line_start": 38,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "commit_point",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 65,
+            "line_start": 64,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 82,
+            "line_start": 74,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 105,
+            "line_start": 94,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 145,
+            "line_start": 121,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          }
+        ],
+        "forbidden_condition": "An outbound HTTP fetch (validation-time probe or downstream crew fetch) targeting a URL whose hostname resolves to a private/internal IP address: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16, ::1/128, fc00::/7; likewise such a URL being admitted into flow state for later fetching.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which crew tools or code paths actually perform outbound fetches of the youtube/webpage/paper links, and whether they consume only the sanitized state lists.",
+          "Whether redirect following during the validation probe or downstream fetches can reach private ranges without an intervening _is_private_ip check.",
+          "Whether any agent tool registration, dispatch, or lifecycle hook makes the outbound fetch agent-mediated (crew/tool sources not supplied).",
+          "Whether fetch-time DNS re-resolution is performed anywhere, which would determine whether the validation-time check remains authoritative."
+        ],
+        "protected_operation": "Outbound HTTP requests against user-supplied URLs carried in state.youtube_links, state.webpage_links, and state.research_paper_links \u2014 both the validation-time reachability probe (requests.head, input_validation.py:40) and downstream crew fetches consuming the sanitized lists.",
+        "protected_resource": "Internal/private network ranges reachable from the flow host (loopback, RFC1918 ranges, link-local 169.254/16, IPv6 loopback ::1, unique-local fc00::/7) as enumerated in _PRIVATE_RANGES.",
+        "protection_obligation": "SSRF private-IP rejection for outbound fetching of flow-supplied URLs: every URL in youtube_links, webpage_links, and research_paper_links must have its hostname resolved and be rejected if it maps into a private/internal range before any fetch proceeds, and the run must abort if no source of any kind survives validation.",
+        "scope_limits": [
+          "The reachability probe follows redirects (allow_redirects=True, input_validation.py:40); the supplied source shows no re-validation of redirect targets against _is_private_ip.",
+          "_is_private_ip returns False on any exception, including DNS resolution failure (security.py:30-31); unresolvable hostnames are not rejected as private and are only dropped later if requests.head raises ConnectionError/Timeout (input_validation.py:41-48).",
+          "Only the hostname is resolved at validation time; the supplied source shows no re-resolution or re-check at the moment of the downstream fetch.",
+          "Non-network exceptions during the probe (e.g., SSL quirks) are treated as reachable (input_validation.py:49-50).",
+          "EnrichmentCrew kickoff receives only topic_hint and research_gaps (main.py:184-188); the supplied source does not bind its network activity to the validated URL lists.",
+          "ResearchCrew and EnrichmentCrew internals are absent from the supplied source, so the concrete downstream fetch call sites consuming the sanitized lists cannot be located.",
+          "No supplied source line binds the outbound fetch to an agent tool, agent lifecycle hook, or agent-generated input; inputs enter via cli.get_inputs (main.py:234) or a JSON trigger payload (main.py:242-252), so agent mediation is not established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "GuideGeneratorFlow.validate_inputs commits the sanitized document list to self.state.document_paths (main.py:87-90); the combined no-surviving-source ValueError abort (main.py:94-105) fires before run_research_crew passes document_paths in the inputs dict to ResearchCrew().crew_for_sources(...).kickoff(...) (main.py:132-145).",
+        "contract_id": "ecological-contract:cd517325fdec12c1539950d6ba75edce",
+        "declared_mechanism": "validate_document_paths (input_validation.py:58-82): p.resolve().relative_to(document_input_dir.resolve()) confinement check raising ValueError caught as 'path traversal rejected' with emit_input_rejected (input_validation.py:70-74), p.exists() check (75-77), and p.stat().st_size <= max_file_bytes cap (78-80); directory and size cap configured from DOCUMENT_INPUT_DIR / MAX_FILE_BYTES environment (main.py:71-72); invoked in the @start validate_inputs step which rewrites state.document_paths with survivors.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 66,
+            "line_start": 58,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "guard_registration",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 74,
+            "line_start": 67,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 81,
+            "line_start": 75,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 72,
+            "line_start": 71,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 90,
+            "line_start": 87,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 105,
+            "line_start": 94,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 145,
+            "line_start": 132,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          }
+        ],
+        "forbidden_condition": "A document path that resolves outside DOCUMENT_INPUT_DIR (path traversal), a nonexistent file, or a file larger than max_file_bytes being admitted into state.document_paths for downstream reading.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which downstream components read the document_paths files (e.g., a crew file-read tool) and whether reads are re-confined to DOCUMENT_INPUT_DIR at read time.",
+          "Whether the reading component is registered as an agent tool, which would establish agent mediation for this contract.",
+          "Whether document_paths supplied via the JSON trigger payload (main.py:242-252) or cli.get_inputs reach the guard unmodified."
+        ],
+        "protected_operation": "Local filesystem reads of user-supplied document paths carried in state.document_paths and passed to downstream crews after validate_inputs.",
+        "protected_resource": "Local filesystem outside the resolved DOCUMENT_INPUT_DIR, and files exceeding MAX_FILE_BYTES (default 52428800, main.py:71-72).",
+        "protection_obligation": "Local document reads must be confined to DOCUMENT_INPUT_DIR: every path in document_paths must resolve inside the configured directory, exist, and not exceed MAX_FILE_BYTES before the sanitized list is admitted to flow state and consumed downstream; the run aborts if no source of any kind survives validation.",
+        "scope_limits": [
+          "The guard filters the path list at validation time; the supplied source does not show where or whether the files are actually read (crew/tool read sites absent), so no read-time re-check is observable.",
+          "Confinement is computed via Path.resolve() at validation time (input_validation.py:70); the supplied source does not address path or symlink changes after validation.",
+          "document_input_dir defaults to 'documents' and max_file_bytes to 52428800 via environment variables (main.py:71-72); deployment values are not determinable from source.",
+          "The existence and size checks (input_validation.py:75-80) accompany the traversal confinement but the forbidden condition named by reviewers is confinement to DOCUMENT_INPUT_DIR.",
+          "No supplied source line binds the file read to an agent tool, agent lifecycle hook, or agent-generated input; agent mediation is not established."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "ResearchCrew.crew_for_sources, EnrichmentCrew.crew, and WritingCrew.crew implementations and their tool registrations are not in the supplied source; the actual outbound-fetch and document-read call sites consuming the validated state cannot be located.",
+      "guide_creator_flow.cli.get_inputs and GuideFlowState definitions are not supplied; the origin and typing of youtube_links/webpage_links/research_paper_links/document_paths cannot be confirmed beyond their usage in main.py.",
+      "guide_creator_flow.event_listeners.emit_input_rejected is referenced (input_validation.py:10, 36, 43, 47, 73) but its implementation is not supplied, so rejection-side side effects cannot be characterized.",
+      "No supplied source line binds the guarded HTTP or file effects to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; agent_mediation is recorded as not_established for both contracts rather than inferred from CrewAI framework metadata.",
+      "Reviewer wording placing the guard 'before the Research/Enrichment crews perform network requests' is only partially supported: the supplied source shows the guard ordering against run_research_crew (@listen(validate_inputs), main.py:121) but no source-supplied ordering or URL-list binding for the EnrichmentCrew kickoff (main.py:180-189)."
+    ],
+    "repository": "aiwithsiddhesh/ai-guide-creator",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:0fe463911c3b1bedcf5a94f9475fef5e"
+  },
+  "request_sha256": "14bb1f0eb96e00ec19b95b64a545867844a295cf8c9aa4b413d53f9bfc0646c5",
+  "response_sha256": "8b863cfd6997ed9d6f321705f9828284bbbbefbb308a9b30d5fefd4ea639994b",
+  "state": "completed",
+  "tokens": 18642,
+  "unit": "v24-screen:0fe463911c3b1bedcf5a94f9475fef5e"
+}

@@ -1,0 +1,217 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "request_refund_guarded(..., confirm=True) at refund_gate.py:48-50; the effect materializes in request_refund's confirm branch, which builds the refund-request payload and writes it into the process-local _IDEMPOTENCY store (payments.py:93).",
+        "contract_id": "ecological-contract:693747898f788f31e9de8922386aadab",
+        "declared_mechanism": "Deterministic code guards: (1) validate_refund_args invoked inside request_refund_guarded before every underlying request_refund call, returning a structured error dict on rejection (payments_guarded.py:21-28); (2) run_refund_pipeline stops with stage='hitl_required' before the confirm call whenever preview.requires_hitl is true and no HitlDecision with approved=True is supplied (refund_gate.py:39-46), and also stops if the preview status is not success (refund_gate.py:36-37).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 20,
+            "line_start": 9,
+            "path": "project/meridian_ops/tools/payments_guarded.py",
+            "role": "protected_operation",
+            "source_sha256": "e101e74e53813c203341621177309255aff65862ce99b19fb9f42bb90aaee3b8"
+          },
+          {
+            "line_end": 28,
+            "line_start": 21,
+            "path": "project/meridian_ops/tools/payments_guarded.py",
+            "role": "guard_registration",
+            "source_sha256": "e101e74e53813c203341621177309255aff65862ce99b19fb9f42bb90aaee3b8"
+          },
+          {
+            "line_end": 29,
+            "line_start": 21,
+            "path": "project/meridian_ops/safety/validators.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9adde181954adb379016996826bab12b0fb431a9fe2f6334435ca828a0a4f339"
+          },
+          {
+            "line_end": 37,
+            "line_start": 33,
+            "path": "project/meridian_ops/safety/refund_gate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4594524bcdff0c752a1b528a83a78e191cb7fccfad57889638cd0eed9926ea7a"
+          },
+          {
+            "line_end": 46,
+            "line_start": 39,
+            "path": "project/meridian_ops/safety/refund_gate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4594524bcdff0c752a1b528a83a78e191cb7fccfad57889638cd0eed9926ea7a"
+          },
+          {
+            "line_end": 50,
+            "line_start": 48,
+            "path": "project/meridian_ops/safety/refund_gate.py",
+            "role": "commit_point",
+            "source_sha256": "4594524bcdff0c752a1b528a83a78e191cb7fccfad57889638cd0eed9926ea7a"
+          },
+          {
+            "line_end": 10,
+            "line_start": 10,
+            "path": "project/meridian_ops/tools/payments.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2a7206507e2c367b9548bc14b448e135f67f9433080904c51b155fdb6e570135"
+          },
+          {
+            "line_end": 93,
+            "line_start": 81,
+            "path": "project/meridian_ops/tools/payments.py",
+            "role": "commit_point",
+            "source_sha256": "2a7206507e2c367b9548bc14b448e135f67f9433080904c51b155fdb6e570135"
+          }
+        ],
+        "forbidden_condition": "Executing the confirm=True refund request creation when validate_refund_args rejects the arguments (bad order-id prefix, amount outside (0, 500], disallowed reason_code, or weak idempotency key), when the preview step returned a non-success status, or when preview.requires_hitl is true and hitl is None or hitl.approved is false.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds run_refund_pipeline's confirm=True step to an agent tool, agent lifecycle hook, or agent-generated input; its docstring states it is 'used by the CLI, tests, and (later) graphs' (refund_gate.py:26).",
+          "Whether _IDEMPOTENCY will later be backed by Redis (payments.py:7) and whether request_refund ultimately reaches an external payments system is unknown from supplied source."
+        ],
+        "protected_operation": "Opening/committing a refund request via request_refund_guarded(order_id, amount_usd, reason_code, idempotency_key, confirm=True) on the confirm step of run_refund_pipeline.",
+        "protected_resource": "Refund request creation in meridian_ops.tools.payments.request_refund and its process-local refund request store (_IDEMPOTENCY).",
+        "protection_obligation": "Refund request commitment is gated: opening a refund request via request_refund_guarded(..., confirm=True) is forbidden unless the refund arguments pass validate_refund_args and, when the amount exceeds the $75 HITL threshold, run_refund_pipeline holds an approved HitlDecision before issuing the confirm=True call.",
+        "scope_limits": [
+          "The approved-HitlDecision check is enforced only inside run_refund_pipeline; direct calls to request_refund_guarded(confirm=True) or request_refund(confirm=True) from other entry points are not shown to be gated by any HitlDecision.",
+          "validate_refund_args is enforced inside request_refund_guarded for both preview and confirm calls; request_refund itself performs only basic checks (amount > 0, non-empty idempotency_key, non-empty reason_code).",
+          "The committed effect is a refund *request* recorded in a process-local in-memory dict (explicitly a lab store, comment at payments.py:7); no bank settlement or external payment API call appears in supplied source.",
+          "The MCP-surface confirm=False pinning and the refund_agent budget kill switch are distinct obligations covered by separate contracts.",
+          "amount <= 0, empty idempotency_key, and empty reason_code are additionally rejected inside request_refund itself (payments.py:39-56)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The per-call tool execution decision at the callback return: the tool is skipped when the callback returns a dict (refund_specialist.py:20-24) and proceeds only when it returns None (line 27); the ADK runtime's internal tool-execution dispatch that follows is not part of supplied source.",
+        "contract_id": "ecological-contract:ea1b3650a2bf40612b065e06b816c0f7",
+        "declared_mechanism": "ADK before_tool_callback registered on the Agent (refund_specialist.py:67); the callback constructs RunBudget from tool_context.state, calls budget.charge() before every tool, returns an error dict to skip the tool on RuntimeError, and persists the charged counters back to state on success (refund_specialist.py:11-27).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 27,
+            "line_start": 11,
+            "path": "project/meridian_ops/agents/refund_specialist.py",
+            "role": "guard_registration",
+            "source_sha256": "2e6d03f6cb32fda9f4ec79de8237ce9ee90745e8dc694e773cb8ed2bb5297015"
+          },
+          {
+            "line_end": 24,
+            "line_start": 17,
+            "path": "project/meridian_ops/agents/refund_specialist.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2e6d03f6cb32fda9f4ec79de8237ce9ee90745e8dc694e773cb8ed2bb5297015"
+          },
+          {
+            "line_end": 27,
+            "line_start": 20,
+            "path": "project/meridian_ops/agents/refund_specialist.py",
+            "role": "commit_point",
+            "source_sha256": "2e6d03f6cb32fda9f4ec79de8237ce9ee90745e8dc694e773cb8ed2bb5297015"
+          },
+          {
+            "line_end": 66,
+            "line_start": 66,
+            "path": "project/meridian_ops/agents/refund_specialist.py",
+            "role": "protected_operation",
+            "source_sha256": "2e6d03f6cb32fda9f4ec79de8237ce9ee90745e8dc694e773cb8ed2bb5297015"
+          },
+          {
+            "line_end": 67,
+            "line_start": 67,
+            "path": "project/meridian_ops/agents/refund_specialist.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2e6d03f6cb32fda9f4ec79de8237ce9ee90745e8dc694e773cb8ed2bb5297015"
+          }
+        ],
+        "forbidden_condition": "Executing any refund_agent tool (get_order, retrieve_policy, propose_refund) on a tool call where RunBudget.charge() raises RuntimeError because the per-turn budget limits are exceeded.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "RunBudget thresholds and charge() semantics (meridian_ops.safety.kill_switch) are not in supplied source.",
+          "Where 'budget_steps' and 'budget_cost_usd' are initialized or reset per turn is not shown.",
+          "The claim that any non-None callback return causes the ADK runtime to skip the tool is asserted by the callback's docstring (refund_specialist.py:12) but the framework dispatch behavior is not in supplied source."
+        ],
+        "protected_operation": "Agent tool invocation dispatched by refund_agent (tools=[get_order, retrieve_policy, propose_refund]).",
+        "protected_resource": "refund_agent's tool dispatch surface and the per-turn budget counters held in tool_context.state ('budget_steps', 'budget_cost_usd').",
+        "protection_obligation": "Every tool invocation by the refund_agent must pass a per-turn budget kill switch: once the RunBudget charge fails, the tool call must be skipped and an error dict returned in place of tool execution.",
+        "scope_limits": [
+          "The callback is registered only on refund_agent; other agents or non-agent callers of the same tools are not shown to be covered.",
+          "The guard gates whether a tool executes at all; it does not validate tool arguments (refund argument validation lives in request_refund_guarded).",
+          "propose_refund only issues confirm=False previews and stashes a proposal in session state (refund_specialist.py:29-47); the kill switch gates the tool call itself, not pipeline logic.",
+          "Budget counters are read from and written back to tool_context.state keys 'budget_steps' and 'budget_cost_usd'; RunBudget's internal limits live in meridian_ops.safety.kill_switch, which is not supplied."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The pinned request_refund_guarded call at server.py:40-46 always routes to request_refund's non-mutating preview branch (payments.py:58-68); the forbidden confirm=True commit would materialize at the confirm-branch store write in payments.py:81-93, which this surface structurally cannot reach.",
+        "contract_id": "ecological-contract:ecc01a5cc348c81b9cfb3aa4a55b759e",
+        "declared_mechanism": "The MCP tool implementation hard-codes confirm=False in its call to request_refund_guarded and does not accept a confirm parameter, making confirm=True intentionally unavailable on this surface (server.py:39-46).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 32,
+            "path": "project/meridian_ops/mcp_server/server.py",
+            "role": "protected_operation",
+            "source_sha256": "05a412799db3ff437d73e39b9fbf6bfb4fb0fd838ef78df1931e8ebc21b1682d"
+          },
+          {
+            "line_end": 46,
+            "line_start": 40,
+            "path": "project/meridian_ops/mcp_server/server.py",
+            "role": "guard_registration",
+            "source_sha256": "05a412799db3ff437d73e39b9fbf6bfb4fb0fd838ef78df1931e8ebc21b1682d"
+          },
+          {
+            "line_end": 93,
+            "line_start": 70,
+            "path": "project/meridian_ops/tools/payments.py",
+            "role": "commit_point",
+            "source_sha256": "2a7206507e2c367b9548bc14b448e135f67f9433080904c51b155fdb6e570135"
+          }
+        ],
+        "forbidden_condition": "A refund request being opened/committed (confirm=True) through the MCP server's refund tool.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "server.py:1-6 states the server targets 'ADK McpToolset clients', but no supplied source registers this MCP toolset on any agent; whether an agent actually invokes tool_request_refund_preview is unestablished.",
+          "Whether any additional surface-level restriction beyond the hard-coded confirm=False exists is unknown from supplied source."
+        ],
+        "protected_operation": "Invocation of the MCP tool tool_request_refund_preview (the only refund-related tool on the meridian-orderops MCP server).",
+        "protected_resource": "MCP tool tool_request_refund_preview on the meridian-orderops FastMCP server and the underlying refund request store it would otherwise reach with confirm=True.",
+        "protection_obligation": "The MCP refund surface must expose only the confirm=False preview path: opening/confirming a refund request (confirm=True) through the MCP tool surface is forbidden by construction.",
+        "scope_limits": [
+          "The pinning binds only this MCP tool; it does not restrict confirm=True via direct Python calls to request_refund_guarded or request_refund.",
+          "Only the refund preview tool is covered; tool_get_order and tool_retrieve_policy are read-only lookups outside this obligation.",
+          "The server runs over stdio via mcp.run() with no authentication/authorization layer shown; transport policy is out of scope."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "meridian_ops.safety.kill_switch (RunBudget) source is not supplied; its thresholds, charge() behavior, and error semantics are unknown.",
+      "No supplied binding connects run_refund_pipeline's confirm=True path (refund_gate.py:48-50) to any agent tool, agent lifecycle hook, or agent-generated input; the docstring lists CLI, tests, and future graphs as callers.",
+      "No supplied source shows an ADK agent registering the MCP server's tools via McpToolset; the module docstring's 'ADK McpToolset clients' statement is the only indication of agent clients, and agent mediation is not inferred from it.",
+      "The external reach of a confirmed refund request beyond the process-local _IDEMPOTENCY write (payments.py:93) is not shown; the code comments describe it as a lab store with a later Redis migration.",
+      "Initialization/reset of the refund_agent budget state keys 'budget_steps' and 'budget_cost_usd' is not shown in supplied source.",
+      "The destination of log_tool_event telemetry (meridian_ops.tools.logging_utils) is not supplied."
+    ],
+    "repository": "sardul3/agent-learn-adk",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d3b56597603f72a2c6a8870e32b26244"
+  },
+  "request_sha256": "1a71eae8ff6674d204f0e59ef0393000d236921d4c379052b08adaeb40041ec3",
+  "response_sha256": "2150693c3a068f4cbb2f573560084b38f2265d95a6900526bd7a531150f7b5f0",
+  "state": "completed",
+  "tokens": 19696,
+  "unit": "v24-screen:d3b56597603f72a2c6a8870e32b26244"
+}

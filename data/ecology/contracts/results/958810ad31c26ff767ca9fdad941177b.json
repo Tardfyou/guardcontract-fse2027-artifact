@@ -1,0 +1,160 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "psycopg.connect(db_url) with conn.cursor() and cur.execute(sql, params or []) at lines 47-49 of src/cold_outreach_flow/tools/data_tools.py \u2014 the point where guarded SQL reaches the database.",
+        "contract_id": "ecological-contract:5acd6b5456d3e3734899d02ce88cd720",
+        "declared_mechanism": "Prefix guard in PostgreSQLQueryTool._run: `if not sql.strip().upper().startswith(\"SELECT\")` returns an error string before any connection is made; execution is parameterized via cur.execute(sql, params) using positional parameters; module docstring declares \"QueryTool is read-only (SELECT only)\".",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 5,
+            "line_start": 2,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          },
+          {
+            "line_end": 41,
+            "line_start": 39,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          },
+          {
+            "line_end": 41,
+            "line_start": 40,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          },
+          {
+            "line_end": 27,
+            "line_start": 22,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          },
+          {
+            "line_end": 37,
+            "line_start": 30,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          },
+          {
+            "line_end": 50,
+            "line_start": 47,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "commit_point",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          }
+        ],
+        "forbidden_condition": "Execution of a database query whose SQL string does not start with \"SELECT\" (case-insensitive, after stripping whitespace) via PostgreSQLQueryTool._run; such SQL is rejected with an early return at lines 40-41 before psycopg.connect is opened.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source shows the tool instances returned by get_data_read_tools()/get_data_write_tools() (lines 146-153) being assigned to a CrewAI agent or dispatched by a crew run, so agent mediation cannot be bound to specific lines.",
+          "Whether CrewAI BaseTool dispatch routes all invocations exclusively through _run (with no alternate execution path) is a framework behavior not shown in the supplied source."
+        ],
+        "protected_operation": "Execution of SELECT queries against the campaign PostgreSQL database through the \"Query Campaign Database\" tool's _run method (looking up lead state, sequence status, past responses, suppression list, campaign metrics, activity logs, and prompt memory).",
+        "protected_resource": "The PostgreSQL campaign database addressed by the DATABASE_URL environment variable (read path).",
+        "protection_obligation": "PostgreSQLQueryTool (CrewAI BaseTool \"Query Campaign Database\") must only execute read-only SELECT SQL against the PostgreSQL campaign database; any SQL not beginning with SELECT must be rejected inside _run before any database connection or statement execution is reached.",
+        "scope_limits": [
+          "The guard is a textual prefix check: a statement beginning with SELECT that invokes side-effecting functions could still reach cur.execute, and statements beginning with SQL comments are rejected rather than classified.",
+          "The guard is enforced only inside the tool's _run method; the supplied source shows no other callers, so coverage of all code paths to the database is not demonstrated.",
+          "Only src/cold_outreach_flow/tools/data_tools.py is supplied; the YAML/prompt policy configurations referenced by reviewers are not in evidence.",
+          "Behavior labels and runtime prevalence are unavailable per the stated scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "psycopg.connect(db_url) with cur.execute(sql, vals) at line 135 followed by conn.commit() at line 136 of src/cold_outreach_flow/tools/data_tools.py \u2014 the durable write to the campaign database.",
+        "contract_id": "ecological-contract:a3fc9e435fec2a529ad6ee2b1dab6f55",
+        "declared_mechanism": "Allowlist guard in PostgreSQLUpsertTool._run: `if table not in _ALLOWED_WRITE_TABLES` early return, backed by the frozenset defined at lines 64-72; additional empty-data and missing-DATABASE_URL checks precede execution; module docstring declares \"UpsertTool is restricted to a safe allowlist of tables\".",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 72,
+            "line_start": 64,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          },
+          {
+            "line_end": 111,
+            "line_start": 101,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          },
+          {
+            "line_end": 111,
+            "line_start": 107,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          },
+          {
+            "line_end": 89,
+            "line_start": 75,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          },
+          {
+            "line_end": 99,
+            "line_start": 92,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          },
+          {
+            "line_end": 137,
+            "line_start": 133,
+            "path": "src/cold_outreach_flow/tools/data_tools.py",
+            "role": "commit_point",
+            "source_sha256": "fcc700e4c4247eae23974fd1202aab228c5b753f30d32914ca861eb1e0c86f70"
+          }
+        ],
+        "forbidden_condition": "A database write whose `table` argument is not a member of _ALLOWED_WRITE_TABLES \u2014 rejected with an early return at lines 107-111, before SQL construction, connection, execution, or commit.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source shows PostgreSQLUpsertTool being assigned to an agent or dispatched by a crew run (get_data_write_tools at lines 151-153 returns the tool list but no consumer appears), so agent mediation cannot be bound to specific lines.",
+          "Whether crew execution routes all writes exclusively through _run is a framework behavior not shown in the supplied source."
+        ],
+        "protected_operation": "Insert/upsert writes to the campaign PostgreSQL database through the \"Write to Campaign Database\" tool's _run method (recording new leads, logging responses, creating escalation events, queueing notifications, appending activity logs, adding suppression entries, and sequence state).",
+        "protected_resource": "The seven allowlisted campaign tables (leads, responses, escalation_events, notifications, activity_logs, suppression_list, outreach_sequences) in the PostgreSQL database addressed by the DATABASE_URL environment variable.",
+        "protection_obligation": "PostgreSQLUpsertTool (CrewAI BaseTool \"Write to Campaign Database\") must only perform INSERT ... ON CONFLICT upsert writes to tables in _ALLOWED_WRITE_TABLES (leads, responses, escalation_events, notifications, activity_logs, suppression_list, outreach_sequences); any target table outside the allowlist must be rejected inside _run before psycopg executes and commits the statement.",
+        "scope_limits": [
+          "The guard validates only the target table name; column identifiers (col_str from data.keys()) and conflict_target are interpolated directly into the SQL string (lines 121-131), so identifier-level injection within an allowlisted table is outside this guard's coverage.",
+          "The guarded write shape is upsert only; DELETE/UPDATE/TRUNCATE effects would require other tools or paths not present in the supplied source.",
+          "The guard is enforced only inside the tool's _run method; no other database writers are visible in the supplied view, so exhaustive coverage of write paths is not demonstrated.",
+          "Only src/cold_outreach_flow/tools/data_tools.py is supplied; the YAML/prompt policy configurations referenced by reviewers are not in evidence."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Agent/crew definitions, tool-assignment wiring, and kickoff/dispatch flow that would bind these tools to agent execution are not supplied; the factory functions get_data_read_tools()/get_data_write_tools() (lines 146-153) are defined but no consumer of their returned tool lists appears in the supplied view, so agent_mediation is recorded as not_established.",
+      "The YAML configuration / prompt policy files referenced by the reviewer opinions are not included in the supplied sources and cannot be cited as evidence.",
+      "Whether any other module in the repository can reach psycopg.connect or otherwise mutate the campaign database outside these tool guards is not determinable from the supplied source view.",
+      "Runtime behavior labels and prevalence data for this repository are unavailable per the stated scope."
+    ],
+    "repository": "JonSvitna/Cold-Outreach-",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:958810ad31c26ff767ca9fdad941177b"
+  },
+  "request_sha256": "502adff576cf5a27713d3d9b364763e24aaac46c9850affa16aab0a389b7ba01",
+  "response_sha256": "d312c16bd7bebbe763480fdefab33573e0d068bd8025caf6c36ae0d8a79126c5",
+  "state": "completed",
+  "tokens": 9602,
+  "unit": "v24-screen:958810ad31c26ff767ca9fdad941177b"
+}

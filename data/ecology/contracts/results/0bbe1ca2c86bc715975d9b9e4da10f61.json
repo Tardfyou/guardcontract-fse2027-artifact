@@ -1,0 +1,1587 @@
+{
+  "attempt": "complete_shard_reconciliation",
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Sandbox creation (`openshell sandbox create --policy ...`) applies the Landlock ruleset to the agent process tree before task commands run; individual denials then occur at each filesystem syscall.",
+        "contract_id": "ecological-contract:053861b69b6cc6880c02ec44c9e22975",
+        "declared_mechanism": "OpenShell Landlock ruleset constructed from filesystem_policy (include_workdir, read_only, read_write) with landlock.compatibility: best_effort (skipping only the incompatible internal proxy ReadDir rule, per comments) plus the executor-side fail-closed kernel precheck; policy supplied via `openshell sandbox create --policy`.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 7,
+            "line_start": 3,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "forbidden_condition",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 21,
+            "line_start": 18,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "guard_registration",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 61,
+            "line_start": 49,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "guard_registration",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 76,
+            "line_start": 63,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "guard_registration",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 14,
+            "line_start": 13,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "commit_point",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 5718,
+            "line_start": 5714,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          }
+        ],
+        "forbidden_condition": "Any filesystem write by the sandboxed agent process tree to a path outside the declared read_write set (/tmp, /dev, __CACHE_DIR__, __CONFIG_DIR__, plus the task workdir via include_workdir); per the policy comments, reads of non-granted paths are likewise denied.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The executor code implementing _kernel_has_landlock() and the `openshell sandbox create` invocation is not in the supplied views; fail-closed behavior is asserted by docstring/comment only.",
+          "Whether seccomp/syscall restrictions are declared elsewhere in the policy file (unsupplied lines 96-251)."
+        ],
+        "protected_operation": "Filesystem access performed by the agent process tree during confined task execution.",
+        "protected_resource": "Sandbox filesystem namespace: task git worktree, /tmp, /dev, cache/config dirs, and read-only trees (/usr, /lib, /lib64, /bin, /sbin, /etc, /proc, /var/log, /home/sandbox, runtime venv/src).",
+        "protection_obligation": "The MAC/Hermes task-executor agent process tree must run under the OpenShell filesystem_policy of deploy/openshell/mac-hermes-policy.yaml, applied by the executor as `openshell sandbox create --policy ...`, so that filesystem access outside the granted read_only/read_write sets (include_workdir adding the task git worktree to the writable set) is denied by Landlock deny-by-default; best_effort compatibility still enforces every declared path and the no-Landlock kernel case is recovered by the executor's fail-closed _kernel_has_landlock() precheck (per policy comments).",
+        "scope_limits": [
+          "The policy file is a TEMPLATE with unresolved __PLACEHOLDER__ tokens; the deployed instance contents are not in the packet.",
+          "best_effort behavior and the claimed validated denials are known only from in-file comments, not from runtime evidence.",
+          "Policy sections outside the cited ranges (lines 96-251) are not supplied.",
+          "Per executor_sandbox.py comments, macOS nodes run host installs and never enable this sandbox (isolation posture macos_host)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The prune execution after the gate \u2014 beyond the supplied lines; the guard immediately precedes it.",
+        "contract_id": "ecological-contract:087fd1a76b988432d4dd1ba292956089",
+        "declared_mechanism": "Audit-then-refuse gate: if args.execute and warning, raise RepositoryHygieneError.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 3348,
+            "line_start": 3346,
+            "path": "src/mac/cli.py",
+            "role": "guard_registration",
+            "source_sha256": "32b5a437999a1135cc682be8929883c6d1e9fb614158494577dfba1a08a9a0d3"
+          },
+          {
+            "line_end": 3350,
+            "line_start": 3349,
+            "path": "src/mac/cli.py",
+            "role": "forbidden_condition",
+            "source_sha256": "32b5a437999a1135cc682be8929883c6d1e9fb614158494577dfba1a08a9a0d3"
+          }
+        ],
+        "forbidden_condition": "Executing prune/cleanup of managed repository refs while _repository_ref_audit returns a warning or times out.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The prune effect implementation and its storage target (control-plane records vs git refs) are not shown; the database stratum is assumed.",
+          "_repository_ref_audit internals and warning provenance are not shown."
+        ],
+        "protected_operation": "Repository ref pruning run with --execute.",
+        "protected_resource": "Managed repository refs tracked by the control plane.",
+        "protection_obligation": "Managed repository-ref pruning must not execute while a repository-ref audit warning exists: cmd_repo_refs_prune raises RepositoryHygieneError ('...; refusing executable cleanup') when --execute is requested and the audit reports a warning (including a timed-out audit), before any prune effect.",
+        "scope_limits": [
+          "Non-executing audit runs (without --execute) are permitted and only report."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "self._run([...]) invoking the curiosity wrapper subprocess with the validated argv (lines 216-227); the exec'd target is beyond the cited lines.",
+        "contract_id": "ecological-contract:0ba803482aa561ac6e7dd6abb11a2bd8",
+        "declared_mechanism": "Verb whitelist CURIOSITY_DECISIONS ('approve','reject'; submission deliberately not proxied) plus required-field validation raising ValueError before self._run([...]).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 45,
+            "path": "src/mac/curiosity_service.py",
+            "role": "guard_registration",
+            "source_sha256": "2315801cfa273bf095021961d91d2666057c89181360171d5b971e1841b81b7e"
+          },
+          {
+            "line_end": 215,
+            "line_start": 206,
+            "path": "src/mac/curiosity_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2315801cfa273bf095021961d91d2666057c89181360171d5b971e1841b81b7e"
+          },
+          {
+            "line_end": 227,
+            "line_start": 216,
+            "path": "src/mac/curiosity_service.py",
+            "role": "commit_point",
+            "source_sha256": "2315801cfa273bf095021961d91d2666057c89181360171d5b971e1841b81b7e"
+          },
+          {
+            "line_end": 17,
+            "line_start": 10,
+            "path": "src/mac/curiosity_reviewer.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e55a2dc1ff2288b2b34dc0551796671d441473b28d9cb9a07edb997ef88c8e23"
+          }
+        ],
+        "forbidden_condition": "Promoting or rejecting a candidate via a decision verb outside {'approve','reject'} (in particular 'submit'), or with an empty/missing actor, reason, or approval_id, reaching the wrapper exec.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The hub-to-sidecar proxy wiring and the wrapper executable are not in the supplied views.",
+          "Whether decide() is reachable by non-agent callers is not shown."
+        ],
+        "protected_operation": "CuriosityService.decide \u2014 externally adjudicated approve/reject of a quarantined candidate, forwarded to the curiosity wrapper.",
+        "protected_resource": "The curiosity quarantine ledger on the agent host (candidate promotion path).",
+        "protection_obligation": "Quarantined curiosity candidates may be promoted only through approve/reject decisions carrying non-empty actor, reason, and approval_id: CuriosityService.decide validates the verb against CURIOSITY_DECISIONS (which deliberately excludes 'submit' so a submitting agent cannot self-approve) and all three fields, raising ValueError before the curiosity wrapper subprocess is exec'd, so every promotion carries an auditable approval id from the reviewed task-execution context.",
+        "scope_limits": [
+          "Validation is fail-closed pre-exec; wrapper-side behavior is not evidenced.",
+          "The submit path is withheld by design; only approve/reject are proxied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "subprocess.Popen(self.argv, ...) at src/mac/worker_subprocess.py:372-380; the assertion runs at line 347 before it in the same launch path.",
+        "contract_id": "ecological-contract:13af27fe4dab1ff23471484e13af1da1",
+        "declared_mechanism": "_assert_approved_read_only_report_host_executor raising RuntimeError on any mismatch, invoked at worker_subprocess.py:347 when the task declares a read-only report repository; supported by _apply_read_only_report_executor_approval (worker.py:843-874), which stamps env paths only when resolved nofollow identities match the approved marker, plus stripping Python import-override variables and setting PYTHONNOUSERSITE=1 (343-346).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 91,
+            "line_start": 50,
+            "path": "src/mac/worker_subprocess.py",
+            "role": "guard_registration",
+            "source_sha256": "cf79513e6d33cd81e74dcd8bda7610ad8028685a1e54ef74083773e13a509cb7"
+          },
+          {
+            "line_end": 68,
+            "line_start": 55,
+            "path": "src/mac/worker_subprocess.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cf79513e6d33cd81e74dcd8bda7610ad8028685a1e54ef74083773e13a509cb7"
+          },
+          {
+            "line_end": 91,
+            "line_start": 80,
+            "path": "src/mac/worker_subprocess.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cf79513e6d33cd81e74dcd8bda7610ad8028685a1e54ef74083773e13a509cb7"
+          },
+          {
+            "line_end": 56,
+            "line_start": 50,
+            "path": "src/mac/worker_subprocess.py",
+            "role": "protected_operation",
+            "source_sha256": "cf79513e6d33cd81e74dcd8bda7610ad8028685a1e54ef74083773e13a509cb7"
+          },
+          {
+            "line_end": 347,
+            "line_start": 343,
+            "path": "src/mac/worker_subprocess.py",
+            "role": "guard_registration",
+            "source_sha256": "cf79513e6d33cd81e74dcd8bda7610ad8028685a1e54ef74083773e13a509cb7"
+          },
+          {
+            "line_end": 380,
+            "line_start": 370,
+            "path": "src/mac/worker_subprocess.py",
+            "role": "commit_point",
+            "source_sha256": "cf79513e6d33cd81e74dcd8bda7610ad8028685a1e54ef74083773e13a509cb7"
+          },
+          {
+            "line_end": 874,
+            "line_start": 843,
+            "path": "src/mac/worker.py",
+            "role": "guard_registration",
+            "source_sha256": "733edbbbbb024abd8d8161e4246aedb7d67f87bdb0452650c3b99bb4990510aa"
+          }
+        ],
+        "forbidden_condition": "Spawning when argv is not the single approved direct 'mac-task-executor' invocation, when approved identity environment values are missing, when host artifact paths are unconfigured, or when the nofollow-observed identities of the executor binary, Python interpreter, executor script, or source bundle differ from the hub-approved tuple.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The caller of _apply_read_only_report_executor_approval and the origin/distribution of the hub-approved identity tuple are not in the supplied source.",
+          "Whether this launch constitutes an agent lifecycle entry (the executor runs the LLM agent for the task) cannot be established from wiring in the supplied source; mediation remains not_established."
+        ],
+        "protected_operation": "Launch of the read-only repository report executor host process (subprocess.Popen of mac-task-executor).",
+        "protected_resource": "The host execution environment for read-only report tasks \u2014 the executor process and its import/artifact surface.",
+        "protection_obligation": "For read-only repository report tasks, the worker must not spawn the repository report executor subprocess unless the on-disk executor binary, Python interpreter, executor script, and source bundle revalidate exactly against the hub-approved identity tuple (paths plus SHA-256 digests), with the check enforced in the launch path before subprocess.Popen.",
+        "scope_limits": [
+          "The guard triggers only when the task metadata declares a read-only report repository (lines 327-329) or the repository context marks a read-only report (line 337).",
+          "Git credential sources are separately fenced for read-only report tasks (lines 337-342); that fencing is a distinct mechanism not compiled here.",
+          "The approval-tuple environment variable names are redacted in the supplied view; the variable names themselves are not visible.",
+          "The spawn creates the task-executor process for the task; no agent tool, hook, or agent-generated input reaching the spawn decision appears in the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The onboarding record mutation after the gate \u2014 beyond line 405, not visible in the supplied lines.",
+        "contract_id": "ecological-contract:16c862a07108e22d14fbc77cf042ec1d",
+        "declared_mechanism": "Validation raising HgxCapacityError per refusal condition before the record update, inside _execution_lock().",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 390,
+            "line_start": 381,
+            "path": "src/mac/hgx_elastic_capacity.py",
+            "role": "guard_registration",
+            "source_sha256": "09b520386a6c3471920f380e48e84a970484ec9ee3d8eaa6b3eaa94f85f78637"
+          },
+          {
+            "line_end": 405,
+            "line_start": 393,
+            "path": "src/mac/hgx_elastic_capacity.py",
+            "role": "forbidden_condition",
+            "source_sha256": "09b520386a6c3471920f380e48e84a970484ec9ee3d8eaa6b3eaa94f85f78637"
+          }
+        ],
+        "forbidden_condition": "Marking a session onboarded when it has no controller receipt, was not created_by_controller, has attestation_status other than 'passed', or is already consumed by a different registered agent.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The durable write and its backend (state file vs DB) are not shown; the state stratum reflects the in-controller state record.",
+          "_load_state and _execution_lock implementations are not shown."
+        ],
+        "protected_operation": "HgxCapacityController.mark_onboarded \u2014 binding an HGX session to a registered MAC agent id.",
+        "protected_resource": "Controller capacity state mapping sessions to onboarded agents (state['sessions'] records).",
+        "protection_obligation": "mark_onboarded may consume capacity only for sessions with a controller receipt that are controller-created, have passed SSH attestation, and are not already consumed by a different agent_id, raising HgxCapacityError otherwise before the onboarding record is mutated, under the controller execution lock.",
+        "scope_limits": [
+          "A prior onboarded_agent_id equal to the registered agent is tolerated (lines 401-405)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Serve-time commit: bind_sockets executes sock.bind((bind_host, port)) for each resolved host (src/mac/mesh_bind.py:302-323, bind at 316). Deploy-time commit: the value returned by deploy_mac_bind_host written to mac.env \u2014 the write site is not in the supplied source (see missing_information).",
+        "contract_id": "ecological-contract:21efc2e420d47d4cd3604daa01757f76",
+        "declared_mechanism": "Fail-closed guard chain: is_allowed_mesh_bind_host permits only loopback, Tailscale CGNAT/ULA ranges, or configured mesh IPs; mesh_bind_problems enumerates refusals; deploy_mac_bind_host raises MeshBindError for explicit illegal hosts and for 0.0.0.0 without a resolvable Tailscale IPv4, returning only '127.0.0.1' or '127.0.0.1,<mesh_ip>'; serve_bind_hosts raises MeshBindError when no Tailscale IPv4 resolves or any requested host is illegal, and returns only loopback plus the mesh IP; runtime_bind_error surfaces the same check for create_app.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 115,
+            "line_start": 105,
+            "path": "src/mac/mesh_bind.py",
+            "role": "guard_registration",
+            "source_sha256": "21da0158351c3135227555ccc60b0dbee8b11faed6843c99f416ffa80e02392e"
+          },
+          {
+            "line_end": 211,
+            "line_start": 195,
+            "path": "src/mac/mesh_bind.py",
+            "role": "guard_registration",
+            "source_sha256": "21da0158351c3135227555ccc60b0dbee8b11faed6843c99f416ffa80e02392e"
+          },
+          {
+            "line_end": 256,
+            "line_start": 214,
+            "path": "src/mac/mesh_bind.py",
+            "role": "guard_registration",
+            "source_sha256": "21da0158351c3135227555ccc60b0dbee8b11faed6843c99f416ffa80e02392e"
+          },
+          {
+            "line_end": 299,
+            "line_start": 259,
+            "path": "src/mac/mesh_bind.py",
+            "role": "guard_registration",
+            "source_sha256": "21da0158351c3135227555ccc60b0dbee8b11faed6843c99f416ffa80e02392e"
+          },
+          {
+            "line_end": 249,
+            "line_start": 244,
+            "path": "src/mac/mesh_bind.py",
+            "role": "forbidden_condition",
+            "source_sha256": "21da0158351c3135227555ccc60b0dbee8b11faed6843c99f416ffa80e02392e"
+          },
+          {
+            "line_end": 298,
+            "line_start": 280,
+            "path": "src/mac/mesh_bind.py",
+            "role": "forbidden_condition",
+            "source_sha256": "21da0158351c3135227555ccc60b0dbee8b11faed6843c99f416ffa80e02392e"
+          },
+          {
+            "line_end": 270,
+            "line_start": 267,
+            "path": "src/mac/mesh_bind.py",
+            "role": "protected_operation",
+            "source_sha256": "21da0158351c3135227555ccc60b0dbee8b11faed6843c99f416ffa80e02392e"
+          },
+          {
+            "line_end": 323,
+            "line_start": 302,
+            "path": "src/mac/mesh_bind.py",
+            "role": "commit_point",
+            "source_sha256": "21da0158351c3135227555ccc60b0dbee8b11faed6843c99f416ffa80e02392e"
+          }
+        ],
+        "forbidden_condition": "With a mesh provider enabled on a hub, listening on 0.0.0.0/unspecified, a LAN address, or any public NIC address \u2014 i.e., any requested host failing is_allowed_mesh_bind_host \u2014 or binding 0.0.0.0 when no usable Tailscale IPv4 can be resolved, or deploying a mac.env bind value that falls back to all-interfaces.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Caller/site that writes deploy_mac_bind_host's return value into mac.env is not supplied; the deploy-time commit point is unverified.",
+          "Call sites invoking serve_bind_hosts or runtime_bind_error (e.g., hub server/create_app wiring) are not supplied.",
+          "No agent-entry binding: nothing in the supplied source ties hub bind-address resolution to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "protected_operation": "Resolution and use of the hub HTTP listener bind addresses (deploy-time bind value from deploy_mac_bind_host and serve-time listen list from serve_bind_hosts) for a mesh hub.",
+        "protected_resource": "Network exposure of the hub HTTP API listener (the network interfaces/addresses it binds).",
+        "protection_obligation": "Under a Tailscale/Headscale mesh provider, the hub HTTP listener must bind only loopback and/or the verified Tailscale overlay IPv4: deploy_mac_bind_host and serve_bind_hosts must fail closed with MeshBindError, refusing 0.0.0.0/unspecified, LAN, and public NIC addresses (rewriting 0.0.0.0 only when a valid Tailscale IPv4 exists) before any listen address takes effect. (Merges the two reviewer wordings of this obligation.)",
+        "scope_limits": [
+          "Guard is conditional on mesh_provider_enabled(network_provider); non-mesh providers return the requested hosts unchanged (lines 229-230, 273-274).",
+          "Non-hub mesh nodes are forced to 127.0.0.1 regardless of request (lines 231-232, 275-276).",
+          "This is deployment/serve infrastructure admission; no agent tool, agent lifecycle hook, or agent-generated input reaching the bind decision appears in the supplied source, so the contract is in scope only if such mediation is later established.",
+          "The supplied reviewer rationale references additional guards (native_merge_queue.landing_is_safe, openshell_supervisor) that are not present in the supplied source views and are not compiled here."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.provider.delete(session.session_id) (lines 507-508).",
+        "contract_id": "ecological-contract:3444df0339b52e5b8b22cdbc945c8fdf",
+        "declared_mechanism": "Candidate filtering against controller state receipts plus age check and delete-count cap immediately preceding self.provider.delete(session.session_id); failures recorded as provider_delete_failed.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 441,
+            "line_start": 427,
+            "path": "src/mac/hgx_elastic_capacity.py",
+            "role": "guard_registration",
+            "source_sha256": "09b520386a6c3471920f380e48e84a970484ec9ee3d8eaa6b3eaa94f85f78637"
+          },
+          {
+            "line_end": 487,
+            "line_start": 476,
+            "path": "src/mac/hgx_elastic_capacity.py",
+            "role": "guard_registration",
+            "source_sha256": "09b520386a6c3471920f380e48e84a970484ec9ee3d8eaa6b3eaa94f85f78637"
+          },
+          {
+            "line_end": 508,
+            "line_start": 502,
+            "path": "src/mac/hgx_elastic_capacity.py",
+            "role": "commit_point",
+            "source_sha256": "09b520386a6c3471920f380e48e84a970484ec9ee3d8eaa6b3eaa94f85f78637"
+          }
+        ],
+        "forbidden_condition": "Deleting, via retire_spare, any session lacking a controller-created record, any onboarded session, or any session younger than min_age_seconds; more than max_delete_count deletions per pass.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "provider.delete transport is not shown.",
+          "_is_onboarded, _is_terminal, and normalize_registered_fungible_agents definitions are outside the cited ranges."
+        ],
+        "protected_operation": "HgxElasticCapacityController.retire_spare \u2014 surplus session retirement via provider.delete.",
+        "protected_resource": "HGX provider sessions (particularly those backing onboarded/registered MAC agents).",
+        "protection_obligation": "HGX spare-session retirement may delete only controller-created sessions that never onboarded into registered MAC agents and that exceed min_age_seconds: retire_spare filters candidates (created_by_controller is True, not _is_onboarded, live, attestation-differentiated, capped by max_delete_count) and checks age immediately before provider.delete; onboarded/registered-agent sessions are never candidates.",
+        "scope_limits": [
+          "Healthy spares are retained up to the policy's desired-ready surplus (473-498).",
+          "The provider transport is not visible; the http stratum reflects an external network/API delete assumption to verify."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Not established in the supplied source: only the guard function is present; the child-task creation call site that must enforce check_children_allowed is not shown (see missing_information).",
+        "contract_id": "ecological-contract:3c01c07188a5f3efe743f5ae97900fd7",
+        "declared_mechanism": "decomposition_budget parsing producing an authorised flag (95-132) and check_children_allowed returning (False, reason) on any violation (135-155); commentary states it is 'Enforced at the control plane, not only described in the prompt' (136-141).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 120,
+            "line_start": 95,
+            "path": "src/mac/task_decomposition.py",
+            "role": "guard_registration",
+            "source_sha256": "8d308ba5169dbf00142be7e7ae1bf6ac893657110b17ec586ef0363061753ef0"
+          },
+          {
+            "line_end": 155,
+            "line_start": 135,
+            "path": "src/mac/task_decomposition.py",
+            "role": "guard_registration",
+            "source_sha256": "8d308ba5169dbf00142be7e7ae1bf6ac893657110b17ec586ef0363061753ef0"
+          },
+          {
+            "line_end": 154,
+            "line_start": 143,
+            "path": "src/mac/task_decomposition.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8d308ba5169dbf00142be7e7ae1bf6ac893657110b17ec586ef0363061753ef0"
+          },
+          {
+            "line_end": 141,
+            "line_start": 135,
+            "path": "src/mac/task_decomposition.py",
+            "role": "protected_operation",
+            "source_sha256": "8d308ba5169dbf00142be7e7ae1bf6ac893657110b17ec586ef0363061753ef0"
+          }
+        ],
+        "forbidden_condition": "Creating child tasks for a task carrying no_decompose, lacking submitter-authorized decomposition metadata, with boolean/unreadable/non-positive budget metadata, or requesting more children than the authorized max_children.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "The control-plane creation call site (children endpoint handler) enforcing check_children_allowed is not in the supplied source.",
+          "Commentary (lines 136-141, 168-172) binds the guard to model-initiated child creation via a 'children endpoint'; if that wiring were supplied, the mediation label would be agent_generated_input_to_guarded_effect. The wiring itself is absent."
+        ],
+        "protected_operation": "Creation of child tasks under a parent task (task fan-out via the control plane).",
+        "protected_resource": "Control-plane task creation for child tasks (child task records; the 'children endpoint' referenced in prompt text).",
+        "protection_obligation": "Child-task fan-out from a task must be refused unless the task carries an authorized decomposition budget (metadata.decomposition with a positive max_children, capped at MAX_AUTHORISED_CHILDREN; refused for no_decompose, bare true, unreadable, or non-positive metadata), and the requested child count must not exceed the authorized max_children \u2014 enforced at the control plane, per the source commentary.",
+        "scope_limits": [
+          "Authorized budgets are capped at MAX_AUTHORISED_CHILDREN (lines 128-132).",
+          "prompt_section (lines 158-195) is advisory prompt text instructing the model, not enforcement; only check_children_allowed is the gate.",
+          "The database stratum for child-task creation is inferred; the creation site is not supplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "guarded_push(publication_target) at src/mac/worker.py:4854-4855 (retry attempt at 4886); the elif chain at 4846-4910 ensures no push when problems exist.",
+        "contract_id": "ecological-contract:4ffe741b9811ca7f5222bc7bf12d1e45",
+        "declared_mechanism": "_repository_finalizer_prepush_problems returning blocking problems (7835-7860); the finalization flow refuses to push on local or prepush problems and calls guarded_push(publication_target) only in the passing branch of the elif chain (4838-4910); evidence-manifest submission checks (schema, status, signatures) at 5129-5147.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 7860,
+            "line_start": 7835,
+            "path": "src/mac/worker.py",
+            "role": "guard_registration",
+            "source_sha256": "733edbbbbb024abd8d8161e4246aedb7d67f87bdb0452650c3b99bb4990510aa"
+          },
+          {
+            "line_end": 7859,
+            "line_start": 7843,
+            "path": "src/mac/worker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "733edbbbbb024abd8d8161e4246aedb7d67f87bdb0452650c3b99bb4990510aa"
+          },
+          {
+            "line_end": 4855,
+            "line_start": 4838,
+            "path": "src/mac/worker.py",
+            "role": "guard_registration",
+            "source_sha256": "733edbbbbb024abd8d8161e4246aedb7d67f87bdb0452650c3b99bb4990510aa"
+          },
+          {
+            "line_end": 4850,
+            "line_start": 4846,
+            "path": "src/mac/worker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "733edbbbbb024abd8d8161e4246aedb7d67f87bdb0452650c3b99bb4990510aa"
+          },
+          {
+            "line_end": 4910,
+            "line_start": 4909,
+            "path": "src/mac/worker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "733edbbbbb024abd8d8161e4246aedb7d67f87bdb0452650c3b99bb4990510aa"
+          },
+          {
+            "line_end": 4855,
+            "line_start": 4854,
+            "path": "src/mac/worker.py",
+            "role": "commit_point",
+            "source_sha256": "733edbbbbb024abd8d8161e4246aedb7d67f87bdb0452650c3b99bb4990510aa"
+          },
+          {
+            "line_end": 7826,
+            "line_start": 7808,
+            "path": "src/mac/worker.py",
+            "role": "protected_operation",
+            "source_sha256": "733edbbbbb024abd8d8161e4246aedb7d67f87bdb0452650c3b99bb4990510aa"
+          },
+          {
+            "line_end": 5147,
+            "line_start": 5129,
+            "path": "src/mac/worker.py",
+            "role": "guard_registration",
+            "source_sha256": "733edbbbbb024abd8d8161e4246aedb7d67f87bdb0452650c3b99bb4990510aa"
+          }
+        ],
+        "forbidden_condition": "Publishing when repo.head_sha is not a git SHA, when evidence does not declare dirty=false, when changed files are absent (unless empty repo-change evidence is allowed), when required changed files are missing, when the repository contract test did not pass and the item is not a hub-verify deferred sentinel, or when local finalizer problems exist ('refusing to push').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Definitions of guarded_push and resolve_canonical_publication_target are not supplied.",
+          "The pushed commits and validated evidence derive from agent work in the task workspace, but the entry wiring from an agent to this publication gate (tool, hook, or generated input) is not shown in the supplied source."
+        ],
+        "protected_operation": "Publication (guarded git push) of the task worktree HEAD to the task's canonical remote/branch via guarded_push(publication_target).",
+        "protected_resource": "The task's canonical remote branch (publication target resolved from the repository contract without fallback, worker.py:7808-7832).",
+        "protection_obligation": "The worker must not publish task repository work to the canonical remote via guarded_push unless the repository evidence passes the pre-push contract checks \u2014 a valid git HEAD SHA, declared-clean worktree (dirty=false), required changed files present, and a passing repository contract test or an explicit hub-verify deferred sentinel \u2014 with the gate evaluated immediately before the guarded_push(publication_target) call.",
+        "scope_limits": [
+          "Hub-verify deferred mode intentionally skips the passing-test gate (lines 7851-7856, 7863-7885); all other prepush checks remain enforced.",
+          "A recovery path may retry guarded_push once (lines 4873-4906).",
+          "guarded_push internals and resolve_canonical_publication_target are not in the supplied source.",
+          "The publication effect is a mutation of an external git remote; classified as other_external.",
+          "No agent tool, hook, or agent-generated input dataflow into the push decision is supplied; the push is executed by worker finalization code."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The per-task apply loop invoking self._apply_one(task, resolved, ...) (src/mac/task_batch.py:750-768, apply call at 763).",
+        "contract_id": "ecological-contract:5837a9cf3c55eee2fa74f2e87c30a77f",
+        "declared_mechanism": "Operation validation before selection (line 724); expect_count and expect_token comparisons raising BatchCountMismatch (726-735); truncated-apply refusal raising BatchCountMismatch (736-744).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 724,
+            "line_start": 711,
+            "path": "src/mac/task_batch.py",
+            "role": "guard_registration",
+            "source_sha256": "33f42627bb1bcb150fb09bca22bdfaf817facd2df71db1b23930957f79dab9ca"
+          },
+          {
+            "line_end": 718,
+            "line_start": 711,
+            "path": "src/mac/task_batch.py",
+            "role": "protected_operation",
+            "source_sha256": "33f42627bb1bcb150fb09bca22bdfaf817facd2df71db1b23930957f79dab9ca"
+          },
+          {
+            "line_end": 744,
+            "line_start": 726,
+            "path": "src/mac/task_batch.py",
+            "role": "forbidden_condition",
+            "source_sha256": "33f42627bb1bcb150fb09bca22bdfaf817facd2df71db1b23930957f79dab9ca"
+          },
+          {
+            "line_end": 768,
+            "line_start": 750,
+            "path": "src/mac/task_batch.py",
+            "role": "commit_point",
+            "source_sha256": "33f42627bb1bcb150fb09bca22bdfaf817facd2df71db1b23930957f79dab9ca"
+          }
+        ],
+        "forbidden_condition": "Applying operations when selection.matched != expect_count, when the selection token no longer matches the previewed token, or when apply=true and the selection was truncated by limit.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Implementation of _apply_one is not in the supplied source; the database stratum is inferred from the task state-machine transition semantics referenced at lines 724 and 751.",
+          "Whether batch apply is exposed to agents via any tool or endpoint is not shown."
+        ],
+        "protected_operation": "Batch application of an operation across the selected task group (the per-task _apply_one writes).",
+        "protected_resource": "The set of tasks matched by the previously previewed selector (bulk task state).",
+        "protection_obligation": "TaskBatchService.apply must refuse to apply a batch unless the selected group still matches the previewed expect_count and expect_token, and must never apply a silently truncated group (full match count exceeding the limit) \u2014 validated in both dry-run and apply modes before any per-task write.",
+        "scope_limits": [
+          "Per-task predicted refusals are recorded and do not abort the remaining batch (lines 750-766).",
+          "actor defaults to 'human'; no agent-facing entry point for batch apply is supplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The credential-issuance write consuming normalize_scopes' return value \u2014 not visible in the supplied lines; the guard precedes it.",
+        "contract_id": "ecological-contract:654bfa1d7031517554d5c6c4b9196c6d",
+        "declared_mechanism": "normalize_scopes validation raising ClientPrincipalError ('elevated scope(s) ... require --allow-elevated').",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 131,
+            "line_start": 122,
+            "path": "src/mac/client_principals.py",
+            "role": "guard_registration",
+            "source_sha256": "e2140fc6bf93eb91160595b7be042f3f7f07536a52524d927f2835848523f03e"
+          },
+          {
+            "line_end": 137,
+            "line_start": 132,
+            "path": "src/mac/client_principals.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e2140fc6bf93eb91160595b7be042f3f7f07536a52524d927f2835848523f03e"
+          }
+        ],
+        "forbidden_condition": "Normalizing a client credential whose scope set includes ELEVATED_SCOPES without allow_elevated=True; also empty scope sets or unknown scopes.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Issuance call site, registry storage, and the write's effect stratum are not shown; the database stratum is an assumption to verify.",
+          "KNOWN_SCOPES / ELEVATED_SCOPES contents are outside the cited range."
+        ],
+        "protected_operation": "Client credential issuance consuming normalize_scopes (call site not in supplied views).",
+        "protected_resource": "The client principal registry / issued credential scope sets.",
+        "protection_obligation": "Client-credential scope normalization must refuse elevated scopes unless issuance explicitly passes allow_elevated (--allow-elevated): normalize_scopes raises ClientPrincipalError before any credential carrying elevated scopes can be minted, and also refuses empty scope sets and scopes outside KNOWN_SCOPES.",
+        "scope_limits": [
+          "DEFAULT_SCOPES substitution applies when no scopes are supplied; empty explicit sets still fail."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "target.write_bytes(...) + target.chmod(0o600) per file (283-286) and env_file.write_text(...) + chmod(0o600) (296-300) inside the remote script.",
+        "contract_id": "ecological-contract:6749c2a8a232c456280440c3446163db",
+        "declared_mechanism": "Inline guards in _REMOTE_APPLY: rel_path.is_absolute() or '..' in rel_path.parts raises SystemExit('refusing manifest path'); key.replace('_','').isalnum() check raises SystemExit('refusing env key'); schema gate mac.cli_credentials_sync.v1; sync_agent raises CliCredentialError on nonzero remote exit.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 277,
+            "line_start": 275,
+            "path": "src/mac/cli_credentials.py",
+            "role": "guard_registration",
+            "source_sha256": "abe511b7fae1b9a35429319ddd1c8701b6de006c682d12ce4dc393c21e975be9"
+          },
+          {
+            "line_end": 282,
+            "line_start": 279,
+            "path": "src/mac/cli_credentials.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abe511b7fae1b9a35429319ddd1c8701b6de006c682d12ce4dc393c21e975be9"
+          },
+          {
+            "line_end": 286,
+            "line_start": 283,
+            "path": "src/mac/cli_credentials.py",
+            "role": "commit_point",
+            "source_sha256": "abe511b7fae1b9a35429319ddd1c8701b6de006c682d12ce4dc393c21e975be9"
+          },
+          {
+            "line_end": 295,
+            "line_start": 293,
+            "path": "src/mac/cli_credentials.py",
+            "role": "forbidden_condition",
+            "source_sha256": "abe511b7fae1b9a35429319ddd1c8701b6de006c682d12ce4dc393c21e975be9"
+          },
+          {
+            "line_end": 300,
+            "line_start": 296,
+            "path": "src/mac/cli_credentials.py",
+            "role": "commit_point",
+            "source_sha256": "abe511b7fae1b9a35429319ddd1c8701b6de006c682d12ce4dc393c21e975be9"
+          },
+          {
+            "line_end": 343,
+            "line_start": 321,
+            "path": "src/mac/cli_credentials.py",
+            "role": "guard_registration",
+            "source_sha256": "abe511b7fae1b9a35429319ddd1c8701b6de006c682d12ce4dc393c21e975be9"
+          },
+          {
+            "line_end": 2009,
+            "line_start": 2004,
+            "path": "src/mac/cli.py",
+            "role": "protected_operation",
+            "source_sha256": "32b5a437999a1135cc682be8929883c6d1e9fb614158494577dfba1a08a9a0d3"
+          }
+        ],
+        "forbidden_condition": "A sync manifest whose file paths are absolute or contain `..` path segments, or whose env keys contain characters other than alphanumerics/underscore, reaching a write on the worker.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the sync operation is ever invoked from agent tooling is not established.",
+          "resolve_fleet_ssh/ssh_argv and the remote python transport details are not shown."
+        ],
+        "protected_operation": "Fleet credential sync remote apply \u2014 writing credential files and rewriting ~/.mac/mac.env on worker hosts via the _REMOTE_APPLY script delivered over the fleet SSH route.",
+        "protected_resource": "Worker home filesystem: synced credential files (chmod 0600) and ~/.mac/mac.env.",
+        "protection_obligation": "The `mac admin fleet creds-sync` remote-apply path must refuse, on the worker, sync manifests with absolute or `..`-traversing file paths and env keys that are not alphanumeric/underscore, so remote credential writes are confined to files under the worker's $HOME (mode 0600) and sanitized keys in ~/.mac/mac.env; refusals raise SystemExit before any write, and sync_agent fails on nonzero returncode.",
+        "scope_limits": [
+          "Path check is lexical (Path.parts); symlink-based escapes are not addressed in the visible code.",
+          "Client-side manifest construction/validation before SSH delivery is not in the cited views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The INSERT INTO agentbus_chunks executed on the store connection (lines 247-265); the enclosing transaction-boundary open is not visible in the supplied lines.",
+        "contract_id": "ecological-contract:6b9c24e7448877da83cec8b09caac647",
+        "declared_mechanism": "In-store authorization checks comparing sender_agent_id against stream_row.sender_agent_id / group_members, raising AuthorizationError/ValidationError before the INSERT.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 239,
+            "line_start": 232,
+            "path": "src/mac/agentbus_service.py",
+            "role": "guard_registration",
+            "source_sha256": "e2fc57f140888f4b21c2844aead0d70421a0bdeace7aaa8dcd15dd49cb42feaf"
+          },
+          {
+            "line_end": 237,
+            "line_start": 233,
+            "path": "src/mac/agentbus_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e2fc57f140888f4b21c2844aead0d70421a0bdeace7aaa8dcd15dd49cb42feaf"
+          },
+          {
+            "line_end": 265,
+            "line_start": 247,
+            "path": "src/mac/agentbus_service.py",
+            "role": "commit_point",
+            "source_sha256": "e2fc57f140888f4b21c2844aead0d70421a0bdeace7aaa8dcd15dd49cb42feaf"
+          }
+        ],
+        "forbidden_condition": "Appending a chunk by any actor other than the stream sender (or, for group threads, a non-participant), or appending to a stream whose status is not OPEN.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether AgentBus stream senders are agent processes (registered tool dispatch or agent-issued tokens) is not established by the supplied views.",
+          "Transaction wrapper, get_stream, and _require_agent implementations are not shown."
+        ],
+        "protected_operation": "AgentBusService.append_chunk \u2014 appending a content chunk to an AgentBus stream.",
+        "protected_resource": "The agentbus_chunks log of an AgentBus stream.",
+        "protection_obligation": "AgentBus chunk appends are sender-authorized: only the stream's sender_agent_id may append to a 1:1 stream, and only listed participants may append to a group stream; append_chunk raises AuthorizationError inside the store write path before any agentbus_chunks row is written, and ValidationError if the stream is not open.",
+        "scope_limits": [
+          "Group-participant rule applies only when group_members is non-empty.",
+          "The store.transaction() wrapper itself is outside the cited lines; only the checks and INSERT are visible."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The destructive git push invocations: src/mac/repository_hygiene.py:1238-1244 (atomic --force-with-lease push of selected refs, read-back 1252-1257) and 799-810 (protected-ref --force-with-lease push, read-back 816-818).",
+        "contract_id": "ecological-contract:6c4fb08bfcdace0c1a419b4d946e9f40",
+        "declared_mechanism": "audit_repository_refs_result fail-closed eligibility (ineligible on timed-out/unavailable task detail, open PR, or unverified PR state); prune_repository_refs acts only on eligible audits, re-reads each remote SHA via _remote_sha and refuses on drift, then pushes atomically with --force-with-lease=<ref>:<sha> and read-back-verifies; retire_protected_remote_ref_exact validates the protected namespace and exact expected SHA, re-reads via ls-remote, refuses on identity change, pushes --force-with-lease=<ref>:<expected_sha>, and read-back-verifies; the reconciler additionally requires repository_contract.canonical_remote_url, verifies the remote against it, and refuses executable cleanup on PR-query warnings.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 716,
+            "line_start": 706,
+            "path": "src/mac/repository_hygiene.py",
+            "role": "protected_operation",
+            "source_sha256": "1dca5a5bd70842a229a38d69adf0e21681c0dc4849839f200fbf760c52eb895d"
+          },
+          {
+            "line_end": 766,
+            "line_start": 740,
+            "path": "src/mac/repository_hygiene.py",
+            "role": "guard_registration",
+            "source_sha256": "1dca5a5bd70842a229a38d69adf0e21681c0dc4849839f200fbf760c52eb895d"
+          },
+          {
+            "line_end": 796,
+            "line_start": 768,
+            "path": "src/mac/repository_hygiene.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1dca5a5bd70842a229a38d69adf0e21681c0dc4849839f200fbf760c52eb895d"
+          },
+          {
+            "line_end": 818,
+            "line_start": 799,
+            "path": "src/mac/repository_hygiene.py",
+            "role": "commit_point",
+            "source_sha256": "1dca5a5bd70842a229a38d69adf0e21681c0dc4849839f200fbf760c52eb895d"
+          },
+          {
+            "line_end": 974,
+            "line_start": 956,
+            "path": "src/mac/repository_hygiene.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1dca5a5bd70842a229a38d69adf0e21681c0dc4849839f200fbf760c52eb895d"
+          },
+          {
+            "line_end": 1069,
+            "line_start": 1063,
+            "path": "src/mac/repository_hygiene.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1dca5a5bd70842a229a38d69adf0e21681c0dc4849839f200fbf760c52eb895d"
+          },
+          {
+            "line_end": 1232,
+            "line_start": 1197,
+            "path": "src/mac/repository_hygiene.py",
+            "role": "guard_registration",
+            "source_sha256": "1dca5a5bd70842a229a38d69adf0e21681c0dc4849839f200fbf760c52eb895d"
+          },
+          {
+            "line_end": 1257,
+            "line_start": 1238,
+            "path": "src/mac/repository_hygiene.py",
+            "role": "commit_point",
+            "source_sha256": "1dca5a5bd70842a229a38d69adf0e21681c0dc4849839f200fbf760c52eb895d"
+          },
+          {
+            "line_end": 397,
+            "line_start": 391,
+            "path": "src/mac/repository_ref_reconciler.py",
+            "role": "guard_registration",
+            "source_sha256": "0464e918636cdb0171512248a103171ba5930b5ab466d8cf15a6deefc555c9b1"
+          },
+          {
+            "line_end": 420,
+            "line_start": 419,
+            "path": "src/mac/repository_ref_reconciler.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0464e918636cdb0171512248a103171ba5930b5ab466d8cf15a6deefc555c9b1"
+          }
+        ],
+        "forbidden_condition": "Deleting a managed/protected remote ref when the audit is ineligible (task detail lookup timed out or unavailable, open pull request, pull-request verification incomplete, grace period not elapsed, replacement task not completed), when the live remote SHA drifted from the audited/expected SHA, when only prefix recognition (not a controller-recorded exact SHA) supports the deletion, or via any deletion push not bound to the exact expected SHA.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Definitions of verify_repository_remote, query_open_pull_requests, and the provenance of pull_request_check_complete are not in the supplied source.",
+          "Caller wiring from reconciler audit results into retire_protected_remote_ref_exact is not shown.",
+          "No agent-entry binding found; whether ref cleanup is ever reachable from an agent tool or hook is unestablished."
+        ],
+        "protected_operation": "Remote deletion (git push :<ref>) of managed task-lease branches and protected work-package refs.",
+        "protected_resource": "Remote git refs: refs/heads/mac/agent_*/task_*-lease_* and refs/mac/attempts/*, refs/mac/integration/*, refs/mac/candidates/*.",
+        "protection_obligation": "Managed remote git refs (refs/heads/mac/agent_*/task_*-lease_* task-lease branches and protected refs/mac/{attempts,integration,candidates} work-package refs) must never be deleted from a git remote unless the audit marks them eligible under fail-closed checks (task detail readable, pull-request state actually verified, grace elapsed, audited SHA unchanged), and any deletion commits only via an atomic git push with --force-with-lease bound to the exact audited SHA, preceded by an immediate live remote-SHA re-read and followed by a read-back verification. (Merges the two reviewer wordings of this obligation.)",
+        "scope_limits": [
+          "retire_protected_remote_ref_exact's docstring requires callers to derive ref and expected_sha from durable controller records; ownership derivation is outside the helper and not supplied (lines 749-754).",
+          "prune_repository_refs refuses to span multiple remotes in one operation (lines 1223-1225).",
+          "The post-push local tracking-ref cleanup (git update-ref -d, lines 1258-1262) follows successful remote deletion and is not itself the guarded effect.",
+          "Cleanup is reconciler/control-plane code; no agent tool, hook, or agent-generated input reaching the deletion push appears in the supplied source.",
+          "The deletion effect is a mutation of an external git remote (via git subprocess); classified as other_external because it fits none of the prior effect classes in the supplied taxonomy."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Pre-launch confinement decision in _invoke_agent (5730-5771) before the agent process is spawned.",
+        "contract_id": "ecological-contract:a113aa96595d1564011e0861b4d26009",
+        "declared_mechanism": "metadata_declares_read_only_report_repository gate in _invoke_agent raising RuntimeError for ACP and for (break-glass or (not wrap and not approved_macos_host)).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 5718,
+            "line_start": 5711,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 5736,
+            "line_start": 5728,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 5764,
+            "line_start": 5742,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "commit_point",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 5771,
+            "line_start": 5765,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          }
+        ],
+        "forbidden_condition": "Running a read-only repository report task via the ACP backend, without the per-task OpenShell wrap, under host break-glass authorization, or via an unapproved macOS host posture.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The metadata_declares_read_only_report_repository definition, the redacted approved-posture env names, and _validated_host_break_glass_authorization are not visible.",
+          "The REPORT_REPOSITORY_MACOS_HOST_POSTURE value is not shown."
+        ],
+        "protected_operation": "Agent launch for read-only repository report tasks.",
+        "protected_resource": "The read-only inspection checkout's execution boundary (per-task OpenShell confinement).",
+        "protection_obligation": "Tasks whose metadata declares a read-only repository report must be executed only under per-task OpenShell confinement: _invoke_agent raises for the ACP backend, and refuses direct, supervisor-only, and host break-glass execution unless the per-task wrap is in effect or the approved macOS-host posture is fully configured.",
+        "scope_limits": [
+          "The approved_macos_host posture requires an explicit platform/posture env value plus eight additional redacted env names (5746-5764)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Sandbox creation / supervisor launch of the agent process tree under the sandbox identity.",
+        "contract_id": "ecological-contract:a48e5c7c9af4c3662e3e41d83ca3ddd3",
+        "declared_mechanism": "process.run_as_user: sandbox and run_as_group: sandbox in mac-hermes-policy.yaml, applied by the OpenShell supervisor at sandbox creation.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 7,
+            "line_start": 3,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "guard_registration",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 81,
+            "line_start": 78,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "guard_registration",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 14,
+            "line_start": 13,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "commit_point",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 5718,
+            "line_start": 5714,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          }
+        ],
+        "forbidden_condition": "Execution of the sandboxed agent process tree as root, or under any identity other than user/group `sandbox`.",
+        "missing_evidence_roles": [
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Supervisor privilege-drop code is not supplied; behavior is known only from the policy declaration and comment."
+        ],
+        "protected_operation": "Process execution of the agent process tree inside the sandbox.",
+        "protected_resource": "Process privilege identity (uid/gid) of the sandboxed agent process tree.",
+        "protection_obligation": "The task-executor agent process tree must never run as root: the OpenShell policy's process block requires the supervisor to drop privileges to run_as_user/run_as_group `sandbox` at sandbox creation.",
+        "scope_limits": [
+          "Privilege-drop implementation lives in the external OpenShell runtime; only the policy declaration is in the packet.",
+          "Does not cover host-side executor processes outside the sandbox."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "_write_egress_hosts(cp, args.task_id, sorted(hosts), args, reason) persisting the host list (line 4456).",
+        "contract_id": "ecological-contract:a60fd273742f66b41c89342e0fa914c8",
+        "declared_mechanism": "normalize_host returning None triggers MACError before _write_egress_hosts; duplicates short-circuit unchanged.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 4445,
+            "line_start": 4437,
+            "path": "src/mac/cli.py",
+            "role": "guard_registration",
+            "source_sha256": "32b5a437999a1135cc682be8929883c6d1e9fb614158494577dfba1a08a9a0d3"
+          },
+          {
+            "line_end": 4449,
+            "line_start": 4446,
+            "path": "src/mac/cli.py",
+            "role": "forbidden_condition",
+            "source_sha256": "32b5a437999a1135cc682be8929883c6d1e9fb614158494577dfba1a08a9a0d3"
+          },
+          {
+            "line_end": 4456,
+            "line_start": 4450,
+            "path": "src/mac/cli.py",
+            "role": "commit_point",
+            "source_sha256": "32b5a437999a1135cc682be8929883c6d1e9fb614158494577dfba1a08a9a0d3"
+          }
+        ],
+        "forbidden_condition": "Persisting an egress host that is not a plain DNS hostname (schemes, ports, paths, globs, IP literals) into task metadata.egress_contract.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "_write_egress_hosts and _egress_contract_block implementations are not shown.",
+          "How egress_contract feeds sandbox construction is not in the cited views."
+        ],
+        "protected_operation": "Adding a host to a task's declared egress contract (egress grant write).",
+        "protected_resource": "Task metadata egress_contract host list (the sandbox egress allowlist source).",
+        "protection_obligation": "Task egress grants must only persist plain DNS hostnames: cmd_task_egress_grant refuses schemes, ports, paths, globs, and IP literals with MACError before any host is appended and written into the task's metadata.egress_contract, so the sandbox egress allowlist is never silently built from unusable grants.",
+        "scope_limits": [
+          "Only the task-level grant path is cited; a project-level twin mentioned by the reviewer is not in the cited views.",
+          "Persistence backend (direct DB vs hub API) is not visible; database stratum assumes durable control-plane storage."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The guarded UPDATE tasks execution and rowcount check inside apply_transition (src/mac/task_transition_service.py:433-451 and 466-491; refusal at 490-491).",
+        "contract_id": "ecological-contract:aa7dbb0aca4c880686a47a5eb447720e",
+        "declared_mechanism": "trusted_internal fencing: state gate plus control_plane._require_exact_lease_actor before mutation (144-154), _require_exact_lease_actor_in_transaction re-check inside apply_transition (407-415), SQL WHERE guards on id/state/lease_id (427-432, 452-465), and TransitionError raised when changed.rowcount != 1 (490-491).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 154,
+            "line_start": 138,
+            "path": "src/mac/task_transition_service.py",
+            "role": "guard_registration",
+            "source_sha256": "f9ca9f73effd319ad4052a766bdf811b2987fc24c0f25f246d4f111b27620e8d"
+          },
+          {
+            "line_end": 152,
+            "line_start": 145,
+            "path": "src/mac/task_transition_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f9ca9f73effd319ad4052a766bdf811b2987fc24c0f25f246d4f111b27620e8d"
+          },
+          {
+            "line_end": 415,
+            "line_start": 407,
+            "path": "src/mac/task_transition_service.py",
+            "role": "guard_registration",
+            "source_sha256": "f9ca9f73effd319ad4052a766bdf811b2987fc24c0f25f246d4f111b27620e8d"
+          },
+          {
+            "line_end": 465,
+            "line_start": 452,
+            "path": "src/mac/task_transition_service.py",
+            "role": "guard_registration",
+            "source_sha256": "f9ca9f73effd319ad4052a766bdf811b2987fc24c0f25f246d4f111b27620e8d"
+          },
+          {
+            "line_end": 491,
+            "line_start": 466,
+            "path": "src/mac/task_transition_service.py",
+            "role": "commit_point",
+            "source_sha256": "f9ca9f73effd319ad4052a766bdf811b2987fc24c0f25f246d4f111b27620e8d"
+          }
+        ],
+        "forbidden_condition": "A worker-authored (trusted_internal=False) transition against a task not in CLAIMED/RUNNING state, by an actor that does not own the exact active lease (including a stale process holding a superseded lease id \u2014 the ABA failure described at lines 138-143), or any transition whose guarded UPDATE affects rowcount != 1.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The HTTP/API endpoint or tool dispatch that carries worker (agent) transition requests into _transition_task_impl with trusted_internal=False is not in the supplied source; the source only labels this path 'worker-authored'/'bound agent' in comments.",
+          "Definitions of _require_exact_lease_actor and _require_exact_lease_actor_in_transaction are not supplied."
+        ],
+        "protected_operation": "Task lifecycle state mutation of the tasks row (UPDATE tasks SET state, owner_agent_id, lease_id, leased_until, ...).",
+        "protected_resource": "Task rows in the control-plane database (state/lease/owner columns) and the task lifecycle they drive.",
+        "protection_obligation": "Non-trusted (worker-authored) task state transitions may mutate a task row only when the caller owns the exact active lease on a CLAIMED/RUNNING task; lease ownership must be re-verified inside the transaction, and the state change commits only if a guarded UPDATE ... WHERE id = ? AND state = ? [AND lease_id = ?] affects exactly one row. (Merges the two reviewer wordings of the lease-fencing obligation.)",
+        "scope_limits": [
+          "Fencing applies only when trusted_internal is False; operators, dispatchers, and reviewers use explicit trusted service paths (lines 141-143).",
+          "Requeue-from-terminal transitions use a state-only WHERE guard plus lease_id when fenced (lines 427-432); stop transitions may retain the revoked_lease_id snapshot (lines 458-462)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Route dispatch to cp.append_agentbus_chunk after the assert (lines 8652-8654).",
+        "contract_id": "ecological-contract:b85e57917f1f0f39e4898f52649630c9",
+        "declared_mechanism": "principal.assert_actor(body.sender_agent_id) executed in the route handler before cp.append_agentbus_chunk.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 8651,
+            "line_start": 8646,
+            "path": "src/mac/api.py",
+            "role": "guard_registration",
+            "source_sha256": "01d120a58f3064e9c023b7a788f040af6784fb0e1079b4e5550c52af6a5f43ac"
+          },
+          {
+            "line_end": 8654,
+            "line_start": 8652,
+            "path": "src/mac/api.py",
+            "role": "commit_point",
+            "source_sha256": "01d120a58f3064e9c023b7a788f040af6784fb0e1079b4e5550c52af6a5f43ac"
+          }
+        ],
+        "forbidden_condition": "An authenticated request appending chunks with a sender_agent_id that does not match the token principal's actor.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "assert_actor implementation and TokenPrincipal issuance are not in the supplied views.",
+          "Whether the tokens are issued to agents is not established.",
+          "A close-stream route and any symmetric actor binding there are unverified."
+        ],
+        "protected_operation": "POST /agentbus/streams/{stream_id}/chunks (append_agentbus_chunk route).",
+        "protected_resource": "AgentBus chunk-append API endpoint.",
+        "protection_obligation": "The HTTP chunk-append route binds the claimed sender identity to the authenticated token principal: POST /agentbus/streams/{stream_id}/chunks calls principal.assert_actor(body.sender_agent_id) before dispatching to the control plane, so a request cannot append under a sender_agent_id other than the caller's own actor.",
+        "scope_limits": [
+          "Binding is per-route; only the append route is visible.",
+          "Ordinary token authentication itself is out of scope; only the actor-binding assertion is compiled."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Invocation of the wrapped ControlPlane method inside guarded() (lines 199-204); resolve_dispatch pre-checks at 3219-3236 before dispatch.",
+        "contract_id": "ecological-contract:c0cbabe17fa3a78acc817a707987dfa2",
+        "declared_mechanism": "_is_hub_authority_db plus hub-reachability probe raising DispatchError in resolve_dispatch; LocalDispatch.__getattr__ guarded() calling _require_task_authority (unless _local_authority_confirmed) before target(*args, **kwargs).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 160,
+            "line_start": 149,
+            "path": "src/mac/dispatch.py",
+            "role": "guard_registration",
+            "source_sha256": "5a0090b60dd5255645ff122c40cf113487b79dc82068d1354b87c0faf512e9aa"
+          },
+          {
+            "line_end": 192,
+            "line_start": 185,
+            "path": "src/mac/dispatch.py",
+            "role": "guard_registration",
+            "source_sha256": "5a0090b60dd5255645ff122c40cf113487b79dc82068d1354b87c0faf512e9aa"
+          },
+          {
+            "line_end": 204,
+            "line_start": 199,
+            "path": "src/mac/dispatch.py",
+            "role": "commit_point",
+            "source_sha256": "5a0090b60dd5255645ff122c40cf113487b79dc82068d1354b87c0faf512e9aa"
+          },
+          {
+            "line_end": 2900,
+            "line_start": 2887,
+            "path": "src/mac/dispatch.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5a0090b60dd5255645ff122c40cf113487b79dc82068d1354b87c0faf512e9aa"
+          },
+          {
+            "line_end": 3236,
+            "line_start": 3219,
+            "path": "src/mac/dispatch.py",
+            "role": "guard_registration",
+            "source_sha256": "5a0090b60dd5255645ff122c40cf113487b79dc82068d1354b87c0faf512e9aa"
+          }
+        ],
+        "forbidden_condition": "Invoking task-producing ControlPlane methods (create_task, register_project, start_workflow, etc.) against a hub-authority database selected via --db without explicit --local-authority confirmation; performing direct database maintenance on that authority while the hub is reachable.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The reviewer's claim that every task-producing CLI invocation flows through resolve_dispatch is not fully verifiable from the cited ranges.",
+          "Database driver/transaction specifics are not shown."
+        ],
+        "protected_operation": "Dispatch-resolved ControlPlane task-producing writes from CLI commands.",
+        "protected_resource": "The hub control-plane authoritative database.",
+        "protection_obligation": "Task-producing CLI writes must never run directly against the live hub control-plane database: resolve_dispatch refuses direct --db access to a hub-authority database without --local-authority and refuses direct database maintenance while the hub is reachable, and LocalDispatch wraps every _TASK_PRODUCING_METHODS attribute with _require_task_authority so DispatchError is raised before the ControlPlane method executes.",
+        "scope_limits": [
+          "convert_ticketing_source with dry_run=True bypasses the authority gate by design (line 200).",
+          "Non-task-producing methods pass through unwrapped (line 196-197)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Subprocess execution of the hgx argv following the check \u2014 beyond line 313, not visible in the supplied lines.",
+        "contract_id": "ecological-contract:ca82f5d6e56b0fcd744691132ec90374",
+        "declared_mechanism": "First non-flag argument scanned; equality with _FORBIDDEN_VERB raises HgxError before the subprocess runs.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 310,
+            "line_start": 309,
+            "path": "src/mac/hgx_provider.py",
+            "role": "guard_registration",
+            "source_sha256": "ba4a6d9f9a0857efb8ad1f82aa1bd436836c3dded60ace00107eb04ad42b5040"
+          },
+          {
+            "line_end": 313,
+            "line_start": 311,
+            "path": "src/mac/hgx_provider.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ba4a6d9f9a0857efb8ad1f82aa1bd436836c3dded60ace00107eb04ad42b5040"
+          }
+        ],
+        "forbidden_condition": "Invoking the `hgx info` subcommand through HgxProvider._run.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The _FORBIDDEN_VERB constant value and the exec implementation are outside the cited range.",
+          "Whether _run is reachable from agent tooling is not established."
+        ],
+        "protected_operation": "hgx CLI subprocess invocation via HgxProvider._run.",
+        "protected_resource": "The fallback password echoable by `hgx info` (credential material in command output).",
+        "protection_obligation": "HgxProvider._run must refuse the `hgx info` verb before executing any hgx subprocess, because `hgx info` can echo a fallback password: the verb scan raises HgxError pre-exec.",
+        "scope_limits": [
+          "Verb scan takes the first non-dash argument; flag-prefixed values are skipped by design."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Job spec construction (432-439); claim/launch with block transition (724-761); review claim loop (1055-1062); pre-workspace review execution (263-275).",
+        "contract_id": "ecological-contract:cbfdfc6681a65cc645101f266e87254e",
+        "declared_mechanism": "Four fail-closed gates keyed on metadata_declares_read_only_report_repository: build_job_spec ValueError; claim_and_launch_one blocked-transition POST to /tasks/{id}/transition; review-dispatch loop continue without claim; job_executor no-evidence early return with READ_ONLY_REPORT_REQUIRES_OPENSHELL_REASON.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 439,
+            "line_start": 432,
+            "path": "src/mac/k8s/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "80972c02b23e2a3b4ba6fa6a808d071c89b8408bc83780bc6979625b6cf223e4"
+          },
+          {
+            "line_end": 761,
+            "line_start": 724,
+            "path": "src/mac/k8s/runner.py",
+            "role": "commit_point",
+            "source_sha256": "80972c02b23e2a3b4ba6fa6a808d071c89b8408bc83780bc6979625b6cf223e4"
+          },
+          {
+            "line_end": 275,
+            "line_start": 263,
+            "path": "src/mac/k8s/job_executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c0c917e8c8a27adb34e95c3d3c7ebe2840d0cffe707682086bec9840967e4822"
+          },
+          {
+            "line_end": 1062,
+            "line_start": 1055,
+            "path": "src/mac/k8s/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "80972c02b23e2a3b4ba6fa6a808d071c89b8408bc83780bc6979625b6cf223e4"
+          }
+        ],
+        "forbidden_condition": "Building a Kubernetes Job spec, claiming/launching, or dispatching/performing a review for any task whose metadata_declares_read_only_report_repository is true under the kubernetes_job boundary; emitting review evidence for such a run.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "metadata_declares_read_only_report_repository and READ_ONLY_REPORT_REQUIRES_OPENSHELL_REASON definitions are outside the cited ranges.",
+          "The Kubernetes API submission consuming build_job_spec's output is not shown.",
+          "Whether the runner/executor processes are agent lifecycle components is not established by the cited code."
+        ],
+        "protected_operation": "Kubernetes-boundary execution of read-only repository report tasks (Job build, claim/launch, review execution).",
+        "protected_resource": "The kubernetes_job execution boundary and its spent Jobs/leases; the read-only repository task's review path.",
+        "protection_obligation": "Tasks whose metadata declares a read-only report repository must never execute in the kubernetes_job boundary: build_job_spec refuses to build the Job spec, claim_and_launch_one blocks the claim with a transition to blocked (required_execution_boundary=openshell, rejected_execution_boundary=kubernetes_job), review dispatch refuses before claiming/spending a Job, and the job executor re-checks immediately before workspace preparation and returns no-evidence without blocking, so the pending review remains available for hub rerouting to an isolated OpenShell reviewer.",
+        "scope_limits": [
+          "The blocked transition POST is an enforcement side-effect (hub API), not the protected effect.",
+          "Hub rerouting to an OpenShell reviewer is described in comments but not shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Post-agent verification gate at run-result finalization (6459-6496) converting a violating run to returncode 66 with an authoritative violation manifest before evidence acceptance.",
+        "contract_id": "ecological-contract:d0904888a4a145c9273cee2aaf2f4056",
+        "declared_mechanism": "_capture_read_only_report_git_control pre-agent baseline; _sandbox_read_only_repository_violation in-sandbox re-check (fail() exits 66 on any check, using raw O_NOFOLLOW digest and an env-scrubbed trusted git); _read_only_report_repository_violation host re-check; result conversion to rc 66 with _write_read_only_report_violation_manifest and 'read_only_repository_violation' telemetry.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 4214,
+            "line_start": 4213,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 4230,
+            "line_start": 4215,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 3899,
+            "line_start": 3886,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 3937,
+            "line_start": 3909,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 6130,
+            "line_start": 6057,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 6496,
+            "line_start": 6459,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "commit_point",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          }
+        ],
+        "forbidden_condition": "Any post-agent divergence of the read-only checkout: worktree became a symlink, missing .git, changed raw Git control digest, dirty status (tracked/untracked edits), changed HEAD/tree/refs, retained publication remote, or changed content digest; also an incomplete pre-agent proof or missing task-owned worktree.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "_read_only_git_control_digest program, _write_read_only_report_violation_manifest, and any evidence-manifest 'invalid' marking are not in the cited views.",
+          "metadata_declares_read_only_report_repository definition is not shown."
+        ],
+        "protected_operation": "Task execution against a declared read-only repository report checkout (agent inspection run and result acceptance).",
+        "protected_resource": "The task-owned read-only git worktree/checkout (its Git metadata and content).",
+        "protection_obligation": "For read-only repository report tasks, the executor must forbid any mutation of the inspection checkout \u2014 Git control metadata, tracked/untracked files, HEAD, tree, refs, remotes, or content \u2014 by capturing a raw pre-agent Git-control baseline and re-verifying after the agent run both inside the sandbox and on the host, failing the run closed (returncode 66, violation manifest, telemetry) whenever post-agent state differs, before results are accepted.",
+        "scope_limits": [
+          "Verification is detective (post-hoc), not preventive: the cited code fails the run after mutation rather than blocking the write.",
+          "rc 67 named by the reviewer is not visible in the supplied lines (only exit 66 at 3908 and 6475).",
+          "Ignored build artifacts are removed post-verification via git clean -fdx (6118)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Sandbox creation \u2014 proxy enforcement is active for the agent process tree before any task command runs.",
+        "contract_id": "ecological-contract:d9ab5df4b09d835fea64dd61e7a4a817",
+        "declared_mechanism": "OpenShell network_policies with per-endpoint `enforcement: enforce` and per-binary scoping; deny-by-default proxy independent of Landlock (per policy comments).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 7,
+            "line_start": 5,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "forbidden_condition",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 75,
+            "line_start": 69,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "guard_registration",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 95,
+            "line_start": 83,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "guard_registration",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 296,
+            "line_start": 255,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "guard_registration",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 14,
+            "line_start": 13,
+            "path": "deploy/openshell/mac-hermes-policy.yaml",
+            "role": "commit_point",
+            "source_sha256": "269ce0c64883fa04c6a39d8434c9596222a7289e333ca7efd177924b9be6da76"
+          },
+          {
+            "line_end": 5718,
+            "line_start": 5714,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          }
+        ],
+        "forbidden_condition": "Network egress from sandboxed binaries to any host/port not explicitly allowlisted for that binary in network_policies (deny-by-default L7 proxy).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The proxy implementation and per-binary matching semantics are external to this packet.",
+          "Additional network policies that may exist in unsupplied lines 96-251."
+        ],
+        "protected_operation": "Outbound network connections from binaries inside the sandbox (runtime python to the MAC hub; git/gh/curl to GitHub endpoints).",
+        "protected_resource": "Network egress channel: the L7-proxy allowlist of host:port endpoints (__MAC_HUB_HOST__:__MAC_HUB_PORT__ REST; github.com, api.github.com, cli.github.com, objects.githubusercontent.com, github-releases.githubusercontent.com, release-assets.githubusercontent.com on 443).",
+        "protection_obligation": "The task-executor agent sandbox must enforce deny-by-default network egress: the OpenShell network_policies in deploy/openshell/mac-hermes-policy.yaml allowlist only named host:port endpoints per binary (mac_hub control-plane/AgentBus REST; GitHub over HTTPS for git/gh/curl), each with enforcement: enforce, applied via the L7 proxy at sandbox creation.",
+        "scope_limits": [
+          "Only the mac_hub (83-95) and github (252-296) egress blocks are visible; policy lines 96-251 are not supplied.",
+          "__MAC_HUB_HOST__/__MAC_HUB_PORT__ are unresolved template placeholders.",
+          "Enforcement behavior is declared by configuration and comments; runtime proxy behavior is not evidenced in the packet."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "UPDATE agentbus_streams SET status/updated_at/closed_at (lines 327-334).",
+        "contract_id": "ecological-contract:ecbf5133f36caeeadb25b42e6456e22c",
+        "declared_mechanism": "Sender check raising AuthorizationError plus status validation before store.execute UPDATE.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 314,
+            "line_start": 311,
+            "path": "src/mac/agentbus_service.py",
+            "role": "guard_registration",
+            "source_sha256": "e2fc57f140888f4b21c2844aead0d70421a0bdeace7aaa8dcd15dd49cb42feaf"
+          },
+          {
+            "line_end": 314,
+            "line_start": 312,
+            "path": "src/mac/agentbus_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e2fc57f140888f4b21c2844aead0d70421a0bdeace7aaa8dcd15dd49cb42feaf"
+          },
+          {
+            "line_end": 325,
+            "line_start": 315,
+            "path": "src/mac/agentbus_service.py",
+            "role": "guard_registration",
+            "source_sha256": "e2fc57f140888f4b21c2844aead0d70421a0bdeace7aaa8dcd15dd49cb42feaf"
+          },
+          {
+            "line_end": 334,
+            "line_start": 327,
+            "path": "src/mac/agentbus_service.py",
+            "role": "commit_point",
+            "source_sha256": "e2fc57f140888f4b21c2844aead0d70421a0bdeace7aaa8dcd15dd49cb42feaf"
+          }
+        ],
+        "forbidden_condition": "Closing or re-statusing a stream by anyone other than sender_agent_id; closing with status OPEN, an unsupported status value, or an already-closed stream with a different status.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether stream closing is agent-mediated (agent tool dispatch) is not established.",
+          "The HTTP route for close_stream is not in the supplied views."
+        ],
+        "protected_operation": "AgentBusService.close_stream \u2014 mutating stream status to a closed state.",
+        "protected_resource": "The agentbus_streams status row (status, updated_at, closed_at).",
+        "protection_obligation": "Only a stream's sender may close an AgentBus stream: close_stream raises AuthorizationError for non-senders, validates the requested status, and refuses invalid transitions before the agentbus_streams UPDATE.",
+        "scope_limits": [
+          "Idempotent same-status close on an already-closed stream returns the stream without error (lines 322-324).",
+          "store.execute transactional semantics are not shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Agent argv finalization/launch decision in _invoke_agent (5711-5727) and the argv returns from _unsandboxed_agent_argv (4769, 4780) immediately before process spawn; the spawn call itself is beyond the cited lines.",
+        "contract_id": "ecological-contract:fa2ce27d4a95e1f3a4097d73c05e1728",
+        "declared_mechanism": "_unsandboxed_agent_argv gate raising RuntimeError; default_unsandboxed = '0' when _openshell_required_for_local_agent(); _resolve_openshell_policy raising FileNotFoundError when no policy resolves; _ensure_landlock_or_fail raising RuntimeError on Landlock-less kernels.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 4754,
+            "line_start": 4747,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 4780,
+            "line_start": 4755,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 4786,
+            "line_start": 4781,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 724,
+            "line_start": 692,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 1277,
+            "line_start": 1251,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          },
+          {
+            "line_end": 5727,
+            "line_start": 5711,
+            "path": "src/mac/executor_sandbox.py",
+            "role": "commit_point",
+            "source_sha256": "e74b79a74b3af9bf16271c14451be83f403f54e4f69fbc026b74caab96006074"
+          }
+        ],
+        "forbidden_condition": "Launching an approval-bypassed agent process on the host without an OpenShell sandbox and without explicit MAC_ALLOW_UNSANDBOXED_YOLO opt-in (or validated break-glass authorization); running the sandboxed path with no resolvable policy or on a kernel that cannot enforce Landlock (absent MAC_OPENSHELL_ALLOW_NO_LANDLOCK).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Implementations of _openshell_required_for_local_agent, _validated_host_break_glass_authorization, and _force_child_yolo_env are not shown.",
+          "The subprocess spawn consuming the gated argv is outside the cited ranges."
+        ],
+        "protected_operation": "Executor agent launch for a task (_invoke_agent unsandboxed/sandboxed argv selection).",
+        "protected_resource": "The executor host outside the OpenShell sandbox, and the coupling between approval bypass and confinement.",
+        "protection_obligation": "The executor must never launch an approval-bypassed coding agent (--yolo / --dangerously-*) unconfined: _unsandboxed_agent_argv refuses to hand back the agent argv without OpenShell confinement unless MAC_ALLOW_UNSANDBOXED_YOLO is explicitly truthy (defaulting fail-closed to '0' when OpenShell is required) or a validated break-glass authorization is present; the sandboxed path additionally fails closed via _resolve_openshell_policy (never omits --policy; bundled default denies all egress) and _ensure_landlock_or_fail.",
+        "scope_limits": [
+          "MAC_ALLOW_UNSANDBOXED_YOLO defaults to '1' when OpenShell is not required locally \u2014 an explicitly warned unsandboxed path remains possible by env opt-in (4770-4780).",
+          "Break-glass path emits telemetry and runs the exact lease task-scoped on the host (4755-4769).",
+          "Redacted segments (lines 4757, 1272-1276) prevent full-text verification of those statements."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Executor implementations of _kernel_has_landlock(), _openshell_required_for_local_agent(), _validated_host_break_glass_authorization(), metadata_declares_read_only_report_repository(), _read_only_git_control_digest(), and _write_read_only_report_violation_manifest() are absent from the supplied views.",
+      "HGX provider.delete transport and the durable backend for capacity state (_load_state) are not shown.",
+      "MAC control-plane persistence transport (direct DB vs hub HTTP API) for task metadata egress_contract, client-principal issuance, and managed repository refs is not visible; the database effect strata for those contracts assume durable control-plane storage and must be verified.",
+      "Opinion 8's rationale names additional dispatch guards (attestation recovery install, artifact digest verification, system-directive immutability, evidence pushed-anchor checks) with no cited line ranges in this packet; they were not compiled.",
+      "Redacted content (policy line 13; executor_sandbox.py lines 1272-1276, 3915, 3926, 4757, 5742, 6460-6468) prevents full-text verification of those statements.",
+      "Reviewer rationale mentions guards in native_merge_queue.landing_is_safe and openshell_supervisor; no source for these files is supplied, so no contracts are compiled for them.",
+      "The AgentBus close_stream HTTP route and the store.transaction() wrapper are not in the cited lines.",
+      "The curiosity wrapper target executable and the hub-to-sidecar proxy wiring are not shown.",
+      "The rc 67 read-only violation path named by the reviewer is not visible in the supplied lines (only exit/returncode 66 appears at 3908 and 6475).",
+      "TokenPrincipal issuance and principal.assert_actor implementation are not supplied; whether AgentBus API callers/tokens correspond to agents is not established.",
+      "deploy/openshell/mac-hermes-policy.yaml lines 16-17, 62, and 96-251 are not supplied (any additional network policies and the seccomp/syscall section are unknown).",
+      "mesh_bind: call sites invoking serve_bind_hosts or runtime_bind_error (hub server/create_app wiring) are not supplied.",
+      "mesh_bind: no agent tool, lifecycle hook, or agent-generated input reaching the bind decision appears in the supplied source; agent mediation is not_established for all compiled contracts pending such wiring.",
+      "mesh_bind: the site that writes deploy_mac_bind_host's return value into mac.env (the deploy-time file commit point) is not in the supplied source.",
+      "repository_hygiene/reconciler: definitions of verify_repository_remote, query_open_pull_requests, and the provenance of pull_request_check_complete are not supplied; the caller of retire_protected_remote_ref_exact is not shown.",
+      "task_batch: the implementation and effect stratum of _apply_one are not supplied; database stratum is inferred from task state-machine transition semantics.",
+      "task_decomposition: the control-plane child-task creation call site enforcing check_children_allowed (children endpoint) is not supplied, so the commit point for this contract is unestablished.",
+      "task_transition_service: the API/tool entry point invoking _transition_task_impl with trusted_internal=False on behalf of a worker/agent is not supplied; _require_exact_lease_actor and _require_exact_lease_actor_in_transaction definitions are not supplied.",
+      "worker.py: implementations of guarded_push and resolve_canonical_publication_target are not supplied.",
+      "worker_subprocess/worker.py: the caller of _apply_read_only_report_executor_approval and the origin of the hub-approved identity tuple are not supplied; the approval-tuple environment variable names are redacted in the supplied view."
+    ],
+    "repository": "jordanhubbard/mac",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:0bbe1ca2c86bc715975d9b9e4da10f61"
+  },
+  "request_sha256": "e74fde9e442affb760584440c2a1c77ce4cf5226f19b7ed33263d7d7155783d0",
+  "response_sha256": "0042551ea129050aeca986deff170e1eef07a7697128cdfe65ca243368b750c4",
+  "shard_provenance": [
+    {
+      "attempt": 1,
+      "request_sha256": "a8cbc2145fb61c23ea2313dea4298f6cfbec5760a185514c2b3e89e021bc8029",
+      "response_sha256": "981dfa17650931b920c634364be459d7ca1942c06d457946c4c42cdd73627d9b",
+      "result_sha256": "904f557437bd3faf1487f55bb1d81dc59c37d3124c4f7b8c2676edf6ed7c89cb",
+      "tokens": 66841,
+      "unit": "v24-screen:0bbe1ca2c86bc715975d9b9e4da10f61-p000"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "9f936c7d74d9288b85518a1214293ce77041be3f58431f733f12d06d0900d7bc",
+      "response_sha256": "5613e180bbb7ce13d97155d8c5e24ef2a3e21ebb5a18b6b0abe86ec388c32e80",
+      "result_sha256": "41bfa1304eb6a3ecefd197903c3a17caf699e0222c3a0079803851f0577325e9",
+      "tokens": 53899,
+      "unit": "v24-screen:0bbe1ca2c86bc715975d9b9e4da10f61-p001"
+    }
+  ],
+  "state": "completed",
+  "tokens": 120740,
+  "unit": "v24-screen:0bbe1ca2c86bc715975d9b9e4da10f61"
+}

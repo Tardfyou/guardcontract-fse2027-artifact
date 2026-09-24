@@ -1,0 +1,2760 @@
+{
+  "attempt": "complete_shard_reconciliation",
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Conditional update call at user_card_tags.py:307-315; superseded determination at user_card_tags.py:316-321.",
+        "contract_id": "ecological-contract:013c96c47ddbb40dd5ea65bd0b84cf5a",
+        "declared_mechanism": "EndUserRepository.update_user_tags_if_source_unchanged with expected_metadata_updated_at and source_fingerprint, per the in-code comment that only results matching the original version may be written back.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 315,
+            "line_start": 305,
+            "path": "api/app/core/memory/analytics/user_card_tags.py",
+            "role": "guard_registration",
+            "source_sha256": "2aff10e0b135fc6895e7a3a6eeec17839f231c3a01344ce823f92b0dc5101d55"
+          },
+          {
+            "line_end": 306,
+            "line_start": 306,
+            "path": "api/app/core/memory/analytics/user_card_tags.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2aff10e0b135fc6895e7a3a6eeec17839f231c3a01344ce823f92b0dc5101d55"
+          },
+          {
+            "line_end": 321,
+            "line_start": 316,
+            "path": "api/app/core/memory/analytics/user_card_tags.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2aff10e0b135fc6895e7a3a6eeec17839f231c3a01344ce823f92b0dc5101d55"
+          },
+          {
+            "line_end": 315,
+            "line_start": 307,
+            "path": "api/app/core/memory/analytics/user_card_tags.py",
+            "role": "commit_point",
+            "source_sha256": "2aff10e0b135fc6895e7a3a6eeec17839f231c3a01344ce823f92b0dc5101d55"
+          }
+        ],
+        "forbidden_condition": "Committing refreshed tags when the source metadata_updated_at has changed during LLM execution (update_user_tags_if_source_unchanged returns no update \u2192 status 'superseded').",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether this refresh job runs as part of the agent memory-write lifecycle (trigger not shown in supplied views)."
+        ],
+        "protected_operation": "End-user PostgreSQL row tags update after LLM tag generation",
+        "protected_resource": "End-user tags columns in the PostgreSQL end_user row",
+        "protection_obligation": "LLM-refreshed user card tags must be committed to the end-user PostgreSQL row only when the source metadata_updated_at is unchanged since it was read; a stale write-back must be rejected and reported as status 'superseded'.",
+        "scope_limits": [
+          "The repository's conditional-UPDATE SQL body is not in the supplied views.",
+          "The LLM tag generation is an analytics-pipeline model call; no agent tool/hook binding is shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "os.remove(storage_path) at api/app/services/upload_service.py:494 (backup copy at 487-491), reachable only after the permission check at 462-471.",
+        "contract_id": "ecological-contract:01456646da3fbd4d3bbea00e1613dc09",
+        "declared_mechanism": "permission_service.require_permission(Subject.from_user(current_user), Action.DELETE, Resource.from_file(file), error_message='No permission to delete file {file_id}') executed before deletion; PermissionDeniedException is converted to FileAccessDeniedError; secondary precondition raises FileReferencedError when file.reference_count > 0.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 471,
+            "line_start": 456,
+            "path": "api/app/services/upload_service.py",
+            "role": "guard_registration",
+            "source_sha256": "5bf01067eac5d9d8969564011c164e53df392ae8c472de578148108a00d3b5fa"
+          },
+          {
+            "line_end": 471,
+            "line_start": 469,
+            "path": "api/app/services/upload_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5bf01067eac5d9d8969564011c164e53df392ae8c472de578148108a00d3b5fa"
+          },
+          {
+            "line_end": 476,
+            "line_start": 473,
+            "path": "api/app/services/upload_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5bf01067eac5d9d8969564011c164e53df392ae8c472de578148108a00d3b5fa"
+          },
+          {
+            "line_end": 454,
+            "line_start": 436,
+            "path": "api/app/services/upload_service.py",
+            "role": "protected_operation",
+            "source_sha256": "5bf01067eac5d9d8969564011c164e53df392ae8c472de578148108a00d3b5fa"
+          },
+          {
+            "line_end": 495,
+            "line_start": 486,
+            "path": "api/app/services/upload_service.py",
+            "role": "commit_point",
+            "source_sha256": "5bf01067eac5d9d8969564011c164e53df392ae8c472de578148108a00d3b5fa"
+          }
+        ],
+        "forbidden_condition": "Physical deletion of a generic file by a subject for which require_permission(subject, Action.DELETE, Resource.from_file(file)) raises PermissionDeniedException (converted to FileAccessDeniedError), or deletion of a file with reference_count > 0.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view shows the caller of the delete operation or any agent tool / lifecycle wiring reaching it; agent mediation is unbound."
+        ],
+        "protected_operation": "Generic file deletion \u2014 backup and physical removal of the file at file.storage_path.",
+        "protected_resource": "Physical file at storage_path backing the generic file record identified by file_id.",
+        "protection_obligation": "Deleting a generic file via UploadService is forbidden unless permission_service.require_permission grants the requesting subject Action.DELETE on that file resource, enforced before any physical storage mutation begins.",
+        "scope_limits": [
+          "Deletion additionally requires reference_count == 0 (FileReferencedError at 473-476).",
+          "CompensationHandler restores the file from backup if later steps fail (497-529); compensation is recovery wiring, not part of the guard.",
+          "Only the DELETE path is within supplied views; reviewer-cited Action.READ/UPDATE guards are unverified."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Secret comparison raising HTTPException(401) before endpoint execution (internal_sandbox_controller.py:53-54).",
+        "contract_id": "ecological-contract:123c4d7534ba38ff23389fc67e2f6039",
+        "declared_mechanism": "verify_sandbox_auth Header dependency comparing the shared secret and returning sandbox identity headers only on success.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 47,
+            "path": "api/app/controllers/internal/internal_sandbox_controller.py",
+            "role": "guard_registration",
+            "source_sha256": "c8e1e72768479b29b87deeace94648fbf6a8da19fa3c34b266a0a41804d1f355"
+          },
+          {
+            "line_end": 54,
+            "line_start": 53,
+            "path": "api/app/controllers/internal/internal_sandbox_controller.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c8e1e72768479b29b87deeace94648fbf6a8da19fa3c34b266a0a41804d1f355"
+          },
+          {
+            "line_end": 40,
+            "line_start": 40,
+            "path": "api/app/controllers/internal/internal_sandbox_controller.py",
+            "role": "protected_operation",
+            "source_sha256": "c8e1e72768479b29b87deeace94648fbf6a8da19fa3c34b266a0a41804d1f355"
+          },
+          {
+            "line_end": 74,
+            "line_start": 66,
+            "path": "api/app/controllers/internal/internal_sandbox_controller.py",
+            "role": "protected_operation",
+            "source_sha256": "c8e1e72768479b29b87deeace94648fbf6a8da19fa3c34b266a0a41804d1f355"
+          }
+        ],
+        "forbidden_condition": "Serving an internal sandbox callback when x_sandbox_secret != settings.E2B_CALLBACK_SECRET (must raise HTTPException 401).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "Which /internal/sandbox endpoint functions use verify_sandbox_auth as a dependency (registrations not in supplied views).",
+          "Whether sandbox tool-execute callbacks are wired to agent tool dispatch (binding not established from supplied views)."
+        ],
+        "protected_operation": "Internal sandbox callback requests (including tool-execute and knowledge-retrieve callback payloads) against the /internal/sandbox router",
+        "protected_resource": "Internal sandbox callback API surface (/internal/sandbox)",
+        "protection_obligation": "Internal sandbox callback endpoints under /internal/sandbox must reject any request whose x-sandbox-secret header does not equal settings.E2B_CALLBACK_SECRET with HTTP 401, before any callback handling executes.",
+        "scope_limits": [
+          "Only the shared secret is checked; x-sandbox-workspace-id / user-id / execution-id headers are returned without independent verification in the shown code.",
+          "ToolExecuteRequest carries tool_name/tool_type/tool_input, but no agent tool wiring is present in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.db.commit() inside get_or_create_end_user_with_status executed within the locked region: existing-user path (line 665), merge-target path (line 676), and creation path with EndUser+EndUserInfo committed together (line 699).",
+        "contract_id": "ecological-contract:12bcef71cb973cd26523e74737ec1e2f",
+        "declared_mechanism": "pg_advisory_xact_lock(hashtextextended('{workspace_id}|{other_id}', 0)) via the _acquire_eu_lock context manager (transaction-scoped, auto-released at commit/rollback) wrapped around the whole lookup-create-commit sequence; creation status is determined inside the lock to avoid callers misjudging from a pre-lock probe.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 211,
+            "line_start": 200,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "guard_registration",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          },
+          {
+            "line_end": 206,
+            "line_start": 202,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          },
+          {
+            "line_end": 649,
+            "line_start": 648,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "guard_registration",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          },
+          {
+            "line_end": 699,
+            "line_start": 650,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "protected_operation",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          },
+          {
+            "line_end": 699,
+            "line_start": 681,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "commit_point",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          }
+        ],
+        "forbidden_condition": "Two concurrent get-or-create calls for the same (workspace_id, other_id) both observing 'no active user' and each inserting an EndUser + EndUserInfo pair (duplicate active records), or any creation performed outside the advisory-locked region.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool or lifecycle hook triggers get_or_create_end_user_with_status with agent-generated other_id values."
+        ],
+        "protected_operation": "get_or_create_end_user_with_status: existing-user lookup, merge-target routing via resolve_merge_by_other_id, and insertion of the new EndUser + EndUserInfo pair.",
+        "protected_resource": "EndUser / EndUserInfo rows keyed by (workspace_id, other_id).",
+        "protection_obligation": "Concurrent EndUser get-or-create for the same (workspace_id, other_id) must be serialized by the pg_advisory_xact_lock acquired in _acquire_eu_lock so that at most one active EndUser/EndUserInfo pair is created per identity, with the lookup, merge routing, insert, and commit all performed inside the locked region.",
+        "scope_limits": [
+          "Covers only the (workspace_id, other_id) get-or-create path; the separate identity_features lock and message-seq lock are recorded as distinct contracts.",
+          "No supplied source binds end-user creation to agent mediation; recorded with agent_mediation=not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The insert/commit of the message row holding the allocated seq, to be executed inside the locked region; the concrete statement is beyond the supplied view, which ends inside _next_seq (line 89).",
+        "contract_id": "ecological-contract:15c77cb34622c97d7d2255800c05e6ea",
+        "declared_mechanism": "pg_advisory_xact_lock(hashtextextended(lock_key, 0)) via the _acquire_mm_seq_lock context manager; transaction-scoped and auto-released at commit/rollback, with distinct groups non-blocking by design.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 69,
+            "line_start": 46,
+            "path": "api/app/repositories/memory_message_repository.py",
+            "role": "guard_registration",
+            "source_sha256": "0a74c90ad391d0756e9f4e64b8fabe45c0fc97deaca03eabe9c299bcd0ca87a7"
+          },
+          {
+            "line_end": 59,
+            "line_start": 53,
+            "path": "api/app/repositories/memory_message_repository.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0a74c90ad391d0756e9f4e64b8fabe45c0fc97deaca03eabe9c299bcd0ca87a7"
+          },
+          {
+            "line_end": 89,
+            "line_start": 71,
+            "path": "api/app/repositories/memory_message_repository.py",
+            "role": "protected_operation",
+            "source_sha256": "0a74c90ad391d0756e9f4e64b8fabe45c0fc97deaca03eabe9c299bcd0ca87a7"
+          }
+        ],
+        "forbidden_condition": "Concurrent message writes in the same seq group (same conversation_id, or same (end_user_id, source) pair for conversation-less service_api/mcp paths) each computing max(message_seq) outside the lock and committing duplicate message_seq values.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "The memory-message insert and its commit performed under _acquire_mm_seq_lock are beyond the supplied view.",
+          "Which callers (agent vs non-agent entry points) actually wrap seq allocation in the lock."
+        ],
+        "protected_operation": "message_seq allocation via _next_seq (coalesce(max(message_seq), 0) query per group) and the subsequent message insert performed while the lock is held.",
+        "protected_resource": "memory_messages.message_seq sequence space per conversation_id group or per (end_user_id, source) group.",
+        "protection_obligation": "Memory-message sequence allocation must be serialized per seq group by the pg_advisory_xact_lock in _acquire_mm_seq_lock (keyed by conversation_id when present, otherwise by (end_user_id, source)) so that concurrent writers in the same group cannot commit duplicate message_seq values.",
+        "scope_limits": [
+          "Only the lock registration and the seq query are evidenced; the write path consuming the lock is outside the supplied views.",
+          "The repository docstring lists entry points including API Service, Agent, Workflow, Flush, and MCP, but no supplied source binds a specific agent tool or hook to this write; agent_mediation is not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "variable_struct.instance.set(value) executed inside the per-selector lock in VariablePool.set (variable_pool.py lines 366-367), reached only after the mut check; and the assignment-operator execution at the end of the Assigner loop (node.py lines 80-87), reached only after the namespace checks.",
+        "contract_id": "ecological-contract:162646bf068b3af15993e77219c10b5d",
+        "declared_mechanism": "Two layers: (1) AssignerNode.execute raises ValueError per assignment (env read-only; only conv or cycle namespaces assignable) before resolving and executing the assignment operator; (2) VariablePool.set raises KeyError when variable_struct.mut is False and only then mutates the value under self.locks[selector]; env variables are created with mut=False in _init_environment_vars.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 67,
+            "line_start": 57,
+            "path": "api/app/core/workflow/nodes/assigner/node.py",
+            "role": "guard_registration",
+            "source_sha256": "98a9c11ae610c30eaceb2d998df51714fca23dfe5bdfc45ea4abf3d9089516cb"
+          },
+          {
+            "line_end": 67,
+            "line_start": 62,
+            "path": "api/app/core/workflow/nodes/assigner/node.py",
+            "role": "forbidden_condition",
+            "source_sha256": "98a9c11ae610c30eaceb2d998df51714fca23dfe5bdfc45ea4abf3d9089516cb"
+          },
+          {
+            "line_end": 87,
+            "line_start": 80,
+            "path": "api/app/core/workflow/nodes/assigner/node.py",
+            "role": "protected_operation",
+            "source_sha256": "98a9c11ae610c30eaceb2d998df51714fca23dfe5bdfc45ea4abf3d9089516cb"
+          },
+          {
+            "line_end": 367,
+            "line_start": 357,
+            "path": "api/app/core/workflow/engine/variable_pool.py",
+            "role": "guard_registration",
+            "source_sha256": "fb1de3f66dcf75f34db9e26ec0c34ab2cb853f07eaa0c81da349ba454e160d5c"
+          },
+          {
+            "line_end": 365,
+            "line_start": 364,
+            "path": "api/app/core/workflow/engine/variable_pool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fb1de3f66dcf75f34db9e26ec0c34ab2cb853f07eaa0c81da349ba454e160d5c"
+          },
+          {
+            "line_end": 367,
+            "line_start": 366,
+            "path": "api/app/core/workflow/engine/variable_pool.py",
+            "role": "commit_point",
+            "source_sha256": "fb1de3f66dcf75f34db9e26ec0c34ab2cb853f07eaa0c81da349ba454e160d5c"
+          },
+          {
+            "line_end": 633,
+            "line_start": 627,
+            "path": "api/app/core/workflow/engine/variable_pool.py",
+            "role": "guard_registration",
+            "source_sha256": "fb1de3f66dcf75f34db9e26ec0c34ab2cb853f07eaa0c81da349ba454e160d5c"
+          }
+        ],
+        "forbidden_condition": "Assignment to an 'env'-namespace selector (environment variables are read-only), assignment to any namespace other than 'conv' or a cycle-node namespace, and VariablePool.set on a variable whose variable_struct.mut is False (KeyError '{selector} cannot be modified').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, agent lifecycle hook, or agent-generated workflow input supplies the variable_selector values reaching AssignerNode.execute."
+        ],
+        "protected_operation": "Mutation of workflow variable-pool values: assignment-operator execution in AssignerNode.execute, and variable_struct.instance.set(value) inside VariablePool.set.",
+        "protected_resource": "Workflow engine VariablePool variables: conv.* conversation variables, cycle-node output namespaces, and read-only env.* environment variables / system variables.",
+        "protection_obligation": "Workflow variable-pool writes to read-only variables are forbidden: the Assigner node must reject any assignment whose target namespace is 'env' or is neither 'conv' nor a cycle-node namespace before any assignment operator runs, and VariablePool.set must reject writes to any variable registered with mut=False (environment variables are registered mut=False) before the stored value is mutated.",
+        "scope_limits": [
+          "Covers in-process workflow variable-pool state only; no filesystem, database, or network effect is implicated.",
+          "Guard evidenced inside AssignerNode.execute and VariablePool.set only; other write paths into the pool (e.g., node output registration) are not evidenced as guarded here.",
+          "No supplied source binds assignment selectors to agent-generated input; recorded with agent_mediation=not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "connector.execute_write_transaction(merge_transaction, **params) at forgetting_strategy.py:431-435, reached only after the Person guard passes.",
+        "contract_id": "ecological-contract:1e936eb0542cfa9e24770d2f0630f6d7",
+        "declared_mechanism": "Cypher candidate filter 'AND (e.entity_type IS NULL OR e.entity_type <> \\'Person\\')' plus a pre-transaction ValueError guard in merge_nodes_to_summary.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 139,
+            "line_start": 130,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forgetting_strategy.py",
+            "role": "guard_registration",
+            "source_sha256": "18513f5413abe077a33351bbf018d5c094ee8859fddd3e9137377b1920583dd0"
+          },
+          {
+            "line_end": 238,
+            "line_start": 233,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forgetting_strategy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "18513f5413abe077a33351bbf018d5c094ee8859fddd3e9137377b1920583dd0"
+          },
+          {
+            "line_end": 435,
+            "line_start": 418,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forgetting_strategy.py",
+            "role": "protected_operation",
+            "source_sha256": "18513f5413abe077a33351bbf018d5c094ee8859fddd3e9137377b1920583dd0"
+          },
+          {
+            "line_end": 435,
+            "line_start": 431,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forgetting_strategy.py",
+            "role": "commit_point",
+            "source_sha256": "18513f5413abe077a33351bbf018d5c094ee8859fddd3e9137377b1920583dd0"
+          }
+        ],
+        "forbidden_condition": "Including a Person-type entity in forgettable candidates, or invoking the merge/delete transaction for an entity whose entity_type == 'Person'.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Confirmation that the merge transaction deletes the original nodes (body not in supplied range).",
+          "Agent binding absent in supplied views."
+        ],
+        "protected_operation": "Neo4j write transaction (execute_write_transaction) creating the MemorySummary from the statement/entity fusion",
+        "protected_resource": "Person-type ExtractedEntity nodes in Neo4j",
+        "protection_obligation": "Person-type ExtractedEntity nodes must never be forgotten via merge-and-delete: the forgettable-candidate Cypher excludes entity_type='Person', and merge_nodes_to_summary raises ValueError for Person entities before the Neo4j write transaction that creates the MemorySummary.",
+        "scope_limits": [
+          "The merge_transaction Cypher body (including any DETACH DELETE of the original nodes) is not within the supplied line range; the deletion of originals is taken from reviewer wording.",
+          "No agent binding in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Transaction-scoped: the locks are held until the caller's transaction commit/rollback; the concrete confirmation write and its commit statement are not present in the supplied views.",
+        "contract_id": "ecological-contract:22d5366ac2b21a69eb4b1c183e9a5815",
+        "declared_mechanism": "pg_advisory_xact_lock(hashtextextended('eu_identity:{workspace_id}|{identity_features}', 0)) in acquire_identity_lock_async (transaction-scoped, auto-released at commit/rollback), plus .with_for_update() on find_active_by_identity_features as a second barrier covering the multi-commit merge window.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 741,
+            "line_start": 727,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "guard_registration",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          },
+          {
+            "line_end": 736,
+            "line_start": 730,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          },
+          {
+            "line_end": 769,
+            "line_start": 757,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "protected_operation",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          },
+          {
+            "line_end": 768,
+            "line_start": 763,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "guard_registration",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          }
+        ],
+        "forbidden_condition": "Two concurrent requests carrying the same identity_features each finding 'no match' and both setting identity_status=confirmed, producing two active same-identity records that permanently break cross-channel merging; also binding a concurrent request onto a source row that is being soft-deleted during the merge window (the case the FOR UPDATE row lock blocks).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "The call site, confirmation write, and commit that must execute while holding acquire_identity_lock_async are not in the supplied views."
+        ],
+        "protected_operation": "Identity confirmation and cross-channel lookup-by-identity for EndUser records matched by (workspace_id, identity_features).",
+        "protected_resource": "Active EndUser rows keyed by identity_features within a workspace.",
+        "protection_obligation": "End-user identity confirmation for the same (workspace_id, identity_features) must be serialized by acquire_identity_lock_async (pg_advisory_xact_lock) plus the SELECT ... FOR UPDATE row lock in find_active_by_identity_features, so that two concurrent same-identity requests cannot both confirm and produce two active records with identical identity_features.",
+        "scope_limits": [
+          "Only the lock/row-lock registrations and the guarded lookup query are evidenced; the confirmation transaction itself is outside the supplied views.",
+          "No supplied source binds identity confirmation to agent mediation; recorded with agent_mediation=not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.db.delete(config); self.db.commit() (sync, memory_config_service.py 1184-1185) and await self.db.delete(config); await self.db.commit() (async, 1295-1296), reached only after all guards pass.",
+        "contract_id": "ecological-contract:25beb944e1656861972636502ddfe09f",
+        "declared_mechanism": "Sequential pre-delete checks in delete_config / delete_config_async returning structured error/warning payloads (legacy-id error, default-config error, active-config warning with force_required flag) before reaching db.delete/commit; IntegrityError triggers rollback and a force_required response.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1154,
+            "line_start": 1140,
+            "path": "api/app/services/memory_config_service.py",
+            "role": "guard_registration",
+            "source_sha256": "950e7479dd331a1c5547278a4b102ba0c9e26ce81249001bb81e7617e1d89634"
+          },
+          {
+            "line_end": 1166,
+            "line_start": 1156,
+            "path": "api/app/services/memory_config_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "950e7479dd331a1c5547278a4b102ba0c9e26ce81249001bb81e7617e1d89634"
+          },
+          {
+            "line_end": 1181,
+            "line_start": 1167,
+            "path": "api/app/services/memory_config_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "950e7479dd331a1c5547278a4b102ba0c9e26ce81249001bb81e7617e1d89634"
+          },
+          {
+            "line_end": 1154,
+            "line_start": 1152,
+            "path": "api/app/services/memory_config_service.py",
+            "role": "protected_operation",
+            "source_sha256": "950e7479dd331a1c5547278a4b102ba0c9e26ce81249001bb81e7617e1d89634"
+          },
+          {
+            "line_end": 1185,
+            "line_start": 1183,
+            "path": "api/app/services/memory_config_service.py",
+            "role": "commit_point",
+            "source_sha256": "950e7479dd331a1c5547278a4b102ba0c9e26ce81249001bb81e7617e1d89634"
+          },
+          {
+            "line_end": 1281,
+            "line_start": 1263,
+            "path": "api/app/services/memory_config_service.py",
+            "role": "guard_registration",
+            "source_sha256": "950e7479dd331a1c5547278a4b102ba0c9e26ce81249001bb81e7617e1d89634"
+          },
+          {
+            "line_end": 1296,
+            "line_start": 1294,
+            "path": "api/app/services/memory_config_service.py",
+            "role": "commit_point",
+            "source_sha256": "950e7479dd331a1c5547278a4b102ba0c9e26ce81249001bb81e7617e1d89634"
+          }
+        ],
+        "forbidden_condition": "delete_config / delete_config_async invoked with: a legacy int config_id; config.is_default True ('The default configuration does not allow deletion'); str(config.config_id) equal to the workspace's active config id ('The current space is using this configuration', force_required); or an IntegrityError foreign-key violation from end users still referencing the config (force_required).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent lifecycle hook or tool can trigger memory-config deletion."
+        ],
+        "protected_operation": "Row deletion of a MemoryConfig via db.delete followed by commit, in both the sync and async service methods.",
+        "protected_resource": "MemoryConfig rows, specifically workspace-default configs and the workspace's currently active config.",
+        "protection_obligation": "Deletion of a MemoryConfig is forbidden when the config is a legacy int-format id, the workspace default (is_default), or the workspace's currently active in-use config; only after all guards pass may the MemoryConfig row be deleted and committed, and residual foreign-key references additionally block deletion unless forced.",
+        "scope_limits": [
+          "Covers the delete_config / delete_config_async pair only; force-delete handling beyond the IntegrityError branch is only partially in view.",
+          "No supplied source binds memory-config deletion to agent mediation; agent_mediation is not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.uow.commit() at api/app/services/upload_service.py:506 (uow path) and db.commit() at 510 (db path), after delete_file at 505/509.",
+        "contract_id": "ecological-contract:261d1db1a47bc8e95c4f4f380b5a63bb",
+        "declared_mechanism": "permission_service.require_permission(subject, Action.DELETE, resource) evaluated before the deletion sequence; denial raised as FileAccessDeniedError.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 471,
+            "line_start": 456,
+            "path": "api/app/services/upload_service.py",
+            "role": "guard_registration",
+            "source_sha256": "5bf01067eac5d9d8969564011c164e53df392ae8c472de578148108a00d3b5fa"
+          },
+          {
+            "line_end": 476,
+            "line_start": 469,
+            "path": "api/app/services/upload_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5bf01067eac5d9d8969564011c164e53df392ae8c472de578148108a00d3b5fa"
+          },
+          {
+            "line_end": 510,
+            "line_start": 502,
+            "path": "api/app/services/upload_service.py",
+            "role": "protected_operation",
+            "source_sha256": "5bf01067eac5d9d8969564011c164e53df392ae8c472de578148108a00d3b5fa"
+          },
+          {
+            "line_end": 510,
+            "line_start": 503,
+            "path": "api/app/services/upload_service.py",
+            "role": "commit_point",
+            "source_sha256": "5bf01067eac5d9d8969564011c164e53df392ae8c472de578148108a00d3b5fa"
+          }
+        ],
+        "forbidden_condition": "Committing the soft delete of a generic file record for a subject lacking Action.DELETE on the file (PermissionDeniedException path), or when reference_count > 0.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view binds the delete flow to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "protected_operation": "Soft delete of the generic file record: uow.files.delete_file(file_id) / repository.delete_file(file_id) followed by commit.",
+        "protected_resource": "Generic file database record for file_id.",
+        "protection_obligation": "The database soft-delete of a generic file record is forbidden unless permission_service.require_permission grants the requesting subject Action.DELETE on that file resource before the delete is committed.",
+        "scope_limits": [
+          "Same guard instance protects both the physical-removal and the DB-commit commit points; separated here because the strata differ.",
+          "On failure the DB transaction is rolled back (525-526) and compensation restores the file."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "workspace_service.update_workspace(...) executes only after the decorator passes (workspace_controller.py:167-172).",
+        "contract_id": "ecological-contract:26b24a64a8cdd91c718553c0eaba84a3",
+        "declared_mechanism": "@cur_workspace_access_guard() decorator registered on update_workspace.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 155,
+            "line_start": 154,
+            "path": "api/app/controllers/workspace_controller.py",
+            "role": "guard_registration",
+            "source_sha256": "f706d4a51e3a5a0646a4bcc7140cccce78ed5d14e19c4bff66f690132d377718"
+          },
+          {
+            "line_end": 172,
+            "line_start": 163,
+            "path": "api/app/controllers/workspace_controller.py",
+            "role": "protected_operation",
+            "source_sha256": "f706d4a51e3a5a0646a4bcc7140cccce78ed5d14e19c4bff66f690132d377718"
+          },
+          {
+            "line_end": 172,
+            "line_start": 167,
+            "path": "api/app/controllers/workspace_controller.py",
+            "role": "commit_point",
+            "source_sha256": "f706d4a51e3a5a0646a4bcc7140cccce78ed5d14e19c4bff66f690132d377718"
+          }
+        ],
+        "forbidden_condition": "Executing the PUT workspace handler (workspace_service.update_workspace) without the registered @cur_workspace_access_guard() admitting workspace access first.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Guard verification semantics; agent binding absent in supplied views."
+        ],
+        "protected_operation": "PUT workspace update endpoint handler",
+        "protected_resource": "The caller's current workspace record",
+        "protection_obligation": "Workspace update must not execute unless cur_workspace_access_guard verifies the caller's access to the current workspace at handler entry.",
+        "scope_limits": [
+          "Guard implementation and workspace_service.update_workspace internals are not in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The guarded downstream sequence beginning with the AgentConfig/ModelConfig fetches (agent_tools.py lines 228-236); the actual LLM invocation and any invocation-record persistence lie beyond the supplied view (after line 237), and the guards at 211-226 precede them.",
+        "contract_id": "ecological-contract:2796cad81d40760a5094e574c07a1208",
+        "declared_mechanism": "Sequential in-function precondition checks at the start of invoke_agent that return refusal strings (existence, workspace/visibility, self-call, circular call, depth limit) before proceeding to db.get(AgentConfig) and any invocation effect.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 226,
+            "line_start": 211,
+            "path": "api/app/services/agent_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "1f3cbe22721c21761c0e69a41b0d0bffea9e741d639749a28f047fa900a0f65d"
+          },
+          {
+            "line_end": 213,
+            "line_start": 211,
+            "path": "api/app/services/agent_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1f3cbe22721c21761c0e69a41b0d0bffea9e741d639749a28f047fa900a0f65d"
+          },
+          {
+            "line_end": 226,
+            "line_start": 215,
+            "path": "api/app/services/agent_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1f3cbe22721c21761c0e69a41b0d0bffea9e741d639749a28f047fa900a0f65d"
+          },
+          {
+            "line_end": 236,
+            "line_start": 228,
+            "path": "api/app/services/agent_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "1f3cbe22721c21761c0e69a41b0d0bffea9e741d639749a28f047fa900a0f65d"
+          }
+        ],
+        "forbidden_condition": "agent_info['workspace_id'] != str(workspace_id) while agent_info['visibility'] != 'public' (returns 'No access Agent ...'); agent_id equal to the current agent's id (self-invocation); agent_uuid already present in invocation_chain (circular invocation); invocation_chain length at the max depth of 5.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "The tool decorator/registry entry that binds invoke_agent into an agent's tool list, and the dataflow supplying workspace_id, current_agent_id, and invocation_chain from agent execution context.",
+          "The target-agent LLM invocation and invocation-record write after line 237 that constitute the committed effect."
+        ],
+        "protected_operation": "Cross-agent invocation carried out by invoke_agent: target-agent existence check, config/model-config fetch, and the subsequent invocation of the target agent.",
+        "protected_resource": "Target Agent / AgentConfig / ModelConfig identified by agent_id, together with the caller's workspace boundary.",
+        "protection_obligation": "The invoke_agent tool operation must forbid invoking an agent outside the caller's workspace unless that agent is marked public, and additionally reject self-invocation, circular invocation, and over-deep invocation chains, all at the start of the tool call before any downstream agent invocation or database write.",
+        "scope_limits": [
+          "The function body and its precondition checks are fully evidenced, but the decorator/registration that exposes invoke_agent to agent tool dispatch, and the origin of workspace_id/current_agent_id/invocation_chain, are above the supplied view (before line 191); therefore agent_mediation is recorded as not_established rather than direct_tool.",
+          "Only the invoke_agent tool path is covered; discover_agents and other agent tools are not evidenced in the supplied view."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "message.is_deleted = True applied immediately after the guard (conversation_service.py 1334-1335); the subsequent persistence commit is not shown in the supplied view.",
+        "contract_id": "ecological-contract:3a8d6a7e2323d1aaf351e00d642ee0cc",
+        "declared_mechanism": "Explicit ownership check in delete_message: load the Conversation for message.conversation_id, compare conv.workspace_id to the caller's workspace_id, and raise PERMISSION_DENIED before any is_deleted mutation is applied.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1332,
+            "line_start": 1329,
+            "path": "api/app/services/conversation_service.py",
+            "role": "guard_registration",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          },
+          {
+            "line_end": 1332,
+            "line_start": 1330,
+            "path": "api/app/services/conversation_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          },
+          {
+            "line_end": 1335,
+            "line_start": 1325,
+            "path": "api/app/services/conversation_service.py",
+            "role": "protected_operation",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          },
+          {
+            "line_end": 1335,
+            "line_start": 1334,
+            "path": "api/app/services/conversation_service.py",
+            "role": "commit_point",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          }
+        ],
+        "forbidden_condition": "Deleting a message whose conversation's workspace_id differs from the caller's workspace_id (BusinessException 'No permission to delete this message', PERMISSION_DENIED).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The db.commit() that persists the soft-delete lies beyond the supplied view (view ends at line 1352 mid-query)."
+        ],
+        "protected_operation": "Logical deletion of a message (message.is_deleted = True), including deletion of all same-turn assistant reply versions for assistant messages.",
+        "protected_resource": "Message rows reachable by message_id (soft-delete flag is_deleted), via their parent conversation.",
+        "protection_obligation": "Message soft-delete must verify that the message's conversation belongs to the requesting workspace before the deletion is persisted; cross-workspace message deletion is forbidden.",
+        "scope_limits": [
+          "Covers the delete_message soft-delete path only; hard-delete and other message mutations are not evidenced.",
+          "No supplied source binds message deletion to agent mediation; agent_mediation is not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Entry into the guarded execution body only after successful NX acquisition (7435-7438; retry 7453-7466); owner-checked release at 8865-8879 in finally.",
+        "contract_id": "ecological-contract:3c2a68ee994bc3f31946f8d172794cc9",
+        "declared_mechanism": "aio_redis.set(_lock_key, _lock_value, nx=True, ex=120) with 2.0s wait_for timeout plus a 10x0.2s retry loop; Redis failure degrades to no-lock mode (_lock_degraded); timeout path cancels the stale holder using the execution_id parsed from the lock value; release via redis.eval Lua that deletes only when get(KEYS[1]) == ARGV[1].",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 7446,
+            "line_start": 7429,
+            "path": "api/app/services/workflow_service.py",
+            "role": "guard_registration",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          },
+          {
+            "line_end": 7466,
+            "line_start": 7448,
+            "path": "api/app/services/workflow_service.py",
+            "role": "guard_registration",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          },
+          {
+            "line_end": 7492,
+            "line_start": 7468,
+            "path": "api/app/services/workflow_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          },
+          {
+            "line_end": 7507,
+            "line_start": 7504,
+            "path": "api/app/services/workflow_service.py",
+            "role": "protected_operation",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          },
+          {
+            "line_end": 7438,
+            "line_start": 7430,
+            "path": "api/app/services/workflow_service.py",
+            "role": "commit_point",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          },
+          {
+            "line_end": 8879,
+            "line_start": 8865,
+            "path": "api/app/services/workflow_service.py",
+            "role": "commit_point",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          }
+        ],
+        "forbidden_condition": "A second workflow execution entering the execution body for the same conversation_id while another execution holds the exec lock; after the wait timeout the stale holder's execution is cancelled via _patch_execution_async(status='cancelled').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The invocation of execute_workflow_stream inside the guarded region is not within supplied line ranges.",
+          "No supplied view binds workflow execution to an agent tool, agent lifecycle hook, or agent-generated input."
+        ],
+        "protected_operation": "Workflow execution run for a conversation, including its conversation message/state writes (reviewer identifies the guarded call as execute_workflow_stream).",
+        "protected_resource": "conversation_id-scoped workflow execution state, keyed at Redis workflow:exec_lock:{conversation_id_uuid}.",
+        "protection_obligation": "For a given conversation, at most one workflow execution may run at a time: the workflow run must acquire the Redis conversation execution lock workflow:exec_lock:{conversation_id} via SET NX (ex=120) before executing the workflow execution body, and must release it with the owner-checked Lua compare-and-delete in finally.",
+        "scope_limits": [
+          "Redis acquisition failure degrades to no-lock mode (7439-7446, 7460-7464): the exclusion is best-effort, not fail-closed.",
+          "Concrete persistence commits inside the guarded execution body are outside supplied line ranges; the strata of individual message/state writes are unverified."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.commit() at api/app/services/user_service.py:261 following db_user.is_active = False at 259-260.",
+        "contract_id": "ecological-contract:3f09481c49a53f12a39bb1c2d78da76e",
+        "declared_mechanism": "permission_service.require_permission(Subject.from_user(current_user), Action.DEACTIVATE, Resource.from_user(db_user), error_message='No permission to deactivate this user') with denial raised as BusinessException FORBIDDEN before any mutation.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 217,
+            "line_start": 205,
+            "path": "api/app/services/user_service.py",
+            "role": "guard_registration",
+            "source_sha256": "91cb87c7d7616fe69371502a80ca9faef5839283cc4990d64da57cf229bdd73c"
+          },
+          {
+            "line_end": 228,
+            "line_start": 218,
+            "path": "api/app/services/user_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "91cb87c7d7616fe69371502a80ca9faef5839283cc4990d64da57cf229bdd73c"
+          },
+          {
+            "line_end": 255,
+            "line_start": 229,
+            "path": "api/app/services/user_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "91cb87c7d7616fe69371502a80ca9faef5839283cc4990d64da57cf229bdd73c"
+          },
+          {
+            "line_end": 263,
+            "line_start": 257,
+            "path": "api/app/services/user_service.py",
+            "role": "protected_operation",
+            "source_sha256": "91cb87c7d7616fe69371502a80ca9faef5839283cc4990d64da57cf229bdd73c"
+          },
+          {
+            "line_end": 261,
+            "line_start": 259,
+            "path": "api/app/services/user_service.py",
+            "role": "commit_point",
+            "source_sha256": "91cb87c7d7616fe69371502a80ca9faef5839283cc4990d64da57cf229bdd73c"
+          }
+        ],
+        "forbidden_condition": "Deactivation of a user for which require_permission(subject, Action.DEACTIVATE, Resource.from_user(db_user)) raises PermissionDeniedException (BusinessException FORBIDDEN); independently forbidden: deactivating the only superuser (230-241) and deactivating the tenant contact (243-255).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view binds user deactivation to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "protected_operation": "User deactivation: db_user.is_active = False persisted via db.add and db.commit.",
+        "protected_resource": "Target user account (user_id_to_deactivate).",
+        "protection_obligation": "Deactivating a user account is forbidden unless permission_service.require_permission grants the requesting subject Action.DEACTIVATE on the target user resource, enforced before the is_active=False mutation is committed.",
+        "scope_limits": [
+          "Unique-superuser and tenant-contact preconditions (229-255) forbid deactivation regardless of permission outcome.",
+          "notify_user_sync after commit (265) is outside the guard.",
+          "Reviewer-cited activate_user Action.ACTIVATE guard is not visible in the supplied range (view ends at line 283)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "ApiKeyService.delete_api_key(db, api_key_id, workspace_id) executes only after the decorator admits the request (api_key_controller.py:198).",
+        "contract_id": "ecological-contract:4075bdcb21fb48196e150d092b84f819",
+        "declared_mechanism": "@cur_workspace_access_guard() decorator registered on delete_api_key (guard implementation not in supplied views).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 190,
+            "line_start": 188,
+            "path": "api/app/controllers/api_key_controller.py",
+            "role": "guard_registration",
+            "source_sha256": "a2ed524a7798b6e8712cec1df576685bc02eb08022b5a5b9060a989b87fb3e29"
+          },
+          {
+            "line_end": 198,
+            "line_start": 195,
+            "path": "api/app/controllers/api_key_controller.py",
+            "role": "protected_operation",
+            "source_sha256": "a2ed524a7798b6e8712cec1df576685bc02eb08022b5a5b9060a989b87fb3e29"
+          },
+          {
+            "line_end": 198,
+            "line_start": 197,
+            "path": "api/app/controllers/api_key_controller.py",
+            "role": "commit_point",
+            "source_sha256": "a2ed524a7798b6e8712cec1df576685bc02eb08022b5a5b9060a989b87fb3e29"
+          }
+        ],
+        "forbidden_condition": "Executing the DELETE /{api_key_id} handler's deletion effect (ApiKeyService.delete_api_key) without cur_workspace_access_guard having verified workspace access first.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "What cur_workspace_access_guard actually verifies and with which rejection response.",
+          "Whether this endpoint is reachable from any agent tool surface (no binding in supplied views)."
+        ],
+        "protected_operation": "DELETE /{api_key_id} API-key deletion endpoint handler",
+        "protected_resource": "Workspace-scoped API key records",
+        "protection_obligation": "Workspace-scoped API key deletion must not execute unless the registered cur_workspace_access_guard admits the caller's workspace access at handler entry.",
+        "scope_limits": [
+          "Guard verification semantics and rejection behavior are not in the supplied views.",
+          "Console HTTP mutation endpoint; no agent tool/lifecycle binding appears in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await self.db.commit() at api/app/services/ontology_service.py:425 after scene_repo.delete_async at 424.",
+        "contract_id": "ecological-contract:4479981ebdfec8bbb4b93612886f5018",
+        "declared_mechanism": "await self.scene_repo.check_ownership_async(scene_id, workspace_id) raising ValueError before delete_async executes.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 423,
+            "line_start": 416,
+            "path": "api/app/services/ontology_service.py",
+            "role": "guard_registration",
+            "source_sha256": "51616f69a428481dee4895e1e041496136cc3cf4654378f4e649b6bff3992cae"
+          },
+          {
+            "line_end": 423,
+            "line_start": 421,
+            "path": "api/app/services/ontology_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "51616f69a428481dee4895e1e041496136cc3cf4654378f4e649b6bff3992cae"
+          },
+          {
+            "line_end": 427,
+            "line_start": 424,
+            "path": "api/app/services/ontology_service.py",
+            "role": "protected_operation",
+            "source_sha256": "51616f69a428481dee4895e1e041496136cc3cf4654378f4e649b6bff3992cae"
+          },
+          {
+            "line_end": 425,
+            "line_start": 424,
+            "path": "api/app/services/ontology_service.py",
+            "role": "commit_point",
+            "source_sha256": "51616f69a428481dee4895e1e041496136cc3cf4654378f4e649b6bff3992cae"
+          }
+        ],
+        "forbidden_condition": "Scene deletion when check_ownership_async returns False (ValueError 'No permission to operate the scene') or when the scene does not exist (ValueError 'The scene does not exist').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view binds scene deletion to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "protected_operation": "Ontology scene deletion: scene_repo.delete_async(scene_id) followed by db.commit().",
+        "protected_resource": "Ontology scene scene_id within workspace workspace_id (and its associated types).",
+        "protection_obligation": "Deleting an ontology scene is forbidden unless scene_repo.check_ownership_async(scene_id, workspace_id) confirms the acting workspace owns the scene, before the deletion is committed.",
+        "scope_limits": [
+          "Only delete_scene_async is within supplied views; reviewer-cited scene create/update and ontology class mutation guards are unverified.",
+          "Failure path rolls back the transaction (430-434)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Guard commit at self.lib.apply_landlock (zygote_worker.py:306) and self.lib.init_seccomp (zygote_worker.py:309-311) in _child_exec, mirrored at lib.apply_landlock (prescript.py:56) and lib.init_seccomp (prescript.py:59-61); the guarded exec effect commits at zygote_worker.py:322 (exec(code_obj, g)) and prescript.py:80 (exec(code)), reachable only after both return-code checks pass.",
+        "contract_id": "ecological-contract:499cd2ce0b88bba0d6defe41c4cabbb6",
+        "declared_mechanism": "ctypes-loaded native guard library: lib.apply_landlock(allowed_paths array) applied only when privilege is false, followed unconditionally by lib.init_seccomp(uid, gid, net, max_as, privilege); both return codes are checked and a non-zero value raises RuntimeError (zygote_worker.py:306-311) or a generic Exception (prescript.py:56-61), terminating the child before payload execution; supporting hardening (stdio redirection, close of every inherited fd except 0/1/2, sys.path trimming, recv-buffer clearing) precedes guard application in _child_exec.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 311,
+            "line_start": 295,
+            "path": "sandbox/runtime/pool/zygote_worker.py",
+            "role": "guard_registration",
+            "source_sha256": "cddcb197ba3d4431dc80acaa38a1d0b66500baa493b2460b8b095b1df3af79dd"
+          },
+          {
+            "line_end": 311,
+            "line_start": 307,
+            "path": "sandbox/runtime/pool/zygote_worker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cddcb197ba3d4431dc80acaa38a1d0b66500baa493b2460b8b095b1df3af79dd"
+          },
+          {
+            "line_end": 231,
+            "line_start": 227,
+            "path": "sandbox/runtime/pool/zygote_worker.py",
+            "role": "protected_operation",
+            "source_sha256": "cddcb197ba3d4431dc80acaa38a1d0b66500baa493b2460b8b095b1df3af79dd"
+          },
+          {
+            "line_end": 322,
+            "line_start": 313,
+            "path": "sandbox/runtime/pool/zygote_worker.py",
+            "role": "protected_operation",
+            "source_sha256": "cddcb197ba3d4431dc80acaa38a1d0b66500baa493b2460b8b095b1df3af79dd"
+          },
+          {
+            "line_end": 322,
+            "line_start": 316,
+            "path": "sandbox/runtime/pool/zygote_worker.py",
+            "role": "commit_point",
+            "source_sha256": "cddcb197ba3d4431dc80acaa38a1d0b66500baa493b2460b8b095b1df3af79dd"
+          },
+          {
+            "line_end": 61,
+            "line_start": 46,
+            "path": "sandbox/runtime/prescript.py",
+            "role": "guard_registration",
+            "source_sha256": "4d1a18b24a517b9111c35f95ffb3c7388f46c7a2700360e04eb7615de503e039"
+          },
+          {
+            "line_end": 61,
+            "line_start": 57,
+            "path": "sandbox/runtime/prescript.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4d1a18b24a517b9111c35f95ffb3c7388f46c7a2700360e04eb7615de503e039"
+          },
+          {
+            "line_end": 80,
+            "line_start": 64,
+            "path": "sandbox/runtime/prescript.py",
+            "role": "protected_operation",
+            "source_sha256": "4d1a18b24a517b9111c35f95ffb3c7388f46c7a2700360e04eb7615de503e039"
+          },
+          {
+            "line_end": 80,
+            "line_start": 79,
+            "path": "sandbox/runtime/prescript.py",
+            "role": "commit_point",
+            "source_sha256": "4d1a18b24a517b9111c35f95ffb3c7388f46c7a2700360e04eb7615de503e039"
+          }
+        ],
+        "forbidden_condition": "Reaching compile()/exec() of the decrypted user payload (zygote_worker.py:316-322; prescript.py:79-80) while apply_landlock (non-privileged mode) or init_seccomp has not been applied, or proceeding past a non-zero return code from either guard instead of raising/aborting the child.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the MSG_RUN payload fields req['code'] / req['key'] (zygote_worker.py:295-313) or the prescript.py template placeholders ({{uid}}, {{gid}}, {{enable_network}}, {{max_as}}, {{privilege}}, {{allowed_paths}}, {{code}}, {{key}}) originate from an agent tool invocation or agent-generated code is not shown.",
+          "The server/manager side that sends MSG_RUN frames and instantiates the prescript.py template is not included in the supplied views.",
+          "The runtime semantics of init_seccomp (exact syscall filtering, uid/gid drop, RLIMIT_AS enforcement, network toggling) are implemented in native code outside the supplied source."
+        ],
+        "protected_operation": "Execution of untrusted decrypted user code inside the forked sandbox child (exec(code_obj, g) after compile(code, '<sandbox>', 'exec') in _child_exec, reached via the MSG_RUN fork in _handle_run; exec(code) after XOR decryption in prescript.py).",
+        "protected_resource": "The sandbox child OS process and, through it, the filesystem paths and kernel attack surface that Landlock/seccomp constrain for the untrusted payload.",
+        "protection_obligation": "Untrusted user code must not be compiled or executed in the sandbox child before the sandbox guards are committed: in non-privileged mode, Landlock filesystem restriction over the allowed paths, and in all modes the seccomp filter initialized with the request's uid/gid drop, memory (max_as) and network settings, must be applied and any non-zero return code must abort the child before the decrypted user payload is compiled/executed \u2014 in both the zygote _child_exec path and the mirrored prescript.py launch path.",
+        "scope_limits": [
+          "Supported only from the supplied zygote_worker.py and prescript.py views; the native implementations of init_seccomp and apply_landlock (privilege drop, memory/network limit enforcement, Landlock ruleset details) inside libpython.so are not shown.",
+          "In privileged mode (privilege=true) both paths skip Landlock by design; the filesystem-guard portion of this obligation is sourced only for non-privileged mode.",
+          "The zygote parent deliberately never applies seccomp itself (zygote_worker.py:1-17); this obligation covers only the child execution path.",
+          "No agent tool registration, lifecycle hook, or agent-generated input dataflow is visible in the supplied views; the MSG_RUN control protocol is a sandbox manager protocol, not an asserted agent binding."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "user_memory_service.update_end_user_info_async(db, end_user_id, update_data) executes only after the ownership check passes (end_user_controller.py:164).",
+        "contract_id": "ecological-contract:499fcb38429c4c1d0c9137f044015431",
+        "declared_mechanism": "Inline ownership check returning fail(PERMISSION_DENIED, 'This end user does not belong to the current workspace') before applying update_data.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 155,
+            "line_start": 145,
+            "path": "api/app/controllers/end_user_controller.py",
+            "role": "guard_registration",
+            "source_sha256": "04021e9c4f289022d0066153ba52e00f187b1041c386976c0c2cdbcc4496cee1"
+          },
+          {
+            "line_end": 155,
+            "line_start": 151,
+            "path": "api/app/controllers/end_user_controller.py",
+            "role": "forbidden_condition",
+            "source_sha256": "04021e9c4f289022d0066153ba52e00f187b1041c386976c0c2cdbcc4496cee1"
+          },
+          {
+            "line_end": 134,
+            "line_start": 125,
+            "path": "api/app/controllers/end_user_controller.py",
+            "role": "protected_operation",
+            "source_sha256": "04021e9c4f289022d0066153ba52e00f187b1041c386976c0c2cdbcc4496cee1"
+          },
+          {
+            "line_end": 164,
+            "line_start": 162,
+            "path": "api/app/controllers/end_user_controller.py",
+            "role": "commit_point",
+            "source_sha256": "04021e9c4f289022d0066153ba52e00f187b1041c386976c0c2cdbcc4496cee1"
+          }
+        ],
+        "forbidden_condition": "Updating end-user info when str(end_user.workspace_id) != str(workspace_id) or current_workspace_id is None.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Agent binding absent in supplied views."
+        ],
+        "protected_operation": "End-user info update endpoint (update_end_user_info)",
+        "protected_resource": "Workspace-scoped end-user info records",
+        "protection_obligation": "End-user info updates must be rejected with PERMISSION_DENIED when the target end_user.workspace_id does not match the caller's current_workspace_id (and when no workspace is selected), before the update is applied.",
+        "scope_limits": [
+          "Guard is inline in the handler; update service internals are not in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The merge-intent write executed only after the guard: soft_delete_many_pending_async(source) plus flatten_merge_chain_async (end_user_service.py 94-95); the concrete commit statement inside that transaction is not shown, though the source comments state soft-delete and mapping share one atomic commit placed after all pre-checks.",
+        "contract_id": "ecological-contract:4def5bdade64d0c0a30f03d203dbdd3d",
+        "declared_mechanism": "Workspace-consistency check (section 1.4 in merge_end_users) placed after target validation but deliberately before the merge-intent write, so failed validations never leave sources soft-deleted.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 77,
+            "line_start": 65,
+            "path": "api/app/services/end_user_service.py",
+            "role": "guard_registration",
+            "source_sha256": "0f6506e85a23dbd80b4b36d5e6491315f5a7d044aa31830f374c4059b78a3d4c"
+          },
+          {
+            "line_end": 77,
+            "line_start": 69,
+            "path": "api/app/services/end_user_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0f6506e85a23dbd80b4b36d5e6491315f5a7d044aa31830f374c4059b78a3d4c"
+          },
+          {
+            "line_end": 95,
+            "line_start": 79,
+            "path": "api/app/services/end_user_service.py",
+            "role": "protected_operation",
+            "source_sha256": "0f6506e85a23dbd80b4b36d5e6491315f5a7d044aa31830f374c4059b78a3d4c"
+          },
+          {
+            "line_end": 95,
+            "line_start": 89,
+            "path": "api/app/services/end_user_service.py",
+            "role": "commit_point",
+            "source_sha256": "0f6506e85a23dbd80b4b36d5e6491315f5a7d044aa31830f374c4059b78a3d4c"
+          }
+        ],
+        "forbidden_condition": "Any source EndUser whose workspace_id differs from target_user.workspace_id (BusinessException 'Cross-workspace merge is not allowed: {ids} not in workspace {target workspace}').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The concrete commit statement of the merge-intent transaction inside soft_delete_many_pending_async / flatten_merge_chain_async is not in the supplied views."
+        ],
+        "protected_operation": "The merge pipeline: soft-delete of source EndUsers, end_user_merge mapping write (committed together as the merge intent), and the subsequent reference-table migration / Neo4j reassign.",
+        "protected_resource": "EndUser / EndUserInfo / end_user_merge rows and downstream references for the workspace.",
+        "protection_obligation": "Cross-workspace end-user merges must be blocked before any data migration is written: merge_end_users must reject the merge when any source EndUser's workspace_id differs from the target's, prior to soft-deleting sources or writing the end_user_merge mapping.",
+        "scope_limits": [
+          "Covers the workspace-consistency precondition of merge_end_users; the rest of the merge pipeline is only partially in view.",
+          "No supplied source binds end-user merging to agent mediation; agent_mediation is not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.commit() at api/app/tasks.py:412 inside the with_for_update transaction, gated by lock_guard.ensure_valid() at tasks.py:483-484.",
+        "contract_id": "ecological-contract:517585664a08b555ade1a3d05b27e69f",
+        "declared_mechanism": "db.query(Knowledge).with_for_update().first() row lock; _graph_task_fingerprint(knowledge) != expected_fingerprint -> RuntimeError; lock_guard.ensure_valid() re-verified immediately before _commit_evidence_pipeline (RedisFairLock.ensure_valid raises when lock renewal was lost).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 397,
+            "line_start": 394,
+            "path": "api/app/tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 407,
+            "line_start": 398,
+            "path": "api/app/tasks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 484,
+            "line_start": 467,
+            "path": "api/app/tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 483,
+            "line_start": 467,
+            "path": "api/app/tasks.py",
+            "role": "protected_operation",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 412,
+            "line_start": 408,
+            "path": "api/app/tasks.py",
+            "role": "commit_point",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 112,
+            "line_start": 106,
+            "path": "api/app/utils/redis_lock.py",
+            "role": "guard_registration",
+            "source_sha256": "49b753991d7daa37c58f930d6d8067eded1c1dbd4b1108d9991ea7008a50794d"
+          }
+        ],
+        "forbidden_condition": "Committing the pipeline switch when the knowledge row is absent, when the pipeline is already EVIDENCE, when the fingerprint changed during rebuild ('graph migration inputs changed while rebuilding'), or when fair-lock ownership was lost (ensure_valid raises RuntimeError before the commit call).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view binds the migration task to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "protected_operation": "Persistence of the knowledge.parser_config migration to GraphPipeline.EVIDENCE via _commit_evidence_pipeline, called from _run_evidence_graph_migration.",
+        "protected_resource": "Knowledge row (knowledge_id), parser_config field.",
+        "protection_obligation": "The knowledge.parser_config switch to the EVIDENCE graph pipeline may only be committed after re-reading the row with FOR UPDATE, revalidating the graph-task fingerprint inside that transaction, and re-verifying fair-lock ownership immediately before the commit.",
+        "scope_limits": [
+          "Only the migration path (_run_evidence_graph_migration 467-484) shows ensure_valid immediately before the commit; _commit_evidence_pipeline itself performs the FOR UPDATE and fingerprint checks but takes no lock argument."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The guarded API-response effects: the message query get_message_by_conversation_id executed only after the ownership checks (conversation_service.py 742-746), and the guarded return conversation after the draft/active checks (1272-1274).",
+        "contract_id": "ecological-contract:5bffe50704e39e62d5c8277327151546",
+        "declared_mechanism": "Ownership predicate checks raising BusinessException FORBIDDEN/NOT_FOUND placed before the message query and before returning the resolved conversation; the ResourceNotFoundException branch re-checks global existence so a foreign-workspace conversation_id is not silently treated as 'create new'.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 739,
+            "line_start": 729,
+            "path": "api/app/services/conversation_service.py",
+            "role": "guard_registration",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          },
+          {
+            "line_end": 739,
+            "line_start": 732,
+            "path": "api/app/services/conversation_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          },
+          {
+            "line_end": 746,
+            "line_start": 741,
+            "path": "api/app/services/conversation_service.py",
+            "role": "protected_operation",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          },
+          {
+            "line_end": 746,
+            "line_start": 742,
+            "path": "api/app/services/conversation_service.py",
+            "role": "commit_point",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          },
+          {
+            "line_end": 1274,
+            "line_start": 1252,
+            "path": "api/app/services/conversation_service.py",
+            "role": "guard_registration",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          },
+          {
+            "line_end": 1273,
+            "line_start": 1258,
+            "path": "api/app/services/conversation_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          },
+          {
+            "line_end": 1293,
+            "line_start": 1276,
+            "path": "api/app/services/conversation_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          },
+          {
+            "line_end": 1274,
+            "line_start": 1272,
+            "path": "api/app/services/conversation_service.py",
+            "role": "commit_point",
+            "source_sha256": "19f19efae1f5ac12e45f5e88ceaf530d13fd03a550e42a114b3c91c0ef7a8154"
+          }
+        ],
+        "forbidden_condition": "Unresolved internal end-user id (FORBIDDEN); conversation.app_id != app_id, conversation.workspace_id != workspace_id, conversation.user_id != internal_user_id, conversation.is_active is not True, or conversation.is_draft is not False (NOT_FOUND, including the explicit anti-IDOR rejection of cross-app conversation_id probing and the cross-workspace existence probe in create_or_get_conversation_async).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The conversation-creation write path beyond line 1293 of create_or_get_conversation_async.",
+          "Whether any agent runtime feeds conversation_id or external_user_id into these v1 methods."
+        ],
+        "protected_operation": "list_v1_conversation_messages message retrieval/response, and create_or_get_conversation_async resolution/return of an existing conversation by id.",
+        "protected_resource": "Conversation records and their messages scoped by (app_id, workspace_id, end-user internal id).",
+        "protection_obligation": "The v1 external conversation API forbids accessing a conversation \u2014 reading its messages or resolving/returning it by conversation_id \u2014 unless the conversation belongs to the requesting app_id, workspace_id, and the resolved end-user's internal id, and is active and non-draft; violations must be rejected with FORBIDDEN/NOT_FOUND before any messages are queried or the conversation is returned.",
+        "scope_limits": [
+          "Covers the v1 message-listing and create-or-get/resume paths cited; message-feedback and other v1 endpoints are not evidenced here.",
+          "Conversation creation persistence beyond line 1293 is not in the supplied views and is not asserted.",
+          "No supplied source binds these v1 entry points to an agent tool or lifecycle hook; agent_mediation is not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "ForgetLogRepository.sync_logs + db.commit at forget_service.py:429-431; failure re-raise at forget_service.py:432-439.",
+        "contract_id": "ecological-contract:5da36db2daecbc8195b4e1bad461d809",
+        "declared_mechanism": "_build_audit constructs a ForgetLog per deleted row; _sync_audit writes via ForgetLogRepository.sync_logs + db.commit and re-raises on exception.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 431,
+            "line_start": 424,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forget_service.py",
+            "role": "guard_registration",
+            "source_sha256": "1b64cc678196d79033ff048f7735989719e3aa6dd4fe2b528b9173d4cfde5780"
+          },
+          {
+            "line_end": 439,
+            "line_start": 432,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forget_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b64cc678196d79033ff048f7735989719e3aa6dd4fe2b528b9173d4cfde5780"
+          },
+          {
+            "line_end": 422,
+            "line_start": 410,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forget_service.py",
+            "role": "protected_operation",
+            "source_sha256": "1b64cc678196d79033ff048f7735989719e3aa6dd4fe2b528b9173d4cfde5780"
+          },
+          {
+            "line_end": 431,
+            "line_start": 429,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forget_service.py",
+            "role": "commit_point",
+            "source_sha256": "1b64cc678196d79033ff048f7735989719e3aa6dd4fe2b528b9173d4cfde5780"
+          }
+        ],
+        "forbidden_condition": "A forgetting run completing with soft deletions lacking persisted ForgetLog records (audit write exception must propagate, not be swallowed).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Agent binding absent in supplied views."
+        ],
+        "protected_operation": "PostgreSQL ForgetLog audit persistence for each soft-deleted node",
+        "protected_resource": "ForgetLog audit trail in PostgreSQL",
+        "protection_obligation": "Every Neo4j node soft-deleted by the forgetting engine must have a corresponding ForgetLog audit record persisted in PostgreSQL; an audit-write failure must raise and fail the run so deletions cannot succeed without audit persistence.",
+        "scope_limits": [
+          "Audit rows carry reason='timeout' and trigger=Scheduled in the shown constructor; no agent binding in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "AnnotationService.delete_all(app_id) at annotation_controller.py:275 and AnnotationService.delete_annotation(annotation_id) at annotation_controller.py:288 execute only after the decorator passes.",
+        "contract_id": "ecological-contract:633532dacfb0ae68ce05e4a9a7ead9ba",
+        "declared_mechanism": "@cur_workspace_access_guard() decorator registered on each annotation mutation handler.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 269,
+            "line_start": 267,
+            "path": "api/app/controllers/annotation_controller.py",
+            "role": "guard_registration",
+            "source_sha256": "44513a768a4265e7ffdb8abd79b2ad7b469ca6ca12ad7c4401fa2b289acc6d9d"
+          },
+          {
+            "line_end": 281,
+            "line_start": 279,
+            "path": "api/app/controllers/annotation_controller.py",
+            "role": "guard_registration",
+            "source_sha256": "44513a768a4265e7ffdb8abd79b2ad7b469ca6ca12ad7c4401fa2b289acc6d9d"
+          },
+          {
+            "line_end": 276,
+            "line_start": 273,
+            "path": "api/app/controllers/annotation_controller.py",
+            "role": "protected_operation",
+            "source_sha256": "44513a768a4265e7ffdb8abd79b2ad7b469ca6ca12ad7c4401fa2b289acc6d9d"
+          },
+          {
+            "line_end": 288,
+            "line_start": 287,
+            "path": "api/app/controllers/annotation_controller.py",
+            "role": "commit_point",
+            "source_sha256": "44513a768a4265e7ffdb8abd79b2ad7b469ca6ca12ad7c4401fa2b289acc6d9d"
+          }
+        ],
+        "forbidden_condition": "Executing annotation mutation handlers (service.delete_all / service.delete_annotation / service.create_annotation) without the registered @cur_workspace_access_guard() admitting workspace access first.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Whether annotation deletion is additionally ownership-checked against workspace inside AnnotationService (body not supplied)."
+        ],
+        "protected_operation": "Annotation mutation endpoints: POST create, DELETE all, DELETE /{annotation_id}, POST /import",
+        "protected_resource": "Per-app annotation records in the caller's workspace",
+        "protection_obligation": "Annotation mutation operations (create, delete one, delete all, import) must not execute unless cur_workspace_access_guard verifies the caller's workspace access at handler entry.",
+        "scope_limits": [
+          "AnnotationService deletion internals are not in the supplied views; commit point is stated at the service invocation.",
+          "Console HTTP mutation endpoints; no agent binding in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "LocalStorage.download opens the file (aiofiles.open(full_path, 'rb)'), reads the content and returns it (local.py lines 121-126). The caller that must invoke verify_signed_url before this point is not present in the supplied views.",
+        "contract_id": "ecological-contract:755236046f71d75b3dec9c870b742102",
+        "declared_mechanism": "verify_signed_url performs an expiration check followed by constant-time hmac.compare_digest against _generate_signature(file_id, expires_at) (HMAC-SHA256 keyed by settings.SECRET_KEY); generate_signed_url emits URLs of the form '{base}/storage/public/{file_id}?expires=...&signature=...'.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 83,
+            "line_start": 57,
+            "path": "api/app/core/storage/url_signer.py",
+            "role": "guard_registration",
+            "source_sha256": "e2ae65278f820ad0bad4b648e0ae40b2b0bb57bf214e62f442b1d8583207d4b6"
+          },
+          {
+            "line_end": 81,
+            "line_start": 74,
+            "path": "api/app/core/storage/url_signer.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e2ae65278f820ad0bad4b648e0ae40b2b0bb57bf214e62f442b1d8583207d4b6"
+          },
+          {
+            "line_end": 101,
+            "line_start": 86,
+            "path": "api/app/core/storage/url_signer.py",
+            "role": "guard_registration",
+            "source_sha256": "e2ae65278f820ad0bad4b648e0ae40b2b0bb57bf214e62f442b1d8583207d4b6"
+          },
+          {
+            "line_end": 54,
+            "line_start": 43,
+            "path": "api/app/core/storage/url_signer.py",
+            "role": "guard_registration",
+            "source_sha256": "e2ae65278f820ad0bad4b648e0ae40b2b0bb57bf214e62f442b1d8583207d4b6"
+          },
+          {
+            "line_end": 126,
+            "line_start": 101,
+            "path": "api/app/core/storage/local.py",
+            "role": "protected_operation",
+            "source_sha256": "cf6253baeeb7e5b95831af51be26072c1405a09a1688a1455bfad6ef0275fff3"
+          },
+          {
+            "line_end": 126,
+            "line_start": 121,
+            "path": "api/app/core/storage/local.py",
+            "role": "commit_point",
+            "source_sha256": "cf6253baeeb7e5b95831af51be26072c1405a09a1688a1455bfad6ef0275fff3"
+          }
+        ],
+        "forbidden_condition": "Serving local-storage file content for a URL whose expires_at is in the past (time.time() > expires_at -> 'URL has expired') or whose signature does not match the expected HMAC-SHA256 hex digest (hmac.compare_digest mismatch -> 'Invalid signature').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which route/endpoint serves /storage/public/{file_id} and where it calls verify_signed_url relative to LocalStorage.download.",
+          "Whether any agent tool, lifecycle hook, or agent-generated input supplies file_id/expires_at/signature into this flow."
+        ],
+        "protected_operation": "Serving/downloading a local-storage file identified by file_id, i.e., LocalStorage.download reading the file bytes and returning them to the requester.",
+        "protected_resource": "Locally stored file addressed as /storage/public/{file_id} (LocalStorage file store).",
+        "protection_obligation": "Access to a locally stored file via the /storage/public/{file_id} signed-URL path is forbidden unless the URL carries an unexpired expires timestamp plus a valid HMAC-SHA256 signature keyed by settings.SECRET_KEY over the message '{file_id}:{expires_at}', verified by verify_signed_url before the file content is served.",
+        "scope_limits": [
+          "Covers only the local storage backend and the signed-URL scheme for /storage/public/{file_id}; no other storage route is evidenced.",
+          "The guard function is demonstrably registered, but no supplied view shows the HTTP route calling verify_signed_url before LocalStorage.download; the enforcement-point wiring is a pending binding question, not an established fact.",
+          "No supplied source binds this flow to an agent tool, agent lifecycle hook, or agent-generated input; recorded with agent_mediation=not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The guard invocation immediately preceding handler dispatch: _check_workspace_access_sync(db, user, workspace_id) followed by return await func(*args, **kwargs) / return func(*args, **kwargs) in each wrapper (e.g., dependencies.py 556-557; async guard check at 679 with dispatch at 687).",
+        "contract_id": "ecological-contract:7d930e9c209264e1a0eda6e861db4c4e",
+        "declared_mechanism": "Decorator wrappers resolve db/user/workspace_id from kwargs and call _check_workspace_access_sync or _check_workspace_access_async, which verify workspace existence, tenant match for superusers, and membership via permission policies (WorkspaceMemberPolicy / SameTenantSuperuserPolicy through permission_service.require_permission) before delegating to the handler.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 522,
+            "line_start": 474,
+            "path": "api/app/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "d8331307b2d115005ecbe7d6dc3869b4f756ade3e4388348a88f538bb1454805"
+          },
+          {
+            "line_end": 491,
+            "line_start": 484,
+            "path": "api/app/dependencies.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d8331307b2d115005ecbe7d6dc3869b4f756ade3e4388348a88f538bb1454805"
+          },
+          {
+            "line_end": 522,
+            "line_start": 512,
+            "path": "api/app/dependencies.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d8331307b2d115005ecbe7d6dc3869b4f756ade3e4388348a88f538bb1454805"
+          },
+          {
+            "line_end": 582,
+            "line_start": 525,
+            "path": "api/app/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "d8331307b2d115005ecbe7d6dc3869b4f756ade3e4388348a88f538bb1454805"
+          },
+          {
+            "line_end": 557,
+            "line_start": 541,
+            "path": "api/app/dependencies.py",
+            "role": "protected_operation",
+            "source_sha256": "d8331307b2d115005ecbe7d6dc3869b4f756ade3e4388348a88f538bb1454805"
+          },
+          {
+            "line_end": 557,
+            "line_start": 556,
+            "path": "api/app/dependencies.py",
+            "role": "commit_point",
+            "source_sha256": "d8331307b2d115005ecbe7d6dc3869b4f756ade3e4388348a88f538bb1454805"
+          },
+          {
+            "line_end": 691,
+            "line_start": 659,
+            "path": "api/app/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "d8331307b2d115005ecbe7d6dc3869b4f756ade3e4388348a88f538bb1454805"
+          },
+          {
+            "line_end": 742,
+            "line_start": 694,
+            "path": "api/app/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "d8331307b2d115005ecbe7d6dc3869b4f756ade3e4388348a88f538bb1454805"
+          },
+          {
+            "line_end": 742,
+            "line_start": 720,
+            "path": "api/app/dependencies.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d8331307b2d115005ecbe7d6dc3869b4f756ade3e4388348a88f538bb1454805"
+          },
+          {
+            "line_end": 787,
+            "line_start": 745,
+            "path": "api/app/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "d8331307b2d115005ecbe7d6dc3869b4f756ade3e4388348a88f538bb1454805"
+          }
+        ],
+        "forbidden_condition": "Access when the workspace does not exist (HTTP 404); when a superuser's tenant_id differs from the workspace's tenant_id (HTTP 403); or when a non-superuser lacks an active workspace membership so permission_service.require_permission raises PermissionDeniedException (HTTP 403 'Forbidden').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent-related endpoint among the decorators' consumers routes agent tool calls or lifecycle events through these guards."
+        ],
+        "protected_operation": "Execution of the wrapped HTTP endpoint handler (func(*args, **kwargs) / await func(*args, **kwargs)) after the guard passes.",
+        "protected_resource": "Workspace resources addressed by workspace_id, taken from query/path kwargs, request body (payload.workspace_id), or user.current_workspace_id.",
+        "protection_obligation": "Workspace-scoped endpoints decorated with workspace_access_guard, cur_workspace_access_guard, cur_workspace_access_guard_async, or cur_workspace_access_guard_self_db must forbid access to a workspace resource unless the requester is a same-tenant superuser or an active member of that workspace, with the 404/403 rejection raised inside the guard wrapper before the decorated endpoint executes.",
+        "scope_limits": [
+          "Ordinary application-level HTTP authorization guard; no supplied source binds the wrapped endpoints to an agent tool, lifecycle hook, or agent-generated input, so agent_mediation is not_established.",
+          "Covers only the four named decorator guards and their two check functions; dependency-injection variants (commented-out require_workspace_access, get_share_user_id) are not part of this obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "spin_acquire at index.py:72-73 precedes merge_subgraph writes (index.py:78-85); re-acquired before resolve_entities (index.py:91-94) and extract_community (index.py:105-108); release at index.py:118-119.",
+        "contract_id": "ecological-contract:810015d8eeedb2a3443d13d27244d79d",
+        "declared_mechanism": "RedisDistributedLock(f\"graphrag_task_{kb_id}\", lock_value=document_id, timeout=1200) with spin_acquire before each mutation phase and release in finally; sibling KnowledgeGraphLock factory uses the same key with expire=120 and auto_renewal.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 74,
+            "line_start": 72,
+            "path": "api/app/core/rag/graphrag/general/index.py",
+            "role": "guard_registration",
+            "source_sha256": "7c16d2c81a11fff8e3e8ac9e1ab4b1d73f8827cf4c55623beb74d5d890ba1e4f"
+          },
+          {
+            "line_end": 107,
+            "line_start": 98,
+            "path": "api/app/core/rag/knowledge_graph/lock.py",
+            "role": "guard_registration",
+            "source_sha256": "c24899fac1242ef04bf07948235660e590657d594401327e757246ed17563a87"
+          },
+          {
+            "line_end": 117,
+            "line_start": 78,
+            "path": "api/app/core/rag/graphrag/general/index.py",
+            "role": "protected_operation",
+            "source_sha256": "7c16d2c81a11fff8e3e8ac9e1ab4b1d73f8827cf4c55623beb74d5d890ba1e4f"
+          },
+          {
+            "line_end": 119,
+            "line_start": 118,
+            "path": "api/app/core/rag/graphrag/general/index.py",
+            "role": "commit_point",
+            "source_sha256": "7c16d2c81a11fff8e3e8ac9e1ab4b1d73f8827cf4c55623beb74d5d890ba1e4f"
+          }
+        ],
+        "forbidden_condition": "Concurrent merge_subgraph / resolve_entities / extract_community mutations for the same kb_id without holding the graphrag_task_{kb_id} lock.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Agent binding absent in supplied views."
+        ],
+        "protected_operation": "GraphRAG merge/resolution/community graph mutation phases in run_graphrag",
+        "protected_resource": "Per-kb_id knowledge graph mutation state",
+        "protection_obligation": "Knowledge-graph merge, entity resolution, and community extraction writes for a given kb_id must execute only while the distributed lock graphrag_task_{kb_id} is held, releasing it in a finally block.",
+        "scope_limits": [
+          "merge_subgraph/resolve_entities/extract_community internals are not in the supplied views; their graph-mutation character is taken from the reviewer wording and call context.",
+          "Lock acquisition is spin/wait based; behavior on acquire timeout is not in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "can_fetch check at web_crawler.py:115 precedes http_fetcher.fetch(url) at web_crawler.py:125.",
+        "contract_id": "ecological-contract:82df4beb5300bd4d5ebf112243108c36",
+        "declared_mechanism": "robots_parser.can_fetch(url) check; disallowed URLs are logged, counted as skipped, and skipped via continue before rate_limiter.wait() and fetch.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 118,
+            "line_start": 114,
+            "path": "api/app/core/rag/crawler/web_crawler.py",
+            "role": "guard_registration",
+            "source_sha256": "e564cfdeca7cdc3fcddef18d52c09f9898ff029a80f621f2b8beea960f90d059"
+          },
+          {
+            "line_end": 118,
+            "line_start": 115,
+            "path": "api/app/core/rag/crawler/web_crawler.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e564cfdeca7cdc3fcddef18d52c09f9898ff029a80f621f2b8beea960f90d059"
+          },
+          {
+            "line_end": 125,
+            "line_start": 123,
+            "path": "api/app/core/rag/crawler/web_crawler.py",
+            "role": "protected_operation",
+            "source_sha256": "e564cfdeca7cdc3fcddef18d52c09f9898ff029a80f621f2b8beea960f90d059"
+          },
+          {
+            "line_end": 125,
+            "line_start": 114,
+            "path": "api/app/core/rag/crawler/web_crawler.py",
+            "role": "commit_point",
+            "source_sha256": "e564cfdeca7cdc3fcddef18d52c09f9898ff029a80f621f2b8beea960f90d059"
+          }
+        ],
+        "forbidden_condition": "Calling http_fetcher.fetch(url) for a URL where self.robots_parser.can_fetch(url) is False.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the crawler is invoked from any agent tool surface (no binding in supplied views)."
+        ],
+        "protected_operation": "http_fetcher.fetch(url) outbound crawl fetch in the crawler main loop",
+        "protected_resource": "External web targets protected by robots.txt crawl permissions",
+        "protection_obligation": "Outbound crawl fetches must skip any URL disallowed by robots.txt before the HTTP fetch executes.",
+        "scope_limits": [
+          "Crawler pipeline infrastructure; no agent binding in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "advance_write_cursor + db.commit at dispatcher.py:860-863 (sliding-window path) and dispatcher.py:917-920 (flush path), preceding push_write_task at dispatcher.py:880 and dispatcher.py:929.",
+        "contract_id": "ecological-contract:845a0b184dabacb2041a59cb1bede93b",
+        "declared_mechanism": "repo.advance_write_cursor(conversation_id, target_seq) with atomic WHERE write_cursor < seq predicate (per in-code comment) plus db.commit(); if not acquired, log and skip/return before push.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 863,
+            "line_start": 858,
+            "path": "api/app/core/memory/pipelines/dispatcher.py",
+            "role": "guard_registration",
+            "source_sha256": "2b354bc7391fbd4e753bdece580a66822b157ac54f60c5cd078bbb82c9088490"
+          },
+          {
+            "line_end": 920,
+            "line_start": 916,
+            "path": "api/app/core/memory/pipelines/dispatcher.py",
+            "role": "guard_registration",
+            "source_sha256": "2b354bc7391fbd4e753bdece580a66822b157ac54f60c5cd078bbb82c9088490"
+          },
+          {
+            "line_end": 871,
+            "line_start": 865,
+            "path": "api/app/core/memory/pipelines/dispatcher.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2b354bc7391fbd4e753bdece580a66822b157ac54f60c5cd078bbb82c9088490"
+          },
+          {
+            "line_end": 863,
+            "line_start": 860,
+            "path": "api/app/core/memory/pipelines/dispatcher.py",
+            "role": "commit_point",
+            "source_sha256": "2b354bc7391fbd4e753bdece580a66822b157ac54f60c5cd078bbb82c9088490"
+          },
+          {
+            "line_end": 891,
+            "line_start": 879,
+            "path": "api/app/core/memory/pipelines/dispatcher.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2b354bc7391fbd4e753bdece580a66822b157ac54f60c5cd078bbb82c9088490"
+          }
+        ],
+        "forbidden_condition": "Dispatching push_write_task for a message whose write cursor was already advanced (acquired is False).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether any non-agent entries reach these dispatch call sites (the shown call sites stamp source=MemoryMessageSource.AGENT)."
+        ],
+        "protected_operation": "push_write_task dispatch of user-message memory write tasks",
+        "protected_resource": "Per-conversation memory write pipeline dispatch stream",
+        "protection_obligation": "A user message in an agent-sourced conversation must be dispatched to the memory write pipeline at most once: an atomic advance_write_cursor (WHERE write_cursor < seq) commit must succeed before push_write_task, and dispatch must be skipped when the cursor was already advanced (both sliding-window and flush paths).",
+        "scope_limits": [
+          "push_write_task implementation (broker semantics) is not in the supplied views; task-queue dispatch is taken from reviewer wording.",
+          "The WHERE write_cursor < seq atomicity is asserted by the in-code comment; the repository body is not in the supplied views.",
+          "Upstream ingestion callers of these dispatch functions are not in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Permission evaluation at dispatcher.py:326-333 precedes push_fast_write_task at dispatcher.py:334-343.",
+        "contract_id": "ecological-contract:8524114eeb27104857e2f2e5eacc5d10",
+        "declared_mechanism": "safe_push_fast_write wrapper: early return without dispatch when permission fails; dispatch failures isolated so the normal flow is unaffected.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 333,
+            "line_start": 310,
+            "path": "api/app/core/memory/pipelines/dispatcher.py",
+            "role": "guard_registration",
+            "source_sha256": "2b354bc7391fbd4e753bdece580a66822b157ac54f60c5cd078bbb82c9088490"
+          },
+          {
+            "line_end": 307,
+            "line_start": 298,
+            "path": "api/app/core/memory/pipelines/dispatcher.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2b354bc7391fbd4e753bdece580a66822b157ac54f60c5cd078bbb82c9088490"
+          },
+          {
+            "line_end": 343,
+            "line_start": 325,
+            "path": "api/app/core/memory/pipelines/dispatcher.py",
+            "role": "protected_operation",
+            "source_sha256": "2b354bc7391fbd4e753bdece580a66822b157ac54f60c5cd078bbb82c9088490"
+          },
+          {
+            "line_end": 297,
+            "line_start": 292,
+            "path": "api/app/core/memory/pipelines/dispatcher.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2b354bc7391fbd4e753bdece580a66822b157ac54f60c5cd078bbb82c9088490"
+          }
+        ],
+        "forbidden_condition": "Calling push_fast_write_task when check_fast_write_permission returns False (role != \"user\", not should_memorize, missing app_id, or app memory not enabled when require_app_gate).",
+        "missing_evidence_roles": [
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "Concrete call sites of safe_push_fast_write per entry type (agent/workflow/api/mcp) are not in the supplied views."
+        ],
+        "protected_operation": "Fast-write memory task dispatch (push_fast_write_task)",
+        "protected_resource": "Memory write pipeline fast-path dispatch",
+        "protection_obligation": "Fast-write memory task dispatch must occur only when check_fast_write_permission permits (role == \"user\", should_memorize true, and \u2014 when require_app_gate applies \u2014 the app has memory.enabled), evaluated inside safe_push_fast_write before push_fast_write_task.",
+        "scope_limits": [
+          "push_fast_write_task implementation and check_memory_enabled internals are only partially in view.",
+          "The permission gate is best-effort/isolated: dispatch failure does not fail the normal flow."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The access guard commits at the _validate_config_access calls (resolver.py:157 sync, resolver.py:181 async); the guarded credential-release effect commits only afterwards at the binding/key-to-ResolvedModelConfig constructions (resolver.py:158-168 sync, resolver.py:182-196 async), which must not be reached unless the guard passes.",
+        "contract_id": "ecological-contract:90ff0a82e93228faed36bfff88b224ee",
+        "declared_mechanism": "_validate_config_access(config, tenant_id) raises ModelConfigInactiveError when not config.is_active and ModelAccessDeniedError when config.tenant_id != tenant_id and not config.is_public; it is invoked in resolve_model (resolver.py:157) and resolve_model_async (resolver.py:181) immediately after the config fetch and ModelConfigNotFoundError handling, and before any key selection or public-binding credential resolution.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 38,
+            "line_start": 31,
+            "path": "packages/redbear-model/src/redbear_model/resolver.py",
+            "role": "guard_registration",
+            "source_sha256": "0580f5a3cbef28f89df217169d5fa1a91a29bb1d746a9869d85957b4d3df3abc"
+          },
+          {
+            "line_end": 38,
+            "line_start": 35,
+            "path": "packages/redbear-model/src/redbear_model/resolver.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0580f5a3cbef28f89df217169d5fa1a91a29bb1d746a9869d85957b4d3df3abc"
+          },
+          {
+            "line_end": 157,
+            "line_start": 147,
+            "path": "packages/redbear-model/src/redbear_model/resolver.py",
+            "role": "protected_operation",
+            "source_sha256": "0580f5a3cbef28f89df217169d5fa1a91a29bb1d746a9869d85957b4d3df3abc"
+          },
+          {
+            "line_end": 168,
+            "line_start": 158,
+            "path": "packages/redbear-model/src/redbear_model/resolver.py",
+            "role": "commit_point",
+            "source_sha256": "0580f5a3cbef28f89df217169d5fa1a91a29bb1d746a9869d85957b4d3df3abc"
+          },
+          {
+            "line_end": 181,
+            "line_start": 171,
+            "path": "packages/redbear-model/src/redbear_model/resolver.py",
+            "role": "protected_operation",
+            "source_sha256": "0580f5a3cbef28f89df217169d5fa1a91a29bb1d746a9869d85957b4d3df3abc"
+          },
+          {
+            "line_end": 196,
+            "line_start": 182,
+            "path": "packages/redbear-model/src/redbear_model/resolver.py",
+            "role": "commit_point",
+            "source_sha256": "0580f5a3cbef28f89df217169d5fa1a91a29bb1d746a9869d85957b4d3df3abc"
+          },
+          {
+            "line_end": 72,
+            "line_start": 63,
+            "path": "packages/redbear-model/src/redbear_model/errors.py",
+            "role": "guard_registration",
+            "source_sha256": "07ac4f1b852d53ff72088b52612fb3b1198cb5175a7c41b4cfe0df0a93bbdecb"
+          }
+        ],
+        "forbidden_condition": "Resolving credential/API-key material (via _build_from_key with _select_key, or _build_from_binding with get_public_binding) for a model config where config.is_active is false, or where config.tenant_id != tenant_id and config.is_public is false \u2014 i.e., an inactive config or a cross-tenant non-public config passing the access gate.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which callers invoke resolve_model / resolve_model_async, and whether any caller is an agent tool or lifecycle hook, is not shown in the supplied views.",
+          "Whether tenant_id originates from an authenticated agent/session context is not shown.",
+          "The concrete persistence stratum of repository.get_model_config / list_active_keys / get_public_binding (database vs network) is unknown; if the obligation is re-anchored to a persistence commit point, a separate contract in that stratum may be required."
+        ],
+        "protected_operation": "resolve_model and resolve_model_async returning a credential-bearing ResolvedModelConfig (api_key populated from ModelKeySnapshot.api_key or PublicModelBindingSnapshot.api_key).",
+        "protected_resource": "Tenant-scoped model config credentials/API keys held in the model registry and the ResolvedModelConfig that carries them to the caller.",
+        "protection_obligation": "Model configuration resolution must deny (raise ModelConfigInactiveError / ModelAccessDeniedError) any model config that is inactive, or that is not owned by the requesting tenant and not marked public, before any credential/API key material is resolved into a ResolvedModelConfig, in both the synchronous (resolve_model) and asynchronous (resolve_model_async) paths.",
+        "scope_limits": [
+          "Supported only from the supplied resolver.py and errors.py views; implementations behind ModelRegistryRepository / AsyncModelRegistryRepository are abstract ports and not shown.",
+          "Covers only the inactive-config and cross-tenant-non-public denials; ModelConfigNotFoundError (absent config), PublicCredentialUnavailableError, and ModelCredentialNotFoundError paths are separate conditions outside this obligation.",
+          "record_model_usage / record_model_usage_async (resolver.py:199-222) are not part of this obligation.",
+          "No agent tool, lifecycle hook, or agent input dataflow is visible in the supplied views; agent mediation is not asserted."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "forget_soft_delete_by_element_ids(...) invocation at forget_service.py:290-297.",
+        "contract_id": "ecological-contract:941c12265929038ac49b2e0207cf28c3",
+        "declared_mechanism": "ForgetService.run quota-skip guard (active_count <= trigger_count \u2192 empty result), budget = active_count - target_count, per-batch min(self.BATCH_SIZE, budget), and ENTITY_PROTECTION_THRESHOLD threaded into forget_get_core_candidates and forget_soft_delete_by_element_ids.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 98,
+            "line_start": 91,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forget_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b64cc678196d79033ff048f7735989719e3aa6dd4fe2b528b9173d4cfde5780"
+          },
+          {
+            "line_end": 109,
+            "line_start": 100,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forget_service.py",
+            "role": "guard_registration",
+            "source_sha256": "1b64cc678196d79033ff048f7735989719e3aa6dd4fe2b528b9173d4cfde5780"
+          },
+          {
+            "line_end": 284,
+            "line_start": 271,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forget_service.py",
+            "role": "guard_registration",
+            "source_sha256": "1b64cc678196d79033ff048f7735989719e3aa6dd4fe2b528b9173d4cfde5780"
+          },
+          {
+            "line_end": 297,
+            "line_start": 290,
+            "path": "api/app/core/memory/storage_services/forgetting_engine/forget_service.py",
+            "role": "commit_point",
+            "source_sha256": "1b64cc678196d79033ff048f7735989719e3aa6dd4fe2b528b9173d4cfde5780"
+          }
+        ],
+        "forbidden_condition": "Running forgetting when active_count <= trigger_count (must skip), or soft-deleting more nodes than the remaining per-run budget allows.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Numeric batch-size value and target water-level derivation.",
+          "Agent binding absent in supplied views."
+        ],
+        "protected_operation": "Neo4j soft deletion of user core memory nodes (forget_soft_delete_by_element_ids)",
+        "protected_resource": "User core memory nodes in Neo4j",
+        "protection_obligation": "Forgetting must skip entirely while active core memory nodes are at or below the trigger quota, and per-run soft deletions must be capped to the remaining budget (batch = min(BATCH_SIZE, budget)) with entity candidates filtered by ENTITY_PROTECTION_THRESHOLD=10, at the Neo4j soft-delete commit.",
+        "scope_limits": [
+          "FORGET_CORE_BATCH_SIZE value and target_count derivation are not in the supplied views (reviewer states batch cap 50).",
+          "forget_soft_delete_by_element_ids Cypher internals are not in the supplied views.",
+          "Scheduled forgetting trigger; no agent binding in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.db.commit() immediately after the conditional UPDATE (end_user_repository.py line 1541), with the boolean rowcount outcome returned at line 1542.",
+        "contract_id": "ecological-contract:9d2c293cbe4e0cc89ec6d85fc4bd5035",
+        "declared_mechanism": "Single conditional UPDATE ... WHERE id/workspace/is_active AND write_time IS NOT DISTINCT FROM expected_write_time AND metadata_unchanged, executed with synchronize_session=False, followed by commit and return of bool(result.rowcount) so stale writes are detected rather than applied.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1531,
+            "line_start": 1506,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "guard_registration",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          },
+          {
+            "line_end": 1531,
+            "line_start": 1522,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          },
+          {
+            "line_end": 1540,
+            "line_start": 1532,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "protected_operation",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          },
+          {
+            "line_end": 1542,
+            "line_start": 1541,
+            "path": "api/app/repositories/end_user_repository.py",
+            "role": "commit_point",
+            "source_sha256": "a4c8b29b214c265772914f4c29df5ebe017e9af5b01340679c747beaf84b7b29"
+          }
+        ],
+        "forbidden_condition": "Committing overwrites of memory_insight / key_findings / behavior_pattern / growth_trajectory when EndUser.write_time is not distinct from expected_write_time or the EndUserInfo metadata row state changed since the read (conditional UPDATE matches no row, result.rowcount == 0).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent pipeline stage generates the memory_insight content written through this version-checked path."
+        ],
+        "protected_operation": "Cache writeback of memory-insight fields onto the active EndUser row (workspaces with neo4j storage).",
+        "protected_resource": "EndUser row columns memory_insight, memory_insight_updated_at, key_findings, behavior_pattern, growth_trajectory.",
+        "protection_obligation": "Grounded memory-insight cache writeback to an EndUser row must be version-conditioned: update_grounded_memory_insight_if_source_unchanged (and its async twin) may persist the cache only when the source version is unchanged (EndUser.write_time and EndUserInfo metadata state match the values read earlier); a stale overwrite must not be committed.",
+        "scope_limits": [
+          "Covers the grounded memory-insight cache writeback path only; other EndUser update paths are not evidenced with this guard.",
+          "No supplied source binds this writeback to agent mediation; recorded with agent_mediation=not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "SETNX claim (rebuild_task_guard.py:61-67) before celery_app.send_task (dispatch.py:158-162); failure release at dispatch.py:163-165.",
+        "contract_id": "ecological-contract:a206971514c7780988b19dd9b9e10427",
+        "declared_mechanism": "claim_or_get_rebuild_job Redis SET (nx=True, ex=REBUILD_TASK_GUARD_TTL_SECONDS) returning the existing task_id when already claimed; release_rebuild_job(str(knowledge_id), claim.task_id) in the exception path.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 147,
+            "line_start": 136,
+            "path": "api/app/core/rag/knowledge_graph/dispatch.py",
+            "role": "guard_registration",
+            "source_sha256": "39aba07aebcd49e866879f79ec5a3fe661593264c467a9cc93d8206605caa208"
+          },
+          {
+            "line_end": 156,
+            "line_start": 147,
+            "path": "api/app/core/rag/knowledge_graph/dispatch.py",
+            "role": "forbidden_condition",
+            "source_sha256": "39aba07aebcd49e866879f79ec5a3fe661593264c467a9cc93d8206605caa208"
+          },
+          {
+            "line_end": 71,
+            "line_start": 55,
+            "path": "api/app/core/rag/knowledge_graph/rebuild_task_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "04f3a7dc8ceecc21d204879ef22eafe5d747a5cf8792c9147caf2c7ecc8c01bb"
+          },
+          {
+            "line_end": 165,
+            "line_start": 157,
+            "path": "api/app/core/rag/knowledge_graph/dispatch.py",
+            "role": "commit_point",
+            "source_sha256": "39aba07aebcd49e866879f79ec5a3fe661593264c467a9cc93d8206605caa208"
+          }
+        ],
+        "forbidden_condition": "Dispatching a second concurrent rebuild task for the same knowledge_id while a claim exists (must coalesce), or leaving the claim held after a failed send_task.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Actual TTL value and owner-checked release semantics (reviewer states TTL 7200 and owner-checked release; not shown in view).",
+          "Agent binding absent in supplied views."
+        ],
+        "protected_operation": "celery_app.send_task dispatch of knowledge-graph rebuild tasks",
+        "protected_resource": "Per-knowledge_id evidence-graph rebuild job slot",
+        "protection_obligation": "For each knowledge_id, at most one evidence-graph rebuild Celery task may be dispatched: a Redis SETNX claim (claim_or_get_rebuild_job) must succeed before celery_app.send_task, duplicate requests must coalesce to the existing claim, and release_rebuild_job must run if dispatch fails.",
+        "scope_limits": [
+          "REBUILD_TASK_GUARD_TTL_SECONDS value and release_rebuild_job implementation are not in the supplied views.",
+          "Legacy pipeline path (send_task without claim) at dispatch.py:137-139 is not covered by this guard."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.db.commit() in each guarded update path: update_app (line 857), update_agent_config (line 1463), update_workflow_config (line 1794), each reached only after the corresponding _validate_app_writable call.",
+        "contract_id": "ecological-contract:a406ce3e33e1727b3b2f4f62a77937fb",
+        "declared_mechanism": "_validate_app_writable(app, workspace_id) invoked at the start of each update method: own-workspace apps pass, active 'editable' shares pass (via _get_share_permission on AppShare), all other shared cases raise BusinessException(WORKSPACE_NO_ACCESS).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 213,
+            "line_start": 187,
+            "path": "api/app/services/app_service.py",
+            "role": "guard_registration",
+            "source_sha256": "d58f5a74ecf44f7dfd6d02fa30217e8ea9ae02c248689a0e3edd891e3bd6f1b3"
+          },
+          {
+            "line_end": 213,
+            "line_start": 200,
+            "path": "api/app/services/app_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d58f5a74ecf44f7dfd6d02fa30217e8ea9ae02c248689a0e3edd891e3bd6f1b3"
+          },
+          {
+            "line_end": 857,
+            "line_start": 845,
+            "path": "api/app/services/app_service.py",
+            "role": "protected_operation",
+            "source_sha256": "d58f5a74ecf44f7dfd6d02fa30217e8ea9ae02c248689a0e3edd891e3bd6f1b3"
+          },
+          {
+            "line_end": 858,
+            "line_start": 855,
+            "path": "api/app/services/app_service.py",
+            "role": "commit_point",
+            "source_sha256": "d58f5a74ecf44f7dfd6d02fa30217e8ea9ae02c248689a0e3edd891e3bd6f1b3"
+          },
+          {
+            "line_end": 1422,
+            "line_start": 1417,
+            "path": "api/app/services/app_service.py",
+            "role": "guard_registration",
+            "source_sha256": "d58f5a74ecf44f7dfd6d02fa30217e8ea9ae02c248689a0e3edd891e3bd6f1b3"
+          },
+          {
+            "line_end": 1464,
+            "line_start": 1461,
+            "path": "api/app/services/app_service.py",
+            "role": "commit_point",
+            "source_sha256": "d58f5a74ecf44f7dfd6d02fa30217e8ea9ae02c248689a0e3edd891e3bd6f1b3"
+          },
+          {
+            "line_end": 1731,
+            "line_start": 1726,
+            "path": "api/app/services/app_service.py",
+            "role": "guard_registration",
+            "source_sha256": "d58f5a74ecf44f7dfd6d02fa30217e8ea9ae02c248689a0e3edd891e3bd6f1b3"
+          },
+          {
+            "line_end": 1795,
+            "line_start": 1793,
+            "path": "api/app/services/app_service.py",
+            "role": "commit_point",
+            "source_sha256": "d58f5a74ecf44f7dfd6d02fa30217e8ea9ae02c248689a0e3edd891e3bd6f1b3"
+          }
+        ],
+        "forbidden_condition": "Calling update_app / update_agent_config / update_workflow_config with workspace_id set where app.workspace_id != workspace_id and _get_share_permission returns 'readonly' or None, i.e., the app is not owned by the workspace and is not 'editable'-shared (BusinessException 'Shared applications cannot modify configurations', WORKSPACE_NO_ACCESS).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent configuration update originates from an agent tool or lifecycle hook rather than a console user."
+        ],
+        "protected_operation": "Persisted mutations of app metadata fields (name, description, icon, icon_type, visibility, status, tags), AgentConfig fields, and WorkflowConfig fields.",
+        "protected_resource": "App, AgentConfig, and WorkflowConfig rows belonging to a shared app.",
+        "protection_obligation": "Configuration writes to apps shared into the requesting workspace with only 'readonly' share permission (or with no active share) are forbidden: AppService.update_app, update_agent_config, and update_workflow_config must raise WORKSPACE_NO_ACCESS via _validate_app_writable before each method persists its changes with db.commit().",
+        "scope_limits": [
+          "Covers the three named update methods; create_app and delete_app are not evidenced with this guard in the supplied views.",
+          "Application-level share-permission authorization only; no supplied source binds these update paths to agent mediation, so agent_mediation is not_established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "QuotaExceededError raised at quota_manager.py:441-445 inside _check_quota, before the wrapped handler runs (wrapper pattern at quota_manager.py:578-579: check then return await func).",
+        "contract_id": "ecological-contract:b1bc8118bc709863f45e6123e24d4e65",
+        "declared_mechanism": "check_*_quota decorator wrappers invoking _check_quota(db, tenant_id, quota_type, ...) which compares usage against the tenant quota config and raises QuotaExceededError before delegating to the wrapped function.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 311,
+            "line_start": 309,
+            "path": "api/app/controllers/model_controller.py",
+            "role": "guard_registration",
+            "source_sha256": "89d9e9e971c3ec7dbaf38907f1f66b387b500e20ba190b3b67734b56ce2b00ad"
+          },
+          {
+            "line_end": 579,
+            "line_start": 566,
+            "path": "api/app/core/quota_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "c01b60263bd303376f86ea7b5b4d43273583f34a6b58c3fc4f84c3e6ef982901"
+          },
+          {
+            "line_end": 445,
+            "line_start": 436,
+            "path": "api/app/core/quota_manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c01b60263bd303376f86ea7b5b4d43273583f34a6b58c3fc4f84c3e6ef982901"
+          },
+          {
+            "line_end": 327,
+            "line_start": 311,
+            "path": "api/app/controllers/model_controller.py",
+            "role": "protected_operation",
+            "source_sha256": "89d9e9e971c3ec7dbaf38907f1f66b387b500e20ba190b3b67734b56ce2b00ad"
+          },
+          {
+            "line_end": 445,
+            "line_start": 441,
+            "path": "api/app/core/quota_manager.py",
+            "role": "commit_point",
+            "source_sha256": "c01b60263bd303376f86ea7b5b4d43273583f34a6b58c3fc4f84c3e6ef982901"
+          }
+        ],
+        "forbidden_condition": "Creating a quota-metered resource when current_usage >= quota_limit for the tenant/workspace quota type.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Concrete endpoint registrations for the other quota decorators.",
+          "Agent binding absent in supplied views."
+        ],
+        "protected_operation": "Quota-metered resource creation handlers wrapped by check_*_quota decorators (evidenced instance: create_composite_model)",
+        "protected_resource": "Tenant/workspace quota-metered resource counts (app_quota, model_quota, skill_quota, etc.)",
+        "protection_obligation": "Quota-metered tenant/workspace resource creation (e.g., app creation via check_app_quota, composite model creation via check_model_quota) must be forbidden once current usage has reached the plan limit, by _check_quota raising QuotaExceededError before the wrapped handler executes.",
+        "scope_limits": [
+          "Only the @check_model_quota registration on create_composite_model is evidenced; registrations of check_app_quota/check_workspace_quota/check_skill_quota/check_end_user_quota/check_ontology_project_quota on concrete endpoints are not in the supplied views.",
+          "check_model_quota's own wrapper body is not in the supplied views; its behavior is evidenced via the sibling decorators' shared _check_quota path."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "All wrapper checks complete before the handler executes (require_api_key awaits func only at api_key_auth.py:236 after all checks; require_api_key_self_db performs validation/published/scope/rate checks at api_key_auth.py:324-385 before its handler call).",
+        "contract_id": "ecological-contract:b44c52dd0f247a35289eee4b8f0686d0",
+        "declared_mechanism": "@require_api_key_self_db(scopes=[\"app\"]) / @require_api_key(scopes=[...]) wrappers: extract_api_key_from_request \u2192 validate_api_key[_async] \u2192 check_app_published[_async] \u2192 check_scope \u2192 RateLimiterService.check_all_limits, raising before invoking the endpoint function.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 288,
+            "line_start": 286,
+            "path": "api/app/controllers/service/app_api_controller.py",
+            "role": "guard_registration",
+            "source_sha256": "b4bd7303a7d88d73d243a638f591737e112f1659eeebd79e1c8a613aba8d765c"
+          },
+          {
+            "line_end": 268,
+            "line_start": 266,
+            "path": "api/app/controllers/service/app_api_controller.py",
+            "role": "guard_registration",
+            "source_sha256": "b4bd7303a7d88d73d243a638f591737e112f1659eeebd79e1c8a613aba8d765c"
+          },
+          {
+            "line_end": 365,
+            "line_start": 325,
+            "path": "api/app/core/api_key_auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e2b837d9f4239fda76c4ba3927383a23f636ac12589bdfa407930e1da15412fc"
+          },
+          {
+            "line_end": 308,
+            "line_start": 286,
+            "path": "api/app/controllers/service/app_api_controller.py",
+            "role": "protected_operation",
+            "source_sha256": "b4bd7303a7d88d73d243a638f591737e112f1659eeebd79e1c8a613aba8d765c"
+          },
+          {
+            "line_end": 347,
+            "line_start": 336,
+            "path": "api/app/core/api_key_auth.py",
+            "role": "commit_point",
+            "source_sha256": "e2b837d9f4239fda76c4ba3927383a23f636ac12589bdfa407930e1da15412fc"
+          }
+        ],
+        "forbidden_condition": "Executing a protected v1 service handler when the API key is missing, invalid/expired, the app is unpublished, required scopes are missing, or rate limits are exceeded (BusinessException / RateLimitException raised in the wrapper).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether /v1/app/chat invocation constitutes an agent lifecycle entry for DEC binding (not established in supplied views).",
+          "Full list of v1 endpoints carrying these decorators (only /chat and /variable registrations are in view)."
+        ],
+        "protected_operation": "v1 service request handling, including the Agent/Workflow chat invocation at POST /v1/app/chat",
+        "protected_resource": "Published-app service API surface bound to API keys",
+        "protection_obligation": "Protected v1 service endpoints (e.g., POST /v1/app/chat, GET app variables) must not execute unless a valid, non-expired API key is presented whose validation, app-published check, required-scope membership, and rate-limit admission all complete in the require_api_key / require_api_key_self_db wrappers before the handler runs.",
+        "scope_limits": [
+          "This is ordinary API-key authentication plus rate limiting; it is retained because the reviewer binds it to the agent chat entry, but the source does not explicitly bind it to an agent tool, lifecycle hook, or agent-generated input.",
+          "RateLimiterService.check_all_limits internals are not in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "set_(cache_key, _serialize_workflow_config(config), WORKFLOW_CONFIG_CACHE_TTL) at api/app/services/workflow_service.py:1256, gated at 1255; await set__async(cache_key, cache_payload, WORKFLOW_CONFIG_CACHE_TTL) at 1286-1290, gated at 1281-1282.",
+        "contract_id": "ecological-contract:ba10e95468e4e0804f5aa021109a7c82",
+        "declared_mechanism": "_workflow_config_cache_safe(config) gate (False when any environment_variables item has value_type=='secret'; docstring: 'Do not place workflow snapshots containing secret environment values in Redis') evaluated before each cache write; _deserialize_workflow_config returns None for secret-bearing payloads as a read-side fail-safe.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 83,
+            "line_start": 77,
+            "path": "api/app/services/workflow_service.py",
+            "role": "guard_registration",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          },
+          {
+            "line_end": 113,
+            "line_start": 104,
+            "path": "api/app/services/workflow_service.py",
+            "role": "guard_registration",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          },
+          {
+            "line_end": 83,
+            "line_start": 79,
+            "path": "api/app/services/workflow_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          },
+          {
+            "line_end": 113,
+            "line_start": 108,
+            "path": "api/app/services/workflow_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          },
+          {
+            "line_end": 1257,
+            "line_start": 1250,
+            "path": "api/app/services/workflow_service.py",
+            "role": "commit_point",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          },
+          {
+            "line_end": 1290,
+            "line_start": 1273,
+            "path": "api/app/services/workflow_service.py",
+            "role": "commit_point",
+            "source_sha256": "99a3000e890e534c7f459687a0bcacf11a9bf797e80635985177e98b396fba7a"
+          }
+        ],
+        "forbidden_condition": "Writing a serialized workflow config containing a secret-typed environment variable to Redis (write side); hydrating a workflow config from a cached payload containing a secret-typed variable (read side, _deserialize_workflow_config returns None).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "No supplied view binds workflow-config caching to an agent tool, lifecycle hook, or agent-generated input dataflow."
+        ],
+        "protected_operation": "Redis cache write of the workflow config snapshot via set_ / set__async; read-side hydration via _deserialize_workflow_config.",
+        "protected_resource": "Redis key workflow_config_key(app_id).",
+        "protection_obligation": "Workflow configuration snapshots whose environment_variables contain any value_type=='secret' must not be persisted into the Redis workflow-config cache keyed by workflow_config_key(app_id), and cached payloads containing secrets must be rejected on read (dual write-side/read-side guard).",
+        "scope_limits": [
+          "Only the two cache-write sites in supplied views (get_workflow_config_snapshot 1247-1257; get_workflow_config_snapshot_async 1264-1291) are verified as gated; the reviewer claims every set_/set__async write.",
+          "Secret values are placeholder-masked upstream ('__SECRET__', 615-618); the guard keys on value_type, not on content."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Atomic admission eval at rate_policy.py:101-106; rejections raise at rate_policy.py:108-139 before the task push proceeds.",
+        "contract_id": "ecological-contract:e78159d7366574873c0b586d5f67eae4",
+        "declared_mechanism": "enforce_admission: atomic Redis Lua admission (queue length + sliding-window QPS) raising RateLimitException with reason headers on rejection; returns True only when admitted.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 106,
+            "line_start": 94,
+            "path": "api/app/celery_task_scheduler/rate_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "f59708e479806c887f19717bb6e7f59fbd45b180318292625690ba072d92c01f"
+          },
+          {
+            "line_end": 139,
+            "line_start": 108,
+            "path": "api/app/celery_task_scheduler/rate_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f59708e479806c887f19717bb6e7f59fbd45b180318292625690ba072d92c01f"
+          },
+          {
+            "line_end": 92,
+            "line_start": 79,
+            "path": "api/app/celery_task_scheduler/rate_policy.py",
+            "role": "protected_operation",
+            "source_sha256": "f59708e479806c887f19717bb6e7f59fbd45b180318292625690ba072d92c01f"
+          },
+          {
+            "line_end": 106,
+            "line_start": 101,
+            "path": "api/app/celery_task_scheduler/rate_policy.py",
+            "role": "commit_point",
+            "source_sha256": "f59708e479806c887f19717bb6e7f59fbd45b180318292625690ba072d92c01f"
+          }
+        ],
+        "forbidden_condition": "Enqueueing a task when the admission Lua script returns -1 (queue_full) or -2 (qps) for the unit.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which task types flow through this admission gate and whether they are agent-lifecycle tasks (not established in supplied views)."
+        ],
+        "protected_operation": "Task enqueue for routed scheduler units (AdmissionCtx: queue/active-units/ready-set/tracker keys)",
+        "protected_resource": "Per-unit task queue capacity and per-user QPS budget",
+        "protection_obligation": "Task scheduling pushes must be rejected with RateLimitException when the per-unit queue is full or per-user QPS is exceeded; admission must be decided atomically before the push proceeds.",
+        "scope_limits": [
+          "The caller invoking enforce_admission prior to the actual enqueue is not in the supplied views.",
+          "Rate-limit policy resolution (_resolve_policy/_resolve_qps) internals are only partially in view."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "variable_struct.instance.set(value) at runtime/core/workflow/engine/variable_pool.py:366-367; assignment operator resolution/execution at runtime/core/workflow/nodes/assigner/node.py:81-87 only after the namespace checks at 62-67.",
+        "contract_id": "ecological-contract:e90acbc8b69445f1c2caf500e49c4c3a",
+        "declared_mechanism": "VariablePool.set checks variable_struct.mut and raises KeyError before instance.set(value); pool initialization registers env variables with mut=False (620-626) and sys variables with mut=False (665-674); AssignerNode raises ValueError for env namespace (62-63) and for non-conv/non-cycle namespaces (66-67).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 367,
+            "line_start": 346,
+            "path": "e2b-infra/templates/agent-runtime/runtime/core/workflow/engine/variable_pool.py",
+            "role": "guard_registration",
+            "source_sha256": "f68aae48ae078f04b7d78002dff5946d79ad8ae6efffb7172213dbc6739b7ecf"
+          },
+          {
+            "line_end": 365,
+            "line_start": 361,
+            "path": "e2b-infra/templates/agent-runtime/runtime/core/workflow/engine/variable_pool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f68aae48ae078f04b7d78002dff5946d79ad8ae6efffb7172213dbc6739b7ecf"
+          },
+          {
+            "line_end": 626,
+            "line_start": 620,
+            "path": "e2b-infra/templates/agent-runtime/runtime/core/workflow/engine/variable_pool.py",
+            "role": "guard_registration",
+            "source_sha256": "f68aae48ae078f04b7d78002dff5946d79ad8ae6efffb7172213dbc6739b7ecf"
+          },
+          {
+            "line_end": 674,
+            "line_start": 665,
+            "path": "e2b-infra/templates/agent-runtime/runtime/core/workflow/engine/variable_pool.py",
+            "role": "guard_registration",
+            "source_sha256": "f68aae48ae078f04b7d78002dff5946d79ad8ae6efffb7172213dbc6739b7ecf"
+          },
+          {
+            "line_end": 367,
+            "line_start": 366,
+            "path": "e2b-infra/templates/agent-runtime/runtime/core/workflow/engine/variable_pool.py",
+            "role": "commit_point",
+            "source_sha256": "f68aae48ae078f04b7d78002dff5946d79ad8ae6efffb7172213dbc6739b7ecf"
+          },
+          {
+            "line_end": 71,
+            "line_start": 57,
+            "path": "e2b-infra/templates/agent-runtime/runtime/core/workflow/nodes/assigner/node.py",
+            "role": "protected_operation",
+            "source_sha256": "98a9c11ae610c30eaceb2d998df51714fca23dfe5bdfc45ea4abf3d9089516cb"
+          },
+          {
+            "line_end": 67,
+            "line_start": 62,
+            "path": "e2b-infra/templates/agent-runtime/runtime/core/workflow/nodes/assigner/node.py",
+            "role": "forbidden_condition",
+            "source_sha256": "98a9c11ae610c30eaceb2d998df51714fca23dfe5bdfc45ea4abf3d9089516cb"
+          },
+          {
+            "line_end": 87,
+            "line_start": 80,
+            "path": "e2b-infra/templates/agent-runtime/runtime/core/workflow/nodes/assigner/node.py",
+            "role": "commit_point",
+            "source_sha256": "98a9c11ae610c30eaceb2d998df51714fca23dfe5bdfc45ea4abf3d9089516cb"
+          }
+        ],
+        "forbidden_condition": "Writing a variable whose struct has mut=False via VariablePool.set (KeyError raised); AssignerNode assignment targeting an 'env'-namespace selector or a namespace that is not 'conv' and not in state['cycle_nodes'] (ValueError raised).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view shows tool dispatch, lifecycle-hook wiring, or agent-generated input flow reaching VariablePool.set or AssignerNode execution; the 'agent-runtime' package location alone is not treated as a binding."
+        ],
+        "protected_operation": "Workflow variable write: VariablePool.set -> variable_struct.instance.set(value) under the per-selector lock; AssignerNode assignment-operator execution against the variable pool.",
+        "protected_resource": "Workflow VariablePool entries \u2014 read-only env.* and sys.* namespaces; conv.* and cycle-node variables as the only assignable targets.",
+        "protection_obligation": "Mutation of read-only workflow variables is forbidden: VariablePool.set must raise KeyError before committing the write when variable_struct.mut is False (env.* and sys.* variables are registered with mut=False at pool initialization), and AssignerNode must reject assignment selectors whose namespace is 'env' or is neither 'conv' nor a cycle node before executing any assignment operator.",
+        "scope_limits": [
+          "Guard protects in-process workflow-engine state, not an external effect.",
+          "VariablePool.new() delegates to set for existing variables and swallows the resulting KeyError (377-381); guard applies to the set path."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Elasticsearch graph writes inside _run_evidence_graph_rebuild, reached at api/app/tasks.py:755-761 only after the guard sequence at 702-725 and fair-lock acquisition at 452-453.",
+        "contract_id": "ecological-contract:eb234c7c30a1335dfdf20eff1a14a2b3",
+        "declared_mechanism": "has_rebuild_terminal(task_id) -> Ignore; refresh_rebuild_job(knowledge_id, task_id) -> Ignore on foreign job; acquire_rebuild_execution(knowledge_id, owner_token) (Redis SET NX EX) -> Ignore on active attempt; create_knowledge_graph_lock + lock_guard.ensure_valid() before and after execution; _finish_rebuild_task_guard marks the terminal marker and releases execution/job guards.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 735,
+            "line_start": 692,
+            "path": "api/app/tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 725,
+            "line_start": 702,
+            "path": "api/app/tasks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 464,
+            "line_start": 450,
+            "path": "api/app/tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 761,
+            "line_start": 755,
+            "path": "api/app/tasks.py",
+            "role": "protected_operation",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 761,
+            "line_start": 756,
+            "path": "api/app/tasks.py",
+            "role": "commit_point",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 689,
+            "line_start": 661,
+            "path": "api/app/tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "f39c4514c1f4aaa4b1f79d11f1999c514b62ec02d27486e2c0e3ded31e33e737"
+          },
+          {
+            "line_end": 112,
+            "line_start": 106,
+            "path": "api/app/utils/redis_lock.py",
+            "role": "guard_registration",
+            "source_sha256": "49b753991d7daa37c58f930d6d8067eded1c1dbd4b1108d9991ea7008a50794d"
+          }
+        ],
+        "forbidden_condition": "Running _run_evidence_graph_rebuild for a knowledge_id when a terminal marker exists for the task, when another task owns the rebuild job, when another attempt holds the rebuild-execution claim (each raising Ignore), or when fair-lock ownership was lost (ensure_valid raises RuntimeError).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view binds the rebuild task to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "protected_operation": "Evidence-graph rebuild execution (Elasticsearch graph writes) via _run_evidence_graph_rebuild, invoked as the observed task operation.",
+        "protected_resource": "knowledge_id-scoped rebuild guard keys (terminal/job/execution) and the per-knowledge Redis fair lock; the Elasticsearch graph index for the workspace.",
+        "protection_obligation": "Concurrent or duplicate execution of a knowledge base's evidence-graph rebuild is forbidden: the rebuild task must pass has_rebuild_terminal, re-claim the rebuild job via refresh_rebuild_job(knowledge_id, task_id), win acquire_rebuild_execution(knowledge_id, owner_token), and own the per-knowledge graph fair lock (create_knowledge_graph_lock with lock_guard.ensure_valid()) before any Elasticsearch graph write runs; on completion it must mark_rebuild_terminal and release the execution/job guards.",
+        "scope_limits": [
+          "Guard-failure path retries via _retry_rebuild_guard_failure (728-735) rather than proceeding.",
+          "The Elasticsearch client write calls themselves live in modules outside supplied views; the cited commit point is the guarded rebuild invocation inside lock and claims."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Elasticsearch writes inside the lock scope: rebuild pipeline run (mem-knowledge/src/services/evidence_graph.py:154-163), clear_all_graph_documents call (171-177), document pipeline execution (206-217).",
+        "contract_id": "ecological-contract:eff533069f26eaa6203b1021b45b62da",
+        "declared_mechanism": "create_knowledge_graph_lock context with lock_guard.ensure_valid() before/after each operation and ensure_valid passed as a callback into clear_all_graph_documents; _run_guarded_rebuild claims via has_rebuild_terminal / refresh_rebuild_job / acquire_rebuild_execution (Redis SET NX EX) before invoking process_evidence_rebuild; tasks/state.py implements NX acquire, compare-and-delete release, and terminal markers.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 217,
+            "line_start": 193,
+            "path": "mem-knowledge/src/services/evidence_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "dc499d72c63cd329bb13452c918f6006f5e1df10ae0926aaa5d623529a70d9ee"
+          },
+          {
+            "line_end": 179,
+            "line_start": 166,
+            "path": "mem-knowledge/src/services/evidence_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "dc499d72c63cd329bb13452c918f6006f5e1df10ae0926aaa5d623529a70d9ee"
+          },
+          {
+            "line_end": 163,
+            "line_start": 154,
+            "path": "mem-knowledge/src/services/evidence_graph.py",
+            "role": "protected_operation",
+            "source_sha256": "dc499d72c63cd329bb13452c918f6006f5e1df10ae0926aaa5d623529a70d9ee"
+          },
+          {
+            "line_end": 217,
+            "line_start": 206,
+            "path": "mem-knowledge/src/services/evidence_graph.py",
+            "role": "protected_operation",
+            "source_sha256": "dc499d72c63cd329bb13452c918f6006f5e1df10ae0926aaa5d623529a70d9ee"
+          },
+          {
+            "line_end": 177,
+            "line_start": 171,
+            "path": "mem-knowledge/src/services/evidence_graph.py",
+            "role": "commit_point",
+            "source_sha256": "dc499d72c63cd329bb13452c918f6006f5e1df10ae0926aaa5d623529a70d9ee"
+          },
+          {
+            "line_end": 342,
+            "line_start": 314,
+            "path": "mem-knowledge/src/tasks/evidence_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "072cd2832ed14c44e823f498a1fd8140cc56baae78c0acd95450ff146d8633d8"
+          },
+          {
+            "line_end": 340,
+            "line_start": 323,
+            "path": "mem-knowledge/src/tasks/evidence_graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "072cd2832ed14c44e823f498a1fd8140cc56baae78c0acd95450ff146d8633d8"
+          },
+          {
+            "line_end": 246,
+            "line_start": 234,
+            "path": "mem-knowledge/src/tasks/state.py",
+            "role": "guard_registration",
+            "source_sha256": "a236641da9bf81fe4ba5a02321652cf8b85426927818ef70e41e79e8b9b0743d"
+          },
+          {
+            "line_end": 275,
+            "line_start": 264,
+            "path": "mem-knowledge/src/tasks/state.py",
+            "role": "guard_registration",
+            "source_sha256": "a236641da9bf81fe4ba5a02321652cf8b85426927818ef70e41e79e8b9b0743d"
+          }
+        ],
+        "forbidden_condition": "Executing graph-index document writes, rebuilds, or clears for a knowledge_id without valid fair-lock ownership (RuntimeError from ensure_valid), or \u2014 for rebuilds \u2014 when a terminal marker exists, another task owns the rebuild job, or another attempt holds the rebuild-execution claim (task coalesced via Ignore).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view binds these graph tasks to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "protected_operation": "Elasticsearch graph index mutations: document pipeline execution (process_evidence_document), rebuild_knowledge pipeline run (process_evidence_rebuild), and clear_all_graph_documents (execute_evidence_clear), each inside the create_knowledge_graph_lock scope.",
+        "protected_resource": "Elasticsearch graph index documents for knowledge_id (graph_index_name(workspace_id)); per-knowledge fair lock and Redis rebuild guard keys.",
+        "protection_obligation": "Evidence-graph document sync, rebuild, and clear operations on the Elasticsearch graph index are forbidden unless the per-knowledge fair lock (lock_guard.ensure_valid()) is valid at execution time \u2014 re-validated before and after each operation and threaded into clear_all_graph_documents \u2014 and, for rebuilds, unless the worker first passes has_rebuild_terminal, refresh_rebuild_job, and acquire_rebuild_execution claims.",
+        "scope_limits": [
+          "mem-knowledge is a separate service code path with its own guard registrations, analogous to but independent from the api/app/tasks.py guards."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Conditional update calls at memory_insight.py:563-566 (sync) and 568-571 (async); superseded handling at memory_insight.py:573-588.",
+        "contract_id": "ecological-contract:fa892f2fceda956af6c954977978bdd2",
+        "declared_mechanism": "update_kwargs carrying expected_write_time / expected_metadata_row_exists / expected_metadata_updated_at into EndUserRepository.update_grounded_memory_insight_if_source_unchanged (sync) and _async variant.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 558,
+            "line_start": 549,
+            "path": "api/app/core/memory/analytics/memory_insight.py",
+            "role": "guard_registration",
+            "source_sha256": "e472304c666d762140230eca14bd8ed5f0078241edbbd80954d66c687cad03ad"
+          },
+          {
+            "line_end": 588,
+            "line_start": 582,
+            "path": "api/app/core/memory/analytics/memory_insight.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e472304c666d762140230eca14bd8ed5f0078241edbbd80954d66c687cad03ad"
+          },
+          {
+            "line_end": 571,
+            "line_start": 559,
+            "path": "api/app/core/memory/analytics/memory_insight.py",
+            "role": "commit_point",
+            "source_sha256": "e472304c666d762140230eca14bd8ed5f0078241edbbd80954d66c687cad03ad"
+          }
+        ],
+        "forbidden_condition": "Committing refreshed insight when expected_write_time / expected_metadata_row_exists / expected_metadata_updated_at no longer match the source row (updated is False \u2192 'superseded').",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether refresh_memory_insight[_for_worker] runs within the agent memory-write lifecycle (trigger not shown in supplied views)."
+        ],
+        "protected_operation": "End-user PostgreSQL memory-insight write-back after LLM insight generation",
+        "protected_resource": "End-user memory_insight / key_findings columns in the PostgreSQL end_user row",
+        "protection_obligation": "LLM-refreshed memory insight must be committed to the end-user PostgreSQL row only when the source write_time / metadata row state / metadata_updated_at snapshot is unchanged; otherwise the write-back must be rejected as status 'superseded' with error 'Source data has been updated,This round of insights has not been written'.",
+        "scope_limits": [
+          "Repository conditional-UPDATE SQL bodies are not in the supplied views.",
+          "The LLM insight generation is an analytics-pipeline model call; no agent tool/hook binding is shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "MemoryService.delete_all_nodes_by_end_user_id(end_user_id_str) at memory_storage_controller.py:412 and repo.soft_delete_by_end_user_id_async at memory_storage_controller.py:418 execute only after the ownership check passes.",
+        "contract_id": "ecological-contract:fcaf80034b8e15c07cc0503525fc94ab",
+        "declared_mechanism": "Inline ownership check returning fail(PERMISSION_DENIED, 'This end user does not belong to the current workspace') after fetching the end user, before destructive effects.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 408,
+            "line_start": 404,
+            "path": "api/app/controllers/memory_storage_controller.py",
+            "role": "guard_registration",
+            "source_sha256": "23131a0c4c35bb450491241e206ded76d90a184d3c04b9d74f0660ff7ffb055e"
+          },
+          {
+            "line_end": 408,
+            "line_start": 404,
+            "path": "api/app/controllers/memory_storage_controller.py",
+            "role": "forbidden_condition",
+            "source_sha256": "23131a0c4c35bb450491241e206ded76d90a184d3c04b9d74f0660ff7ffb055e"
+          },
+          {
+            "line_end": 383,
+            "line_start": 371,
+            "path": "api/app/controllers/memory_storage_controller.py",
+            "role": "protected_operation",
+            "source_sha256": "23131a0c4c35bb450491241e206ded76d90a184d3c04b9d74f0660ff7ffb055e"
+          },
+          {
+            "line_end": 418,
+            "line_start": 410,
+            "path": "api/app/controllers/memory_storage_controller.py",
+            "role": "commit_point",
+            "source_sha256": "23131a0c4c35bb450491241e206ded76d90a184d3c04b9d74f0660ff7ffb055e"
+          }
+        ],
+        "forbidden_condition": "Deleting an end user (Neo4j DETACH DELETE of all nodes/edges plus PG soft delete) when str(end_user.workspace_id) != str(workspace_id) or current_workspace_id is None.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether this endpoint is exposed to any agent tool surface (no binding in supplied views)."
+        ],
+        "protected_operation": "DELETE /end-users/{end_user_id} \u2014 deletion of all end-user memory data",
+        "protected_resource": "Workspace-scoped end-user memory data (Neo4j nodes/edges, memory_count, end_user PG row)",
+        "protection_obligation": "End-user full memory deletion must be rejected with PERMISSION_DENIED when end_user.workspace_id does not match the caller's current_workspace_id (and when no workspace is selected), before the irreversible Neo4j deletion and PostgreSQL soft delete execute.",
+        "scope_limits": [
+          "Guard is inline in the handler, not a registered decorator.",
+          "MemoryService.delete_all_nodes_by_end_user_id internals are not in the supplied views.",
+          "No agent binding in the supplied views."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "/internal/sandbox endpoint functions and their dependency wiring of verify_sandbox_auth are not in the supplied views.",
+      "A reviewer rationale cites LangChainAgent._wrap_tools_with_call_limit forbidding the (N+1)th call of any wrapped tool; no source view containing that guard is supplied.",
+      "AnnotationService.delete_all / delete_annotation and ApiKeyService.delete_api_key internals are not in the supplied views; commit points are stated at the service invocations.",
+      "Callers of enforce_admission (the scheduler enqueue path that precedes the actual task push) are not in the supplied views.",
+      "Concrete implementations of ModelRegistryRepository / AsyncModelRegistryRepository (get_model_config, list_active_keys, get_public_binding, record_key_usage) are not supplied, so the persistence stratum of registry access is unknown.",
+      "Concrete persistence commits inside the workflow exec-lock guarded region (DB vs Redis message/execution writes) and the underlying Elasticsearch client write calls are outside supplied line ranges; commit points are cited at their guarded invocation sites only.",
+      "Endpoint registrations for check_app_quota, check_workspace_quota, check_skill_quota, check_end_user_quota, and check_ontology_project_quota are not in the supplied views; only the decorator bodies (check_app_quota, knowledge-capacity wrapper, skill wrapper tail) and the @check_model_quota registration on create_composite_model are evidenced.",
+      "FORGET_CORE_BATCH_SIZE value (reviewer states 50) and ForgetService.target_count derivation are not in the supplied views.",
+      "GatewayMiddleware (gateway-service/src/middleware.py), DirectAuthStrategy (gateway-service/src/auth_strategy.py), KbAuthMiddleware (mem-knowledge/src/auth.py registered in mem-knowledge/src/main.py:117-135), and InboundInterceptor/AclMatcher (packages/auth-sdk/src/auth_sdk/http.py, acl.py) register ordinary request-authentication / ACL / credential-header-sanitization guards; no supplied source binds them to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect, so per scope rules these obligations are excluded from contracts pending such a binding.",
+      "MemoryMessageSource enum definition is not in the supplied views; values are cited from usage sites (dispatcher.py:890, 938).",
+      "No callers of PermissionService.require_permission appear in the supplied views; the generic permission guard cannot be bound to a concrete protected operation.",
+      "No callers of validate_end_user_in_workspace / validate_end_user_in_workspace_async (api_key_utils.py) appear in the supplied views; cross-workspace end-user access enforcement in v1 endpoints cannot be bound to concrete operations.",
+      "No supplied source binds any of the compiled contracts' protected operations to an agent tool registration, agent lifecycle hook, or agent-generated input reaching the guarded effect; all contracts are emitted with agent_mediation=not_established.",
+      "No supplied view binds resolve_model / resolve_model_async to any agent tool registration, agent lifecycle hook, or agent-generated input dataflow; agent mediation for the model-resolution guard is not established.",
+      "No supplied view binds the sandbox MSG_RUN request (req['code'], req['key']) or the prescript.py template placeholders to agent tool dispatch or agent-generated code; agent mediation for the sandbox guard is not established.",
+      "No supplied view shows the HTTP route for /storage/public/{file_id} or any call site that invokes verify_signed_url before LocalStorage.download; the guard-to-effect wiring for the signed-URL contract is unverified.",
+      "Ontology scene create/update and ontology class mutation guards cited by reviewers are not within supplied views; only delete_scene_async (api/app/services/ontology_service.py:396-434) is visible.",
+      "REBUILD_TASK_GUARD_TTL_SECONDS value and the release_rebuild_job implementation are not in the supplied views (reviewer states TTL 7200 and owner-checked release).",
+      "RateLimiterService.check_all_limits internals are not in the supplied views.",
+      "Reviewer-cited UploadService Action.READ/UPDATE guards are not within any supplied view; only the DELETE path (api/app/services/upload_service.py:436-530) is visible, so those obligations cannot be compiled.",
+      "The concrete commit statement of the merge-intent transaction in merge_end_users (inside soft_delete_many_pending_async / flatten_merge_chain_async) is not shown; only the design comment at end_user_service.py lines 79-88 describes its placement.",
+      "The conversation-creation write path beyond line 1293 of create_or_get_conversation_async is not supplied.",
+      "The db.commit() that persists delete_message's soft-delete is beyond the supplied view of conversation_service.py (view ends at line 1352).",
+      "The decorator/tool-registry registration that exposes invoke_agent to agent tool dispatch, and the origin of its workspace_id, current_agent_id, and invocation_chain parameters, are above line 191 of api/app/services/agent_tools.py and were not supplied; agent mediation for that contract therefore cannot be raised to direct_tool.",
+      "The identity-confirmation write and its commit, which must execute while holding acquire_identity_lock_async, are not in the supplied views.",
+      "The memory-message insert and commit performed under _acquire_mm_seq_lock are beyond the supplied view, which ends inside _next_seq at line 89 of memory_message_repository.py.",
+      "The merge_transaction Cypher body (including any DETACH DELETE of original nodes) is not within the supplied range of forgetting_strategy.py.",
+      "The native implementations of init_seccomp and apply_landlock in libpython.so (privilege drop, memory/network limits, Landlock ruleset) are absent from the supplied views; only call signatures, arguments, and return-code checks are source-cited.",
+      "The server/manager component that sends MSG_RUN frames to the zygote and generates prescript.py from its template is not included in the supplied views.",
+      "The target-agent LLM invocation and any invocation-record database write inside invoke_agent beyond line 237 are not supplied; the committed effect for that contract is only partially bounded.",
+      "activate_user (api/app/services/user_service.py:274-283) is cited as guarded by require_permission(Action.ACTIVATE) before db.commit, but the supplied view ends at line 283 before any permission check; guard unverified.",
+      "check_model_quota's wrapper body is not in the supplied views; its delegation to _check_quota is evidenced only via sibling decorators sharing the _check_quota path.",
+      "cur_workspace_access_guard implementation is not in the supplied views; its verification semantics and rejection behavior are unknown (only decorator registrations are evidenced).",
+      "push_write_task / push_fast_write_task implementations (broker semantics) are not in the supplied views; task-queue message dispatch is taken from reviewer wording.",
+      "require_current_workspace_knowledge (api/app/services/rag_access_service.py:162-178) is a supported workspace-scoping guard, but no supplied view shows a consuming operation, its effect stratum, or its commit point; no contract emitted for it."
+    ],
+    "repository": "SuanmoSuanyangTechnology/MemoryBear",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:56b0ba9828d28fadcf6038f030ad1119"
+  },
+  "request_sha256": "9d972e470ffc23f2c795f3d5c2b4e29b1c863f71482a1a73ac314d42c37ad54a",
+  "response_sha256": "f389d531c58c9b319e0d14d9c7793bc0b3a8cfaa7d58714f1ccd40f4b1621ec8",
+  "shard_provenance": [
+    {
+      "attempt": 0,
+      "request_sha256": "f9c5a2a8ea7a0f8cd6012a75f5139791ab547db302e00f639ee0163ac25ae72c",
+      "response_sha256": "dd01543e57a96ccd7f55668962d1f03b04f1eb6cd6c3b58d756ca755e5818ef9",
+      "result_sha256": "0d303c6bba90179e1dd2b27ceefea7f625fc01b2b67e8b744dab264de22fc3c1",
+      "tokens": 70616,
+      "unit": "v24-screen:56b0ba9828d28fadcf6038f030ad1119-p000"
+    },
+    {
+      "attempt": 1,
+      "request_sha256": "44d6b04ae7bb3b3fa2d917f33c00fde057a4c9f069c2910d3670afbdaf812fd9",
+      "response_sha256": "2affc123bab04d5ed183d6249f1e0fd2a07c6ecf77ce5226779c005af1cf15de",
+      "result_sha256": "3ec53591292eae087a914c3d78aabe640be8485069302a61068175e71b8ace8b",
+      "tokens": 58407,
+      "unit": "v24-screen:56b0ba9828d28fadcf6038f030ad1119-p001"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "c117dfb3c2da97edea3300e592ec483364d9c166e4f295d3ded8cad9ab253cae",
+      "response_sha256": "c34e17ab74c07e3cc17b56b01cbb388640f96e1c0073f1204e7c18c966c11ca1",
+      "result_sha256": "2bb2585510b198c59e47aec769014cceab9b397839bd80c16a80e0c434701aa3",
+      "tokens": 63866,
+      "unit": "v24-screen:56b0ba9828d28fadcf6038f030ad1119-p002"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "9be79e07df0e9edc21470e736d409fbb557683347ec28317c60811ec2e0d7401",
+      "response_sha256": "21bb502c03f4b344772526d0489afcb2732cd4bb7fe07ecb0c4325e37891a33c",
+      "result_sha256": "3a26090949cdcfae1be3ac03abe9c63c882fa9092ac9193337f142b17a99bf6f",
+      "tokens": 25191,
+      "unit": "v24-screen:56b0ba9828d28fadcf6038f030ad1119-p003"
+    }
+  ],
+  "state": "completed",
+  "tokens": 218080,
+  "unit": "v24-screen:56b0ba9828d28fadcf6038f030ad1119"
+}

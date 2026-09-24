@@ -1,0 +1,225 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "INSERT INTO copy_trading_events executed via conn.fetchval in mirror_trade (copy_trading/copy_engine.py lines 110-132).",
+        "contract_id": "ecological-contract:58cf40573293df6eb6290161cfbbd3ce",
+        "declared_mechanism": "Per-link notional cap computed before event insertion (max_notional = follower_equity * link follower_risk_limit_pct, copy_trading/copy_engine.py lines 90-91) with scale-down or rejection logic applied to follower_qty prior to the INSERT (lines 96-104).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 104,
+            "line_start": 90,
+            "path": "copy_trading/copy_engine.py",
+            "role": "guard_registration",
+            "source_sha256": "d7846b797fbe2b10a4ca502c41a07e4c96a4ea577314015d831499aaef9d7083"
+          },
+          {
+            "line_end": 101,
+            "line_start": 96,
+            "path": "copy_trading/copy_engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d7846b797fbe2b10a4ca502c41a07e4c96a4ea577314015d831499aaef9d7083"
+          },
+          {
+            "line_end": 67,
+            "line_start": 45,
+            "path": "copy_trading/copy_engine.py",
+            "role": "protected_operation",
+            "source_sha256": "d7846b797fbe2b10a4ca502c41a07e4c96a4ea577314015d831499aaef9d7083"
+          },
+          {
+            "line_end": 132,
+            "line_start": 110,
+            "path": "copy_trading/copy_engine.py",
+            "role": "commit_point",
+            "source_sha256": "d7846b797fbe2b10a4ca502c41a07e4c96a4ea577314015d831499aaef9d7083"
+          }
+        ],
+        "forbidden_condition": "Inserting a copy_trading_events row whose follower_notional exceeds max_notional, or recording a mirrored/partial_fill_mirrored status when scaled_qty <= 0.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Callers of CopyTradingEngine.mirror_trade are not supplied; whether leader-trade inputs are agent-generated is unestablished.",
+          "Whether copy_trading_events rows are consumed downstream as actionable orders is not shown in supplied source."
+        ],
+        "protected_operation": "Persistence of follower mirror events (INSERT INTO copy_trading_events) in CopyTradingEngine.mirror_trade.",
+        "protected_resource": "copy_trading_events table rows recording follower trade mirroring (paper follower exposure record).",
+        "protection_obligation": "CopyTradingEngine.mirror_trade must not record a mirrored follower event whose follower notional (follower_qty x price) exceeds the follower's configured cap (follower_equity x link follower_risk_limit_pct); oversized quantities must be scaled to the cap, or, when scaled_qty <= 0, the event must be recorded as rejected with follower_qty 0.",
+        "scope_limits": [
+          "Supplied copy_engine source submits no broker order; follower_order_id is a paper identifier (line 108), so the guarded effect is the event record, not a live order.",
+          "The cap parameter comes from the copy_trading_links row created by create_link (default follower_risk_limit_pct 0.02, lines 23-43).",
+          "fill_ratio is clamped to [0.0, 1.0] before sizing (line 79), and effective leader quantity is leader_qty * fill_ratio (line 80)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The httpx POST of the JSON order payload to the Alpaca /v2/orders endpoint at execution/alpaca_executor.py line 182 (inside the try block lines 181-190).",
+        "contract_id": "ecological-contract:5ba29e250dc1b03a16237b67c9b10bde",
+        "declared_mechanism": "EXEC-002 pre-trade checks at the top of submit_order (declared in the module header, lines 8-9): kill-switch checks raise RuntimeError on armed or killed state (execution/alpaca_executor.py lines 127-141); RiskManager.validate_order gates submission with RuntimeError on disapproval (lines 143-167); both execute before the payload POST (lines 169-190). Kill switch state is read from the DB-persisted kill_switch_state and strategy_kill_state tables.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 9,
+            "line_start": 8,
+            "path": "execution/alpaca_executor.py",
+            "role": "guard_registration",
+            "source_sha256": "5afe24ebcce86bb3744ebd3e506919ece8c460d169f548e0b9f7a44ee697cbc3"
+          },
+          {
+            "line_end": 141,
+            "line_start": 127,
+            "path": "execution/alpaca_executor.py",
+            "role": "guard_registration",
+            "source_sha256": "5afe24ebcce86bb3744ebd3e506919ece8c460d169f548e0b9f7a44ee697cbc3"
+          },
+          {
+            "line_end": 167,
+            "line_start": 143,
+            "path": "execution/alpaca_executor.py",
+            "role": "guard_registration",
+            "source_sha256": "5afe24ebcce86bb3744ebd3e506919ece8c460d169f548e0b9f7a44ee697cbc3"
+          },
+          {
+            "line_end": 124,
+            "line_start": 114,
+            "path": "execution/alpaca_executor.py",
+            "role": "protected_operation",
+            "source_sha256": "5afe24ebcce86bb3744ebd3e506919ece8c460d169f548e0b9f7a44ee697cbc3"
+          },
+          {
+            "line_end": 190,
+            "line_start": 181,
+            "path": "execution/alpaca_executor.py",
+            "role": "commit_point",
+            "source_sha256": "5afe24ebcce86bb3744ebd3e506919ece8c460d169f548e0b9f7a44ee697cbc3"
+          },
+          {
+            "line_end": 106,
+            "line_start": 96,
+            "path": "risk_management/kill_switch.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9f18221dcc944f09f268db943b7677377d176bb93fa4b1338028776a5433569a"
+          },
+          {
+            "line_end": 188,
+            "line_start": 171,
+            "path": "risk_management/kill_switch.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9f18221dcc944f09f268db943b7677377d176bb93fa4b1338028776a5433569a"
+          }
+        ],
+        "forbidden_condition": "The order POST proceeding while (a) the kill_switch_state global row is armed (await self._ks.is_armed()), (b) strategy_id is supplied and strategy_kill_state is armed for that strategy (await self._ks.is_strategy_killed(strategy_id)), or (c) RiskManager.validate_order returns approved=false when a current price is available.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "risk_management/risk_manager.py is not supplied: the reviewer-claimed validate_order criteria (kill switch, qty>1000, order value >2% of capital, symbol exposure) cannot be verified from supplied source.",
+          "A reviewer referenced an unguarded ExecutionEngine order path; no ExecutionEngine source is supplied, so its existence and guard status are unverified.",
+          "Whether submit_order is exposed as an agent tool or invoked from an AI-agent lifecycle is unestablished; supplied callers are PipelineAgent._process_signal (agents/pipeline_agent.py line 244) and AlpacaExecutor.test_connectivity (execution/alpaca_executor.py line 98)."
+        ],
+        "protected_operation": "Order submission to the Alpaca paper-trading API performed inside AlpacaExecutor.submit_order.",
+        "protected_resource": "Alpaca /v2/orders endpoint (broker order creation) reached with the executor's configured API credentials.",
+        "protection_obligation": "AlpacaExecutor.submit_order must block every order submission by raising RuntimeError when the global kill switch is armed or the supplied strategy_id is killed, and must reject submission when RiskManager.validate_order disapproves, all before the HTTP POST to Alpaca /v2/orders commits the order (EXEC-002). (Merged first- and second-phase reviewer wording.)",
+        "scope_limits": [
+          "Failure-open paths are visible in source: non-RuntimeError exceptions in the kill-switch check block are logged and submission continues (lines 140-141), and non-RuntimeError exceptions in the risk-check block are logged with the message 'proceeding' (lines 166-167).",
+          "Risk validation runs only when current_price > 0; when no market_data price row is found the price defaults to 0.0 and validate_order is skipped (lines 147-153).",
+          "Only the order POST is covered by this obligation; other executor calls (get_account, get_positions, cancel_all_orders) are not gated by these checks.",
+          "Order persistence and position sync are dispatched after the POST via asyncio.create_task (lines 199-200) and are not part of this guard."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The await self._executor.submit_order(...) call in PipelineAgent._process_signal (agents/pipeline_agent.py lines 243-251), which hands off to the Alpaca order POST that is separately guarded inside AlpacaExecutor.submit_order.",
+        "contract_id": "ecological-contract:955cc0b4c91af8b6b84ae794aeb47e5c",
+        "declared_mechanism": "Two-stage guard chain: run() checks get_kill_switch().is_armed and returns before evaluating strategies (agents/pipeline_agent.py lines 55-59); _process_signal calls self._risk_manager.check_signal(ts, current_price=current_price) and returns False when result.approved is false (lines 238-241), so only approved signals reach the submit_order call. Guard components (executor, RiskManager, kill switch) are wired in setup() (lines 42-49); kill switch state is DB-persisted in kill_switch_state.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 42,
+            "path": "agents/pipeline_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "580b53400fabd75a727dfcb0a983373b3ef9d4f3942f26069a9f19046ac69615"
+          },
+          {
+            "line_end": 59,
+            "line_start": 55,
+            "path": "agents/pipeline_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "580b53400fabd75a727dfcb0a983373b3ef9d4f3942f26069a9f19046ac69615"
+          },
+          {
+            "line_end": 241,
+            "line_start": 238,
+            "path": "agents/pipeline_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "580b53400fabd75a727dfcb0a983373b3ef9d4f3942f26069a9f19046ac69615"
+          },
+          {
+            "line_end": 209,
+            "line_start": 208,
+            "path": "agents/pipeline_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "580b53400fabd75a727dfcb0a983373b3ef9d4f3942f26069a9f19046ac69615"
+          },
+          {
+            "line_end": 251,
+            "line_start": 243,
+            "path": "agents/pipeline_agent.py",
+            "role": "commit_point",
+            "source_sha256": "580b53400fabd75a727dfcb0a983373b3ef9d4f3942f26069a9f19046ac69615"
+          },
+          {
+            "line_end": 99,
+            "line_start": 96,
+            "path": "risk_management/kill_switch.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9f18221dcc944f09f268db943b7677377d176bb93fa4b1338028776a5433569a"
+          }
+        ],
+        "forbidden_condition": "Order submission proceeding while (a) the global kill switch is armed (kill_switch_state armed flag true at cycle start) or (b) RiskManager.check_signal returned approved=false for the signal being processed.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "agents/base_agent.py is not supplied: whether PipelineAgent.setup/run/teardown are wired to an AI-agent lifecycle, scheduler, or tool dispatcher is unknown.",
+          "risk_management/risk_manager.py is not supplied: the approval criteria of RiskManager.check_signal used at line 238 are unverified.",
+          "No supplied decorator, registration, callback wiring, or tool dispatch evidence binds this order path to agent mediation; the caller of PipelineAgent.run is not shown."
+        ],
+        "protected_operation": "Automated order submission performed by PipelineAgent._process_signal via AlpacaExecutor.submit_order.",
+        "protected_resource": "Broker order execution path (Alpaca paper-trading orders) reached from the pipeline cycle.",
+        "protection_obligation": "PipelineAgent must not submit a broker order through self._executor.submit_order unless the global kill switch is disarmed (the run cycle aborts when armed) and RiskManager.check_signal has approved the signal; the gate sits in PipelineAgent.run and _process_signal before the submit_order call. (Merged first- and second-phase reviewer wording for the pipeline order path.)",
+        "scope_limits": [
+          "Kill switch is consulted once per cycle in run(); the supplied source shows no per-signal or mid-cycle kill-switch re-check at the pipeline layer.",
+          "agents/pipeline_agent.py line 57 tests ks.is_armed without await, while risk_management/kill_switch.py lines 96-99 define is_armed as an async method; whether this reads armed state as intended is unresolved from supplied source.",
+          "Per-strategy kill state (is_strategy_killed) is not checked at the pipeline layer; it is enforced only in AlpacaExecutor.submit_order.",
+          "The gate covers only the _process_signal path; AlpacaExecutor.test_connectivity submits an order through submit_order without passing through this pipeline gate (execution/alpaca_executor.py lines 91-112).",
+          "Exceptions in _process_signal are caught, logged, and converted to a False return (lines 260-262); signal rejection is logged at debug level (line 240)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "risk_management/risk_manager.py is not supplied: RiskManager.check_signal and RiskManager.validate_order approval criteria, thresholds, and rejection reasons are unverified (reviewer-claimed validate_order limits of qty>1000, order value >2% of capital, and symbol exposure are unsupported by supplied source).",
+      "agents/base_agent.py is not supplied: lifecycle wiring (who invokes PipelineAgent.setup/run/teardown) and any tool registration or AI-agent dispatch are unverified.",
+      "No supplied source binds any guarded effect to an AI-agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; agent_mediation is not_established for all three compiled contracts and no agent_entry_binding evidence is asserted.",
+      "ExecutionEngine, referenced by a second-phase reviewer as a possibly unguarded order path, is absent from the supplied source.",
+      "Discrepancy unresolved from supplied source: agents/pipeline_agent.py line 57 references ks.is_armed without await while risk_management/kill_switch.py lines 96-99 define is_armed as an async method."
+    ],
+    "repository": "SilentHG/atlas-sandra",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:aebeb21be12fb372f08ab03048b98ad3"
+  },
+  "request_sha256": "c02fad8c56d1393396e0af912a58d00dcd625d765ee9ca732f13be1c351237a1",
+  "response_sha256": "399fa240a0ddf6c30083481a4b4f25736cf3d6cb231512992ba5894ef2934470",
+  "state": "completed",
+  "tokens": 30975,
+  "unit": "v24-screen:aebeb21be12fb372f08ab03048b98ad3"
+}

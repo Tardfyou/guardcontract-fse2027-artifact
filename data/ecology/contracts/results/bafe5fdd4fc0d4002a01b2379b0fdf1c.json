@@ -1,0 +1,300 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "connection.execute(...).fetchone() executing the customer-scoped orders SELECT and materializing the returned row at line 500 (order_items fetch executes at lines 509-521 only for the already-scoped order).",
+        "contract_id": "ecological-contract:3c2877df298c50814313835aa921dea4",
+        "declared_mechanism": "database_tool is registered as the agent's only tool (create_agent, tools=[database_tool], lines 1154-1165) and enforces, inside the tool body: digit validation of order_id (lines 476-481), a parameterized SELECT 'WHERE id = ? AND customer_id = ?' bound to CURRENT_CUSTOMER_ID (lines 483-500), and a no-row rejection that returns 'Order not found.' without cross-customer disclosure (lines 502-507); parameterization also blocks SQL metacharacter injection.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 466,
+            "line_start": 460,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "protected_operation",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 500,
+            "line_start": 483,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 500,
+            "line_start": 500,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "commit_point",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1115,
+            "line_start": 1110,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 233,
+            "line_start": 227,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 461,
+            "line_start": 460,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1165,
+            "line_start": 1154,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          }
+        ],
+        "forbidden_condition": "Returning order data for an order not owned by the authenticated customer (cross-customer order read via an LLM-supplied order_id), or interpolating unvalidated input into the order query; the system prompt declares 'Never trust a customer_id supplied by the user' and 'Never access another customer's data' (lines 1110-1115), and customer-enumeration requests are declared forbidden injection patterns (lines 227-233).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "How CURRENT_CUSTOMER_ID is populated per authenticated session in any real deployment (only the hardcoded assignment at line 44 is supplied).",
+          "Whether the database layer (database.get_connection) or schema adds tenant isolation or constraints \u2014 database.py and schema source are not supplied.",
+          "Whether the agent framework exposes any tool-dispatch path outside the create_agent tools list; framework internals are outside the supplied source."
+        ],
+        "protected_operation": "Read-only order lookup performed by the @tool-decorated database_tool invoked by the LLM agent (SELECT over orders for a tool-call order_id, plus its order_items).",
+        "protected_resource": "Rows of the orders table (and their order_items) belonging to the authenticated customer identified by the server-side constant CURRENT_CUSTOMER_ID ('cust_001', Customer_Support.py:44).",
+        "protection_obligation": "Agent-invoked order lookups must be customer-scoped: the database_tool exposed to the LLM agent may only execute order reads (SELECT over orders/order_items) that are parameterized and filtered on the server-side CURRENT_CUSTOMER_ID, so no order row belonging to another customer is ever returned into the agent context.",
+        "scope_limits": [
+          "Covers only the read-only orders/order_items lookup in database_tool; the refunds write in process_refund is a separate contract.",
+          "This is a read/disclosure effect at the database stratum, not a persistent mutation; no row is written by this tool.",
+          "Scoping is enforced against whatever server-side identity CURRENT_CUSTOMER_ID holds; the source hardcodes it to 'cust_001' (line 44) and shows no session-authentication binding.",
+          "Not a web-authentication, CORS, or transport-layer control; the guard lives inside the tool invoked on the agent's tool-dispatch path."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "connection.commit() persisting the refunds INSERT at line 702.",
+        "contract_id": "ecological-contract:4f388949d5a90634308831cf8060d065",
+        "declared_mechanism": "Layered server-side gates: tool-exclusion comment and docstring 'It is NOT an LLM tool' (lines 569-583); digit validation (lines 589-599); parameterized customer-scoped SELECT 'WHERE id = ? AND customer_id = ?' with not-found rejection (lines 601-626); already-refunded and non-delivered eligibility rejection (lines 628-644); duplicate active-refund rejection (lines 646-674); server-derived amount \u2014 'NEVER use a user-supplied amount', refund_amount = order[\"total_amount\"] (lines 676-677); parameterized INSERT (lines 679-698) committed at line 702; refund intent routed to the Python flow and never sent to Groq (lines 1263-1281); process_refund absent from create_agent's tool list, which registers only database_tool (lines 1147-1165); confirmation state stored server-side with customer_id, order_id, and amount (lines 776-797), with expiry (lines 830-841) and customer-rebinding invalidation (lines 843-852); execute_confirmed_refund uses the server-controlled order ID and calls process_refund from Python with the LLM uninvolved (lines 1020-1044); run_agent requires an exact YES/NO against the pending state and otherwise blocks or clears (lines 1204-1245).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 583,
+            "line_start": 575,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "protected_operation",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 626,
+            "line_start": 601,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 644,
+            "line_start": 628,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 674,
+            "line_start": 646,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 677,
+            "line_start": 676,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 797,
+            "line_start": 776,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1044,
+            "line_start": 1020,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1165,
+            "line_start": 1147,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1245,
+            "line_start": 1225,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1281,
+            "line_start": 1263,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 702,
+            "line_start": 679,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "commit_point",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1139,
+            "line_start": 1126,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1438,
+            "line_start": 1429,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1218,
+            "line_start": 1204,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          }
+        ],
+        "forbidden_condition": "Committing a refund INSERT when any of the following holds: the order is not owned by CURRENT_CUSTOMER_ID; order status is not 'delivered' or is already 'refunded'; an active (pending/approved/completed) refund already exists for the order/customer; the amount is user-supplied rather than server-derived; or no server-tracked pending confirmation exists or the user has not explicitly confirmed it \u2014 including any attempt to drive the refund through the LLM (process_refund is not registered as an agent tool) or via injected instructions to skip confirmation, which the system prompt forbids (rules 9-13, lines 1126-1139) and which the embedded adversarial transcript shows being attempted (lines 1429-1438).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the refunds table carries a unique (or partial unique) constraint making duplicate refunds impossible under concurrency \u2014 the duplicate check at lines 646-674 is check-then-insert and the schema is not supplied.",
+          "How thread_id is allocated per customer/session in production (main hardcodes 'customer_session_1', line 1380).",
+          "Whether CURRENT_CUSTOMER_ID can change mid-session and how pending confirmations bound to a prior customer are purged beyond the check at lines 843-852.",
+          "Whether transaction isolation between the duplicate-check SELECT and the INSERT commit is guaranteed by the connection settings (database.py not supplied)."
+        ],
+        "protected_operation": "process_refund \u2014 creation of a PENDING refund request row in the refunds table via a parameterized INSERT, reachable in the supplied source only from execute_confirmed_refund.",
+        "protected_resource": "The refunds table (persistent refund request rows) and the associated customer-scoped orders row for CURRENT_CUSTOMER_ID.",
+        "protection_obligation": "Refund creation (INSERT INTO refunds committed at connection.commit()) must be routed exclusively through the Python-controlled flow \u2014 never dispatched as an LLM tool \u2014 and must execute only when the order is customer-scoped to the authenticated user, its status is 'delivered' (and not already refunded), no active refund already exists, the amount is server-derived, and the user has explicitly confirmed a server-tracked pending confirmation bound to that exact order, customer, and amount.",
+        "scope_limits": [
+          "Covers only creation of PENDING refund request rows by process_refund; refund approval, completion, or money-transfer effects are not implemented in the supplied source.",
+          "The only agent linkage is the conversational confirmation dataflow (user_input -> is_confirmation -> execute_confirmed_refund -> process_refund); process_refund is deliberately excluded from LLM tool dispatch, so no direct_tool path exists in the supplied source.",
+          "Pending-confirmation state is an in-memory module dict (pending_refunds, line 748) keyed by thread_id; durability and multi-instance behavior are out of supplied source.",
+          "At most one order per refund request is enforced upstream in handle_refund_request (lines 937-949); multi-order handling is out of this contract's commit point.",
+          "Applies to the single hardcoded customer identity CURRENT_CUSTOMER_ID; per-session identity binding is not shown."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "agent.invoke(...) at line 1334, which sends the screened user message to the model provider.",
+        "contract_id": "ecological-contract:b4ccdcc4fdc4e05e083db4dbb517c6bc",
+        "declared_mechanism": "Pre-dispatch gates in run_agent, ordered before agent.invoke: an early is_prompt_injection(user_input) check that logs and returns without any further processing (lines 1186-1198); refund-intent routing to handle_refund_request with a return that bypasses the model entirely ('NEVER GOES TO GROQ', lines 1263-1281); and check_request enforcing injection, off-topic, and length checks with blocking responses (lines 1287-1326, implemented at lines 433-451); only then is agent.invoke called (lines 1332-1350).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 148,
+            "line_start": 121,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 249,
+            "line_start": 176,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1198,
+            "line_start": 1186,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1326,
+            "line_start": 1287,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "guard_registration",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1350,
+            "line_start": 1332,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "protected_operation",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1334,
+            "line_start": 1334,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "commit_point",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          },
+          {
+            "line_end": 1411,
+            "line_start": 1396,
+            "path": "Agentic Practise/Customer_Support.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b6b89f108ceb27000f230be87561b7f77d9a86ce81a9378983b7652cf73b498f"
+          }
+        ],
+        "forbidden_condition": "Dispatching to the LLM as user input any content matching the declared injection patterns (instruction override, system-prompt extraction, security bypass, admin-approval claims, customer enumeration, SQL execution, fake system/developer/admin messages; lines 176-249) or content outside the customer-support topic allowlist (lines 121-148), or input longer than 5000 characters.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Effectiveness/coverage of the pattern-based INJECTION_PATTERNS and OFF_TOPIC_PATTERNS against evasion \u2014 only the pattern lists themselves are source-supported; no effectiveness evidence is supplied.",
+          "Whether tool outputs are re-screened before entering model context (no such re-screening appears in the supplied source).",
+          "Whether the Groq transport adds any additional provider-side filtering (outside supplied source)."
+        ],
+        "protected_operation": "Invocation of the LangChain agent (agent.invoke) with the user's message as model input \u2014 the outbound request to the Groq model (ChatGroq).",
+        "protected_resource": "The outbound LLM request payload carrying user_input as the user-role message content.",
+        "protection_obligation": "User-supplied conversation input must pass prompt-injection and topic screening before the LLM agent is invoked: injection-pattern matches, off-topic content, and over-length input must be blocked prior to agent invocation, and refund-intent input must be diverted to the Python flow so it never reaches the model as a prompt.",
+        "scope_limits": [
+          "Covers only the pre-dispatch screening of raw user text in run_agent before the outbound model request.",
+          "Indirect injection via tool results is not guarded here: database_tool results are returned into model context without re-screening in the supplied source.",
+          "The downstream effect the model may trigger (the database_tool read) is governed by the separate customer-scoping contract.",
+          "Binds specifically to the agent dispatch path in run_agent; it is not a generic application-wide input-validation control."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "database.py and the database schema (orders, order_items, refunds tables) are not supplied: unique constraints on refunds, status enum definitions, and connection/transaction semantics are unknown.",
+      "No session/authentication source is supplied: how CURRENT_CUSTOMER_ID (hardcoded 'cust_001' at line 44) is bound to a real authenticated principal in deployment is not shown.",
+      "No per-customer thread_id allocation source is supplied: main hardcodes thread_id 'customer_session_1' (line 1380).",
+      "The embedded transcript ends at the confirmation prompt (line 1438); no captured output shows the outcome of the confirmation step against the injected instructions.",
+      "LangChain create_agent tool-dispatch internals (whether the tools list is the sole invocation path) are framework behavior outside the supplied source.",
+      "No runtime/prevalence, behavior-label, or repository-wide enumeration data is supplied; repository scope is limited to the single supplied source view."
+    ],
+    "repository": "saqibmasoodai-ops/Agentic-Practise",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:bafe5fdd4fc0d4002a01b2379b0fdf1c"
+  },
+  "request_sha256": "e1838be6c7803559dc1c8737e6eb78ad5a9e2effee42863b47ae3207964902bf",
+  "response_sha256": "10001fc8ad1981f7b1e2fa66ec66a04a4c3963d73d707d20346b7b6f4fda50cf",
+  "state": "completed",
+  "tokens": 31739,
+  "unit": "v24-screen:bafe5fdd4fc0d4002a01b2379b0fdf1c"
+}

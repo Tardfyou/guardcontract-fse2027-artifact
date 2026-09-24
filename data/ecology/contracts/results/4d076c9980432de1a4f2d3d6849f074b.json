@@ -1,0 +1,216 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The process exit status: `return EXIT_OK if passed else EXIT_GATE_FAILED` (line 221) and the fail-closed `return EXIT_ERROR` paths (lines 161 and 167), raised as the CI process's exit code by `raise SystemExit(main())` (line 225).",
+        "contract_id": "ecological-contract:1e98f7a4505eb1b11309fb79db890def",
+        "declared_mechanism": "Thresholds registered as CLI arguments (--min-score, --max-critical, --max-failed, --min-metric, --min-resistance) and evaluated exhaustively by evaluate_gates (every gate checked, no short-circuit); main() reduces gate results with all() to select EXIT_OK vs EXIT_GATE_FAILED; a pre-flight /health check ('database' != 'connected') and any evaluation exception force EXIT_ERROR before a pass is possible; inconclusive (no resistanceScore) or non-gateable (sourceAuthorityOnlyTools) ladders append explicit failing gate results instead of inventing a pass or defaulting to 0.0.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 13,
+            "line_start": 1,
+            "path": "app/ci.py",
+            "role": "protected_operation",
+            "source_sha256": "6800f00a7eb2e31a2ff2f720b58e2b20e67f922bcab241f8b53637fbf16b7873"
+          },
+          {
+            "line_end": 148,
+            "line_start": 142,
+            "path": "app/ci.py",
+            "role": "guard_registration",
+            "source_sha256": "6800f00a7eb2e31a2ff2f720b58e2b20e67f922bcab241f8b53637fbf16b7873"
+          },
+          {
+            "line_end": 68,
+            "line_start": 67,
+            "path": "app/ci.py",
+            "role": "guard_registration",
+            "source_sha256": "6800f00a7eb2e31a2ff2f720b58e2b20e67f922bcab241f8b53637fbf16b7873"
+          },
+          {
+            "line_end": 172,
+            "line_start": 171,
+            "path": "app/ci.py",
+            "role": "guard_registration",
+            "source_sha256": "6800f00a7eb2e31a2ff2f720b58e2b20e67f922bcab241f8b53637fbf16b7873"
+          },
+          {
+            "line_end": 90,
+            "line_start": 71,
+            "path": "app/ci.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6800f00a7eb2e31a2ff2f720b58e2b20e67f922bcab241f8b53637fbf16b7873"
+          },
+          {
+            "line_end": 121,
+            "line_start": 100,
+            "path": "app/ci.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6800f00a7eb2e31a2ff2f720b58e2b20e67f922bcab241f8b53637fbf16b7873"
+          },
+          {
+            "line_end": 167,
+            "line_start": 157,
+            "path": "app/ci.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6800f00a7eb2e31a2ff2f720b58e2b20e67f922bcab241f8b53637fbf16b7873"
+          },
+          {
+            "line_end": 222,
+            "line_start": 218,
+            "path": "app/ci.py",
+            "role": "commit_point",
+            "source_sha256": "6800f00a7eb2e31a2ff2f720b58e2b20e67f922bcab241f8b53637fbf16b7873"
+          },
+          {
+            "line_end": 225,
+            "line_start": 224,
+            "path": "app/ci.py",
+            "role": "commit_point",
+            "source_sha256": "6800f00a7eb2e31a2ff2f720b58e2b20e67f922bcab241f8b53637fbf16b7873"
+          }
+        ],
+        "forbidden_condition": "The CI process exiting 0 (EXIT_OK, 'PASSED') while any registered gate fails \u2014 score below --min-score, critical failures above --max-critical, failed scenarios above --max-failed, a --min-metric floor unmet, or guardrail resistance below --min-resistance \u2014 or exiting 0 / passing when the evaluator reports database not 'connected', when run_evaluation raises (including the evaluation timeout), or when the guardrail ladder yields no resistanceScore (inconclusive) or only sourceAuthorityOnlyTools (non-gateable) while --min-resistance is set.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which CI/merge controller consumes the exit code and how, so that non-zero actually blocks promotion of the agent version.",
+          "Whether the gated report fields (score, failureBreakdown.criticalCount, failed, metrics, resistanceScore) are derived from agent-generated responses (especially adapter='llm', 'puts the agent's real model under test') such that agent output reaches the guarded effect.",
+          "Whether the ci-gate endpoint in app/frontend_api.py enforces the same gates with the same exit-code commit point."
+        ],
+        "protected_operation": "The pipeline build/merge gate decision performed by running `python -m app.ci`, as arbitrated by its exit status ('Non-zero is what stops a merge, so the thresholds are the contract').",
+        "protected_resource": "The build/merge governed by the CI pipeline invoking app.ci for the evaluated agent version, decided on the evaluation report and optional guardrail report fetched from the evaluator API.",
+        "protection_obligation": "The CI gate command `python -m app.ci` must terminate with a non-zero process exit code \u2014 EXIT_GATE_FAILED (1) when any registered quality gate fails, EXIT_ERROR (2) when the run cannot complete \u2014 unless the evaluated agent clears every configured threshold (reliability score >= --min-score, critical failures <= --max-critical, failed scenarios <= --max-failed, any --min-metric floors, and guardrail resistance >= --min-resistance when configured), and it must fail closed (EXIT_ERROR or a failed gate, never a pass) when the evaluator database is unhealthy, when the evaluation raises or times out, or when the resistance ladder is inconclusive or non-gateable.",
+        "scope_limits": [
+          "Supplied source contains no merge or build system that consumes the exit code; the blocking effect rests on the module's documented pipeline convention (lines 10-12).",
+          "The contract covers the CLI gate only; the reviewer-cited ci-gate endpoint in app/frontend_api.py is not in the supplied views and no contract is asserted for it.",
+          "Regression diffing via --compare-to is advisory ([WARN] output) and never flips the verdict (lines 174-180, 216-217).",
+          "Gate inputs are evaluator API reports; no supplied line shows agent tool calls, lifecycle hooks, or agent-generated output flowing into the guarded exit code."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "set_path(session['state'], mutation['path'], mutation['value']) at line 213 and record.update(effect.get('sets', {})) at line 215 in call_tool \u2014 the first writes that change the graded world.",
+        "contract_id": "ecological-contract:280013c4c72e6a3ce1ef3a0989ed4faa",
+        "declared_mechanism": "Layered pre-commit guards inside call_tool: validate_arguments() against the tool definition's JSON schema; _unknown_target() not-found check on identifier-shaped arguments; and record_effect 'requires' field conditions (RECORD_EFFECTS, attached to non-low-risk tool definitions by mock_environment_from_profile via _record_effect_for) \u2014 each refusal path returns ok:false before the set_path()/record.update() commit lines.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 12,
+            "line_start": 1,
+            "path": "app/mock_core.py",
+            "role": "protected_operation",
+            "source_sha256": "13db02201b7faf54ae8d154d246f106e8fc78fac3fcc60aeb4e83f28b92a46e8"
+          },
+          {
+            "line_end": 163,
+            "line_start": 153,
+            "path": "app/mock_core.py",
+            "role": "protected_operation",
+            "source_sha256": "13db02201b7faf54ae8d154d246f106e8fc78fac3fcc60aeb4e83f28b92a46e8"
+          },
+          {
+            "line_end": 82,
+            "line_start": 52,
+            "path": "app/mock_core.py",
+            "role": "guard_registration",
+            "source_sha256": "13db02201b7faf54ae8d154d246f106e8fc78fac3fcc60aeb4e83f28b92a46e8"
+          },
+          {
+            "line_end": 170,
+            "line_start": 165,
+            "path": "app/mock_core.py",
+            "role": "guard_registration",
+            "source_sha256": "13db02201b7faf54ae8d154d246f106e8fc78fac3fcc60aeb4e83f28b92a46e8"
+          },
+          {
+            "line_end": 194,
+            "line_start": 185,
+            "path": "app/mock_core.py",
+            "role": "forbidden_condition",
+            "source_sha256": "13db02201b7faf54ae8d154d246f106e8fc78fac3fcc60aeb4e83f28b92a46e8"
+          },
+          {
+            "line_end": 210,
+            "line_start": 196,
+            "path": "app/mock_core.py",
+            "role": "forbidden_condition",
+            "source_sha256": "13db02201b7faf54ae8d154d246f106e8fc78fac3fcc60aeb4e83f28b92a46e8"
+          },
+          {
+            "line_end": 215,
+            "line_start": 212,
+            "path": "app/mock_core.py",
+            "role": "commit_point",
+            "source_sha256": "13db02201b7faf54ae8d154d246f106e8fc78fac3fcc60aeb4e83f28b92a46e8"
+          },
+          {
+            "line_end": 16,
+            "line_start": 12,
+            "path": "app/introspect.py",
+            "role": "protected_operation",
+            "source_sha256": "1319c503f5f2b4fd491ca1068ef3f385aecbe84cace5fbc75e18c9abf137c1cc"
+          },
+          {
+            "line_end": 398,
+            "line_start": 373,
+            "path": "app/introspect.py",
+            "role": "guard_registration",
+            "source_sha256": "1319c503f5f2b4fd491ca1068ef3f385aecbe84cace5fbc75e18c9abf137c1cc"
+          },
+          {
+            "line_end": 454,
+            "line_start": 450,
+            "path": "app/introspect.py",
+            "role": "guard_registration",
+            "source_sha256": "1319c503f5f2b4fd491ca1068ef3f385aecbe84cace5fbc75e18c9abf137c1cc"
+          }
+        ],
+        "forbidden_condition": "Committing a session-state mutation \u2014 set_path(session['state'], mutation['path'], ...) or record.update(effect['sets']) \u2014 for a mutating call that (a) is rejected by validate_arguments (missing required argument, wrong JSON type, negative amount/total/price/qty/quantity/count-like argument), (b) carries an identifier-shaped argument naming a record other than the one held in state ('no record matching ...', state_changed False), or (c) matches a record_effect whose 'requires' condition is violated (field equals the forbidden value: cancellable false, status already 'cancelled', refund_eligible false, refunded true, active false), with the refusal returned as refused:True, state_changed:False.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The transport or runner code (mock_server.py HTTP routes, in-process import path, or evaluator scenario executor) that conveys the agent-under-test's tool calls and arguments into call_tool(session_id, tool_name, arguments).",
+          "Confirmation that tool_name/arguments reaching call_tool originate from agent model output at evaluation time, which would upgrade mediation to agent_generated_input_to_guarded_effect.",
+          "Whether the deployed platform grades SESSIONS state via session_state(), so that refusals-versus-commits are the evidence detectors actually read."
+        ],
+        "protected_operation": "Execution of state-mutating mock tool calls inside evaluation sandbox sessions (tool definitions carrying set_state / record_effect), whose committed changes form the world the evaluator's detectors grade as evidence.",
+        "protected_resource": "The process-local per-session sandbox state: SESSIONS[session_id]['state'], including the effects.<tool> markers and the shared record (e.g. ORD-4471) whose eligibility fields gate subsequent effects.",
+        "protection_obligation": "Every state-mutating mock-tool invocation handled by call_tool must be refused with ok:false and session state left unchanged when the call violates the tool's declared argument schema, names a record absent from session state, or requests a record effect the record's own fields forbid (e.g. cancellable/refund_eligible false, already cancelled/refunded/inactive); each refusal must be returned from call_tool before set_path() or record.update() commits any change to the graded sandbox world.",
+        "scope_limits": [
+          "Guards cover in-process session state only; no filesystem, database, process, network, or message effect appears in the supplied views.",
+          "The not-found check applies only when an identifier-shaped argument is present; a mutation naming no record (a create, a global setting) has no target to validate and is left alone (_unknown_target docstring, lines 136-141).",
+          "record_effect conditions are consulted only when the identifier resolves to the record held in state (record is not None, lines 203-204).",
+          "Scripted definition-level 'error' and 'fail_times' refusals (lines 172-176) are scenario fixtures, not part of this protection obligation.",
+          "Unknown-session and unavailable-tool refusals (lines 154-160) are session-lifecycle validation, outside this obligation.",
+          "The companion read-side behavior (_respond returning found:false for unknown records, lines 91-117; reads_record answers from the live record, lines 217-224) supports read/write agreement but is a read, not the guarded mutation."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied view shows the CI/merge system that consumes app.ci's exit code; that non-zero actually blocks a merge rests on the module's own documentation (app/ci.py lines 10-12).",
+      "app/frontend_api.py (the reviewer-cited ci-gate endpoint exposing the same evaluate_gates logic) is not among the supplied views; its guard and commit point cannot be verified.",
+      "The evaluator service producing report.score, failureBreakdown.criticalCount, failed, metrics and resistanceScore \u2014 including whether these derive from agent-generated responses under adapter='llm' \u2014 is not supplied, so agent-generated input reaching the CI exit code is unestablished.",
+      "The transport or scenario runner invoking mock_core.call_tool (mock_server.py HTTP routes, in-process import, or evaluator executor) is not supplied, so the binding from the agent-under-test's tool calls to call_tool is unestablished.",
+      "No supplied source shows detectors consuming session_state(); that refusals-versus-commits are what detectors grade is asserted in comments, not demonstrated.",
+      "Policy artifacts compiled by introspect.py (prohibitions, obligations, and tool_prerequisites from _infer_prerequisites) have no enforcement or consumption point in the supplied views; no contract is asserted for them.",
+      "Behavior labels and deployed-path information are unavailable (per scope), so runtime prevalence of these guards cannot be assessed from the supplied views."
+    ],
+    "repository": "Harsh1t-S/agent-aegis",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4d076c9980432de1a4f2d3d6849f074b"
+  },
+  "request_sha256": "f6f654bf890ff4afac6e626b6a52048029b0800bc83a154d27d1599044a517e0",
+  "response_sha256": "569b8b9567581d401eff61560399afdd2c02584016cd7bdb271f72ef6c32113b",
+  "state": "completed",
+  "tokens": 30959,
+  "unit": "v24-screen:4d076c9980432de1a4f2d3d6849f074b"
+}

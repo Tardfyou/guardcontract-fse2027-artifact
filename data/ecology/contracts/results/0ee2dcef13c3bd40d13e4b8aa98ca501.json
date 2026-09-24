@@ -1,0 +1,166 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "possible_path.open('rb') followed by f.read() at callbacks.py lines 81-82, which commits the filesystem read of the user-supplied path.",
+        "contract_id": "ecological-contract:a0d032e04ca28ac473177d5273e21370",
+        "declared_mechanism": "Path containment check inside save_image_to_artifact: possible_path = Path(match.group(1)).resolve(); if not possible_path.is_relative_to(Path.cwd()), log 'Access denied: Path ... is outside the working directory.' and continue, skipping the file open/read (callbacks.py lines 65-73). The guard-bearing callback is registered on the production root agent via before_agent_callback=[..., save_image_to_artifact] (agent.py line 29).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 29,
+            "line_start": 26,
+            "path": "src/agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "f9535af5bf5aee6dd002d760853f43efb1f4e232f999026279f81b15a103d6ed"
+          },
+          {
+            "line_end": 73,
+            "line_start": 64,
+            "path": "src/agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 82,
+            "line_start": 75,
+            "path": "src/agent/callbacks.py",
+            "role": "protected_operation",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 82,
+            "line_start": 81,
+            "path": "src/agent/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 63,
+            "line_start": 50,
+            "path": "src/agent/callbacks.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 29,
+            "line_start": 29,
+            "path": "src/agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f9535af5bf5aee6dd002d760853f43efb1f4e232f999026279f81b15a103d6ed"
+          }
+        ],
+        "forbidden_condition": "Opening and reading a local image file whose Path.resolve()-normalized path is not relative to Path.cwd(), i.e., the resolved path lies outside the current working directory of the agent process.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the production deployment's Path.cwd() corresponds to the intended containment root is not shown in supplied source.",
+          "Whether sub-agents (icd10, image_analysis, soap, wired as AgentTools at agent.py lines 33-38) or any other code path opens local files without this containment guard is unknown; repository enumeration is not complete.",
+          "Runtime semantics of ADK's before_agent_callback list (execution ordering, exception propagation, whether non-None returns short-circuit the agent) are not demonstrated by supplied source."
+        ],
+        "protected_operation": "Reading the byte contents of a local image file whose absolute path was extracted by regex from a text part of callback_context.user_content (text ending in .jpg/.jpeg/.png), performed to construct an inline image artifact.",
+        "protected_resource": "Local filesystem image files (.jpg/.jpeg/.png paths matchable from user text) accessible from the agent process.",
+        "protection_obligation": "In the save_image_to_artifact callback, a local image file path parsed from agent-invocation user text must resolve within the current working directory (Path.cwd()) before any local image file may be opened and read; the callback, registered on the root agent's before_agent_callback, must deny opening and reading local image files whose resolved path lies outside the working directory. (Merged from both reviewer opinions; this contract covers the filesystem read commit point.)",
+        "scope_limits": [
+          "The guarded effect is a filesystem read (file contents loaded into the agent), not a filesystem mutation.",
+          "The check is reached only for text parts ending in .jpg/.jpeg/.png whose content matches the absolute-POSIX-style path regex at callbacks.py lines 60-62; relative paths, Windows-style paths, and non-matching text never reach the check or the file open.",
+          "Containment is defined against the runtime Path.cwd() of the agent process; no configured safe root or allowlist is shown in source.",
+          "Inline image parts (callbacks.py lines 35-48) are saved as artifacts without any path containment check; this contract covers only the file-path-from-text flow.",
+          "The containment check is evaluated once before the open; source does not address path changes between the check and the read.",
+          "Path resolution and the read occur only when possible_path.exists() and possible_path.is_file() (callbacks.py line 75); nonexistent paths fail closed by skipping the open."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "await callback_context.save_artifact(filename='user:current_medical_image', artifact=image_part) at callbacks.py lines 88-90, which commits the artifact state mutation.",
+        "contract_id": "ecological-contract:ec72df634857ccf02cec595f0a4b9b8c",
+        "declared_mechanism": "The same path containment check in save_image_to_artifact (Path.resolve() plus is_relative_to(Path.cwd()) with logging and continue at callbacks.py lines 65-73) executes before the image data is built and saved, so the continue on denial skips the save_artifact call; the callback is wired into production via root_agent before_agent_callback registration (agent.py line 29).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 29,
+            "line_start": 26,
+            "path": "src/agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "f9535af5bf5aee6dd002d760853f43efb1f4e232f999026279f81b15a103d6ed"
+          },
+          {
+            "line_end": 73,
+            "line_start": 64,
+            "path": "src/agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 90,
+            "line_start": 84,
+            "path": "src/agent/callbacks.py",
+            "role": "protected_operation",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 90,
+            "line_start": 88,
+            "path": "src/agent/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 33,
+            "line_start": 30,
+            "path": "src/agent/callbacks.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 63,
+            "line_start": 50,
+            "path": "src/agent/callbacks.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e7a281bc8221aad0ec40ec5911db1cea91b8c6642076064f370428dc658ada37"
+          },
+          {
+            "line_end": 29,
+            "line_start": 29,
+            "path": "src/agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f9535af5bf5aee6dd002d760853f43efb1f4e232f999026279f81b15a103d6ed"
+          }
+        ],
+        "forbidden_condition": "Persisting the artifact 'user:current_medical_image' via callback_context.save_artifact when the artifact's image data was read from a local file whose Path.resolve()-normalized path is not relative to Path.cwd().",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The artifact service implementation and its persistence breadth (session memory, database, object storage) are not included in supplied source.",
+          "Runtime semantics of ADK's before_agent_callback list (whether save_image_to_artifact is guaranteed to run before sub-agent tool dispatch in every flow) are not demonstrated by supplied source."
+        ],
+        "protected_operation": "callback_context.save_artifact(filename='user:current_medical_image', artifact=image_part) for image data constructed from a local image file path extracted from agent-invocation user text.",
+        "protected_resource": "The user-scoped agent artifact entry 'user:current_medical_image' in the session artifact store (later consumable via load_image_artifact, callbacks.py lines 99-122).",
+        "protection_obligation": "The save_image_to_artifact callback, registered as a root-agent before_agent_callback, must deny saving the artifact 'user:current_medical_image' when its image data was loaded from a local file whose resolved path lies outside the current working directory, gating the save_artifact effect behind the same containment check. (State-stratum commit point split out per multi-stratum rule; merged reviewer wording on the 'saving' half of the obligation.)",
+        "scope_limits": [
+          "The containment check is the only gate on this save; if the check passes, source shows no additional validation of mime type or file content before the save.",
+          "The same artifact filename is also written by the inline-image flow (callbacks.py lines 43-45) with no path check; the containment check protects only file-derived saves.",
+          "The persistence backing of the artifact service (in-memory session state vs external store) is not shown in supplied source; the state classification reflects the application/session artifact mutation visible at the save_artifact call."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "ADK runtime semantics for the before_agent_callback list (execution ordering, exception handling, and interaction with the LlmAgent lifecycle) are not shown in the supplied source views.",
+      "The artifact service backing store (in-memory vs database vs object storage) is not shown, so the persistence breadth of the save_artifact state mutation cannot be classified further.",
+      "The production deployment's working directory that serves as the Path.cwd() containment root is not shown.",
+      "Whether any other code path in the repository (e.g., sub-agent tools under src/agent/sub_agents/) opens or writes local files without the containment guard is unknown; repository enumeration is not complete.",
+      "No behavior labels or test evidence are supplied to establish actual enforcement behavior at runtime; contracts are compiled from registration and guard-code evidence only."
+    ],
+    "repository": "QueryPlanner/medical-agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:0ee2dcef13c3bd40d13e4b8aa98ca501"
+  },
+  "request_sha256": "5291e481be4ac59545741266964958af4375c9c9a21af708cfea7350d4d238c6",
+  "response_sha256": "532dc12629defc19b84eb4b66a64dcede5f0d7ee46f6225a729e4a81a38352df",
+  "state": "completed",
+  "tokens": 14374,
+  "unit": "v24-screen:0ee2dcef13c3bd40d13e4b8aa98ca501"
+}

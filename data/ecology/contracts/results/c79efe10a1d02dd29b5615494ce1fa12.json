@@ -1,0 +1,327 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "save_challenges(challenges) at handlers/challenge.py:469 persisting the mutated mapping via CHALLENGES_FILE.write_text at handlers/challenge.py:44.",
+        "contract_id": "ecological-contract:32efc6511754eacced9f3a8fad4bbe02",
+        "declared_mechanism": "In-handler authorization check in delete_challenge: is_creator = str(interaction.user.id) == chall['created_by'] and is_admin = interaction.user.guild_permissions.administrator; if neither holds, an ephemeral denial is sent and the handler returns before the entry removal.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 463,
+            "line_start": 457,
+            "path": "handlers/challenge.py",
+            "role": "guard_registration",
+            "source_sha256": "5cc5af22539ca3efca869067a1312a998dd6968c6ba0a72a3c5ef4446da86a1c"
+          },
+          {
+            "line_end": 434,
+            "line_start": 431,
+            "path": "handlers/challenge.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5cc5af22539ca3efca869067a1312a998dd6968c6ba0a72a3c5ef4446da86a1c"
+          },
+          {
+            "line_end": 469,
+            "line_start": 465,
+            "path": "handlers/challenge.py",
+            "role": "protected_operation",
+            "source_sha256": "5cc5af22539ca3efca869067a1312a998dd6968c6ba0a72a3c5ef4446da86a1c"
+          },
+          {
+            "line_end": 44,
+            "line_start": 41,
+            "path": "handlers/challenge.py",
+            "role": "commit_point",
+            "source_sha256": "5cc5af22539ca3efca869067a1312a998dd6968c6ba0a72a3c5ef4446da86a1c"
+          }
+        ],
+        "forbidden_condition": "A requester who is neither the recorded creator of the tracked challenge nor a guild administrator causes the removal of challenges[channel_id][thread_id] and its persistence via save_challenges.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Command registration/dispatcher code binding the Discord interaction to delete_challenge is not in supplied sources.",
+          "Whether any AI-agent tool interface, agent lifecycle hook, or agent-generated input path can invoke delete_challenge is not established by supplied source."
+        ],
+        "protected_operation": "Removal of the tracked challenge's JSON entry (del challenges[channel_id][thread_id], with empty parent-key cleanup) followed by save_challenges(challenges).",
+        "protected_resource": "data/challenges. challenge-tracking store (handlers/challenge.py CHALLENGES_FILE), entry keyed by parent CTF channel id and challenge thread id.",
+        "protection_obligation": "Deletion of a tracked challenge's tracking entry from the persistent challenges. store is forbidden unless the requester is the challenge's recorded creator (created_by user id) or a guild administrator; enforced inside delete_challenge before any persistence occurs.",
+        "scope_limits": [
+          "Obligation is bound to the delete_challenge flow shown; other supplied writers to the same challenges. (mark_solved at 209, mark_working at 280, mark_unsolved at 329, legacy handle_chall_* handlers, auto_track_worker at 514) mutate status/working data without creator/admin checks and are not covered.",
+          "Covers only challenges tracked in the JSON store inside active CTF categories (is_active_ctf); deletion of untracked threads or threads outside active CTF categories is not reachable through this flow.",
+          "Guard is evaluated once at handler entry; no re-verification occurs between the check and the persisted write."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await thread.delete(reason=f'Deleted by {interaction.user.name}') at handlers/challenge.py:474 (Discord REST channel-deletion API effect).",
+        "contract_id": "ecological-contract:82d45eaed7a7509da3d5dc4b4f71475a",
+        "declared_mechanism": "Creator-or-administrator check (is_creator / interaction.user.guild_permissions.administrator) at handlers/challenge.py:457-463 that returns with an ephemeral denial before the deletion branch is reachable.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 463,
+            "line_start": 457,
+            "path": "handlers/challenge.py",
+            "role": "guard_registration",
+            "source_sha256": "5cc5af22539ca3efca869067a1312a998dd6968c6ba0a72a3c5ef4446da86a1c"
+          },
+          {
+            "line_end": 434,
+            "line_start": 431,
+            "path": "handlers/challenge.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5cc5af22539ca3efca869067a1312a998dd6968c6ba0a72a3c5ef4446da86a1c"
+          },
+          {
+            "line_end": 474,
+            "line_start": 471,
+            "path": "handlers/challenge.py",
+            "role": "protected_operation",
+            "source_sha256": "5cc5af22539ca3efca869067a1312a998dd6968c6ba0a72a3c5ef4446da86a1c"
+          },
+          {
+            "line_end": 474,
+            "line_start": 474,
+            "path": "handlers/challenge.py",
+            "role": "commit_point",
+            "source_sha256": "5cc5af22539ca3efca869067a1312a998dd6968c6ba0a72a3c5ef4446da86a1c"
+          }
+        ],
+        "forbidden_condition": "A non-creator, non-administrator requester reaching the thread deletion call for a tracked challenge thread.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Command registration/dispatcher code binding the Discord interaction to delete_challenge is not in supplied sources.",
+          "Whether any AI-agent tool interface, agent lifecycle hook, or agent-generated input path can invoke delete_challenge is not established by supplied source."
+        ],
+        "protected_operation": "Discord thread deletion for the tracked challenge (await thread.delete(reason=...)) in delete_challenge.",
+        "protected_resource": "The Discord challenge thread (interaction.channel, a discord.Thread whose parent lies in an active CTF category).",
+        "protection_obligation": "Deletion of the Discord thread of a tracked challenge is forbidden unless the requester is the challenge's recorded creator or a guild administrator; enforced inside delete_challenge before the thread-deletion call.",
+        "scope_limits": [
+          "The same entry guard also precedes the JSON tracking-entry removal (466-469), which is recorded as a separate file-stratum contract; this contract covers only the thread deletion commit.",
+          "Handler order is JSON removal (469) then thread deletion (474); rollback or partial-commit behavior on thread.delete failure (475-478) is outside this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "requests.delete at services/github.py:205 inside delete_writeup, reached from handlers/writeup.py:493 (prefix flow) or handlers/writeup.py:532 (slash confirmation flow); cascading asset deletions via requests.delete at services/github.py:254 (triggered at services/github.py:210).",
+        "contract_id": "ecological-contract:a0a1cb82192bbdb52ec28388803f67dc",
+        "declared_mechanism": "Author-or-admin check combining is_admin = author.guild_permissions.administrator with is_author comparing get_writeup_author(...) output to the requester's username case-insensitively, enforced in handle_writeup_delete (478-490) and slash_delete_writeup (633-647) before delete_writeup is reachable; the slash flow additionally requires an explicit confirmation click.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 490,
+            "line_start": 478,
+            "path": "handlers/writeup.py",
+            "role": "guard_registration",
+            "source_sha256": "36b0e9b92a19984daf8d30ec2592e85b54f933063bd4f74c7c2e4a9c9c677b0e"
+          },
+          {
+            "line_end": 647,
+            "line_start": 633,
+            "path": "handlers/writeup.py",
+            "role": "guard_registration",
+            "source_sha256": "36b0e9b92a19984daf8d30ec2592e85b54f933063bd4f74c7c2e4a9c9c677b0e"
+          },
+          {
+            "line_end": 490,
+            "line_start": 488,
+            "path": "handlers/writeup.py",
+            "role": "forbidden_condition",
+            "source_sha256": "36b0e9b92a19984daf8d30ec2592e85b54f933063bd4f74c7c2e4a9c9c677b0e"
+          },
+          {
+            "line_end": 647,
+            "line_start": 637,
+            "path": "handlers/writeup.py",
+            "role": "forbidden_condition",
+            "source_sha256": "36b0e9b92a19984daf8d30ec2592e85b54f933063bd4f74c7c2e4a9c9c677b0e"
+          },
+          {
+            "line_end": 493,
+            "line_start": 492,
+            "path": "handlers/writeup.py",
+            "role": "protected_operation",
+            "source_sha256": "36b0e9b92a19984daf8d30ec2592e85b54f933063bd4f74c7c2e4a9c9c677b0e"
+          },
+          {
+            "line_end": 532,
+            "line_start": 531,
+            "path": "handlers/writeup.py",
+            "role": "protected_operation",
+            "source_sha256": "36b0e9b92a19984daf8d30ec2592e85b54f933063bd4f74c7c2e4a9c9c677b0e"
+          },
+          {
+            "line_end": 205,
+            "line_start": 199,
+            "path": "services/github.py",
+            "role": "commit_point",
+            "source_sha256": "3431d55f75f4a5168fb23e3f257176af31da8cf68f027095d4d0a05250ec7867"
+          },
+          {
+            "line_end": 254,
+            "line_start": 249,
+            "path": "services/github.py",
+            "role": "commit_point",
+            "source_sha256": "3431d55f75f4a5168fb23e3f257176af31da8cf68f027095d4d0a05250ec7867"
+          }
+        ],
+        "forbidden_condition": "A requester who is neither the writeup's recorded author nor a guild administrator causing delete_writeup to execute via the >writeup-delete prefix flow or via the /delwriteup confirmation view.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Command dispatch registrations for '>writeup-delete' and '/delwriteup' are not in supplied sources.",
+          "Whether an AI-agent tool interface, lifecycle hook, or agent-generated input can reach either deletion flow is not established."
+        ],
+        "protected_operation": "Single-writeup deletion: delete_writeup(ctf, category, challenge, year) invoked from handle_writeup_delete (handlers/writeup.py:493) or from DeleteWriteupConfirmView.confirm (handlers/writeup.py:532).",
+        "protected_resource": "The writeup markdown file {category}-{challenge}.md under {PARENT_FOLDER}/{year}/{ctf}/ in the GitHub repository accessed via the GitHub Contents API, plus associated asset files deleted by the cascade.",
+        "protection_obligation": "Deletion of a single named writeup from the GitHub writeup repository is forbidden unless the requester is the writeup's recorded author (case-insensitive username match) or a guild administrator; guards at both the >writeup-delete and /delwriteup entry points must hold before the GitHub Contents API delete commit.",
+        "scope_limits": [
+          "Authorship is determined by parsing the 'Compiled by:'/'Solved by:' footer from file content (services/github.py:166-174) and matching the requester's Discord username case-insensitively (handlers/writeup.py:486, 635); no platform account linkage is involved.",
+          "Slash flow: DeleteWriteupConfirmView.confirm (519-551) does not re-verify author/admin status; the view is only constructed and sent after the entry check (633-647) and is delivered ephemeral (662).",
+          "Prefix flow (>writeup-delete) executes delete_writeup directly with no confirmation step (492-493).",
+          "safe_join path-traversal validation (services/github.py:17-22) on the constructed request paths is generic input validation with no supplied agent binding and is excluded from this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "requests.delete(f'{GITHUB_API_URL}/{writeup_path}', ...) at services/github.py:205 inside delete_writeup, invoked per file at handlers/writeup.py:749; cascading asset deletions via requests.delete at services/github.py:254 after a successful main-file delete (services/github.py:210).",
+        "contract_id": "ecological-contract:ae26c6f5229aae43974a4dabd3bc1760",
+        "declared_mechanism": "interaction.user.guild_permissions.administrator check at handlers/writeup.py:790-797 with ephemeral 'Admin Only' denial and return, executed before the defer, author listing, and construction of the ephemeral confirmation view whose confirm callback invokes delete_writeup.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 797,
+            "line_start": 789,
+            "path": "handlers/writeup.py",
+            "role": "guard_registration",
+            "source_sha256": "36b0e9b92a19984daf8d30ec2592e85b54f933063bd4f74c7c2e4a9c9c677b0e"
+          },
+          {
+            "line_end": 797,
+            "line_start": 791,
+            "path": "handlers/writeup.py",
+            "role": "forbidden_condition",
+            "source_sha256": "36b0e9b92a19984daf8d30ec2592e85b54f933063bd4f74c7c2e4a9c9c677b0e"
+          },
+          {
+            "line_end": 753,
+            "line_start": 736,
+            "path": "handlers/writeup.py",
+            "role": "protected_operation",
+            "source_sha256": "36b0e9b92a19984daf8d30ec2592e85b54f933063bd4f74c7c2e4a9c9c677b0e"
+          },
+          {
+            "line_end": 205,
+            "line_start": 199,
+            "path": "services/github.py",
+            "role": "commit_point",
+            "source_sha256": "3431d55f75f4a5168fb23e3f257176af31da8cf68f027095d4d0a05250ec7867"
+          },
+          {
+            "line_end": 254,
+            "line_start": 249,
+            "path": "services/github.py",
+            "role": "commit_point",
+            "source_sha256": "3431d55f75f4a5168fb23e3f257176af31da8cf68f027095d4d0a05250ec7867"
+          }
+        ],
+        "forbidden_condition": "A non-administrator invoker of /delwriteups causing delete_writeup DELETE requests to execute, directly or through the BatchDeleteConfirmView confirm callback.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Slash-command tree registration for /delwriteups is not included in supplied sources.",
+          "Whether an AI-agent tool interface, lifecycle hook, or agent-generated input can reach this command flow is not established."
+        ],
+        "protected_operation": "Batch deletion of writeups by username: list_writeups_by_author selection (handlers/writeup.py:814) followed by per-file delete_writeup calls in BatchDeleteConfirmView.confirm.",
+        "protected_resource": "Writeup markdown files {category}-{challenge}.md under {PARENT_FOLDER}/{year}/{ctf}/ in the GitHub repository accessed via the GitHub Contents API, plus associated asset files matching {challenge_name}-* under {ctf}/assets/.",
+        "protection_obligation": "Batch deletion of all writeups authored by a given user from the GitHub writeup repository is forbidden unless the requester is a guild administrator; the administrator guard registered at /delwriteups command entry must hold before any GitHub Contents API delete commit.",
+        "scope_limits": [
+          "Guard runs once at command entry (789-797); BatchDeleteConfirmView.confirm (722-766) performs no independent permission re-check, relying on the ephemeral confirmation flow (followup.send ephemeral at 841).",
+          "Deletion set is restricted to writeups attributed to the requested username for the CTF and year derived from the invoking channel (810-814).",
+          "safe_join path-traversal validation (services/github.py:17-22) on the constructed request paths is generic input validation with no supplied agent binding and is excluded from this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await channel.edit(category=archive_category) at handlers/ctf.py:67 inside move_channel_to_archive (Discord REST channel-edit API effect), reached via the guarded call at handlers/ctf.py:262.",
+        "contract_id": "ecological-contract:e90126cf3bb45256695ffab091438087",
+        "declared_mechanism": "message.author.guild_permissions.administrator check at handlers/ctf.py:258-260 with denial message and return, preceding the move_channel_to_archive call at 262.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 260,
+            "line_start": 258,
+            "path": "handlers/ctf.py",
+            "role": "guard_registration",
+            "source_sha256": "d8a7ae48687b1ca19a1cc6898f34f43ae3801a30bdbe39d21747359496fc7d7f"
+          },
+          {
+            "line_end": 259,
+            "line_start": 259,
+            "path": "handlers/ctf.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d8a7ae48687b1ca19a1cc6898f34f43ae3801a30bdbe39d21747359496fc7d7f"
+          },
+          {
+            "line_end": 262,
+            "line_start": 262,
+            "path": "handlers/ctf.py",
+            "role": "protected_operation",
+            "source_sha256": "d8a7ae48687b1ca19a1cc6898f34f43ae3801a30bdbe39d21747359496fc7d7f"
+          },
+          {
+            "line_end": 68,
+            "line_start": 62,
+            "path": "handlers/ctf.py",
+            "role": "commit_point",
+            "source_sha256": "d8a7ae48687b1ca19a1cc6898f34f43ae3801a30bdbe39d21747359496fc7d7f"
+          }
+        ],
+        "forbidden_condition": "A non-administrator message author invoking the archive flow such that move_channel_to_archive / channel.edit executes for the CTF channel.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Prefix-command dispatch wiring mapping '>ctf archive' to handle_ctf_archive is not in supplied sources.",
+          "Whether an AI-agent tool interface or lifecycle hook can reach this flow is not established by supplied source."
+        ],
+        "protected_operation": "move_channel_to_archive(message.channel): creation/reuse of the archive-{year} category and re-categorization of the CTF channel.",
+        "protected_resource": "The current-year CTF text channel (message.channel, restricted by precondition to category 'ctf-{current_year}').",
+        "protection_obligation": "Archiving a CTF channel (moving it out of the current-year CTF category into the archive category) is forbidden unless the requester is a guild administrator; enforced in handle_ctf_archive before the channel-edit commit.",
+        "scope_limits": [
+          "Preconditions at 246-256 limit the flow to channels within the category named f'ctf-{current_year}'; archiving of channels in other categories is not reachable through this handler.",
+          "Archive-category creation via create_category_if_not_exists (handlers/ctf.py:64-66) is part of the same guarded effect chain and has no separate guard.",
+          "Only the prefix-command archive flow is present in supplied sources; no slash-command archiver is shown."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Command/dispatcher registration code (bot entrypoint, prefix router, slash-command tree) is not among supplied sources; the mapping of command text to the guarded handlers is asserted only from handler docstrings, signatures, and parameter usage.",
+      "No supplied source binds any of these handlers to an AI-agent tool interface, agent lifecycle hook, or agent-generated input channel (no tool dispatch, decorator-based agent registration, or agent dataflow is shown); therefore agent_mediation is not_established for all contracts and no agent_entry_binding evidence can be cited.",
+      "The reviewer-flagged safe_join traversal guard (services/github.py:17-22) is generic path validation over inputs derived from Discord user text; with no supplied agent binding it is excluded from contract compilation under scope rules.",
+      "Implementations of normalize_name and is_ctf_channel (imported in handlers/writeup.py at lines 10-11) are not supplied, so their contribution to path composition and channel scoping within these flows is unevaluated."
+    ],
+    "repository": "vicevirus/discord-bot",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:c79efe10a1d02dd29b5615494ce1fa12"
+  },
+  "request_sha256": "bbbedc0526d8badf4385d9b292048618038414e1bea41a6fae4e3312f99a1af7",
+  "response_sha256": "be1d4004941b26f14ca7817b4beaa5dce397f74a77381a4d6b957ece0a420a08",
+  "state": "completed",
+  "tokens": 49236,
+  "unit": "v24-screen:c79efe10a1d02dd29b5615494ce1fa12"
+}

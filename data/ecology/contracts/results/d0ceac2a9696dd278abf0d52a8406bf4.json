@@ -1,0 +1,286 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The open() for writing: LocalSandbox.write_file's open(resolved_path, mode) after makedirs (local_sandbox.py:293-298) and LocalSandbox.update_file's open(resolved_path, 'wb') (local_sandbox.py:341-345); the EROFS check executes strictly before these commits.",
+        "contract_id": "ecological-contract:38a887e5d77b5eae03ede2ef9af46e41",
+        "declared_mechanism": "Layered guards: (1) LocalSandbox.write_file/update_file resolve the container path via _resolve_path, then consult _is_read_only_path (longest-prefix match over path_mappings) and raise OSError(errno.EROFS, 'Read-only file system', path) before os.makedirs/open; (2) tools.py validate_local_tool_path raises PermissionError for write access to skills paths, ACP workspace paths, and read-only custom mounts before resolution, and write_file_tool/str_replace_tool invoke it before sandbox.write_file; (3) LocalSandboxProvider registers the skills mapping with read_only=True.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 46,
+            "line_start": 40,
+            "path": "backend/packages/harness/deerflow/sandbox/local/local_sandbox_provider.py",
+            "role": "guard_registration",
+            "source_sha256": "e364c0c293d5b1e7c49f8484b720e819913e20008aa50a36f6e23f73f186ec7e"
+          },
+          {
+            "line_end": 87,
+            "line_start": 48,
+            "path": "backend/packages/harness/deerflow/sandbox/local/local_sandbox_provider.py",
+            "role": "guard_registration",
+            "source_sha256": "e364c0c293d5b1e7c49f8484b720e819913e20008aa50a36f6e23f73f186ec7e"
+          },
+          {
+            "line_end": 89,
+            "line_start": 66,
+            "path": "backend/packages/harness/deerflow/sandbox/local/local_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "c1f22807e5d080a7966bdc4feac051e5f77662023e97a6287c0e7a050bfb418a"
+          },
+          {
+            "line_end": 291,
+            "line_start": 288,
+            "path": "backend/packages/harness/deerflow/sandbox/local/local_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "c1f22807e5d080a7966bdc4feac051e5f77662023e97a6287c0e7a050bfb418a"
+          },
+          {
+            "line_end": 298,
+            "line_start": 293,
+            "path": "backend/packages/harness/deerflow/sandbox/local/local_sandbox.py",
+            "role": "commit_point",
+            "source_sha256": "c1f22807e5d080a7966bdc4feac051e5f77662023e97a6287c0e7a050bfb418a"
+          },
+          {
+            "line_end": 339,
+            "line_start": 336,
+            "path": "backend/packages/harness/deerflow/sandbox/local/local_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "c1f22807e5d080a7966bdc4feac051e5f77662023e97a6287c0e7a050bfb418a"
+          },
+          {
+            "line_end": 345,
+            "line_start": 341,
+            "path": "backend/packages/harness/deerflow/sandbox/local/local_sandbox.py",
+            "role": "commit_point",
+            "source_sha256": "c1f22807e5d080a7966bdc4feac051e5f77662023e97a6287c0e7a050bfb418a"
+          },
+          {
+            "line_end": 596,
+            "line_start": 545,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "ee47d740c29214b68ade401cfff2785f7988a5e9a47f3d7eb3662b003b214215"
+          },
+          {
+            "line_end": 594,
+            "line_start": 573,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ee47d740c29214b68ade401cfff2785f7988a5e9a47f3d7eb3662b003b214215"
+          },
+          {
+            "line_end": 1252,
+            "line_start": 1226,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ee47d740c29214b68ade401cfff2785f7988a5e9a47f3d7eb3662b003b214215"
+          },
+          {
+            "line_end": 1306,
+            "line_start": 1266,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ee47d740c29214b68ade401cfff2785f7988a5e9a47f3d7eb3662b003b214215"
+          }
+        ],
+        "forbidden_condition": "Writing, appending, or rewriting file content at a resolved path under a read-only path mapping \u2014 e.g. the skills mount registered read_only=True \u2014 or a tool-level attempt to take write access (read_only=False) to skills paths (/mnt/skills), ACP workspace paths (/mnt/acp-workspace), or read-only custom mount paths.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "No supplied view shows the tool wrapper that invokes LocalSandbox.update_file; its agent-facing entry point is unverified.",
+          "Whether any other callers reach sandbox.write_file while bypassing validate_local_tool_path cannot be ruled out from the supplied views."
+        ],
+        "protected_operation": "Agent-invoked filesystem writes: LocalSandbox.write_file (write/append text) and LocalSandbox.update_file (binary rewrite), reached from the @tool write_file_tool and str_replace_tool wrappers in the local-sandbox path.",
+        "protected_resource": "Read-only mounted host directories registered as PathMapping(read_only=True) \u2014 concretely the skills directory mounted from config.skills.get_skills_path() \u2014 plus read-only custom mounts, and at the tool-validation layer the skills (/mnt/skills) and ACP workspace (/mnt/acp-workspace) virtual trees.",
+        "protection_obligation": "File writes through the local sandbox must never modify paths that resolve under a read-only path mapping (notably the skills directory registered with read_only=True, and custom mounts configured read-only): LocalSandbox.write_file and LocalSandbox.update_file, and their agent-facing tool wrappers, must be refused (OSError EROFS / PermissionError) after virtual-path resolution and before any file is opened for writing.",
+        "scope_limits": [
+          "The EROFS mechanism applies to the LocalSandbox path-mapping implementation; behavior of other sandbox providers (e.g., container-based) is outside the supplied source.",
+          "Bash-command write prevention is explicitly not enforced: validate_local_bash_command_paths is documented as best-effort path validation, not a write guard (tools.py:638-652).",
+          "Custom mounts are protected only when configured with read_only=true (mount.read_only flows into PathMapping.read_only at local_sandbox_provider.py:85).",
+          "validate_local_tool_path's write-denial applies at the tool entry points shown (write_file_tool, str_replace_tool); read paths pass read_only=True and are permitted."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Attachment delivery commit at Channel._on_outbound -> Channel.send_file (FeishuChannel.send_file uploading via _upload_image/_upload_file to the Feishu API and sending the file/image message), reached only for ResolvedAttachments that passed _resolve_attachments and were published on the bus via _prepare_artifact_delivery -> bus.publish_outbound.",
+        "contract_id": "ecological-contract:8b75d2897eecdeadf5525d0712181948",
+        "declared_mechanism": "manager.py::_resolve_attachments (invoked from _prepare_artifact_delivery) enforces a layered guard: (1) virtual-path prefix check against _OUTPUTS_VIRTUAL_PREFIX = '/mnt/user-data/outputs/' with skip-and-warn on mismatch; (2) resolution via Paths.resolve_virtual_path, which requires a segment-boundary prefix match and raises ValueError('Access denied: path traversal detected') on traversal; (3) post-resolution containment via actual.resolve().relative_to(outputs_dir) with skip on ValueError; non-file or unresolvable artifacts are skipped and only listed as text filenames.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 357,
+            "line_start": 308,
+            "path": "backend/app/channels/manager.py",
+            "role": "guard_registration",
+            "source_sha256": "5d04b95dc7388eacda6c20538a29985c59b59518c5ac8edb7ec6209e76cde2f3"
+          },
+          {
+            "line_end": 342,
+            "line_start": 327,
+            "path": "backend/app/channels/manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5d04b95dc7388eacda6c20538a29985c59b59518c5ac8edb7ec6209e76cde2f3"
+          },
+          {
+            "line_end": 281,
+            "line_start": 248,
+            "path": "backend/packages/harness/deerflow/config/paths.py",
+            "role": "guard_registration",
+            "source_sha256": "30c7f1eed5fba5b6a0392b54399402bf03101f11713b76eca67a4055cbf0cda2"
+          },
+          {
+            "line_end": 733,
+            "line_start": 715,
+            "path": "backend/app/channels/manager.py",
+            "role": "protected_operation",
+            "source_sha256": "5d04b95dc7388eacda6c20538a29985c59b59518c5ac8edb7ec6209e76cde2f3"
+          },
+          {
+            "line_end": 108,
+            "line_start": 87,
+            "path": "backend/app/channels/base.py",
+            "role": "commit_point",
+            "source_sha256": "1968c7971f28b4bcd42cb759ad0c63677f69c6299c664a244727c8ea61101a93"
+          },
+          {
+            "line_end": 246,
+            "line_start": 213,
+            "path": "backend/app/channels/feishu.py",
+            "role": "commit_point",
+            "source_sha256": "6592632533db4d331d24d3058932c339a0a2409aec3ea6d2a31fe41384e7cc45"
+          },
+          {
+            "line_end": 295,
+            "line_start": 265,
+            "path": "backend/app/channels/manager.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5d04b95dc7388eacda6c20538a29985c59b59518c5ac8edb7ec6209e76cde2f3"
+          },
+          {
+            "line_end": 715,
+            "line_start": 705,
+            "path": "backend/app/channels/manager.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5d04b95dc7388eacda6c20538a29985c59b59518c5ac8edb7ec6209e76cde2f3"
+          }
+        ],
+        "forbidden_condition": "Attaching and delivering an OutboundMessage attachment whose artifact virtual path does not start with /mnt/user-data/outputs/, or whose resolved host path escapes the thread's sandbox outputs directory (path traversal), which would exfiltrate uploads/workspace files over the IM channel.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether slack/telegram/wecom channels implement send_file and upload ResolvedAttachments through equivalent effects cannot be verified from the supplied source.",
+          "app/channels/message_bus.py (publish_outbound, subscribe_outbound, OutboundMessage, ResolvedAttachment definitions) is not supplied; the handoff from publish_outbound to Channel._on_outbound is inferred from base.py:87-95 and the subscription wiring at feishu.py:113.",
+          "Whether outputs directory contents can contain symlinks (affecting the resolve()-based containment check semantics) is not established by the supplied source."
+        ],
+        "protected_operation": "Outbound IM-channel file attachment delivery: _prepare_artifact_delivery resolves agent-produced artifact paths into ResolvedAttachment objects that are attached to OutboundMessage, published via bus.publish_outbound, and uploaded by the targeted channel's _on_outbound -> send_file effect.",
+        "protected_resource": "The thread's sandbox outputs directory ({base_dir}/threads/{thread_id}/user-data/outputs, virtual /mnt/user-data/outputs/) as the sole permitted source of outbound IM file attachments; other thread user-data content (uploads/, workspace/) must not be deliverable as attachments.",
+        "protection_obligation": "Outbound IM-channel file delivery must only attach artifacts that resolve from the thread's sandbox outputs directory: artifact virtual paths must start with /mnt/user-data/outputs/ and, after resolution via Paths.resolve_virtual_path, must remain inside the resolved per-thread outputs directory. Non-outputs virtual prefixes and paths that escape the resolved outputs directory after prefix filtering (path traversal) are rejected before any attachment is attached to an OutboundMessage and uploaded by a channel.",
+        "scope_limits": [
+          "The guard runs manager-side before bus publication; both the non-streaming path (manager.py:715) and the streaming path (manager.py:806) route artifact resolution through _prepare_artifact_delivery.",
+          "Rejections are skip-and-log: rejected artifacts are dropped from attachments and only listed as text filenames (manager.py:374-382); the text message itself still delivers.",
+          "File upload is only attempted when the text send succeeds (base.py:92-100); channel-level size-limit declines (feishu.py:217-223) are platform limits, not part of this obligation.",
+          "Only the Feishu channel's send_file/upload code is supplied; CHANNEL_CAPABILITIES also lists slack, telegram, and wecom, whose implementations are not in the supplied views.",
+          "The guard permits any file under outputs once contained; it does not restrict file count, type, or content."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "_render_html(report_config, output_filename, include_html) at bandwidth_report_generate.py:419, which via subprocess.run of the report script with --output (lines 269-282) creates the HTML report file (existence checked at lines 293-299); the guard returns before this call is reached.",
+        "contract_id": "ecological-contract:c577e9110f19f18ffa204a468924b163",
+        "declared_mechanism": "Pre-commit guard in generate_bandwidth_report: _is_vpdn_report(line_group, long_distance_no, report_profile) and _has_vpdn_rows(rows) are evaluated after filtering; if not is_vpdn_report and _has_vpdn_rows(rows), the function returns {ok: False, error: 'VPDN Dedicated line reports must be used vpdn_report_generate,Cannot use normal bandwidth_report_generate.'} with period/filters before _render_html is invoked; vpdn_report_generate supplies report_profile='vpdn' to legitimately pass the guard.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 115,
+            "line_start": 110,
+            "path": "mcp-servers/network-ops/tools/bandwidth_report_generate.py",
+            "role": "guard_registration",
+            "source_sha256": "5ab06fdc125903ad9114d2dc16a38298579327b17178864fa766b0670dbf43fa"
+          },
+          {
+            "line_end": 399,
+            "line_start": 384,
+            "path": "mcp-servers/network-ops/tools/bandwidth_report_generate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ab06fdc125903ad9114d2dc16a38298579327b17178864fa766b0670dbf43fa"
+          },
+          {
+            "line_end": 419,
+            "line_start": 412,
+            "path": "mcp-servers/network-ops/tools/bandwidth_report_generate.py",
+            "role": "protected_operation",
+            "source_sha256": "5ab06fdc125903ad9114d2dc16a38298579327b17178864fa766b0670dbf43fa"
+          },
+          {
+            "line_end": 282,
+            "line_start": 249,
+            "path": "mcp-servers/network-ops/tools/bandwidth_report_generate.py",
+            "role": "commit_point",
+            "source_sha256": "5ab06fdc125903ad9114d2dc16a38298579327b17178864fa766b0670dbf43fa"
+          },
+          {
+            "line_end": 502,
+            "line_start": 445,
+            "path": "mcp-servers/network-ops/tools/bandwidth_report_generate.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5ab06fdc125903ad9114d2dc16a38298579327b17178864fa766b0670dbf43fa"
+          },
+          {
+            "line_end": 51,
+            "line_start": 38,
+            "path": "mcp-servers/network-ops/server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e483380cba5c5dcdb19a14c11214f262fdc4cb273681ec4f849f7ac9538c177a"
+          },
+          {
+            "line_end": 77,
+            "line_start": 50,
+            "path": "mcp-servers/network-ops/tools/vpdn_report_generate.py",
+            "role": "protected_operation",
+            "source_sha256": "ae8cf29b9d60bcbb50815193dcb57bf3cb5162dddfa7cf597294fb2ca92a251b"
+          }
+        ],
+        "forbidden_condition": "Producing a standard (report_profile != 'vpdn') bandwidth HTML report whose filtered rows contain VPDN lines (_has_vpdn_rows(rows) true), i.e. invoking _render_html on such rows instead of routing to vpdn_report_generate.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The rendering script resolved from cfg.bandwidth_report_script_path is not supplied; the actual file write occurs inside that subprocess.",
+          "No supplied view shows the MCP client/agent that invokes the network-ops server; the mediation binding rests on the @mcp.tool() decorator and server registration wiring.",
+          "Whether code paths other than vpdn_report_generate call generate_bandwidth_report with VPDN-containing rows is not fully enumerable from the supplied views."
+        ],
+        "protected_operation": "Generation of standard bandwidth HTML trend report artifacts via generate_bandwidth_report -> _build_report_config -> _render_html (subprocess writing the HTML output file); equivalently, the exclusive routing of VPDN reporting through the sanctioned vpdn_report_generate tool which passes report_profile='vpdn'.",
+        "protected_resource": "The bandwidth HTML report artifact written to disk by the _render_html report script (output under cfg.bandwidth_report_output_dir/<artifact_id>/<filename>.html) and the correctness of report-profile routing for VPDN line data.",
+        "protection_obligation": "bandwidth_report_generate must refuse (ok=False, with the explicit error that VPDN Dedicated line reports must be used vpdn_report_generate,Cannot use normal bandwidth_report_generate) to render a standard-profile HTML bandwidth trend report whenever the filtered rows include VPDN line-group data, unless report_profile='vpdn'; VPDN reporting is diverted exclusively to vpdn_report_generate, with the guard evaluated after row filtering and before the _render_html subprocess writes the report artifact.",
+        "scope_limits": [
+          "_is_vpdn_report keys solely on report_profile == 'vpdn'; its line_group/long_distance_no parameters are unused, so detection of the forbidden condition relies entirely on _has_vpdn_rows over the filtered rows.",
+          "The FastMCP server instructions block (server.py:26-35) mandating vpdn_report_generate for VPDN reports is routing documentation, not code enforcement; the enforceable guard is in generate_bandwidth_report.",
+          "bandwidth_excel_report_generate is registered in the same server (server.py:50) and referenced by instructions, but its source is not supplied; any analogous Excel-side completeness guard is unverified.",
+          "The guard operates on rows after line_scope/default filtering (bandwidth_report_generate.py:346-366); VPDN rows excluded by the caller's filters do not trigger it."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source for the slack, telegram, and wecom channel implementations (their send/send_file upload behavior) is not supplied; only the Feishu channel is available.",
+      "backend/app/channels/message_bus.py (MessageBus.publish_outbound, subscribe_outbound, OutboundMessage, ResolvedAttachment definitions) is not supplied.",
+      "The tool wrapper that invokes LocalSandbox.update_file is not present in any supplied view.",
+      "mcp-servers/network-ops/tools/bandwidth_excel_report_generate.py is not supplied despite its registration in server.py and reviewer mention of an Excel-side completeness guard.",
+      "The report rendering script targeted by config.bandwidth_report_script_path is not supplied; the HTML file write happens inside that subprocess.",
+      "No supplied view identifies the agent/MCP client that consumes the network-ops FastMCP server or the LangGraph-side tool registrations behind ChannelManager; agent-mediation bindings above rest solely on decorator, registration, and dataflow evidence within the supplied views."
+    ],
+    "repository": "Matthewyin/deer-flow",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d0ceac2a9696dd278abf0d52a8406bf4"
+  },
+  "request_sha256": "afca1544826673801028aadbc3d0255e2d0d7a3f0e5ada4d29101b32d4ab7158",
+  "response_sha256": "28b09df5376d0fe191eaf70fd03c73db7fde6ef1b06b96fcd8cf0c1fbb59fbd4",
+  "state": "completed",
+  "tokens": 74109,
+  "unit": "v24-screen:d0ceac2a9696dd278abf0d52a8406bf4"
+}

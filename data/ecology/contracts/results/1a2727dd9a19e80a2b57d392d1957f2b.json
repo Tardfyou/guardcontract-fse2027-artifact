@@ -1,0 +1,193 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file_path.read_text(encoding='utf-8') at server.py:941 \u2014 the guarded filesystem read whose content is returned in the HTTP response.",
+        "contract_id": "ecological-contract:1bf094765b9fc494d2576b6903aa3cd9",
+        "declared_mechanism": "Resolve-then-prefix containment check inside read_knowledge: file_path = KNOWLEDGE_DIR / filename (server.py:928), then file_path.resolve() compared via str(file_path).startswith(str(KNOWLEDGE_DIR.resolve())), returning {'error': 'Invalid path'} on prefix mismatch or on any resolution exception (server.py:930-936). The check runs after filename normalization (skills resolution and .md suffixing, server.py:916-926) and before the existence check and content read.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 927,
+            "line_start": 906,
+            "path": "server.py",
+            "role": "protected_operation",
+            "source_sha256": "8dc6a3e3a52cb34560e1b202cb64a8b28d1bc5d0b59aa31da163fa45ebcbc6fe"
+          },
+          {
+            "line_end": 936,
+            "line_start": 928,
+            "path": "server.py",
+            "role": "guard_registration",
+            "source_sha256": "8dc6a3e3a52cb34560e1b202cb64a8b28d1bc5d0b59aa31da163fa45ebcbc6fe"
+          },
+          {
+            "line_end": 936,
+            "line_start": 931,
+            "path": "server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8dc6a3e3a52cb34560e1b202cb64a8b28d1bc5d0b59aa31da163fa45ebcbc6fe"
+          },
+          {
+            "line_end": 941,
+            "line_start": 938,
+            "path": "server.py",
+            "role": "commit_point",
+            "source_sha256": "8dc6a3e3a52cb34560e1b202cb64a8b28d1bc5d0b59aa31da163fa45ebcbc6fe"
+          }
+        ],
+        "forbidden_condition": "A requested filename whose resolved file path is not contained within the resolved KNOWLEDGE_DIR prefix (path escape outside the knowledge root), or a path-resolution failure, reaching the file-read commit.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, lifecycle hook, or agent-generated dataflow supplies the filename path parameter to this endpoint; supplied source shows the input arriving solely via the HTTP request path.",
+          "Whether the prefix-based containment (str.startswith on resolved paths) is intended to be hardened (e.g., separator-aware or commonpath-based comparison); not determinable from the supplied source."
+        ],
+        "protected_operation": "Reading and returning the contents of a knowledge document in response to GET /knowledge/read/{filename:path}.",
+        "protected_resource": "Markdown knowledge documents stored under KNOWLEDGE_DIR (ROOT_DIR/data/knowledge), including skills/<name>/SKILL.md files reached via the skills identifier resolution.",
+        "protection_obligation": "GET /knowledge/read/{filename:path} must reject any request whose requested filename resolves to a path outside KNOWLEDGE_DIR \u2014 returning {'error': 'Invalid path'} \u2014 with the containment check enforced before the file-read commit point (file_path.read_text at server.py:941), preventing path-traversal file reads through the knowledge API. (Merged from first- and second-phase reviewer wording.)",
+        "scope_limits": [
+          "Contract covers only /knowledge/read/{filename:path}; no containment claim is asserted here for other path-building endpoints (e.g., /history/{id}/logs at server.py:1041-1064, /experiment/script/{name} at server.py:1121-1133, or the workflow endpoints).",
+          "The guarded effect is a filesystem read whose contents are disclosed in the response; the handler performs no filesystem mutation, so nothing in this contract asserts a write-side guard.",
+          "Containment is implemented as a string-prefix comparison on resolved paths; its adequacy against sibling-prefix directories or symlinked subpaths is neither evaluated nor decided in this unit.",
+          "Filename normalization (skills resolution and .md appending, server.py:916-926) occurs before the check, so the guard evaluates the final constructed path.",
+          "The CORS middleware (server.py:188-194) cited by the second-phase reviewer is treated as out of scope (ordinary web/CORS policy) and is not part of this obligation.",
+          "No agent tool, agent lifecycle hook, or agent-generated dataflow feeding filename into this endpoint is visible in supplied source; the endpoint is not asserted to be agent-mediated."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The tool-execution commit inside the DeepAgentsApp agent run loop; the concrete call site is not visible in supplied source.",
+        "contract_id": "ecological-contract:673f8f0434280e7d21ea38594b39239b",
+        "declared_mechanism": "auto_approve CLI option defaulting to False (cli.py:667-672) forwarded into DeepAgentsApp(auto_approve=auto_approve, ...) (cli.py:759-767); approval UI components are referenced/patched at cli.py:265-312, but the gating enforcement itself resides in the unsupplied deepagents_cli library.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 672,
+            "line_start": 667,
+            "path": "cli.py",
+            "role": "guard_registration",
+            "source_sha256": "846bec80ac5832f8ca71c498f70baf2711f9fcb44c73dd2fb3336c192b27c781"
+          },
+          {
+            "line_end": 671,
+            "line_start": 671,
+            "path": "cli.py",
+            "role": "forbidden_condition",
+            "source_sha256": "846bec80ac5832f8ca71c498f70baf2711f9fcb44c73dd2fb3336c192b27c781"
+          },
+          {
+            "line_end": 768,
+            "line_start": 759,
+            "path": "cli.py",
+            "role": "protected_operation",
+            "source_sha256": "846bec80ac5832f8ca71c498f70baf2711f9fcb44c73dd2fb3336c192b27c781"
+          },
+          {
+            "line_end": 767,
+            "line_start": 759,
+            "path": "cli.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "846bec80ac5832f8ca71c498f70baf2711f9fcb44c73dd2fb3336c192b27c781"
+          }
+        ],
+        "forbidden_condition": "An agent tool call in an interactive DeepAgentsApp session executing without a human approval decision while auto_approve remains at its default False (i.e., the 'all tool calls without prompting' behavior being active without the explicit flag).",
+        "missing_evidence_roles": [
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "Location of the gating commit point within DeepAgentsApp / deepagents_cli agent loop where an unapproved tool call is withheld from execution.",
+          "Which tool categories are exempt from prompting when auto_approve is False.",
+          "Whether backend-provided file/execute tools are covered by the same approval gate in the TUI."
+        ],
+        "protected_operation": "Execution of agent tool calls in the interactive DeepAgentsApp session (agent tools [find, lab, run_experiment, vlm_inspect, workflow] at cli.py:744-746, plus backend-provided tools).",
+        "protected_resource": "The agent tool-execution surface of the interactive TUI session.",
+        "protection_obligation": "In interactive TUI mode, agent tool calls surfaced through DeepAgentsApp must require a human approval decision before execution: the CLI registers auto_approve defaulting to False ('Auto-approve all tool calls without prompting') and forwards it to DeepAgentsApp (cli.py:667-672, 759-767), with --auto-approve/-y as the explicit override.",
+        "scope_limits": [
+          "Applies only to the interactive TUI path; non-interactive mode explicitly overrides with auto_approve=True passed to create_cli_agent (cli.py:721-729), so no approval gate is asserted for -n runs.",
+          "Only flag registration and forwarding are source-visible; the approval-gating logic inside DeepAgentsApp is unsupplied and unverified.",
+          "Per-tool approval coverage (which tool calls prompt when auto_approve is False) is not established by supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The concrete file read/write executed inside LocalShellBackend when the agent invokes its file tools; the actual call site is not present in the supplied source. The source-visible wiring point is the create_deep_agent invocation at server.py:150-157.",
+        "contract_id": "ecological-contract:76be42ab1be96eeb8b009159fe42a973",
+        "declared_mechanism": "LocalShellBackend constructed with root_dir=str(ROOT_DIR) and virtual_mode=True, inline-commented 'Restrict file access to within project directory' (server.py:129-133; import at server.py:44), passed as backend to create_deep_agent (server.py:150-157) and initialized as the global backend at server startup (server.py:171-177).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 133,
+            "line_start": 129,
+            "path": "server.py",
+            "role": "guard_registration",
+            "source_sha256": "8dc6a3e3a52cb34560e1b202cb64a8b28d1bc5d0b59aa31da163fa45ebcbc6fe"
+          },
+          {
+            "line_end": 131,
+            "line_start": 131,
+            "path": "server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8dc6a3e3a52cb34560e1b202cb64a8b28d1bc5d0b59aa31da163fa45ebcbc6fe"
+          },
+          {
+            "line_end": 250,
+            "line_start": 238,
+            "path": "server.py",
+            "role": "protected_operation",
+            "source_sha256": "8dc6a3e3a52cb34560e1b202cb64a8b28d1bc5d0b59aa31da163fa45ebcbc6fe"
+          },
+          {
+            "line_end": 157,
+            "line_start": 150,
+            "path": "server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8dc6a3e3a52cb34560e1b202cb64a8b28d1bc5d0b59aa31da163fa45ebcbc6fe"
+          }
+        ],
+        "forbidden_condition": "Agent-initiated file access by the deep agent reading, writing, or otherwise effecting the filesystem outside the project root ROOT_DIR.",
+        "missing_evidence_roles": [
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "Exact commit-point lines inside LocalShellBackend where agent file reads/writes commit (library source not supplied).",
+          "Which specific tools route through the backend confinement (deepagents backend built-ins versus the load_tools() additions at server.py:95-124).",
+          "Whether delegated subagent (task) file access inherits the same virtual_mode confinement."
+        ],
+        "protected_operation": "File operations performed by the deep agent through its backend-backed tools; the deployment's acknowledged tool surface includes read_file, write_file, edit_file, ls, glob, grep, and execute (server.py:238-250, and the commented interrupt list naming write_file/execute at server.py:141-145).",
+        "protected_resource": "The filesystem under ROOT_DIR (the server project directory).",
+        "protection_obligation": "The server's Deep Agent must access the filesystem only through a backend confined to the project directory: create_agent() constructs LocalShellBackend(root_dir=str(ROOT_DIR), virtual_mode=True) with the declared intent 'Restrict file access to within project directory' and wires it into create_deep_agent (server.py:129-133, 150-157), confining agent file access to within ROOT_DIR.",
+        "scope_limits": [
+          "Only construction and wiring are source-visible; virtual_mode enforcement semantics live inside the unsupplied deepagents library and are not verified here.",
+          "Server-side human-approval gating is explicitly disabled: interrupt_on = {} (server.py:146) with the run_experiment/write_file/execute entries commented out (server.py:139-145), even though /chat/stream and /chat/resume implement interrupt/approval plumbing; no server-side tool-approval obligation is asserted by this contract, making this backend confinement the only source-visible server-side agent file-access guard.",
+          "inherit_env=True is configured (server.py:132); its implications are not evaluated in this unit.",
+          "Whether virtual_mode confinement also bounds filesystem side effects of the agent's execute/shell tool is not established by supplied source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Concrete commit-point source for agent file operations inside LocalShellBackend (deepagents library) is not supplied; only construction (server.py:129-133) and wiring (server.py:150-157) are visible, so the commit_point evidence role is omitted for that contract.",
+      "The approval-gating implementation inside DeepAgentsApp / deepagents_cli (approval menu decision enforcement) is not supplied; only auto_approve flag registration (cli.py:667-672) and forwarding (cli.py:759-767) are visible.",
+      "No supplied source binds the /knowledge/read/{filename:path} input to an agent tool, agent lifecycle hook, or agent-generated dataflow; agent mediation for the knowledge-read contract is recorded as not_established with no agent_entry_binding evidence.",
+      "Server-side HITL tool approval is explicitly disabled (interrupt_on = {} at server.py:146, with run_experiment/write_file/execute entries commented out at server.py:139-145) even though /chat/stream and /chat/resume implement interrupt and approve/reject plumbing (server.py:365-430, 561-592); the operative server-side approval semantics cannot be established from supplied source.",
+      "Whether virtual_mode=True in LocalShellBackend confines filesystem side effects of the agent's execute/shell tool (as opposed to its file tools) is not determinable from supplied source.",
+      "The CORS middleware (server.py:188-194) cited by the second-phase reviewer is out of scope under the unit rules (ordinary web/CORS policy with no source binding it to an agent-mediated effect), so no contract is emitted for it.",
+      "The deepagents_cli.widgets.approval module referenced at cli.py:265-273 is not supplied, so the relationship between the patched display helpers and the actual approval gating cannot be confirmed."
+    ],
+    "repository": "NVIDIA/Quantum-Calibration-Agent-Blueprint",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1a2727dd9a19e80a2b57d392d1957f2b"
+  },
+  "request_sha256": "d43f174d1d0b0dd0b1c14b23c3d90c72203982f2c478eaa371b276980100b821",
+  "response_sha256": "37ee9439705acf7989f4bc36291843f4e518558f38a4ddbef2cd7a41bcc86888",
+  "state": "completed",
+  "tokens": 60571,
+  "unit": "v24-screen:1a2727dd9a19e80a2b57d392d1957f2b"
+}

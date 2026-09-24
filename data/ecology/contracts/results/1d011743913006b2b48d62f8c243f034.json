@@ -1,0 +1,801 @@
+{
+  "attempt": "complete_shard_reconciliation",
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Foreground: result = env.execute(command, **execute_kwargs) at terminal_tool.py:1113, reached only after the 998-1023 gate. Background: process_registry.spawn_local(...) at terminal_tool.py:1036-1043 or process_registry.spawn_via_env(...) at terminal_tool.py:1045-1051; both branches sit downstream of the same guard gate.",
+        "contract_id": "ecological-contract:0f64188ccab60fec745dde72599ae28c",
+        "declared_mechanism": "Consolidated pre-execution guard: terminal_tool imports check_dangerous_command and check_all_command_guards from tools/approval.py and wraps them as _check_dangerous_command/_check_all_guards with the CLI-registered _approval_callback (set_approval_callback, terminal_tool.py:113-116); the gate at terminal_tool.py:996-1023 invokes _check_all_guards unless force=True and returns 'approval_required' (gateway ask mode) or 'blocked' JSON without executing. The tirith component is check_command_security (tirith_security.py:600-670), which runs the external 'tirith check -- --non-interactive --shell posix' scanner and maps exit codes 0/1/2 to allow/block/warn with configurable tirith_fail_open behavior.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 104,
+            "line_start": 98,
+            "path": "tools/terminal_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "9e5520323227183a21ba0731c02600afdb567691e2f2ff0b3a48ffec2395e2f0"
+          },
+          {
+            "line_end": 138,
+            "line_start": 113,
+            "path": "tools/terminal_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "9e5520323227183a21ba0731c02600afdb567691e2f2ff0b3a48ffec2395e2f0"
+          },
+          {
+            "line_end": 1023,
+            "line_start": 996,
+            "path": "tools/terminal_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "9e5520323227183a21ba0731c02600afdb567691e2f2ff0b3a48ffec2395e2f0"
+          },
+          {
+            "line_end": 1051,
+            "line_start": 1026,
+            "path": "tools/terminal_tool.py",
+            "role": "commit_point",
+            "source_sha256": "9e5520323227183a21ba0731c02600afdb567691e2f2ff0b3a48ffec2395e2f0"
+          },
+          {
+            "line_end": 1113,
+            "line_start": 1108,
+            "path": "tools/terminal_tool.py",
+            "role": "commit_point",
+            "source_sha256": "9e5520323227183a21ba0731c02600afdb567691e2f2ff0b3a48ffec2395e2f0"
+          },
+          {
+            "line_end": 589,
+            "line_start": 580,
+            "path": "tools/tirith_security.py",
+            "role": "guard_registration",
+            "source_sha256": "5b61c11618143f3e9def5ddfe23ed4ce27c83e7902b2894914f6c99b78f2756e"
+          },
+          {
+            "line_end": 617,
+            "line_start": 600,
+            "path": "tools/tirith_security.py",
+            "role": "guard_registration",
+            "source_sha256": "5b61c11618143f3e9def5ddfe23ed4ce27c83e7902b2894914f6c99b78f2756e"
+          },
+          {
+            "line_end": 637,
+            "line_start": 619,
+            "path": "tools/tirith_security.py",
+            "role": "guard_registration",
+            "source_sha256": "5b61c11618143f3e9def5ddfe23ed4ce27c83e7902b2894914f6c99b78f2756e"
+          },
+          {
+            "line_end": 652,
+            "line_start": 639,
+            "path": "tools/tirith_security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5b61c11618143f3e9def5ddfe23ed4ce27c83e7902b2894914f6c99b78f2756e"
+          },
+          {
+            "line_end": 312,
+            "line_start": 299,
+            "path": "tools/file_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "949710d973343a879e211990e112784069cb48aa1062441ccd82975e1aadeefe"
+          }
+        ],
+        "forbidden_condition": "A terminal-tool command reaching execution without guard approval: a tirith 'block' verdict (exit code 1, or fail-closed spawn failure/timeout/unexpected exit code), a command denied by dangerous-command approval, or a command pending 'approval_required' \u2014 none of these may reach env.execute() or the process_registry spawn unless force=True is set.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The terminal tool's registration with the agent dispatcher (model_tools.py) is not in the supplied views; agent-tool status rests on the sibling-module dispatcher wiring description in file_tools.py naming 'terminal' among agent-executed tools.",
+          "The implementation of tools/approval.py (check_all_command_guards, check_dangerous_command, approval 'once'/'session'/'always'/'deny' semantics, and handling of tirith 'warn') is not supplied.",
+          "Default values of tirith_enabled/tirith_fail_open from _load_security_config lie outside the supplied lines.",
+          "Whether any other execution paths in terminal_tool (e.g., sudo flows) bypass _check_all_guards cannot be assessed from the supplied ranges."
+        ],
+        "protected_operation": "Shell command execution dispatched through the terminal tool: foreground execution via env.execute(command, **execute_kwargs) and background execution via process_registry.spawn_local(...) or process_registry.spawn_via_env(...).",
+        "protected_resource": "The shell execution environment (local or sandboxed backend) that runs agent-submitted command strings \u2014 OS process creation on the target host or container.",
+        "protection_obligation": "Shell commands submitted through the terminal tool must pass the consolidated pre-execution guard (_check_all_guards: tirith content scan plus dangerous-command approval) and receive an 'approved' verdict before execution is committed; unapproved commands must be returned as 'approval_required' or 'blocked' and must never reach env.execute() or the background process spawn, with bypass only via the explicit force flag.",
+        "scope_limits": [
+          "force=True skips the guard entirely (terminal_tool.py:997-998); the source shows the flag check but the upstream user-confirmation flow that sets force is not in the supplied views.",
+          "tirith can fail open by configuration: spawn failure, timeout, or unexpected exit code returns action 'allow' when tirith_fail_open is set (tirith_security.py:630-637, 648-652); tirith disabled returns allow (612-613); while the tirith binary is being background-installed, 'commands will fail-open until ready' (589).",
+          "The 'warn' verdict (exit code 2) mapping to a final allow/block decision occurs inside tools/approval.py, which is not in the supplied views.",
+          "This guard covers the terminal tool path only; the file write/patch deny lists are compiled as a separate contract.",
+          "Whether an approval callback is registered depends on deployment (the CLI registers it); behavior when _approval_callback is None is defined in the unsupplied tools/approval.py."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The agent run dispatched at acp_adapter/server.py:309-310, during which terminal commands execute under the approval gate armed at server.py:286 and disarmed at server.py:305; the interior pre-execution hook and shell-exec commit site inside tools/terminal_tool.py are not in the supplied views.",
+        "contract_id": "ecological-contract:3c72d70cf444cbceb693ada53b067763",
+        "declared_mechanism": "acp_adapter/permissions.make_approval_callback builds a hermes-compatible approval callback that forwards the command to conn.request_permission with allow_once/allow_always/deny options and returns 'deny' on FutureTimeout/Exception (permissions.py:59-64) and on non-AllowedOutcome (permissions.py:74-75); acp_adapter/server.py arms it via _terminal_tool.set_approval_callback(approval_cb) before the run (server.py:282-288) and restores previous_approval_cb in a finally block (server.py:301-307).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 41,
+            "line_start": 26,
+            "path": "acp_adapter/permissions.py",
+            "role": "guard_registration",
+            "source_sha256": "fe52c0515a4512ff87b6aa127db21ed051445c748d65c3851958614ac7714f8d"
+          },
+          {
+            "line_end": 75,
+            "line_start": 53,
+            "path": "acp_adapter/permissions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fe52c0515a4512ff87b6aa127db21ed051445c748d65c3851958614ac7714f8d"
+          },
+          {
+            "line_end": 288,
+            "line_start": 282,
+            "path": "acp_adapter/server.py",
+            "role": "guard_registration",
+            "source_sha256": "394ec6238599bb288742262653e51c585c27996823f2115fbd3219012266ebc3"
+          },
+          {
+            "line_end": 286,
+            "line_start": 284,
+            "path": "acp_adapter/server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "394ec6238599bb288742262653e51c585c27996823f2115fbd3219012266ebc3"
+          },
+          {
+            "line_end": 296,
+            "line_start": 290,
+            "path": "acp_adapter/server.py",
+            "role": "protected_operation",
+            "source_sha256": "394ec6238599bb288742262653e51c585c27996823f2115fbd3219012266ebc3"
+          },
+          {
+            "line_end": 307,
+            "line_start": 301,
+            "path": "acp_adapter/server.py",
+            "role": "guard_registration",
+            "source_sha256": "394ec6238599bb288742262653e51c585c27996823f2115fbd3219012266ebc3"
+          },
+          {
+            "line_end": 310,
+            "line_start": 309,
+            "path": "acp_adapter/server.py",
+            "role": "commit_point",
+            "source_sha256": "394ec6238599bb288742262653e51c585c27996823f2115fbd3219012266ebc3"
+          }
+        ],
+        "forbidden_condition": "Terminal command execution during an ACP session prompt without an explicit allow decision from the connected ACP client \u2014 including execution while the permission request timed out, raised an exception, or returned a non-AllowedOutcome (each must resolve to 'deny').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "tools/terminal_tool.py is not among the supplied views: the code path that consults the approval callback before executing a command (the actual shell-exec commit site) cannot be cited.",
+          "Whether terminal_tool enforces the approval callback uniformly across execution backends (local/docker/ssh/modal/daytona/singularity) is not shown."
+        ],
+        "protected_operation": "Agent-driven shell/terminal command execution performed through tools.terminal_tool during agent.run_conversation inside the ACP prompt handler.",
+        "protected_resource": "Host shell/process execution effect of the tools.terminal_tool module during ACP sessions.",
+        "protection_obligation": "During ACP prompt runs, terminal command execution performed by the agent through tools.terminal_tool must be gated by an approval callback bridged to the connected ACP client's request_permission; the callback must fail closed (return 'deny' on timeout, error, or non-allowed outcome), be registered on the terminal tool via set_approval_callback before agent execution, and the previously registered callback must be restored in a finally block after the run.",
+        "scope_limits": [
+          "The gate is armed only when an ACP connection exists; otherwise approval_cb is None and no callback is installed (server.py:263-274, 282).",
+          "Fail-closed does not extend to unrecognized option_ids under AllowedOutcome: permissions.py:73 returns 'once' as a fallback for an option_id not present in the declared options list.",
+          "If set_approval_callback raises, the failure is swallowed at debug level and the agent runs without the ACP gate installed (server.py:287-288).",
+          "Registration/restore wrap only the prompt handler's agent run for the terminal tool's callback slot; terminal_tool behavior outside ACP prompt runs is outside this binding.",
+          "Restoration failure is likewise swallowed at debug level (server.py:306-307)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "tools/browser_tool.py:1101-1118 \u2014 navigation is delegated/executed only after both pre-nav checks pass; post-redirect commit at browser_tool.py:1129-1135 where results are withheld and the browser is navigated away.",
+        "contract_id": "ecological-contract:45491fa10714d1d317c1fa4d7ed181b5",
+        "declared_mechanism": "Pre-navigation _is_safe_url SSRF block (browser_tool.py:1081-1090) and check_website_access policy block (browser_tool.py:1092-1099); post-redirect re-check of final_url with about:blank mitigation and result suppression (browser_tool.py:1125-1135).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 1090,
+            "line_start": 1081,
+            "path": "tools/browser_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2b5a85fad65af0b8b3c16f6cff3af5f44f8a7e9a4fa8b68551f434348f3adacf"
+          },
+          {
+            "line_end": 1099,
+            "line_start": 1092,
+            "path": "tools/browser_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "2b5a85fad65af0b8b3c16f6cff3af5f44f8a7e9a4fa8b68551f434348f3adacf"
+          },
+          {
+            "line_end": 1118,
+            "line_start": 1101,
+            "path": "tools/browser_tool.py",
+            "role": "commit_point",
+            "source_sha256": "2b5a85fad65af0b8b3c16f6cff3af5f44f8a7e9a4fa8b68551f434348f3adacf"
+          },
+          {
+            "line_end": 1135,
+            "line_start": 1125,
+            "path": "tools/browser_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2b5a85fad65af0b8b3c16f6cff3af5f44f8a7e9a4fa8b68551f434348f3adacf"
+          },
+          {
+            "line_end": 54,
+            "line_start": 43,
+            "path": "AGENTS.md",
+            "role": "protected_operation",
+            "source_sha256": "e7a62e64a3f8003c75bcb7a472e8039e742a46239525fc94f3470b8a7ff8adb5"
+          }
+        ],
+        "forbidden_condition": "Navigation to a URL targeting a private/internal address or a host blocked by website access policy, or retention/exposure of post-redirect results when the final URL targets a private/internal address.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Registration of browser_navigate as an agent-invocable tool (registry.register / handle_function_call dispatch) is described only in AGENTS.md's structure notes and is not present as code in the supplied views; the agent-tool binding cannot be cited from supplied source.",
+          "Implementations of _is_safe_url, _is_local_backend, _allow_private_urls, and check_website_access are outside the supplied range; their strictness (e.g., DNS-rebinding handling, policy source) is unverified."
+        ],
+        "protected_operation": "Browser navigation to the requested URL (camofox delegation or _run_browser_command 'open') and the exposure of post-redirect page content to subsequent browser_snapshot reads.",
+        "protected_resource": "Internal/private network endpoints reachable through the browser backend; policy-restricted websites.",
+        "protection_obligation": "browser_navigate must block URLs targeting private/internal addresses (fail-closed SSRF check for non-local backends, unless browser.allow_private_urls is opted in) and policy-blacklisted hosts (check_website_access) both before navigation and again after redirects \u2014 navigating away to about:blank and withholding results if a redirect lands on a private/internal address.",
+        "scope_limits": [
+          "The SSRF check is skipped for local backends (_is_local_backend) and when browser.allow_private_urls is opted in (browser_tool.py:1081-1086), so fail-closed behavior is default-only for non-local backends.",
+          "The post-redirect check applies only when final_url differs from the requested URL (browser_tool.py:1129).",
+          "The website-policy block and the private-address SSRF block are distinct mechanisms; both must pass pre-navigation.",
+          "Redirect mitigation navigates to about:blank to prevent snapshot leaks (browser_tool.py:1130-1131)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The install-time filesystem mutation gated by _sanitize_plugin_name (reviewer-cited shutil.move, reportedly plugins_cmd.py:~182) is NOT present in the supplied views \u2014 the supplied view ends at line 100 \u2014 so the enforcement-to-commit binding cannot be cited from source.",
+        "contract_id": "ecological-contract:6281eece0cdf37384c4c61234e76a7cc",
+        "declared_mechanism": "_sanitize_plugin_name (hermes_cli/plugins_cmd.py:35-60) rejects empty names and traversal substrings, then resolves the target and requires it to fall inside the resolved plugins directory, returning the safe target path.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 47,
+            "line_start": 41,
+            "path": "hermes_cli/plugins_cmd.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ccec2da3cf659989e41d5cb1e2cf9a69ad041261b5f04097f4e86b71d6e1883a"
+          },
+          {
+            "line_end": 60,
+            "line_start": 49,
+            "path": "hermes_cli/plugins_cmd.py",
+            "role": "guard_registration",
+            "source_sha256": "ccec2da3cf659989e41d5cb1e2cf9a69ad041261b5f04097f4e86b71d6e1883a"
+          },
+          {
+            "line_end": 32,
+            "line_start": 27,
+            "path": "hermes_cli/plugins_cmd.py",
+            "role": "protected_operation",
+            "source_sha256": "ccec2da3cf659989e41d5cb1e2cf9a69ad041261b5f04097f4e86b71d6e1883a"
+          }
+        ],
+        "forbidden_condition": "Creating or moving a plugin directory whose name contains path-traversal characters ('/', '\\\\', '..') or whose resolved target path escapes the plugins directory.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "The call site invoking _sanitize_plugin_name and the subsequent move/copy commit are outside the supplied source range; the guard-to-commit-point wiring is unverified.",
+          "No supplied source binds plugin installation to an agent tool, agent lifecycle hook, or agent-generated input."
+        ],
+        "protected_operation": "Creation/move of the plugin directory under ~/.hermes/plugins/ (HERMES_HOME/plugins) during plugin install.",
+        "protected_resource": "Host filesystem under the user plugins directory (~/.hermes/plugins/).",
+        "protection_obligation": "Plugin installation must validate the plugin name via _sanitize_plugin_name \u2014 rejecting empty names, names containing '/', '\\\\', or '..', and names whose resolved target escapes the plugins directory \u2014 before any filesystem mutation materializes the plugin directory under ~/.hermes/plugins/.",
+        "scope_limits": [
+          "Only the name-validation helper is within the supplied line range (plugins_cmd.py:1-100); the install flow that consumes it is not shown.",
+          "Containment uses str.startswith(resolved_plugins_dir + os.sep) rather than a relative_to check."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "cli.py:638-645 \u2014 shutil.copy2 for files and os.symlink for directories, reached only after both containment checks pass.",
+        "contract_id": "ecological-contract:689157d4cedc6f07e8dd1d8244add0ea",
+        "declared_mechanism": "Path.resolve(strict=False) on both src and dst plus _path_is_within_root containment checks (cli.py:626-637) with 'continue' (skip) on failure; OSError/ValueError during resolution also skips the entry (cli.py:629-631).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 559,
+            "line_start": 553,
+            "path": "cli.py",
+            "role": "guard_registration",
+            "source_sha256": "123f1f8748dc1531728e16ebcda47066c2d61b5a3530900e1eee3d6173469503"
+          },
+          {
+            "line_end": 622,
+            "line_start": 611,
+            "path": "cli.py",
+            "role": "protected_operation",
+            "source_sha256": "123f1f8748dc1531728e16ebcda47066c2d61b5a3530900e1eee3d6173469503"
+          },
+          {
+            "line_end": 637,
+            "line_start": 623,
+            "path": "cli.py",
+            "role": "forbidden_condition",
+            "source_sha256": "123f1f8748dc1531728e16ebcda47066c2d61b5a3530900e1eee3d6173469503"
+          },
+          {
+            "line_end": 645,
+            "line_start": 638,
+            "path": "cli.py",
+            "role": "commit_point",
+            "source_sha256": "123f1f8748dc1531728e16ebcda47066c2d61b5a3530900e1eee3d6173469503"
+          }
+        ],
+        "forbidden_condition": "Copying or symlinking a .worktreeinclude entry whose resolved source escapes the repo root or whose resolved destination escapes the worktree directory (path traversal / symlink escape).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds .worktreeinclude content or the worktree setup path to an agent tool, agent lifecycle hook, or agent-generated input; whether the agent can author or modify .worktreeinclude entries (making this agent-generated input reaching the guarded effect) is unresolved."
+        ],
+        "protected_operation": "File copy (shutil.copy2) and directory symlink creation (os.symlink) for .worktreeinclude entries during worktree setup.",
+        "protected_resource": "Host filesystem \u2014 containment of the repository root (source side) and the newly created worktree directory (destination side).",
+        "protection_obligation": "During cli.py::_setup_worktree, each .worktreeinclude entry must be resolved and containment-checked so that copying (shutil.copy2) or symlinking (os.symlink) occurs only when the resolved source stays within the repository root and the resolved destination stays within the worktree directory; entries failing either check must be skipped before any filesystem mutation.",
+        "scope_limits": [
+          "Applies only to .worktreeinclude processing inside _setup_worktree; other copy/symlink paths in the codebase are not covered by this guard.",
+          "resolve(strict=False) resolves nonexistent paths lexically; containment is enforced against the resolved paths at check time.",
+          "The symlink branch applies to directories only and is skipped when the destination already exists (cli.py:641-645).",
+          "The entire copy loop is wrapped in a broad try/except that logs at debug level (cli.py:614, 646-647), so a mid-loop failure silently aborts remaining entries."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "hermes_cli/main.py:2606 \u2014 zf.extractall(tmp_dir), reached only after all members validate.",
+        "contract_id": "ecological-contract:6b9550814a02f1561d969d51a7e05733",
+        "declared_mechanism": "Per-member os.path.realpath containment check against tmp_dir_real using prefix + os.sep comparison, raising ValueError before extractall (hermes_cli/main.py:2600-2605).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 2596,
+            "line_start": 2592,
+            "path": "hermes_cli/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a1c2d7f030868667aa4891cbd007cb41dc5a3b043b6a612890a86c1adce84bf5"
+          },
+          {
+            "line_end": 2605,
+            "line_start": 2599,
+            "path": "hermes_cli/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a1c2d7f030868667aa4891cbd007cb41dc5a3b043b6a612890a86c1adce84bf5"
+          },
+          {
+            "line_end": 2606,
+            "line_start": 2606,
+            "path": "hermes_cli/main.py",
+            "role": "commit_point",
+            "source_sha256": "a1c2d7f030868667aa4891cbd007cb41dc5a3b043b6a612890a86c1adce84bf5"
+          }
+        ],
+        "forbidden_condition": "Extracting a ZIP member whose realpath escapes the temp extraction directory (zip-slip path traversal).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds the self-update flow to an agent tool, agent lifecycle hook, or agent-generated input; whether the agent can initiate 'hermes update' is unresolved."
+        ],
+        "protected_operation": "zf.extractall of the downloaded update ZIP into the temp directory (followed by copying extracted items into PROJECT_ROOT).",
+        "protected_resource": "Host filesystem paths outside the hermes-update temp extraction directory.",
+        "protection_obligation": "During 'hermes update' ZIP extraction (_update_via_zip), every archive member's realpath must resolve inside the temp extraction directory, or extraction must be aborted with ValueError before zf.extractall runs, preventing zip-slip path traversal from writing files to arbitrary filesystem locations.",
+        "scope_limits": [
+          "Validation covers members at extractall time; the subsequent copy of extracted items into PROJECT_ROOT (main.py:2621-2631) is a separate, unguardeded-by-this-check write path.",
+          "The download source is a hard-coded GitHub ZIP URL (main.py:2589-2596); no archive signature verification is shown.",
+          "Containment is a startswith comparison on realpath strings."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The approval decision is returned to the caller before terminal execution \u2014 approval.py:418-431 documents check_dangerous_command as 'the main entry point called by terminal_tool before executing any command'; the interior execution site in tools/terminal_tool.py is not in the supplied views.",
+        "contract_id": "ecological-contract:82dea2df780d00c1dcb389dbea0d7411",
+        "declared_mechanism": "tools/approval.py centralizes pattern detection (DANGEROUS_PATTERNS with ANSI/null/fullwidth normalization, approval.py:40-78, 108-118), thread-safe per-session/permanent approval state keyed by HERMES_SESSION_KEY, and check_all_command_guards which merges tirith and dangerous-command findings into one approval decision with optional aux-LLM 'smart' assessment (approval.py:524-670).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 78,
+            "line_start": 40,
+            "path": "tools/approval.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a31a4a3688f3cfe42378aaf4c80e64ace1d67cfbd47446ca023e6b842315666a"
+          },
+          {
+            "line_end": 431,
+            "line_start": 418,
+            "path": "tools/approval.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a31a4a3688f3cfe42378aaf4c80e64ace1d67cfbd47446ca023e6b842315666a"
+          },
+          {
+            "line_end": 490,
+            "line_start": 440,
+            "path": "tools/approval.py",
+            "role": "guard_registration",
+            "source_sha256": "a31a4a3688f3cfe42378aaf4c80e64ace1d67cfbd47446ca023e6b842315666a"
+          },
+          {
+            "line_end": 470,
+            "line_start": 455,
+            "path": "tools/approval.py",
+            "role": "commit_point",
+            "source_sha256": "a31a4a3688f3cfe42378aaf4c80e64ace1d67cfbd47446ca023e6b842315666a"
+          },
+          {
+            "line_end": 549,
+            "line_start": 524,
+            "path": "tools/approval.py",
+            "role": "guard_registration",
+            "source_sha256": "a31a4a3688f3cfe42378aaf4c80e64ace1d67cfbd47446ca023e6b842315666a"
+          },
+          {
+            "line_end": 643,
+            "line_start": 627,
+            "path": "tools/approval.py",
+            "role": "guard_registration",
+            "source_sha256": "a31a4a3688f3cfe42378aaf4c80e64ace1d67cfbd47446ca023e6b842315666a"
+          },
+          {
+            "line_end": 202,
+            "line_start": 201,
+            "path": "gateway/run.py",
+            "role": "guard_registration",
+            "source_sha256": "500f395a9ec3d0fbf716767074c5c4148bdeff704430ef00924fa350a3fe12ba"
+          }
+        ],
+        "forbidden_condition": "Execution of a shell command matching a DANGEROUS_PATTERNS entry (or carrying tirith block/warn findings) without the required user approval \u2014 i.e., execution despite an approval_required status or an explicit user denial.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "tools/terminal_tool.py is not among the supplied views: the call site that invokes check_dangerous_command/check_all_command_guards before executing commands, and whether all execution paths and backends honor the returned approval decision, cannot be cited; the binding rests on approval.py's own docstring at approval.py:420-423."
+        ],
+        "protected_operation": "Pre-execution gating of terminal/shell commands performed by the terminal tool before the command runs.",
+        "protected_resource": "Host shell/process execution via the terminal tool (local and remote execution backends).",
+        "protection_obligation": "Shell commands submitted for execution via the terminal tool must pass tools/approval.py's check_dangerous_command / check_all_command_guards before execution: commands matching DANGEROUS_PATTERNS (or flagged by the tirith security scan) must be blocked from execution until user approval (once/session/permanent) is granted, with denials and pending approvals returning approved=False ('BLOCKED' / 'approval_required').",
+        "scope_limits": [
+          "Bypassed for containerized backends: env_type in (docker, singularity, modal, daytona) auto-approves (approval.py:433-434, 534-535).",
+          "HERMES_YOLO_MODE or approvals.mode=off bypasses all checks (approval.py:437-438, 537-540).",
+          "Outside CLI/gateway/HERMES_EXEC_ASK contexts, dangerous commands auto-approve (approval.py:448-452, 546-549).",
+          "Gateway/ask mode returns approved=False with status 'approval_required' and defers to asynchronous replay approval; the gateway enables this path via HERMES_EXEC_ASK=1 at startup (gateway/run.py:201-202).",
+          "Smart mode auto-approves on an aux-LLM 'APPROVE' verdict and grants session-level approval (approval.py:596-606).",
+          "Detection is pattern-based only; tirith findings are folded into the same approval flow (approval.py:551-586)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The 401 rejection inside _handle_webhook at gateway/platforms/webhook.py:277-286, immediately before payload parsing; the guarded effect commits at the handle_message dispatch (asyncio.create_task, webhook.py:422-425).",
+        "contract_id": "ecological-contract:bccaf061dbf2a4d49f9eff01198af519",
+        "declared_mechanism": "Per-route secret validated at startup in connect() (raise ValueError if missing unless _INSECURE_NO_AUTH, webhook.py:107-115); route registered via app.router.add_post (webhook.py:117-119); _handle_webhook calls _validate_signature (HMAC-SHA256 hmac.compare_digest variants, webhook.py:441-470) and returns 401 JSON on failure before parsing (webhook.py:277-286).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 119,
+            "line_start": 107,
+            "path": "gateway/platforms/webhook.py",
+            "role": "guard_registration",
+            "source_sha256": "94d2e63c88a6b25a59f77efac64a40db9c839b87190bb7d6c124d29d6e230215"
+          },
+          {
+            "line_end": 286,
+            "line_start": 277,
+            "path": "gateway/platforms/webhook.py",
+            "role": "forbidden_condition",
+            "source_sha256": "94d2e63c88a6b25a59f77efac64a40db9c839b87190bb7d6c124d29d6e230215"
+          },
+          {
+            "line_end": 470,
+            "line_start": 441,
+            "path": "gateway/platforms/webhook.py",
+            "role": "guard_registration",
+            "source_sha256": "94d2e63c88a6b25a59f77efac64a40db9c839b87190bb7d6c124d29d6e230215"
+          },
+          {
+            "line_end": 425,
+            "line_start": 422,
+            "path": "gateway/platforms/webhook.py",
+            "role": "commit_point",
+            "source_sha256": "94d2e63c88a6b25a59f77efac64a40db9c839b87190bb7d6c124d29d6e230215"
+          },
+          {
+            "line_end": 1126,
+            "line_start": 1124,
+            "path": "gateway/run.py",
+            "role": "protected_operation",
+            "source_sha256": "500f395a9ec3d0fbf716767074c5c4148bdeff704430ef00924fa350a3fe12ba"
+          }
+        ],
+        "forbidden_condition": "A webhook POST lacking a valid, timing-safe-verified signature against the route's configured secret \u2014 including requests presenting no recognized signature header while a secret is configured \u2014 reaching payload parsing and agent-pipeline dispatch.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The webhook\u2192agent dispatch wiring is present in source (webhook.py:422-425 handle_message; gateway/run.py:1125 adapter.set_message_handler(self._handle_message)), but no supplied source classifies this dispatch as an agent tool invocation, agent lifecycle hook, or agent-generated input; the payload originates from external webhook providers, so the mediation category under the study taxonomy is unresolved."
+        ],
+        "protected_operation": "Acceptance and dispatch of webhook events into the gateway message pipeline (handle_message) from POST /webhooks/{route_name}.",
+        "protected_resource": "The webhook route's ingress into the gateway agent-run pipeline.",
+        "protection_obligation": "Every inbound POST to /webhooks/{route_name} must carry a valid per-route HMAC signature (GitHub X-Hub-Signature-256, GitLab X-Gitlab-Token, or generic X-Webhook-Signature, timing-safe compared against the route secret required at startup) before the payload may be parsed and dispatched into the gateway agent pipeline via handle_message; missing or invalid signatures must be rejected with HTTP 401 before dispatch.",
+        "scope_limits": [
+          "Routes whose secret equals _INSECURE_NO_AUTH skip signature validation entirely (webhook.py:277-280) \u2014 testing opt-out disables auth per route.",
+          "Auth is enforced after the Content-Length cap (413) and per-route rate limiting (429), which are separate gates (webhook.py:252-268).",
+          "Event-type filtering and delivery-id idempotency apply after authentication and are distinct mechanisms.",
+          "Signature validation covers only the three recognized headers; absence of all three is rejected when a secret is configured (webhook.py:466-470)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "write_file: immediately after the _is_write_denied check returns a denial (file_operations.py:670-671) and before the mutating shell commands \u2014 'mkdir -p' on the parent and 'cat > <path>' piped via self._exec(write_cmd, stdin_data=content) (file_operations.py:678-686). patch_replace: the _is_write_denied denial (file_operations.py:727-728) precedes the read/rewrite of the file; the rewrite command itself lies beyond the supplied view. Handler level: write_file_tool/patch_tool return an error payload before invoking file_ops (file_tools.py:317-319, 344-347).",
+        "contract_id": "ecological-contract:deb1489ccad017eaaa051a8e935fd8df",
+        "declared_mechanism": "Layered deny-list checks: (1) handler-level _check_sensitive_path over _SENSITIVE_PATH_PREFIXES ('/etc/', '/boot/', '/usr/lib/systemd/') and _SENSITIVE_EXACT_PATHS ('/var/run/docker.sock', '/run/docker.sock'), applied at write_file_tool entry and to each explicit or patch-extracted path in patch_tool; (2) implementation-level _is_write_denied over WRITE_DENIED_PATHS/WRITE_DENIED_PREFIXES plus the optional HERMES_WRITE_SAFE_ROOT sandbox, invoked inside ShellFileOperations.write_file and patch_replace after path expansion and before any mutating command executes.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 75,
+            "line_start": 39,
+            "path": "tools/file_operations.py",
+            "role": "guard_registration",
+            "source_sha256": "1ac2ca4e6d9b5a1ab05b7a6020b7a84ce2f19f9c16ef6269c5ea67a73ac0741a"
+          },
+          {
+            "line_end": 112,
+            "line_start": 78,
+            "path": "tools/file_operations.py",
+            "role": "guard_registration",
+            "source_sha256": "1ac2ca4e6d9b5a1ab05b7a6020b7a84ce2f19f9c16ef6269c5ea67a73ac0741a"
+          },
+          {
+            "line_end": 671,
+            "line_start": 666,
+            "path": "tools/file_operations.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1ac2ca4e6d9b5a1ab05b7a6020b7a84ce2f19f9c16ef6269c5ea67a73ac0741a"
+          },
+          {
+            "line_end": 686,
+            "line_start": 673,
+            "path": "tools/file_operations.py",
+            "role": "commit_point",
+            "source_sha256": "1ac2ca4e6d9b5a1ab05b7a6020b7a84ce2f19f9c16ef6269c5ea67a73ac0741a"
+          },
+          {
+            "line_end": 728,
+            "line_start": 723,
+            "path": "tools/file_operations.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1ac2ca4e6d9b5a1ab05b7a6020b7a84ce2f19f9c16ef6269c5ea67a73ac0741a"
+          },
+          {
+            "line_end": 41,
+            "line_start": 18,
+            "path": "tools/file_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "949710d973343a879e211990e112784069cb48aa1062441ccd82975e1aadeefe"
+          },
+          {
+            "line_end": 322,
+            "line_start": 315,
+            "path": "tools/file_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "949710d973343a879e211990e112784069cb48aa1062441ccd82975e1aadeefe"
+          },
+          {
+            "line_end": 347,
+            "line_start": 332,
+            "path": "tools/file_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "949710d973343a879e211990e112784069cb48aa1062441ccd82975e1aadeefe"
+          },
+          {
+            "line_end": 2,
+            "line_start": 1,
+            "path": "tools/file_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "949710d973343a879e211990e112784069cb48aa1062441ccd82975e1aadeefe"
+          },
+          {
+            "line_end": 312,
+            "line_start": 299,
+            "path": "tools/file_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "949710d973343a879e211990e112784069cb48aa1062441ccd82975e1aadeefe"
+          }
+        ],
+        "forbidden_condition": "A file write or patch (replace mode or V4A patch) whose target resolves via os.path.realpath/os.path.expanduser to a deny-listed sensitive path or prefix \u2014 e.g. ~/.ssh/authorized_keys, ~/.ssh/id_rsa, ~/.ssh/id_ed25519, ~/.ssh/config, the Hermes home .env, shell profile files, .netrc, .pgpass, .npmrc, .pypirc, /etc/sudoers, /etc/passwd, /etc/shadow, the ~/.ssh, ~/.aws, ~/.gnupg, ~/.kube, /etc/sudoers.d, /etc/systemd prefixes, the /etc/, /boot/, /usr/lib/systemd/ prefixes, or /var/run/docker.sock and /run/docker.sock \u2014 or, when HERMES_WRITE_SAFE_ROOT is set, any target outside that safe-root tree. Such an operation must be denied before any mutating shell command is dispatched.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The concrete agent tool registration/dispatch site for write_file_tool and patch_tool (model_tools.py) is not in the supplied views; agent-tool status currently rests on the module declaration ('LLM agent file manipulation tools') and the notify_other_tool_call dispatcher wiring description.",
+          "Whether ShellFileOperations.patch_v4a invokes _is_write_denied internally, and where the V4A patch write-back commits.",
+          "The exact patch_replace write-back command (beyond supplied line 751) constituting the patch commit point.",
+          "Whether deployment environments actually set HERMES_WRITE_SAFE_ROOT (runtime configuration is not observable from source)."
+        ],
+        "protected_operation": "File write and patch tool invocations: write_file_tool(path, content) and patch_tool (replace mode and V4A patch mode), which dispatch to ShellFileOperations.write_file and ShellFileOperations.patch_replace/patch_v4a.",
+        "protected_resource": "Protected system and credential files and trees on the execution host: SSH keys/authorized_keys/config, cloud/gnupg/kube credential directories, the Hermes .env, shell profiles, .netrc/.pgpass/.npmrc/.pypirc, /etc/sudoers(/.d), /etc/passwd, /etc/shadow, /etc and /boot trees, /usr/lib/systemd, and the Docker control socket.",
+        "protection_obligation": "Agent-invoked file write and patch operations must refuse to modify protected system and credential paths: both the agent-facing tool handlers (write_file_tool, patch_tool) and the underlying ShellFileOperations (write_file, patch_replace) must deny any write or patch whose resolved target matches the sensitive-path deny lists, returning an error instead of performing the modification.",
+        "scope_limits": [
+          "Only write_file and patch_replace are shown enforcing _is_write_denied; patch_v4a internals are not in the supplied views, so implementation-level enforcement for V4A patch mode is not evidenced (only the handler-level _check_sensitive_path check on regex-extracted '*** Update/Add/Delete File:' paths is shown for that mode).",
+          "The HERMES_WRITE_SAFE_ROOT sandbox is opt-in via environment variable; when unset, only the static deny lists apply (file_operations.py:78-92, 106-110).",
+          "Enforcement is path-resolution based (realpath/expanduser); no claim is made about mutation vectors outside these two tool paths (shell redirection through the terminal tool would be governed, if at all, by the separate terminal guard contract).",
+          "Complementary guards named in reviewer rationale (code_execution_tool allow-list, credential_files traversal rejection, homeassistant blocked domains, url_safety SSRF checks) are not present in the supplied views and are not compiled here.",
+          "The consecutive read/search loop blocking in file_tools.py is a separate behavior and is not part of this write-protection obligation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "hermes_cli/profiles.py:734-753 \u2014 target.mkdir (735), open(target,'wb') + shutil.copyfileobj (748-749), os.chmod (752), each reached only after per-member validation; import invocation at profiles.py:796-799.",
+        "contract_id": "ecological-contract:ed731dc645b65aa3127e5a676d0fe388",
+        "declared_mechanism": "_normalize_profile_archive_parts raises ValueError on unsafe member names (profiles.py:705-722); _safe_extract_profile_archive validates every member through it and rejects non-regular member types before opening target files (profiles.py:725-749); invoked from import_profile at profiles.py:799.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 722,
+            "line_start": 705,
+            "path": "hermes_cli/profiles.py",
+            "role": "forbidden_condition",
+            "source_sha256": "80324df34c31340ae778cbaba31b16b1a36f2fe2879e00f4e62eb1046ebba302"
+          },
+          {
+            "line_end": 741,
+            "line_start": 738,
+            "path": "hermes_cli/profiles.py",
+            "role": "forbidden_condition",
+            "source_sha256": "80324df34c31340ae778cbaba31b16b1a36f2fe2879e00f4e62eb1046ebba302"
+          },
+          {
+            "line_end": 749,
+            "line_start": 725,
+            "path": "hermes_cli/profiles.py",
+            "role": "guard_registration",
+            "source_sha256": "80324df34c31340ae778cbaba31b16b1a36f2fe2879e00f4e62eb1046ebba302"
+          },
+          {
+            "line_end": 749,
+            "line_start": 748,
+            "path": "hermes_cli/profiles.py",
+            "role": "commit_point",
+            "source_sha256": "80324df34c31340ae778cbaba31b16b1a36f2fe2879e00f4e62eb1046ebba302"
+          },
+          {
+            "line_end": 799,
+            "line_start": 796,
+            "path": "hermes_cli/profiles.py",
+            "role": "commit_point",
+            "source_sha256": "80324df34c31340ae778cbaba31b16b1a36f2fe2879e00f4e62eb1046ebba302"
+          }
+        ],
+        "forbidden_condition": "Extracting an archive member with an absolute path, Windows drive letter, '..' traversal segment, empty normalized path, or a non-directory/non-regular-file type to the filesystem.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds profile import to an agent tool, agent lifecycle hook, or agent-generated input; whether profile archives can originate from agent actions is unresolved."
+        ],
+        "protected_operation": "Per-member filesystem writes during profile import: target.mkdir, file write via extractfile + shutil.copyfileobj, and os.chmod.",
+        "protected_resource": "Host filesystem under the profiles root / destination directory (HERMES profiles home).",
+        "protection_obligation": "Profile archive import (tar.gz) must reject unsafe members \u2014 absolute paths, Windows drive letters, '..' traversal segments, empty normalized paths, and non-regular-file member types (e.g., symlinks/devices) \u2014 raising ValueError before any per-member write, so that extraction writes only regular files to sanitized relative paths inside the destination via _safe_extract_profile_archive.",
+        "scope_limits": [
+          "Guard covers profile import archives opened 'r:gz'; the export path (shutil.make_archive) and rename flow are separate operations.",
+          "Destination confinement relies on sanitized relative parts joined to the destination; no post-hoc realpath containment re-check of the assembled target is shown.",
+          "chmod applies member.mode & 0o777 with OSError swallowed (profiles.py:751-754).",
+          "import_profile re-runs the validator while inferring the top-level directory (profiles.py:770-782)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "gateway/run.py:1700-1733 \u2014 the authorization branch at the head of _handle_message returning None before session creation or agent run; second enforcement site at gateway/run.py:3620-3622 for voice input.",
+        "contract_id": "ecological-contract:f086ec2d3e5c25a9d513cd031289e5a3",
+        "declared_mechanism": "GatewayRunner._is_user_authorized default-deny check (ordered: platform allow-all \u2192 pairing store \u2192 platform/global allowlists with '*' wildcard \u2192 global allow-all \u2192 deny; gateway/run.py:1576-1675), invoked first in _handle_message; unauthorized DMs may receive a rate-limited pairing code, then processing returns None (gateway/run.py:1700-1733); voice input re-checks authorization before pipeline entry (gateway/run.py:3620-3622).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 1586,
+            "line_start": 1576,
+            "path": "gateway/run.py",
+            "role": "guard_registration",
+            "source_sha256": "500f395a9ec3d0fbf716767074c5c4148bdeff704430ef00924fa350a3fe12ba"
+          },
+          {
+            "line_end": 1644,
+            "line_start": 1642,
+            "path": "gateway/run.py",
+            "role": "forbidden_condition",
+            "source_sha256": "500f395a9ec3d0fbf716767074c5c4148bdeff704430ef00924fa350a3fe12ba"
+          },
+          {
+            "line_end": 1696,
+            "line_start": 1684,
+            "path": "gateway/run.py",
+            "role": "protected_operation",
+            "source_sha256": "500f395a9ec3d0fbf716767074c5c4148bdeff704430ef00924fa350a3fe12ba"
+          },
+          {
+            "line_end": 1733,
+            "line_start": 1700,
+            "path": "gateway/run.py",
+            "role": "commit_point",
+            "source_sha256": "500f395a9ec3d0fbf716767074c5c4148bdeff704430ef00924fa350a3fe12ba"
+          },
+          {
+            "line_end": 3622,
+            "line_start": 3612,
+            "path": "gateway/run.py",
+            "role": "commit_point",
+            "source_sha256": "500f395a9ec3d0fbf716767074c5c4148bdeff704430ef00924fa350a3fe12ba"
+          },
+          {
+            "line_end": 1094,
+            "line_start": 1089,
+            "path": "gateway/run.py",
+            "role": "forbidden_condition",
+            "source_sha256": "500f395a9ec3d0fbf716767074c5c4148bdeff704430ef00924fa350a3fe12ba"
+          }
+        ],
+        "forbidden_condition": "A sender not matching any allow-all flag, pairing-approval, platform allowlist, or global allowlist (default deny) triggering gateway message processing or an agent run.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Platform adapters are wired to the gateway agent pipeline via adapter.set_message_handler(self._handle_message) (gateway/run.py:1125) and the handler docstring lists 'Run agent conversation' as step 6 (gateway/run.py:1684-1696), but no supplied source classifies the guarded operation as an agent tool invocation, agent lifecycle hook, or agent-generated input; mediation under the study taxonomy is unresolved."
+        ],
+        "protected_operation": "Gateway message processing culminating in agent conversation execution (the _handle_message pipeline: authorization \u2192 commands \u2192 session \u2192 agent run).",
+        "protected_resource": "The gateway's agent-execution and session pipeline across all connected messaging platforms, plus the Discord voice-channel input path.",
+        "protection_obligation": "Messaging-platform senders must be authorized \u2014 via per-platform allow-all flag, DM pairing approval, platform-specific allowlist, global allowlist, or an explicit global allow-all flag, with default deny \u2014 before the gateway will process their messages or run the agent; the check executes at the head of GatewayRunner._handle_message (returning None for unauthorized senders) and on the Discord voice-channel input path before pipeline entry.",
+        "scope_limits": [
+          "HOMEASSISTANT and WEBHOOK platform events bypass the allowlist entirely and are treated as always authorized (gateway/run.py:1592-1593); webhook authenticity is delegated to the adapter's HMAC check.",
+          "Empty user_id is denied (gateway/run.py:1595-1597).",
+          "'*' in any allowlist allows everyone (gateway/run.py:1653-1656); per-platform allow-all env flags bypass allowlists.",
+          "Startup warns \u2014 but does not fail \u2014 when neither allowlists nor allow-all is configured; default remains deny (gateway/run.py:1089-1094).",
+          "The guard gates message-processing entry; tool-level mechanisms (e.g., exec approval via HERMES_EXEC_ASK) are separate obligations."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Gateway/platforms/base.py (cache_document_from_bytes path-traversal guard, lines 267-278) and gateway/platforms/discord.py (exec-approval authorization, lines 2228-2270) are referenced in reviewer rationale but their source views were not supplied; no contracts were compiled for them.",
+      "No supplied source establishes agent mediation for the worktree .worktreeinclude path, profile/plugin import flows, the self-update ZIP flow, the webhook HMAC gate, or the gateway allowlist gate; whether any of these operations can be reached by agent tools, agent lifecycle hooks, or agent-generated input is unresolved and should be treated as pending binding questions rather than assumed.",
+      "Runtime configuration (HERMES_WRITE_SAFE_ROOT, tirith_enabled, tirith_fail_open values) cannot be observed from source, so fail-open versus fail-closed behavior in a given deployment is undetermined.",
+      "ShellFileOperations._exec, the patch_replace write-back command, and patch_v4a are outside the supplied ranges: the exact patch-mode commit point and whether _is_write_denied is enforced inside patch_v4a are unverified.",
+      "The agent tool dispatcher (model_tools.py) is not supplied: registration of write_file_tool, patch_tool, and the terminal tool as agent tools is documented only via docstrings (file_tools.py:1-2, 299-312), so the concrete registration wiring is unverified.",
+      "The flow that sets force=True after explicit user confirmation (upstream of the terminal guard bypass) is not in the supplied views.",
+      "The value/definition of _INSECURE_NO_AUTH in gateway/platforms/webhook.py is not within the supplied range (only its use at lines 114, 279), so the exact opt-out string for disabling webhook auth is unverified.",
+      "gateway/run.py:2632 (agent-run effect site cited by a reviewer) is outside the supplied line ranges; the agent-run commit downstream of _handle_message cannot be cited directly.",
+      "hermes_cli/plugins_cmd.py is supplied only for lines 1-100: the install flow that invokes _sanitize_plugin_name and the reviewer-cited shutil.move commit (reportedly line ~182) are outside the supplied range, so the guard-to-commit-point wiring for plugin install is unsupported.",
+      "tools/approval.py approval-state helpers (detect_dangerous_command, is_approved, approve_session, approve_permanent, submit_pending, prompt_dangerous_approval, _get_approval_mode) are referenced within the supplied range but their definitions are largely outside it (only _normalize_command_for_detection lines 108-118 and _smart_approve lines 378-415 are partially shown).",
+      "tools/approval.py is not supplied: the consolidated guard logic (check_all_command_guards, check_dangerous_command), approval 'once'/'session'/'always'/'deny' semantics, and handling of tirith 'warn' verdicts are unverified.",
+      "tools/browser_tool.py helpers (_is_safe_url, _is_local_backend, _allow_private_urls, check_website_access) and tools/registry.py / model_tools.py registration-and-dispatch code are outside the supplied views; agent-tool registration for browser_navigate and terminal_tool cannot be cited from code.",
+      "tools/terminal_tool.py is not among the supplied views: neither the ACP approval callback's consumption site before shell execution (contract 1) nor the call site of check_dangerous_command/check_all_command_guards (contract 8) can be verified from source; both bindings currently rest on registration code (server.py:286) and approval.py's docstring respectively."
+    ],
+    "repository": "founderphantom/zola-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1d011743913006b2b48d62f8c243f034"
+  },
+  "request_sha256": "5d4479515e3736d1666a949b349633cfa496d8a69ee1c7b82859e48aa2bac095",
+  "response_sha256": "e44187c2eaf808e63681d24d6a58b2f081adaf7dbeef992ba9792b46eb13664a",
+  "shard_provenance": [
+    {
+      "attempt": 0,
+      "request_sha256": "3bbbcb33e876f0436a72ce35fac1e110d594414e5c522e6be8dbf5e36aaa8c38",
+      "response_sha256": "469f20e06aead7af7725e2c75cd8f41ce21e6823fda31baac825dfcf33e8d87a",
+      "result_sha256": "c4bdc486cf45f89df1dc1a1549cab4c1e51590438769037e3816aaec31c1f895",
+      "tokens": 66040,
+      "unit": "v24-screen:1d011743913006b2b48d62f8c243f034-p000"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "c9ef675dd54c111adb6739f029ee698a5507da8c4aa85147106e945d3fd8ed44",
+      "response_sha256": "77380b5739f4dd281fb1704093dffe59705228a478bb075cef0a510aefce8992",
+      "result_sha256": "a5823d0cb4ffb552278863b737101485b89eb2eb793d3f27337651e897bfd182",
+      "tokens": 36008,
+      "unit": "v24-screen:1d011743913006b2b48d62f8c243f034-p001"
+    }
+  ],
+  "state": "completed",
+  "tokens": 102048,
+  "unit": "v24-screen:1d011743913006b2b48d62f8c243f034"
+}

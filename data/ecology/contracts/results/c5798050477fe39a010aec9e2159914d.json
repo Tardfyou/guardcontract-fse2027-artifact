@@ -1,0 +1,333 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "client.py:241 `return await session.execute(query, variables)`, which delegates to ShopifyGraphQLClient.execute issuing the HTTP POST to https://{shop_url}/admin/api/2025-10/graphql. (client.py:124-140).",
+        "contract_id": "ecological-contract:5fe5c8edc3538465a1108f83a92d427f",
+        "declared_mechanism": "enforce_policy(query): a word-boundary regex blacklist of the eight theme mutations applied to documents matching the \\bmutation\\b keyword gate, raising ShopifyPolicyError (a ValueError subclass); invoked as the first statement of the tool body, before session resolution and execution.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 30,
+            "line_start": 21,
+            "path": "backend/src/domain/agents/tools/providers/shopify/policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "01eb3f754f7db0100e8d3ad5e6d6b16cb2202a3338a9775ac421366cfd7fa7c2"
+          },
+          {
+            "line_end": 49,
+            "line_start": 32,
+            "path": "backend/src/domain/agents/tools/providers/shopify/policy.py",
+            "role": "guard_registration",
+            "source_sha256": "01eb3f754f7db0100e8d3ad5e6d6b16cb2202a3338a9775ac421366cfd7fa7c2"
+          },
+          {
+            "line_end": 18,
+            "line_start": 18,
+            "path": "backend/src/domain/agents/tools/providers/shopify/client.py",
+            "role": "guard_registration",
+            "source_sha256": "e714ad6884f667ac8e8caba90b909ed57a5ab72514ba96930b264ee85fd8ef29"
+          },
+          {
+            "line_end": 209,
+            "line_start": 204,
+            "path": "backend/src/domain/agents/tools/providers/shopify/client.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e714ad6884f667ac8e8caba90b909ed57a5ab72514ba96930b264ee85fd8ef29"
+          },
+          {
+            "line_end": 148,
+            "line_start": 143,
+            "path": "backend/src/domain/agents/tools/providers/shopify/client.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e714ad6884f667ac8e8caba90b909ed57a5ab72514ba96930b264ee85fd8ef29"
+          },
+          {
+            "line_end": 229,
+            "line_start": 210,
+            "path": "backend/src/domain/agents/tools/providers/shopify/client.py",
+            "role": "protected_operation",
+            "source_sha256": "e714ad6884f667ac8e8caba90b909ed57a5ab72514ba96930b264ee85fd8ef29"
+          },
+          {
+            "line_end": 239,
+            "line_start": 239,
+            "path": "backend/src/domain/agents/tools/providers/shopify/client.py",
+            "role": "guard_registration",
+            "source_sha256": "e714ad6884f667ac8e8caba90b909ed57a5ab72514ba96930b264ee85fd8ef29"
+          },
+          {
+            "line_end": 241,
+            "line_start": 240,
+            "path": "backend/src/domain/agents/tools/providers/shopify/client.py",
+            "role": "commit_point",
+            "source_sha256": "e714ad6884f667ac8e8caba90b909ed57a5ab72514ba96930b264ee85fd8ef29"
+          },
+          {
+            "line_end": 140,
+            "line_start": 124,
+            "path": "backend/src/domain/agents/tools/providers/shopify/client.py",
+            "role": "commit_point",
+            "source_sha256": "e714ad6884f667ac8e8caba90b909ed57a5ab72514ba96930b264ee85fd8ef29"
+          }
+        ],
+        "forbidden_condition": "An agent-authored GraphQL document matching /\\bmutation\\b/ that names any blocked theme mutation (themeCreate, themeDelete, themeDuplicate, themePublish, themeUpdate, themeFilesCopy, themeFilesDelete, themeFilesUpsert) being sent to the merchant's Shopify Admin API.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Where the @tool-decorated execute_shopify_query is registered into concrete agent toolsets or model tool registries is not in the supplied views; tool mediation rests on the @tool decorator and the runtime-context contract.",
+          "No other caller of ShopifyGraphQLClient.execute or enforce_policy appears in the supplied views; existence of unguarded invocation paths cannot be ruled out or confirmed."
+        ],
+        "protected_operation": "Agent tool execution of execute_shopify_query \u2014 dispatch of agent-authored GraphQL query/mutation documents to the Shopify Admin GraphQL endpoint.",
+        "protected_resource": "The merchant store's Shopify Admin API, specifically store theme configuration and theme files.",
+        "protection_obligation": "The execute_shopify_query agent tool must reject agent-authored Shopify Admin GraphQL mutation documents that create, delete, duplicate, publish, or update themes, or copy, delete, or upsert theme files (themeCreate, themeDelete, themeDuplicate, themePublish, themeUpdate, themeFilesCopy, themeFilesDelete, themeFilesUpsert): enforce_policy() must raise ShopifyPolicyError before the document is dispatched to the merchant store. (Merges duplicate first- and second-phase reviewer wording.)",
+        "scope_limits": [
+          "The guard fires only when the document matches /\\bmutation\\b/ (policy.py:32, 41); pure query documents are unchecked.",
+          "Enforcement is regex word-boundary matching on the raw document string, not GraphQL parsing; bypass resistance is not assessed in this compilation.",
+          "Only the eight enumerated theme mutations are blocked in code; other policy statements in the tool docstring (refund rules, shipping-option ordering, checkout fees, client.py:217-225) have no visible code enforcement.",
+          "Only the execute_shopify_query channel is guarded; any other path to ShopifyGraphQLClient or direct HTTP to the store is not shown as guarded.",
+          "policy.py:12-13 documents that OAuth theme scopes are the outer boundary and this guard is the inner application-level boundary; OAuth scope configuration itself is outside this contract.",
+          "Behavior, violation, and evasion determinations are out of scope for this hypothesis."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.add(ShopifyWebhookEvent(...)) followed by await db.commit() inside the AsyncSessionLocal session (shopify_webhook.py:227-239); the IntegrityError duplicate branch (240-245) occurs only after the guard has passed.",
+        "contract_id": "ecological-contract:8ff20cd38fb7716172912cb1ae679394",
+        "declared_mechanism": "_verify_hmac: HMAC-SHA256 computed over the raw request bytes with settings.SHOPIFY_API_SECRET, base64-encoded, compared to the X-Shopify-Hmac-Sha256 header via hmac.compare_digest (timing-safe); fail-closed rejection when the secret is unset; HTTP 401 raised on verification failure; executed before .loads of the body.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 12,
+            "line_start": 4,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/shopify_webhook.py",
+            "role": "protected_operation",
+            "source_sha256": "ca2d1089da2bf9a5c8575f300a1c3f596b06b6d75fd1d03882eb98308ebfb79a"
+          },
+          {
+            "line_end": 20,
+            "line_start": 16,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/shopify_webhook.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ca2d1089da2bf9a5c8575f300a1c3f596b06b6d75fd1d03882eb98308ebfb79a"
+          },
+          {
+            "line_end": 54,
+            "line_start": 51,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/shopify_webhook.py",
+            "role": "protected_operation",
+            "source_sha256": "ca2d1089da2bf9a5c8575f300a1c3f596b06b6d75fd1d03882eb98308ebfb79a"
+          },
+          {
+            "line_end": 186,
+            "line_start": 176,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/shopify_webhook.py",
+            "role": "protected_operation",
+            "source_sha256": "ca2d1089da2bf9a5c8575f300a1c3f596b06b6d75fd1d03882eb98308ebfb79a"
+          },
+          {
+            "line_end": 104,
+            "line_start": 94,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/shopify_webhook.py",
+            "role": "guard_registration",
+            "source_sha256": "ca2d1089da2bf9a5c8575f300a1c3f596b06b6d75fd1d03882eb98308ebfb79a"
+          },
+          {
+            "line_end": 207,
+            "line_start": 189,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/shopify_webhook.py",
+            "role": "guard_registration",
+            "source_sha256": "ca2d1089da2bf9a5c8575f300a1c3f596b06b6d75fd1d03882eb98308ebfb79a"
+          },
+          {
+            "line_end": 239,
+            "line_start": 227,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/shopify_webhook.py",
+            "role": "commit_point",
+            "source_sha256": "ca2d1089da2bf9a5c8575f300a1c3f596b06b6d75fd1d03882eb98308ebfb79a"
+          }
+        ],
+        "forbidden_condition": "A webhook delivery whose X-Shopify-Hmac-Sha256 header fails timing-safe comparison against base64(HMAC-SHA256(raw_body, SHOPIFY_API_SECRET)) \u2014 or that arrives when SHOPIFY_API_SECRET is not configured \u2014 being inserted and committed into shopify_webhook_events.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "dispatch_shopify_event (backend/src/application/services/dispatch/shopify_dispatch.py, imported at line 49, invoked at 257) is not in the supplied view; the effect stratum and agent-binding mechanics of the dispatch-to-tenant-agent commit point cannot be classified without guessing.",
+          "The agent-facing reader of shopify_webhook_events (tool or query path) is not present in the supplied views."
+        ],
+        "protected_operation": "Ingestion and durable recording of Shopify webhook deliveries at POST /v1/webhooks/shopify (the endpoint whose pipeline also wakes the tenant's agent for _DISPATCH_TOPICS and records history the agent queries on demand).",
+        "protected_resource": "The shopify_webhook_events table (durable delivery record feeding tenant-agent history).",
+        "protection_obligation": "Shopify webhook deliveries at POST /v1/webhooks/shopify must pass HMAC-SHA256 signature verification over the exact raw request body before any guarded effect; deliveries with missing/invalid signatures (or arriving while SHOPIFY_API_SECRET is unset) are forbidden from being durably recorded into shopify_webhook_events or dispatched onward to the tenant agent. This contract covers the recording commit point; the agent-dispatch commit point is unresolved (see pending).",
+        "scope_limits": [
+          "Covers only the database recording commit point; the same guard also precedes the background agent dispatch (background_tasks.add_task(dispatch_shopify_event, ...) at 253-257), but that commit point's effect stratum is not classifiable from the supplied view.",
+          "Guard operates on raw bytes before JSON parsing (189, 218-219).",
+          "Fail-closed on missing secret (195-197); failed verification raises HTTP 401 (199-207).",
+          "Timing-safe comparison via hmac.compare_digest (104).",
+          "Post-guard outcomes (missing headers, invalid JSON, duplicate webhook_id dedup) are handled after the guard and are outside this contract.",
+          "Agent mediation of the recording path is not established: no supplied source shows the tool or hook by which the agent reads shopify_webhook_events (comments only at 61-65); inclusion rests on the endpoint's explicit agent dispatch/history purpose (4-12, 56-65)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The enqueued background task _run_agent_and_reply issuing POST {LANGGRAPH_URL}/threads/{thread_id}/runs/wait with input messages [{role: human, content: text}] (whatsapp_webhook.py:250-267), scheduled via background_tasks.add_task in _extract_and_dispatch (349-357), reachable only after _verify_meta_signature in the handlers (404-405, 492-493).",
+        "contract_id": "ecological-contract:d3825145a5b222f309453f5cd03912d4",
+        "declared_mechanism": "_verify_meta_signature: 'sha256=' + HMAC-SHA256 hexdigest of the raw body using META_APP_SECRET, compared via hmac.compare_digest; HTTP 401 on missing header or mismatch; invoked on raw bytes before JSON parsing in both handlers. Note: skipped entirely (fail-open) when META_APP_SECRET is unset.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 80,
+            "line_start": 67,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "guard_registration",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 24,
+            "line_start": 22,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 403,
+            "line_start": 399,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "protected_operation",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 233,
+            "line_start": 219,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "protected_operation",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 410,
+            "line_start": 404,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "guard_registration",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 498,
+            "line_start": 482,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "guard_registration",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 357,
+            "line_start": 336,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 267,
+            "line_start": 250,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "commit_point",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          }
+        ],
+        "forbidden_condition": "A WhatsApp webhook delivery whose X-Hub-Signature-256 header is missing or fails timing-safe HMAC-SHA256 verification being parsed and dispatched into a LangGraph agent run with its message text as human input.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "How the dispatched LangGraph run maps to the tenant's agent (assistant_id 'agent' resolution and user_preferences wiring into agent identity, 260-266) is shown only as request payload; agent-side handling is not in view.",
+          "Whether the application registers both WhatsApp router variants is not shown in the supplied views."
+        ],
+        "protected_operation": "Ingestion of inbound WhatsApp messages and their dispatch into tenant agent deployments' agent runs (thread creation plus runs.wait).",
+        "protected_resource": "Tenant agent runs (LangGraph threads/{thread_id}/runs/wait executions fed by WhatsApp message text).",
+        "protection_obligation": "Inbound WhatsApp webhook deliveries (platform-level POST /v1/webhooks/whatsapp and per-deployment POST /v1/webhooks/whatsapp/{deployment_id}) must pass X-Hub-Signature-256 HMAC-SHA256 verification before their message text is dispatched into LangGraph agent runs.",
+        "scope_limits": [
+          "The guard fails open when META_APP_SECRET is unset (69-70, dev/test-mode skip); no fail-closed rejection exists in the supplied source.",
+          "Covers both platform-level (394-449) and per-deployment (482-525) POST handlers; the GET hub.verify_token verification endpoints are separate.",
+          "Only messages with type == 'text' and non-empty body/from are dispatched (342-348); status-only deliveries are logged only.",
+          "Guard runs on raw bytes before .loads (404-410, 492-498).",
+          "LangGraph-side run execution is outside the supplied view."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "POST {META_GRAPH_URL}/{phone_number_id}/messages in _send_whatsapp_message (166-181) and _send_read_and_typing (201-214), invoked from _run_agent_and_reply (234-239, 290-295).",
+        "contract_id": "ecological-contract:f03049f7506664d3e66127956966176b",
+        "declared_mechanism": "The shared ingestion guard _verify_meta_signature (67-80) gating the entire dispatch pipeline; the delivery functions themselves perform no secondary verification in the supplied view.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 80,
+            "line_start": 67,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "guard_registration",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 165,
+            "line_start": 154,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "protected_operation",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 181,
+            "line_start": 166,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "commit_point",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 214,
+            "line_start": 201,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "commit_point",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          },
+          {
+            "line_end": 295,
+            "line_start": 272,
+            "path": "backend/src/infrastructure/api/v1/endpoints/webhooks/whatsapp_webhook.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2f7ca09ff5ea25971444f96b74f65397dbb92dc87d8c7ac9a42120dfbf2a68e2"
+          }
+        ],
+        "forbidden_condition": "A message delivery via POST {META_GRAPH_URL}/{phone_number_id}/messages (reply, read receipt, or typing indicator) initiated from a WhatsApp webhook delivery whose signature verification failed or whose signature header was missing.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Whether other outbound WhatsApp send paths exist that bypass this pipeline is not determinable from the supplied views."
+        ],
+        "protected_operation": "WhatsApp message delivery triggered by inbound webhook processing (agent reply delivery, read/typing indicator delivery).",
+        "protected_resource": "The Meta WhatsApp Cloud API messaging endpoint for the tenant's phone numbers (outbound channel to end users).",
+        "protection_obligation": "Outbound WhatsApp deliveries produced by the webhook pipeline (agent replies, read receipts, typing indicators via the Meta Cloud API) must be reachable only from webhook deliveries whose X-Hub-Signature-256 signature verified; unverified deliveries are forbidden from producing outbound message sends.",
+        "scope_limits": [
+          "No independent guard exists at the delivery functions; protection derives solely from the upstream ingestion signature check.",
+          "Reply content is agent-generated (extracted from the LangGraph response messages, 272-287) before formatting and delivery.",
+          "Delivery failures are only logged (181-182, 215-216); retry/compensation behavior is out of scope.",
+          "The guard fails open when META_APP_SECRET is unset (69-70)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "backend/src/application/services/dispatch/shopify_dispatch.py (dispatch_shopify_event) is not among the supplied views; the second commit point of the Shopify webhook obligation \u2014 background dispatch to the tenant agent (shopify_webhook.py:253-257) \u2014 cannot be assigned an effect_stratum or agent-mediation category and is left uncompiled rather than guessed.",
+      "LemonSqueezy webhook signature verification (lemonsqueezy_routes.py:56-68; guarded DB commits at 131-150, 159-183, 193-217, 248-266, 284-319, 335-356) is not compiled: the supplied source shows no binding to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effects (billing/subscription DB mutations only), so it falls outside the unit's agent scope. LemonSqueezyService.verify_webhook internals are also not supplied.",
+      "Workspace agents RBAC (require_workspace_permission on agents.py:54-153, commits at 91, 133, 152) is not compiled: the supplied source binds these endpoints to admin CRUD over agent entities only, with no explicit agent tool, lifecycle hook, or agent-generated input reaching the guarded commits; agent mediation cannot be established from repository topic alone.",
+      "Registration of the @tool-decorated execute_shopify_query into concrete agent toolsets or model tool registries is not present in the supplied views; direct_tool mediation rests on the decorator and the runtime-context contract (client.py:143-148, 204-209)."
+    ],
+    "repository": "Sami606713/TheBotLab",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:c5798050477fe39a010aec9e2159914d"
+  },
+  "request_sha256": "ae488f95310b6c4c6d475f5a2769e6f5c44d1dcf270f6029065cff2d696259ab",
+  "response_sha256": "3fb2261729ae87af2e63d3e279148fc21b3d26b49a15a1028c2af49acd1358f9",
+  "state": "completed",
+  "tokens": 54366,
+  "unit": "v24-screen:c5798050477fe39a010aec9e2159914d"
+}

@@ -1,0 +1,158 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Immediately before tool execution: the before_tool_callback invocation on mcp_kb_agent, prior to dispatch of the MCP request leaving the org boundary (agent.py L224-L226 comment: 'this query also leaves the org's boundary (to the MCP server), so it gets the same guardrail').",
+        "contract_id": "ecological-contract:9b0b04c612536aebdf707c43a8ca1b16",
+        "declared_mechanism": "ADK before_tool_callback: async validate_tool_params (tools.py L24-L87) serializes the entire args dict to a lowercase string, substring-matches it against six sensitive keywords, and returns {'error': ...} to block the call (L76-L86) or None to allow (L87); wired onto mcp_kb_agent via before_tool_callback=validate_tool_params (agent.py L237).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 31,
+            "line_start": 24,
+            "path": "graph-workflow-fanout/app/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "15273f2389372832385b4d9c6669f5a8b3a1f82879688abf613894b8b149fb5a"
+          },
+          {
+            "line_end": 87,
+            "line_start": 64,
+            "path": "graph-workflow-fanout/app/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "15273f2389372832385b4d9c6669f5a8b3a1f82879688abf613894b8b149fb5a"
+          },
+          {
+            "line_end": 239,
+            "line_start": 227,
+            "path": "graph-workflow-fanout/app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "d5ec346f7ec673d5a54984c377a788f071551305fbe69e53a97d01ac5f604edb"
+          },
+          {
+            "line_end": 237,
+            "line_start": 236,
+            "path": "graph-workflow-fanout/app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "d5ec346f7ec673d5a54984c377a788f071551305fbe69e53a97d01ac5f604edb"
+          },
+          {
+            "line_end": 226,
+            "line_start": 224,
+            "path": "graph-workflow-fanout/app/agent.py",
+            "role": "commit_point",
+            "source_sha256": "d5ec346f7ec673d5a54984c377a788f071551305fbe69e53a97d01ac5f604edb"
+          },
+          {
+            "line_end": 222,
+            "line_start": 220,
+            "path": "graph-workflow-fanout/app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d5ec346f7ec673d5a54984c377a788f071551305fbe69e53a97d01ac5f604edb"
+          }
+        ],
+        "forbidden_condition": "An MCP toolset execution whose arguments dict, serialized via str(args).lower(), contains any substring from the sensitive-keyword list (private_key, aws_key, gcp_key, token, client_secret, password) \u2014 i.e., developer secrets or credentials embedded in the outbound query parameters.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ADK framework source is not supplied, so the blocking semantics of a non-None dict return from before_tool_callback for MCP toolset calls rest on docstrings/comments rather than framework code.",
+          "The set of MCP tools resolved at runtime by AgentRegistry.get_mcp_toolset is not enumerated in supplied source.",
+          "Concrete transport of the call to the MCP server is absent from supplied source; the http stratum is inferred from the comment that the query leaves the org's boundary to the MCP server."
+        ],
+        "protected_operation": "Model-initiated execution of the developer_kb_mcp toolset functions on mcp_kb_agent (query of internal developer documentation built from {triage_summary}).",
+        "protected_resource": "The outbound request to the external Developer KB MCP server (projects/{PROJECT_ID}/locations/{MCP_SERVER_LOCATION}/mcpServers/{MCP_SERVER_NAME}) carrying the tool-call arguments/query text.",
+        "protection_obligation": "Block any Developer-KB MCP toolset call issued by mcp_kb_agent whose serialized arguments contain sensitive credential keywords (private_key, aws_key, gcp_key, token, client_secret, password), enforced by the validate_tool_params before_tool_callback at the pre-execution commit point \u2014 the last checkpoint before the query leaves the org boundary to the MCP server.",
+        "scope_limits": [
+          "Same acknowledged best-effort limitation: the coordinator's triage_summary rewrite and mcp_kb_agent's own reformulation can drop a trigger keyword before the callback sees it (tools.py L44-L54; agent.py L226 'and the same limitation applies').",
+          "The guard covers all functions exposed by the developer_kb_mcp toolset as invoked by mcp_kb_agent; the concrete exposed tool names are resolved at runtime via registry.get_mcp_toolset and are not enumerated in source (agent.py L212-L222).",
+          "Detection is a lowercase substring match against only six listed keywords (tools.py L64-L76); other secret formats are missed and benign text containing e.g. 'token' can trigger false positives.",
+          "Registered only on mcp_kb_agent and web_search_agent; internal agents (search_vais_agent, internal_analyst) and the deterministic query_bq node carry no such callback (agent.py L126-L129; tools.py L35-L37)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Immediately before tool execution: the before_tool_callback invocation on web_search_agent, prior to dispatch of the external search request (tools.py L29 'security guardrail before any tool executes'; agent.py L184-L187 'last checkpoint before that text leaves the org via an external search call').",
+        "contract_id": "ecological-contract:e28a9e0e874d0c838d99fde9f184f2bb",
+        "declared_mechanism": "ADK before_tool_callback: async validate_tool_params (tools.py L24-L87) serializes the entire args dict to a lowercase string, substring-matches it against six sensitive keywords, and returns {'error': ...} to block the call (L76-L86) or None to allow (L87); wired onto web_search_agent via before_tool_callback=validate_tool_params (agent.py L206).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 31,
+            "line_start": 24,
+            "path": "graph-workflow-fanout/app/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "15273f2389372832385b4d9c6669f5a8b3a1f82879688abf613894b8b149fb5a"
+          },
+          {
+            "line_end": 87,
+            "line_start": 64,
+            "path": "graph-workflow-fanout/app/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "15273f2389372832385b4d9c6669f5a8b3a1f82879688abf613894b8b149fb5a"
+          },
+          {
+            "line_end": 208,
+            "line_start": 195,
+            "path": "graph-workflow-fanout/app/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "d5ec346f7ec673d5a54984c377a788f071551305fbe69e53a97d01ac5f604edb"
+          },
+          {
+            "line_end": 206,
+            "line_start": 205,
+            "path": "graph-workflow-fanout/app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "d5ec346f7ec673d5a54984c377a788f071551305fbe69e53a97d01ac5f604edb"
+          },
+          {
+            "line_end": 187,
+            "line_start": 184,
+            "path": "graph-workflow-fanout/app/agent.py",
+            "role": "commit_point",
+            "source_sha256": "d5ec346f7ec673d5a54984c377a788f071551305fbe69e53a97d01ac5f604edb"
+          },
+          {
+            "line_end": 206,
+            "line_start": 179,
+            "path": "graph-workflow-fanout/app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d5ec346f7ec673d5a54984c377a788f071551305fbe69e53a97d01ac5f604edb"
+          }
+        ],
+        "forbidden_condition": "A Google Search tool execution whose arguments dict, serialized via str(args).lower(), contains any substring from the sensitive-keyword list (private_key, aws_key, gcp_key, token, client_secret, password) \u2014 i.e., developer secrets or credentials embedded in the outbound query parameters.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ADK framework source is not supplied, so the blocking semantics of a non-None dict return from before_tool_callback (that it suppresses GoogleSearchTool execution) rest on docstrings/comments rather than framework code.",
+          "Whether the args presented to the callback are identical to the query text ultimately transmitted to the external search service is not shown in supplied source.",
+          "Concrete transport/endpoint of the GoogleSearchTool call is absent from supplied source; the http stratum is inferred from its description as an external search call leaving the org boundary."
+        ],
+        "protected_operation": "Model-initiated execution of the GoogleSearchTool on web_search_agent (search of public developer sources built from {triage_summary}).",
+        "protected_resource": "The outbound external Google Search request carrying the tool-call arguments/query text (data leaving the org boundary).",
+        "protection_obligation": "Block any GoogleSearchTool call issued by web_search_agent whose serialized arguments contain sensitive credential keywords (private_key, aws_key, gcp_key, token, client_secret, password), enforced by the validate_tool_params before_tool_callback at the pre-execution commit point \u2014 the last checkpoint before the query text leaves the org boundary via the external search call.",
+        "scope_limits": [
+          "Best-effort net only: the callback sees only the arguments generated for the current tool call, not the raw user input; the coordinator's triage_summary rewrite and web_search_agent's own reformulation can legitimately drop a trigger keyword, so a secret in the original report is not guaranteed to be caught (agent.py L184-L194; tools.py L44-L54).",
+          "Detection is a lowercase substring match against only six listed keywords (tools.py L64-L76); other secret formats are missed and benign text containing e.g. 'token' can trigger false positives.",
+          "Registered only on the two external-facing agents (web_search_agent, mcp_kb_agent); search_vais_agent is deliberately unguarded because its Vertex AI Search queries never leave the org datastore (agent.py L126-L129; tools.py L35-L37).",
+          "The guard is per-agent wiring, not an app-level or workflow-level policy; it does not inspect other lifecycle stages such as LLM requests or synthesis output."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No ADK framework source is supplied, so it cannot be verified from source that returning a non-None dict from before_tool_callback actually prevents execution of GoogleSearchTool or MCP toolset calls; the blocking effect is asserted only by docstrings and comments.",
+      "Network transport/endpoint details for the Google Search and MCP server calls are absent from supplied source; the 'http' effect stratum is inferred from source descriptions of requests leaving the org boundary, not from wire-level code.",
+      "The concrete contents of the MCP toolset resolved at runtime by registry.get_mcp_toolset are not enumerated in the supplied source.",
+      "Per the unit scope, repository enumeration is incomplete and behavior labels are unavailable; runtime prevalence and real-world effectiveness of the guard cannot be assessed from supplied source."
+    ],
+    "repository": "alejomartinez8/google-agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:45078372e95c45533f2be7041a330387"
+  },
+  "request_sha256": "77ae21b7de067a5f881c1eddc3af6a57f849e4956392bc0ae708b9f97910aff2",
+  "response_sha256": "b0aaf5a85b26dba5d8179724ad026763559699ab1ab3469bcf9e877076312848",
+  "state": "completed",
+  "tokens": 18959,
+  "unit": "v24-screen:45078372e95c45533f2be7041a330387"
+}

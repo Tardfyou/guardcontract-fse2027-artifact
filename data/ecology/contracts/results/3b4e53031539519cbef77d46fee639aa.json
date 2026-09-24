@@ -1,0 +1,80 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "api.py:89 \u2014 background_tasks.add_task(solve_quiz_background, request.url, logger); the 200 success response at lines 92-99 is returned only after this scheduling commits the agent-run initiation.",
+        "contract_id": "ecological-contract:2b4dddc8c95630ccb71aedd61d476aa6",
+        "declared_mechanism": "In-handler secret verification registered inside the POST /solve-quiz route: expected_secret = os.getenv(\"SECRET_KEY\"); HTTPException(500, \"Server configuration error: SECRET_KEY not set\") if unset (fail closed); HTTPException(403, \"Invalid secret\") if request.secret != expected_secret \u2014 ordered strictly before background_tasks.add_task.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 48,
+            "path": "api.py",
+            "role": "guard_registration",
+            "source_sha256": "6362fb77463e2d8bfd310ea2463ef20d392a0ba39f50828d1ecf00b7da367b7d"
+          },
+          {
+            "line_end": 77,
+            "line_start": 64,
+            "path": "api.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6362fb77463e2d8bfd310ea2463ef20d392a0ba39f50828d1ecf00b7da367b7d"
+          },
+          {
+            "line_end": 45,
+            "line_start": 38,
+            "path": "api.py",
+            "role": "protected_operation",
+            "source_sha256": "6362fb77463e2d8bfd310ea2463ef20d392a0ba39f50828d1ecf00b7da367b7d"
+          },
+          {
+            "line_end": 89,
+            "line_start": 88,
+            "path": "api.py",
+            "role": "commit_point",
+            "source_sha256": "6362fb77463e2d8bfd310ea2463ef20d392a0ba39f50828d1ecf00b7da367b7d"
+          }
+        ],
+        "forbidden_condition": "Reaching the enqueue of the quiz-solving agent background task while either rejection condition holds: (a) request.secret != os.getenv(\"SECRET_KEY\") (must raise 403), or (b) the SECRET_KEY environment variable is unset (must fail closed with 500). Both conditions are checked after request logging and before any scheduling of the agent run.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds the guarded operation to an agent tool dispatch, an agent lifecycle hook, or agent-generated input: the trigger is an HTTP POST body, and agent_entry_binding evidence is therefore omitted with agent_mediation set to not_established.",
+          "What concrete external effects run_agent performs (browsing, shell/process execution, writes, message delivery) \u2014 needed to decide whether additional per-stratum contracts attach to this same obligation.",
+          "Whether /solve-quiz requests originate from an agent client whose generated inputs (url/secret) reach the guarded enqueue, which would reclassify agent_mediation.",
+          "Whether the unset-SECRET_KEY fail-closed branch should also treat empty/whitespace-only configured values as unset (the request-side emptiness check at api.py:24-29 does not cover the environment side)."
+        ],
+        "protected_operation": "Initiation of the autonomous quiz-solving agent run: enqueueing solve_quiz_background \u2014 which awaits run_agent(url, logger) with the client-supplied quiz URL \u2014 via FastAPI BackgroundTasks from the /solve-quiz handler.",
+        "protected_resource": "The quiz-solving agent run launched from the /solve-quiz endpoint (the run_agent invocation scheduled as a background task).",
+        "protection_obligation": "POST /solve-quiz must reject with HTTP 403 any request whose supplied secret does not equal the SECRET_KEY environment variable, and must fail closed with HTTP 500 when SECRET_KEY is unset, before the quiz-solving agent background task is enqueued (merged wording of the two reviewer obligations, which describe the same guard and the same pre-enqueue rejection point).",
+        "scope_limits": [
+          "Only api.py is supplied; agent.py and logging_handler.py internals are absent, so the reviewer-claimed downstream effects of the agent (Playwright browsing, arbitrary shell commands) are not evidenced by supplied source.",
+          "effect_stratum tool_execution reflects only the supplied commit point (invocation-only scheduling of the agent runner at api.py:89); if run_agent is later shown to commit file, process, communication, or database effects, separate per-stratum contracts would be required.",
+          "The companion email-match check (api.py:79-86) is a distinct, conditional guard (enforced only when EMAIL is set) and is not part of this obligation; no reviewer opinion covers it.",
+          "The guard is a direct string inequality (api.py:72); no constant-time comparison or secret-handling hardening is evidenced.",
+          "Repository enumeration is incomplete; behavior labels are unavailable."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "agent.py (run_agent) and logging_handler.py are not supplied: the agent's concrete downstream effects and any internal agent tool or lifecycle wiring cannot be classified from supplied source.",
+      "No supplied source demonstrates agent mediation (tool dispatch, lifecycle hook, or agent-generated input) for the /solve-quiz guarded operation, so agent_entry_binding evidence is omitted.",
+      "The claim that the launched agent performs Playwright browsing and arbitrary shell commands appears only in reviewer rationale, not in the supplied api.py source; it is recorded as pending binding information rather than contract fact.",
+      "Details of SECRET_KEY provisioning, rotation, and comparison hardening (e.g., constant-time comparison) are absent from supplied source."
+    ],
+    "repository": "PrathamGupta06/quiz-solver",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:3b4e53031539519cbef77d46fee639aa"
+  },
+  "request_sha256": "ea66d0213d9e34f2475ded776bafb3d668f0332c114972d19f2bc32afba689bf",
+  "response_sha256": "c67b54d1d00b122cb0c78dc0a5026a0e101100c97b5d5b26f64ec6a0d2e72212",
+  "state": "completed",
+  "tokens": 9295,
+  "unit": "v24-screen:3b4e53031539519cbef77d46fee639aa"
+}

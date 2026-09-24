@@ -1,0 +1,252 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The _reject_foreign(request) raise immediately before handler(request) in wrap_model_call (boundary.py lines 146-148) and before await handler(request) in awrap_model_call (lines 155-157); the model call commits only if neither raise fires.",
+        "contract_id": "ecological-contract:23a953668b1bdd939be13b96903818d5",
+        "declared_mechanism": "ToolBoundary.wrap_model_call and awrap_model_call call _reject_foreign(request) before the handler; _reject_foreign raises ForeignToolError when foreign_tools(request) is non-empty (any request.tools entry failing built_here) or when FOREIGN_MODEL_SETTINGS intersects request.model_settings; middleware_stack places the boundary last so it runs innermost and sees requests after any other middleware has processed them.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 18,
+            "line_start": 11,
+            "path": "blossom/agent/boundary.py",
+            "role": "protected_operation",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          },
+          {
+            "line_end": 77,
+            "line_start": 73,
+            "path": "blossom/agent/boundary.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          },
+          {
+            "line_end": 119,
+            "line_start": 112,
+            "path": "blossom/agent/boundary.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          },
+          {
+            "line_end": 174,
+            "line_start": 141,
+            "path": "blossom/agent/boundary.py",
+            "role": "guard_registration",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          },
+          {
+            "line_end": 123,
+            "line_start": 120,
+            "path": "blossom/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "9481dad8a27d3232e127c589991912791cece47d55cf72a8fe2ceead8d645e51"
+          },
+          {
+            "line_end": 148,
+            "line_start": 146,
+            "path": "blossom/agent/boundary.py",
+            "role": "commit_point",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          },
+          {
+            "line_end": 157,
+            "line_start": 155,
+            "path": "blossom/agent/boundary.py",
+            "role": "commit_point",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          },
+          {
+            "line_end": 196,
+            "line_start": 177,
+            "path": "blossom/agent/boundary.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          }
+        ],
+        "forbidden_condition": "A model request whose request.tools contains any entry for which built_here is false (including a dict describing a provider-executed tool), or whose request.model_settings contains any key in FOREIGN_MODEL_SETTINGS \u2014 either would bind tools, servers, or betas outside the registry at the moment the model is called.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied view shows an agent construction site that consumes middleware_stack()/tool_boundary, so attachment of the model-call hooks to a running agent is unconfirmed.",
+          "The confinement mechanism for the model client's construction referenced at boundary.py lines 51-53 is not in the supplied views.",
+          "Whether any other middleware runs alongside the boundary in a deployed stack \u2014 which would exercise the deferred-name-check interaction described at boundary.py lines 35-39 \u2014 cannot be confirmed without the assembled agent."
+        ],
+        "protected_operation": "Each model invocation in the agent loop, with the tool bindings and model settings it would carry.",
+        "protected_resource": "The outbound model request at the framework's model-call boundary \u2014 specifically its tools list and its model_settings mapping.",
+        "protection_obligation": "Before every model call, any tool about to be bound to the model request must be an object blossom/tools.py built: a foreign tool object, a plain dictionary describing a provider-executed tool, or model settings containing the keys 'tools', 'mcp_servers', 'betas', or 'model_kwargs' must stop the run with ForeignToolError before the model is invoked, so nothing the registry never saw is offered to the model. (Merges both reviewer obligations covering the wrap_model_call half of the ToolBoundary.)",
+        "scope_limits": [
+          "Only two request surfaces are inspected: identity of request.tools entries and presence of the four FOREIGN_MODEL_SETTINGS keys; no other channel that could influence the model call is guarded by this middleware.",
+          "Tools a model provider executes on its own side because of how the model client itself was constructed are explicitly outside this module's reach and are said to be governed by confining the client's construction, which is not among the supplied views (boundary.py lines 51-53).",
+          "The middleware trusts the package's own identity registry; it is not a defense against in-package edits to the registry or to built objects (boundary.py lines 46-49).",
+          "Ordering is load-bearing: wrap hooks compose outermost-first, so the boundary must be last/innermost via middleware_stack to observe post-processed requests; no supplied view shows the stack being consumed by an agent builder.",
+          "The guard raises before the model call and does not inspect or constrain the model's response or any subsequent turn."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Inside the wrap hooks: the refusal ToolMessage is returned at the point of refusal, or handler(request) is invoked and the tool executes \u2014 synchronous form at boundary.py lines 129-131, asynchronous form at lines 137-139.",
+        "contract_id": "ecological-contract:7fa2d72f797d621e8e1543cb8ba74b2b",
+        "declared_mechanism": "ToolBoundary(AgentMiddleware).wrap_tool_call and awrap_tool_call evaluate is_permitted_call(request) \u2014 tool is not None, built_here(tool), tool.name equals the call's name, and is_permitted(name) \u2014 and return refusal(...) (an error ToolMessage) instead of calling the handler when the check fails; tool_boundary is instantiated at module scope and middleware_stack appends it last so it runs innermost on every assembled middleware list.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 23,
+            "line_start": 20,
+            "path": "blossom/agent/boundary.py",
+            "role": "protected_operation",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          },
+          {
+            "line_end": 109,
+            "line_start": 99,
+            "path": "blossom/agent/boundary.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          },
+          {
+            "line_end": 48,
+            "line_start": 43,
+            "path": "blossom/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9481dad8a27d3232e127c589991912791cece47d55cf72a8fe2ceead8d645e51"
+          },
+          {
+            "line_end": 139,
+            "line_start": 122,
+            "path": "blossom/agent/boundary.py",
+            "role": "guard_registration",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          },
+          {
+            "line_end": 180,
+            "line_start": 164,
+            "path": "blossom/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "9481dad8a27d3232e127c589991912791cece47d55cf72a8fe2ceead8d645e51"
+          },
+          {
+            "line_end": 137,
+            "line_start": 126,
+            "path": "blossom/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "9481dad8a27d3232e127c589991912791cece47d55cf72a8fe2ceead8d645e51"
+          },
+          {
+            "line_end": 131,
+            "line_start": 129,
+            "path": "blossom/agent/boundary.py",
+            "role": "commit_point",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          },
+          {
+            "line_end": 196,
+            "line_start": 177,
+            "path": "blossom/agent/boundary.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ecb1629f6332e128e4254a1eff151349f46457a55e80275b696f0c91737eaac8"
+          }
+        ],
+        "forbidden_condition": "Invoking a tool call whose tool object was not built by as_langchain_tool (including a foreign object copying a registered name), whose tool object is absent from the request, whose object name does not match the call's name, or whose registered spec declares any capability outside the ALLOWED_CAPABILITIES allowlist (currently only 'draft').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied view shows an agent builder that assembles its middleware with middleware_stack() or references tool_boundary, so the hook's registration on a concrete running agent is unconfirmed.",
+          "No supplied view shows LANGCHAIN_TOOLS / langchain_tools() being bound into a model or agent tool list, so the dataflow from built tools into request.tools is unconfirmed.",
+          "The source-scan test said to enforce middleware_stack as the only sanctioned assembly path (boundary.py lines 34-35) is not in the supplied views."
+        ],
+        "protected_operation": "Execution of a client-executed tool call: the handler(request) invocation inside the wrap_tool_call/awrap_tool_call hooks that runs the tool's captured function.",
+        "protected_resource": "The framework tool objects built by as_langchain_tool and recorded in _BUILT_HERE (currently the single registry entry create_manual_draft) and the ALLOWED_CAPABILITIES allowlist.",
+        "protection_obligation": "Every client-executed tool call must be refused before invocation unless the requested tool object is one blossom/tools.py built (object identity via built_here), its name matches the tool call's name, and its registered spec's capabilities are within ALLOWED_CAPABILITIES; a refused call returns an error ToolMessage to the model and the tool's function is never invoked. (Merges both reviewer obligations covering the wrap_tool_call half of the ToolBoundary.)",
+        "scope_limits": [
+          "The check is deliberately simple \u2014 identity, name, allowlist \u2014 and does not reason about intent (boundary.py lines 25-26).",
+          "The identity registry and allowlist are trusted records of the package; the middleware is not a defense against code inside the package editing the registry, a ToolSpec, or a built object (boundary.py lines 46-49; tools.py lines 26-29).",
+          "Tools a model provider executes on its own side, and the confinement of the model client's construction said to govern them, are outside this middleware's reach (boundary.py lines 51-53).",
+          "The check bounds invocation only; what a permitted callable does before returning is bounded only by serialize_draft, which raises TypeError for any non-Draft result before it becomes a tool message \u2014 bounding what the model sees, not what the callable did (tools.py lines 19-24, 126-137).",
+          "Once any wrap_tool_call middleware is attached, the framework defers its own name check and hands the hook None for unknown names, which is why the guard requires a tool object and never trusts a name alone (boundary.py lines 35-39).",
+          "The guard is effective only where the boundary is attached via middleware_stack; no supplied view shows a construction site consuming middleware_stack() or tool_boundary, and the claimed source-scan test enforcing the ordering is not supplied."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The node's returned state update \u2014 draft.model_copy(update={'status': DraftStatus.APPROVED_FOR_MANUAL_SEND}) plus the 'approved'/'rejected' decision \u2014 written into the graph's saved state when require_human_approval completes (gates.py lines 48-54).",
+        "contract_id": "ecological-contract:89e09e4a375ef86510471d91e3c8e466",
+        "declared_mechanism": "A LangGraph gate node (require_human_approval) that calls interrupt(...) with the draft, approves only when isinstance(answer, dict) and answer.get('approved') is True, and only then copies the draft to DraftStatus.APPROVED_FOR_MANUAL_SEND; build_approval_graph registers the node with a mandatory checkpointer so the pause/resume is durable and the graph cannot continue past the gate on its own.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 40,
+            "line_start": 34,
+            "path": "blossom/agent/gates.py",
+            "role": "protected_operation",
+            "source_sha256": "48d894df7f348655b0e3ce069c1ce507f729c7adf30d96d3f5e6b7b561fa062b"
+          },
+          {
+            "line_end": 47,
+            "line_start": 42,
+            "path": "blossom/agent/gates.py",
+            "role": "forbidden_condition",
+            "source_sha256": "48d894df7f348655b0e3ce069c1ce507f729c7adf30d96d3f5e6b7b561fa062b"
+          },
+          {
+            "line_end": 54,
+            "line_start": 48,
+            "path": "blossom/agent/gates.py",
+            "role": "commit_point",
+            "source_sha256": "48d894df7f348655b0e3ce069c1ce507f729c7adf30d96d3f5e6b7b561fa062b"
+          },
+          {
+            "line_end": 69,
+            "line_start": 57,
+            "path": "blossom/agent/gates.py",
+            "role": "guard_registration",
+            "source_sha256": "48d894df7f348655b0e3ce069c1ce507f729c7adf30d96d3f5e6b7b561fa062b"
+          },
+          {
+            "line_end": 67,
+            "line_start": 66,
+            "path": "blossom/agent/gates.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "48d894df7f348655b0e3ce069c1ce507f729c7adf30d96d3f5e6b7b561fa062b"
+          }
+        ],
+        "forbidden_condition": "A draft attaining status APPROVED_FOR_MANUAL_SEND without a resume payload that is a dictionary containing 'approved' exactly equal to boolean True at the require_human_approval interrupt.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied view shows the production agent graph embedding require_human_approval; only the gate-only build_approval_graph is present.",
+          "No supplied view shows any consumer of DraftStatus.APPROVED_FOR_MANUAL_SEND, so what the approval flag unlocks downstream is unconfirmed.",
+          "How the interrupt resume payload reaches the graph (UI, API, operator tooling) is not in the supplied views."
+        ],
+        "protected_operation": "The human approval decision on an outbound draft: the interrupt pause, the fail-closed parsing of the human's answer, and the recording of the decision and draft status in the graph's saved state.",
+        "protected_resource": "The Draft object's status field and the ApprovalState decision carried in the approval graph's checkpointed state.",
+        "protection_obligation": "A draft may be marked APPROVED_FOR_MANUAL_SEND only after the approval graph pauses at the require_human_approval interrupt node and the resuming human input is a dictionary whose 'approved' value is exactly the boolean True; every other payload (non-dict, missing key, string such as 'false' or 'no', number) records a rejection and leaves the draft unapproved, so the gate cannot fail open on a guessed meaning.",
+        "scope_limits": [
+          "The gate governs only the draft's status flag in graph state; actual transmission is a manual human step outside any runtime mechanism (gates.py lines 37-39; tools.py lines 4-5, 93-99).",
+          "The node performs no side effect before interrupt by design, so a resumed re-run cannot double-execute a guarded action (gates.py lines 9-13).",
+          "build_approval_graph builds a graph containing only the gate; the larger production graph that adds this node alongside draft-producing nodes is described but not supplied (gates.py line 60).",
+          "The identity or authorization of whoever supplies the interrupt resume payload, and the channel carrying it, are framework checkpoint properties not evidenced in the supplied views.",
+          "Enforcement that APPROVED_FOR_MANUAL_SEND is actually required by any downstream sender is outside the supplied views; no sending component appears in this unit."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied view shows an agent or graph construction site that consumes middleware_stack(), tool_boundary, or langchain_tools(); registration of the ToolBoundary hooks on a concrete running agent is asserted by module docstrings and helper functions (boundary.py lines 30-35, 177-196) but not demonstrated by a call site.",
+      "The source-scan test said to enforce middleware_stack as the only sanctioned assembly path (boundary.py lines 34-35) is not among the supplied views.",
+      "The model-client construction confinement that boundary.py lines 51-53 says governs provider-executed tools is not in the supplied views.",
+      "The larger production graph that adds require_human_approval the same way as build_approval_graph (gates.py line 60) is not supplied; only the gate-only graph is present.",
+      "Behavior labels and runtime prevalence data are unavailable per the supplied scope statement, so no claim about how often these guards fire or are exercised in operation is supported."
+    ],
+    "repository": "gbodegas/blossom",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:bb2ecb018abff9b5ba646728d3cd0dfc"
+  },
+  "request_sha256": "0f05e97ff4c878a9aad990a844aba9408a324fdfba335eee895fe456b000f37a",
+  "response_sha256": "6326001bd819294dc852a016243696a9765d21cefbb082f30080f925cafc8818",
+  "state": "completed",
+  "tokens": 27505,
+  "unit": "v24-screen:bb2ecb018abff9b5ba646728d3cd0dfc"
+}

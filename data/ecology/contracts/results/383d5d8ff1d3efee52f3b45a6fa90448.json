@@ -1,0 +1,105 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "main.py:132 \u2014 await summarize_issue(repo_name=repo_name, issue_number=id), which enters the ClaudeSDKClient context and dispatches client.query (main.py:93-102); the 401 raise at main.py:121-125 must complete before this point.",
+        "contract_id": "ecological-contract:fbfc9f5cf5aeeaa2d334448d95801120",
+        "declared_mechanism": "HTTPBearer(auto_error=False) scheme (main.py:29) wired into the handler via Depends(bearer_scheme) plus the raw Authorization header (main.py:116-117); extract_token normalization (main.py:45-51); empty-token check raising HTTPException 401 (main.py:121-125), positioned textually and by control flow before the agent-invocation call.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 29,
+            "line_start": 29,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "c80407972802c98b2090dfe09f7da1868692a11a50101511d06119e163c6f1d7"
+          },
+          {
+            "line_end": 51,
+            "line_start": 45,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "c80407972802c98b2090dfe09f7da1868692a11a50101511d06119e163c6f1d7"
+          },
+          {
+            "line_end": 117,
+            "line_start": 116,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "c80407972802c98b2090dfe09f7da1868692a11a50101511d06119e163c6f1d7"
+          },
+          {
+            "line_end": 125,
+            "line_start": 121,
+            "path": "backend/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c80407972802c98b2090dfe09f7da1868692a11a50101511d06119e163c6f1d7"
+          },
+          {
+            "line_end": 102,
+            "line_start": 93,
+            "path": "backend/main.py",
+            "role": "protected_operation",
+            "source_sha256": "c80407972802c98b2090dfe09f7da1868692a11a50101511d06119e163c6f1d7"
+          },
+          {
+            "line_end": 132,
+            "line_start": 132,
+            "path": "backend/main.py",
+            "role": "commit_point",
+            "source_sha256": "c80407972802c98b2090dfe09f7da1868692a11a50101511d06119e163c6f1d7"
+          },
+          {
+            "line_end": 111,
+            "line_start": 111,
+            "path": "backend/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c80407972802c98b2090dfe09f7da1868692a11a50101511d06119e163c6f1d7"
+          },
+          {
+            "line_end": 132,
+            "line_start": 132,
+            "path": "backend/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c80407972802c98b2090dfe09f7da1868692a11a50101511d06119e163c6f1d7"
+          }
+        ],
+        "forbidden_condition": "An unauthenticated request reaching the agent-execution path: extract_token (main.py:45-51, applied at main.py:119) yields an empty token (credentials absent because HTTPBearer uses auto_error=False, or empty after stripping optional 'Bearer '/'bearer '/'Token '/'token ' prefixes), i.e., the request proceeds past main.py:121-125 into agent execution instead of being rejected with HTTP 401 'Authorization header missing or invalid'.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether POST /{user}/{repo}/agents/{id} or summarize_issue is registered elsewhere as an agent tool or lifecycle target (repository enumeration incomplete); the direct_tool classification rests solely on the handler's direct invocation of the Claude agent runtime via main.py:132 into main.py:93-102.",
+          "Whether tool executions by the spawned agent (Bash/Read/WebSearch) constitute additional guarded commit points in other strata gated by the same 401 check; the Claude Code SDK runtime is not part of the supplied source.",
+          "Whether non-empty but invalid or expired tokens must also be rejected before agent execution; the source defines only the empty-token forbidden condition."
+        ],
+        "protected_operation": "Execution of the Claude Code agent: summarize_issue constructs ClaudeSDKClient with a summarizer system_prompt, allowed_tools ['Bash', 'Read', 'WebSearch'], and max_turns 5, then dispatches client.query and consumes receive_response (main.py:93-102), invoked from create_agent at main.py:132.",
+        "protected_resource": "POST /{user}/{repo}/agents/{id} handler (create_agent) and the Claude agent execution path summarize_issue in backend/main.py.",
+        "protection_obligation": "Requests to POST /{user}/{repo}/agents/{id} without a non-empty bearer token must be rejected with HTTP 401 before any Claude agent execution (a ClaudeSDKClient run configured with allowed_tools ['Bash', 'Read', 'WebSearch']) is triggered. (Merged duplicate reviewer wording for the agent-execution commit point; the same reviewer obligations also name the GET /{user}/{repo}/issues GitHub-fetch commit point, which is recorded under missing_information as ordinary web authentication with no agent binding in the supplied source.)",
+        "scope_limits": [
+          "The guard enforces non-emptiness only: no token validation, identity, or authorization scoping is shown, and the extracted token is never forwarded into summarize_issue (main.py:119-132); this contract does not assert control over any downstream authenticated resource in the agent path.",
+          "The effect is invocation-only in the supplied source: Bash/Read/WebSearch executions inside the Claude agent runtime are not committed by this code path, and no process, file, http, or communication strata contracts are derived from them.",
+          "main.py:127-129 are unimplemented comments (clone repo / cd into repo); no file or process obligations are derived from them.",
+          "get_repo_path (utils.py:41-42, called at main.py:120 before the check) is pure string interpolation, so per the supplied source no external effect precedes the 401 raise.",
+          "CORS middleware (main.py:23-28) and the /health authorization-header check (main.py:38-43) are outside this contract."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Both reviewer opinions additionally cover GET /{user}/{repo}/issues (guard at main.py:63-67; effect via main.py:72 into utils.py:67-83 Auth.Token-authenticated get_repo/get_issues). The supplied source contains no agent tool, agent lifecycle hook, or agent-generated input reaching that GitHub fetch, so per the scope rules this ordinary web-authentication obligation is recorded here rather than emitted as a contract.",
+      "Whether agent runtime tool executions after main.py:132 (Bash/Read/WebSearch) produce further guarded effects (e.g., process or http strata) is unsupported because the Claude Code SDK runtime is not part of the supplied source.",
+      "No supplied evidence shows POST /{user}/{repo}/agents/{id} being invoked by another agent or registered as an agent tool/hook; repository enumeration is not complete, so any broader agent-mediated entry surface cannot be confirmed.",
+      "Behavior labels are unavailable; runtime failure ordering (e.g., exceptions raised by extract_token or get_repo_path before the 401 raise at main.py:121-125) cannot be confirmed from the supplied source."
+    ],
+    "repository": "caffeinum/man-vs-machine",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:383d5d8ff1d3efee52f3b45a6fa90448"
+  },
+  "request_sha256": "8a72eb47144e57cd6b1c0dcf2cd9d987f2569f6df39782265720de61546ced62",
+  "response_sha256": "301b97911febdefaf28c6712d62946c5c3d6c3b9aaf4eabf515ac7dc41c6eeb7",
+  "state": "completed",
+  "tokens": 23707,
+  "unit": "v24-screen:383d5d8ff1d3efee52f3b45a6fa90448"
+}

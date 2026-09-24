@@ -1,0 +1,169 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The pre-model hook point: rate_limit_callback completes its counter accounting and any sleep (callbacks.py:51-82) before the LLM request for that invocation is issued; placement at this point is established by before_model_callback=rate_limit_callback in the Agent construction (agent.py:58).",
+        "contract_id": "ecological-contract:095dc56901a161bfcd0631ad075a7a23",
+        "declared_mechanism": "Agent constructor wires rate_limit_callback as before_model_callback (agent.py:58); the callback counts each model request in callback_context.state['request_count'] against a timer_start window and, when request_count > RPM_QUOTA, sleeps for the remaining window and resets both counters before returning (callbacks.py:32-33, 51-82).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 59,
+            "line_start": 49,
+            "path": "agent/telegram-assistant/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "665ee31163eba867d7955d513b5fd9fbbb9828b16adc5c4d31842cbe1937ca64"
+          },
+          {
+            "line_end": 58,
+            "line_start": 58,
+            "path": "agent/telegram-assistant/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "665ee31163eba867d7955d513b5fd9fbbb9828b16adc5c4d31842cbe1937ca64"
+          },
+          {
+            "line_end": 33,
+            "line_start": 32,
+            "path": "agent/telegram-assistant/shared_libraries/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "66c584c40cc824760011b3a0c33fc7a896d038c53deeb91146c6c072992a3092"
+          },
+          {
+            "line_end": 80,
+            "line_start": 72,
+            "path": "agent/telegram-assistant/shared_libraries/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "66c584c40cc824760011b3a0c33fc7a896d038c53deeb91146c6c072992a3092"
+          },
+          {
+            "line_end": 45,
+            "line_start": 36,
+            "path": "agent/telegram-assistant/shared_libraries/callbacks.py",
+            "role": "protected_operation",
+            "source_sha256": "66c584c40cc824760011b3a0c33fc7a896d038c53deeb91146c6c072992a3092"
+          },
+          {
+            "line_end": 82,
+            "line_start": 51,
+            "path": "agent/telegram-assistant/shared_libraries/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "66c584c40cc824760011b3a0c33fc7a896d038c53deeb91146c6c072992a3092"
+          }
+        ],
+        "forbidden_condition": "An LLM request being issued when the session counter request_count exceeds RPM_QUOTA (callbacks.py:72) without the guard first applying the delay via time.sleep and resetting timer_start/request_count (callbacks.py:73-78). Note: every path of rate_limit_callback returns None (callbacks.py:60, 82), so the supported condition is delay-then-allow throttling of quota-exceeding requests, not denial.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm from ADK framework source that before_model_callback executes before each outbound model request and that a None return allows the request to proceed.",
+          "Confirm that configs.agent_settings.model resolves to a remote model API so the guarded effect is an outbound network request (config.py is not supplied).",
+          "Clarify whether callback_context.state is shared across concurrent invocations, which affects whether the per-window quota is actually enforceable."
+        ],
+        "protected_operation": "Issuance of each LLM request by root_agent to its configured model, represented by the LlmRequest passed into rate_limit_callback before each model call.",
+        "protected_resource": "root_agent's model invocation quota, tracked as the session-state counters timer_start and request_count in callback_context.state.",
+        "protection_obligation": "root_agent must enforce a session-scoped rate limit on its LLM requests via the registered before_model_callback rate_limit_callback: at most RPM_QUOTA=10 model requests may be issued within each RATE_LIMIT_SECS=60-second window; once the in-window request_count exceeds the quota, the guard must sleep out the remaining window (RATE_LIMIT_SECS - elapsed_secs + 1 seconds) and reset timer_start/request_count before that request is issued (merges reviewer phase-one wording; enforcement declared as throttling at the pre-model point, per the source, not outright rejection).",
+        "scope_limits": [
+          "Throttling, not denial: all return paths of rate_limit_callback return None (callbacks.py:60, 82); quota-exceeding requests are delayed and the counters reset, never rejected.",
+          "Quota scope is the callback/session state (callback_context.state), not a global or per-user-identity limit; no user identifier is consulted by the guard.",
+          "The guard also rewrites empty text parts to a single space (callbacks.py:46-49); this content normalization is not part of the limit obligation.",
+          "The only state mutations the guard performs are its own counter bookkeeping (timer_start, request_count).",
+          "ADK framework semantics (hook runs before the outbound model call; a None return lets the request proceed) are not demonstrated in the supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guard decision returns at callbacks.py:136-138 before tool execution; the guarded effect itself commits at auth_service.make_authenticated_request(method='POST', endpoint='/leads', =api_data) inside send_lead_to_backend (tools.py:142-148).",
+        "contract_id": "ecological-contract:a1dc6e62164393d2578e2ce6aa1e1543",
+        "declared_mechanism": "Agent constructor wires before_tool as before_tool_callback (agent.py:55); before_tool checks for a customer_id key in the tool args and calls validate_customer_id against tool_context.state, returning the validation error to short-circuit the tool when invalid (callbacks.py:135-138, 84-110).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 59,
+            "line_start": 49,
+            "path": "agent/telegram-assistant/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "665ee31163eba867d7955d513b5fd9fbbb9828b16adc5c4d31842cbe1937ca64"
+          },
+          {
+            "line_end": 55,
+            "line_start": 54,
+            "path": "agent/telegram-assistant/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "665ee31163eba867d7955d513b5fd9fbbb9828b16adc5c4d31842cbe1937ca64"
+          },
+          {
+            "line_end": 80,
+            "line_start": 65,
+            "path": "agent/telegram-assistant/tools/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "308f500ca8b8bfcce0cf9e3df70d70a8e88a1d2144a2a741ee6f451523d78c3d"
+          },
+          {
+            "line_end": 134,
+            "line_start": 126,
+            "path": "agent/telegram-assistant/shared_libraries/callbacks.py",
+            "role": "protected_operation",
+            "source_sha256": "66c584c40cc824760011b3a0c33fc7a896d038c53deeb91146c6c072992a3092"
+          },
+          {
+            "line_end": 110,
+            "line_start": 97,
+            "path": "agent/telegram-assistant/shared_libraries/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "66c584c40cc824760011b3a0c33fc7a896d038c53deeb91146c6c072992a3092"
+          },
+          {
+            "line_end": 138,
+            "line_start": 135,
+            "path": "agent/telegram-assistant/shared_libraries/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "66c584c40cc824760011b3a0c33fc7a896d038c53deeb91146c6c072992a3092"
+          },
+          {
+            "line_end": 148,
+            "line_start": 141,
+            "path": "agent/telegram-assistant/tools/tools.py",
+            "role": "commit_point",
+            "source_sha256": "308f500ca8b8bfcce0cf9e3df70d70a8e88a1d2144a2a741ee6f451523d78c3d"
+          }
+        ],
+        "forbidden_condition": "A tool invocation proceeding to execution when args['customer_id'] differs from customer_profile.customer_id in session state, or when 'customer_profile' is absent or unparsable: validate_customer_id returns (False, error) for each case (callbacks.py:97-110) and before_tool returns that error string before the tool runs (callbacks.py:135-138).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Identify which registered tool (current or planned) consumes a top-level customer_id argument that this guard is meant to gate; none exists in the supplied views.",
+          "Determine whether customer_id is expected inside lead_data rather than as a top-level tool argument, in which case the 'customer_id' in args check would never see it.",
+          "Locate the writer of session state 'customer_profile' to establish whether the guard's comparison target can ever be populated.",
+          "Confirm from ADK framework source that a string return from before_tool_callback blocks the tool and is used as the tool result."
+        ],
+        "protected_operation": "Agent-dispatched invocation of tools registered on root_agent (registered set: send_lead_to_backend) carrying a customer_id argument, intercepted at the before_tool_callback dispatch point before tool execution.",
+        "protected_resource": "The registered tool execution path and its backend lead-creation effect: the JWT-authenticated POST /leads performed by send_lead_to_backend (tools.py:141-148).",
+        "protection_obligation": "root_agent must enforce a pre-execution authorization gate on its registered tools via before_tool_callback=before_tool: any agent-invoked tool whose arguments include a customer_id that does not match the customer_id in the session-state customer_profile (or where the profile is missing or unparsable) must be blocked before the tool executes, with the validation error returned in place of the tool result. As registered, the only registered tool is send_lead_to_backend (agent.py:54), whose backend effect is the JWT-authenticated POST /leads lead commit (merges reviewer phase-two wording).",
+        "scope_limits": [
+          "Condition-to-tool binding gap: the only registered tool, send_lead_to_backend, declares parameters lead_data and tool_context (tools.py:65) with documented lead_data fields name/phone/email/telegramUsername/telegramId/company/position/notes (tools.py:70-72) and no customer_id argument, so the customer_id validation branch is not exercised by any tool registered in the supplied source (registration and condition are supported; the binding to the lead POST via customer_id is not).",
+          "The example branches for tools 'sync_ask_for_approval' and 'modify_cart' (callbacks.py:142-156) reference tools that are not registered on root_agent.",
+          "lowercase_value(args) at callbacks.py:130 discards its return value, so args are not lowercased in place; the guard's 'customer_id' key check operates on the original argument casing.",
+          "The customer_profile compared against is only read (callbacks.py:97-108); no supplied source writes 'customer_profile' into session state.",
+          "ADK framework semantics (a non-None string return from before_tool_callback suppresses tool execution) are not demonstrated in the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "ADK framework sources are not supplied: the semantics of before_model_callback and before_tool_callback (hook timing relative to the model call / tool execution, and how None vs. string returns gate those effects) cannot be verified from the supplied views.",
+      "agent/telegram-assistant/services/auth_service.py is not supplied: the JWT authentication and base-URL mechanics of make_authenticated_request behind the POST /leads commit (tools.py:142-148) are unverified.",
+      "No supplied source writes 'customer_profile' into session state, so whether validate_customer_id's comparison target can ever be populated in this deployment is unknown.",
+      "config.py (configs.agent_settings.model/name) and prompts are not supplied; the model target and any instruction-level context relevant to these guards are unverified.",
+      "Repository enumeration is incomplete: other modules may register additional tools or agents, write customer_profile, or invoke the unregistered tool functions (get_lead_by_id, get_leads_by_status, update_lead_status, find_lead_by_telegram_id, get_session_data) outside root_agent's tool mediation."
+    ],
+    "repository": "pkrasulia/Telegram-Leads-AI",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:fe91addf96664b1a3054e9d12a056f1e"
+  },
+  "request_sha256": "64cb49bc585f5cb4bf9518df84e9d58d2cfd088c8a49b38d3b6f71753dab427d",
+  "response_sha256": "75c3973ce253162d96c9839715cfdd2dbe17d36fbf47f8c6dfb4c6cdea237a25",
+  "state": "completed",
+  "tokens": 27441,
+  "unit": "v24-screen:fe91addf96664b1a3054e9d12a056f1e"
+}

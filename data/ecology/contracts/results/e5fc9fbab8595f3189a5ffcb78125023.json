@@ -1,0 +1,115 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tools.py save_report body: os.makedirs(dirpath, exist_ok=True) at line 57 and open(path, 'w', encoding='utf-8') followed by f.write(content) at lines 59-60 \u2014 the point at which the filesystem mutation commits.",
+        "contract_id": "ecological-contract:c5ce8fa25d780a8103d7beaad50f4fa4",
+        "declared_mechanism": "HumanInTheLoopMiddleware(interrupt_on={'save_report': True}) attached as middleware to the agent built by create_agent in build_supervisor, active on the module-level supervisor_agent = build_supervisor(hitl=True) instance; enforced end-to-end by main.py's handle_hitl loop, which polls agent.get_state for pending interrupts, renders the pending save_report call (filename and content preview), requires an explicit terminal 'approve' / 'edit' / 'reject' input, and only then resumes the graph with Command(resume={'decisions': [...]}) (approve at main.py:166-169; reject at main.py:187-191; 'edit' is realized as a reject-with-feedback resume asking the model to revise and call save_report again, main.py:172-184).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 24,
+            "line_start": 22,
+            "path": "supervisor.py",
+            "role": "guard_registration",
+            "source_sha256": "fbfcf32903f252e5af5c698e27d299582036f2b1e56f397e62d00e9334a8ee8b"
+          },
+          {
+            "line_end": 38,
+            "line_start": 38,
+            "path": "supervisor.py",
+            "role": "guard_registration",
+            "source_sha256": "fbfcf32903f252e5af5c698e27d299582036f2b1e56f397e62d00e9334a8ee8b"
+          },
+          {
+            "line_end": 19,
+            "line_start": 14,
+            "path": "supervisor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fbfcf32903f252e5af5c698e27d299582036f2b1e56f397e62d00e9334a8ee8b"
+          },
+          {
+            "line_end": 35,
+            "line_start": 26,
+            "path": "supervisor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fbfcf32903f252e5af5c698e27d299582036f2b1e56f397e62d00e9334a8ee8b"
+          },
+          {
+            "line_end": 61,
+            "line_start": 58,
+            "path": "main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "55f75a30bc121595541917ab6de729d4cc0e7a8e0ba53b2103becb981eb4361b"
+          },
+          {
+            "line_end": 163,
+            "line_start": 112,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "55f75a30bc121595541917ab6de729d4cc0e7a8e0ba53b2103becb981eb4361b"
+          },
+          {
+            "line_end": 191,
+            "line_start": 166,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "55f75a30bc121595541917ab6de729d4cc0e7a8e0ba53b2103becb981eb4361b"
+          },
+          {
+            "line_end": 62,
+            "line_start": 50,
+            "path": "tools.py",
+            "role": "protected_operation",
+            "source_sha256": "c655885d63528c387d011df846360ca2577947fb6127b3d3f9cb896964f4379c"
+          },
+          {
+            "line_end": 62,
+            "line_start": 54,
+            "path": "tools.py",
+            "role": "commit_point",
+            "source_sha256": "c655885d63528c387d011df846360ca2577947fb6127b3d3f9cb896964f4379c"
+          }
+        ],
+        "forbidden_condition": "Execution of save_report's filesystem effect (os.makedirs of the report's parent directory and/or open(path,'w') + f.write(content) under the configured output directory) without a prior human 'approve' decision consumed through the HITL interrupt/resume flow \u2014 i.e., the tool body running while the interrupt is unresolved, or proceeding after a 'reject' decision.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Value of settings.output_dir (config.py is not among the supplied sources), so the concrete directory prefix of the protected report path built at tools.py:54 cannot be pinned down.",
+          "Internal semantics of HumanInTheLoopMiddleware (exact interrupt payload schema, decision-type handling, and whether any decision other than 'approve' can allow the tool to run) \u2014 the middleware library implementation is not supplied.",
+          "Whether handle_edit's revised save_report call reliably re-triggers a fresh interrupt before the second write; this is runtime behavior not determinable from the supplied source alone.",
+          "Contents of agents/agentic_tools.py (plan, research, critique) are not supplied; their effects cannot be assessed for parallel guard needs (outside this obligation but relevant to completeness).",
+          "Whether any other call sites construct the supervisor or invoke save_report outside the hitl=True production instance (repository enumeration is not complete)."
+        ],
+        "protected_operation": "Invocation of the save_report tool (filename, content) dispatched through the supervisor agent's tool-execution step.",
+        "protected_resource": "The report file at the path constructed as './' + settings.output_dir + '/' + filename (tools.py:54), including the parent directory created via os.makedirs (tools.py:57); filename and content are agent-supplied tool arguments.",
+        "protection_obligation": "The supervisor agent must interrupt the save_report tool for explicit human approval (HumanInTheLoopMiddleware with interrupt_on={'save_report': True}) before the tool's concrete disk-write effect \u2014 creating the output directory and opening/writing content to the report path \u2014 is allowed to execute. The write may proceed only after the user supplies an 'approve' decision that is delivered back to the agent as a resume Command.",
+        "scope_limits": [
+          "The guard exists only on the supervisor_agent instance built with hitl=True (supervisor.py:38); build_supervisor(hitl=False) substitutes an empty middleware list (supervisor.py:22-24), so any agent built that way (the docstring mentions tests) is outside this obligation.",
+          "interrupt_on names only 'save_report' (supervisor.py:23); the other supervisor tools (plan, research, critique registered at supervisor.py:31) and the tools.py tools web_search, read_url, and knowledge_search are not covered by this interrupt.",
+          "Enforcement is in-process and client-side: the middleware interrupt plus the CLI resume loop in main.py handle_hitl; no independent server-side, OS-level, or filesystem-level enforcement appears in the supplied source.",
+          "handle_hitl examines only state.interrupts[0] and action_requests[0] (main.py:119-125); how multiple simultaneous pending action requests would be surfaced or decided is not specified by the supplied source.",
+          "The 'edit' decision is implemented as a reject-with-feedback resume (main.py:172-184) that requests a revised save_report call; this obligation re-applies to that subsequent tool call as a new interrupt cycle."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "config.py source is not supplied; the value of settings.output_dir (and settings.model_name/api_key relevance) used to build the protected file path at tools.py:54 is unknown.",
+      "The langchain.agents.middleware HumanInTheLoopMiddleware library implementation is not supplied; its interrupt payload schema, default decision handling, and whether 'edit' style feedback could ever auto-approve a write are unsupported facts.",
+      "agents/agentic_tools.py (plan, research, critique) is not supplied; whether those tools carry their own guarded effects cannot be evaluated.",
+      "No test files or alternate entry points are supplied, so the set of execution paths that could build the agent with hitl=False (bypassing the middleware per supervisor.py:22-24) is unknown.",
+      "Behavior labels and runtime execution traces are unavailable; whether the interrupt/resume cycle functions as written at runtime cannot be confirmed from source text alone."
+    ],
+    "repository": "vrudas/mas-homework-l10",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:e5fc9fbab8595f3189a5ffcb78125023"
+  },
+  "request_sha256": "cb467afd42ea9720eaebb2c74e476cea386ccacf5b74dc973d6bab975ece4cdc",
+  "response_sha256": "b0224640afe918142a4b88be9ad16d58e70efcf204195f5735d5040adbf668d1",
+  "state": "completed",
+  "tokens": 10224,
+  "unit": "v24-screen:e5fc9fbab8595f3189a5ffcb78125023"
+}

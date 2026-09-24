@@ -1,0 +1,271 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "tools/filesystem_impl/pathing.py delete_directory_path lines 127-130: guard call at line 128 and PermissionError raise at lines 129-130 precede the shutil.rmtree call at line 132.",
+        "contract_id": "ecological-contract:5549f6cfca9053a1da3ad5804681ebf6",
+        "declared_mechanism": "deny_recursive_destructive_path guard invoked at the head of delete_directory_path; a returned denial string raises PermissionError before the recursive branch executes shutil.rmtree.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 74,
+            "line_start": 59,
+            "path": "core/destructive_guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "df8297d097a3df69d8cf284fd27563246a19dbf664c6d4619096e6f9c519c914"
+          },
+          {
+            "line_end": 23,
+            "line_start": 9,
+            "path": "core/destructive_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "df8297d097a3df69d8cf284fd27563246a19dbf664c6d4619096e6f9c519c914"
+          },
+          {
+            "line_end": 56,
+            "line_start": 45,
+            "path": "core/destructive_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "df8297d097a3df69d8cf284fd27563246a19dbf664c6d4619096e6f9c519c914"
+          },
+          {
+            "line_end": 130,
+            "line_start": 127,
+            "path": "tools/filesystem_impl/pathing.py",
+            "role": "commit_point",
+            "source_sha256": "4c855fe8be9a80824bba0735703e213a7a4972eb909613b7a0087f941eca8800"
+          },
+          {
+            "line_end": 132,
+            "line_start": 131,
+            "path": "tools/filesystem_impl/pathing.py",
+            "role": "protected_operation",
+            "source_sha256": "4c855fe8be9a80824bba0735703e213a7a4972eb909613b7a0087f941eca8800"
+          }
+        ],
+        "forbidden_condition": "A recursive (recursive=True) deletion whose resolved path is a Windows drive root (anchor matching [A-Za-z]:), whose name parts include windows / program files / program files (x86) / programdata / system volume information / $recycle.bin, or that equals or is under SystemRoot, WINDIR, ProgramFiles, ProgramFiles(x86), or ProgramData (core/destructive_guardrails.py 9-23, 45-56, 63-73).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source connects the registered agent tool safe_delete_directory (tools/tool_registry.py 101-108, module tools.filesystem) to delete_directory_path in tools/filesystem_impl/pathing.py; the agent-mediation binding for this commit point is unverified.",
+          "Implementations of safe_delete_file and the filesystem tools module are not supplied; whether plain file deletion or non-recursive deletes pass any equivalent guard is unknown."
+        ],
+        "protected_operation": "Recursive directory tree removal via shutil.rmtree(target) inside delete_directory_path.",
+        "protected_resource": "Drive roots and Windows system/protected directories and their contents.",
+        "protection_obligation": "Recursive destructive directory deletion must be denied (ACCESS_DENIED / PermissionError) before shutil.rmtree runs whenever the resolved target is a drive root, a Windows system/protected directory, or lies under a system environment root.",
+        "scope_limits": [
+          "Guard triggers only when recursive=True (core/destructive_guardrails.py 60-61); the non-recursive branch (empty-dir check plus rmdir, tools/filesystem_impl/pathing.py 134-140) is not covered by this guard.",
+          "Detection is Windows-oriented: name checks use _WINDOWS_SYSTEM_DIR_NAMES and parent checks use _SYSTEM_ENV_VARS roots (core/destructive_guardrails.py 9-23); on systems where those env vars are unset, only the drive-root and name-part checks apply.",
+          "Guard evaluates path.resolve() of the target (core/destructive_guardrails.py 63); no additional symlink or existence constraints are shown in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "core/nodes.py _process_tool_call lines 824-850: the ACCESS_DENIED denial is returned before the _execute_tool call at line 878, so no tool effect runs when approval is missing or unapproved.",
+        "contract_id": "ecological-contract:934190291155f9d790ea3702fd6ff572",
+        "declared_mechanism": "ToolRegistry per-tool metadata (mutating/destructive/requires_approval) consumed by _tool_requires_approval; route_after_agent diverts requiring tool calls to the interrupt-based approval_node, which stores the decision in pending_approval; _process_tool_call hard-gates execution on _tool_call_is_approved and returns an ACCESS_DENIED ToolMessage without invoking the tool.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 91,
+            "line_start": 86,
+            "path": "tools/tool_registry.py",
+            "role": "guard_registration",
+            "source_sha256": "ffac7145699a791f1b69f29f271f31f1a8a6f9d46ddbbc8c95c2842f4b505429"
+          },
+          {
+            "line_end": 116,
+            "line_start": 93,
+            "path": "tools/tool_registry.py",
+            "role": "guard_registration",
+            "source_sha256": "ffac7145699a791f1b69f29f271f31f1a8a6f9d46ddbbc8c95c2842f4b505429"
+          },
+          {
+            "line_end": 274,
+            "line_start": 261,
+            "path": "tools/tool_registry.py",
+            "role": "guard_registration",
+            "source_sha256": "ffac7145699a791f1b69f29f271f31f1a8a6f9d46ddbbc8c95c2842f4b505429"
+          },
+          {
+            "line_end": 126,
+            "line_start": 119,
+            "path": "core/nodes.py",
+            "role": "guard_registration",
+            "source_sha256": "03eb5dc435e2e1ad3383f5df57e6f9aaad59abc8c5f385075d0fac803b763c71"
+          },
+          {
+            "line_end": 701,
+            "line_start": 646,
+            "path": "core/nodes.py",
+            "role": "guard_registration",
+            "source_sha256": "03eb5dc435e2e1ad3383f5df57e6f9aaad59abc8c5f385075d0fac803b763c71"
+          },
+          {
+            "line_end": 923,
+            "line_start": 915,
+            "path": "core/nodes.py",
+            "role": "forbidden_condition",
+            "source_sha256": "03eb5dc435e2e1ad3383f5df57e6f9aaad59abc8c5f385075d0fac803b763c71"
+          },
+          {
+            "line_end": 850,
+            "line_start": 824,
+            "path": "core/nodes.py",
+            "role": "commit_point",
+            "source_sha256": "03eb5dc435e2e1ad3383f5df57e6f9aaad59abc8c5f385075d0fac803b763c71"
+          },
+          {
+            "line_end": 966,
+            "line_start": 960,
+            "path": "core/nodes.py",
+            "role": "protected_operation",
+            "source_sha256": "03eb5dc435e2e1ad3383f5df57e6f9aaad59abc8c5f385075d0fac803b763c71"
+          },
+          {
+            "line_end": 159,
+            "line_start": 152,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "de98778cd151b36dfc57c492a99d6630061cb8f1c96f54676a0e11d552e0c591"
+          },
+          {
+            "line_end": 101,
+            "line_start": 98,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "de98778cd151b36dfc57c492a99d6630061cb8f1c96f54676a0e11d552e0c591"
+          },
+          {
+            "line_end": 125,
+            "line_start": 122,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "de98778cd151b36dfc57c492a99d6630061cb8f1c96f54676a0e11d552e0c591"
+          }
+        ],
+        "forbidden_condition": "A tool call whose registry metadata is mutating/destructive/requires_approval reaches _process_tool_call while approval_state is empty, approval_state.approved is falsy, or the call id is not among approved tool_call_ids \u2014 i.e., proceeding to _execute_tool without a recorded user approval (core/nodes.py 824, 915-923).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Bodies of tools/filesystem.py (write_file_tool, edit_file_tool, safe_delete_file, safe_delete_directory, download_file) are not supplied, so the concrete filesystem commit inside each approval-gated tool cannot be cited.",
+          "Default value of config.enable_approvals (core/config.py not supplied) is unknown, so whether the gate is active by default is unverified.",
+          "The host surface that resumes the langgraph interrupt() with a user decision is not supplied; how approval is externally recorded is outside the cited source."
+        ],
+        "protected_operation": "Execution of approval-gated mutating/destructive file tools via the tools node dispatch _execute_tool -> tool.ainvoke.",
+        "protected_resource": "Files and directories on the local filesystem targeted by write_file, edit_file, safe_delete_file, safe_delete_directory, and download_file (registry metadata impact_scope='files').",
+        "protection_obligation": "Agent-invoked mutating/destructive filesystem tools registered with requires_approval=True (write_file, edit_file, safe_delete_file, safe_delete_directory, download_file) must not execute their filesystem effect unless a recorded user approval in approval_state (state field pending_approval) covers the tool call; unapproved protected calls must be denied with ACCESS_DENIED before any tool execution. (Merges the first- and second-phase reviewer obligations, which describe the same approval gate.)",
+        "scope_limits": [
+          "Gate is active only when config.enable_approvals is truthy: _tool_requires_approval returns False and _tool_call_is_approved returns True when it is disabled (core/nodes.py 119-123, 915-917).",
+          "The approval/tools nodes and this gate are only wired when tools_enabled = bool(tools) and config.model_supports_tools (agent.py 64, 78-80, 122-127).",
+          "Approval state is the per-turn state field pending_approval and is reset to None after the tools node returns (core/nodes.py 785-796); supplied source shows no durable approval store.",
+          "In an approved approval_state with an empty tool_call_ids set, every protected call id is treated as approved (core/nodes.py 922-923).",
+          "Decision parsing accepts bool True, a dict approved flag, or action strings approve/approved/yes/y; any other truthy decision falls back to bool(decision) as approved (core/nodes.py 703-711).",
+          "Parallel execution is reserved for all-read-only batches; mutating/destructive calls keep sequential execution (core/nodes.py 47-67, 798-802), which does not alter the gate itself.",
+          "download_file is additionally flagged networked (tools/tool_registry.py 109-116); its network-fetch side is outside this file-stratum contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "core/nodes.py _process_tool_call lines 824-850: the ACCESS_DENIED denial is returned before the _execute_tool call at line 878, so no process/shell effect runs when approval is missing or unapproved.",
+        "contract_id": "ecological-contract:95803e4e3ccd4e98702b3fb8a996b1bf",
+        "declared_mechanism": "ToolRegistry per-tool metadata (mutating/destructive/requires_approval) consumed by _tool_requires_approval; routing through the interrupt-based approval_node into pending_approval; hard gate in _process_tool_call on _tool_call_is_approved returning an ACCESS_DENIED ToolMessage before the tool is invoked.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 208,
+            "line_start": 193,
+            "path": "tools/tool_registry.py",
+            "role": "guard_registration",
+            "source_sha256": "ffac7145699a791f1b69f29f271f31f1a8a6f9d46ddbbc8c95c2842f4b505429"
+          },
+          {
+            "line_end": 229,
+            "line_start": 214,
+            "path": "tools/tool_registry.py",
+            "role": "guard_registration",
+            "source_sha256": "ffac7145699a791f1b69f29f271f31f1a8a6f9d46ddbbc8c95c2842f4b505429"
+          },
+          {
+            "line_end": 126,
+            "line_start": 119,
+            "path": "core/nodes.py",
+            "role": "guard_registration",
+            "source_sha256": "03eb5dc435e2e1ad3383f5df57e6f9aaad59abc8c5f385075d0fac803b763c71"
+          },
+          {
+            "line_end": 923,
+            "line_start": 915,
+            "path": "core/nodes.py",
+            "role": "forbidden_condition",
+            "source_sha256": "03eb5dc435e2e1ad3383f5df57e6f9aaad59abc8c5f385075d0fac803b763c71"
+          },
+          {
+            "line_end": 850,
+            "line_start": 824,
+            "path": "core/nodes.py",
+            "role": "commit_point",
+            "source_sha256": "03eb5dc435e2e1ad3383f5df57e6f9aaad59abc8c5f385075d0fac803b763c71"
+          },
+          {
+            "line_end": 966,
+            "line_start": 960,
+            "path": "core/nodes.py",
+            "role": "protected_operation",
+            "source_sha256": "03eb5dc435e2e1ad3383f5df57e6f9aaad59abc8c5f385075d0fac803b763c71"
+          },
+          {
+            "line_end": 159,
+            "line_start": 152,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "de98778cd151b36dfc57c492a99d6630061cb8f1c96f54676a0e11d552e0c591"
+          },
+          {
+            "line_end": 101,
+            "line_start": 98,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "de98778cd151b36dfc57c492a99d6630061cb8f1c96f54676a0e11d552e0c591"
+          }
+        ],
+        "forbidden_condition": "A process/shell tool call whose registry metadata is mutating/destructive/requires_approval reaches _process_tool_call while approval_state is empty, approval_state.approved is falsy, or the call id is not among approved tool_call_ids \u2014 i.e., process spawn/stop or shell execution proceeding without a recorded user approval (core/nodes.py 824, 915-923).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "tools/process_tools.py and tools/local_shell.py bodies are not supplied; the concrete process spawn/kill and shell-execution commit points are not citable.",
+          "No supplied call site wires deny_recursive_destructive_command (core/destructive_guardrails.py 77-87) into cli_exec, so blocking of recursive destructive shell commands at execution time is unverified."
+        ],
+        "protected_operation": "Execution of approval-gated process/shell tools (background process start/stop, shell command execution) via the tools node dispatch _execute_tool -> tool.ainvoke.",
+        "protected_resource": "OS processes and the local shell execution environment (registry metadata impact_scope='processes' and 'local_state').",
+        "protection_obligation": "Agent-invoked mutating/destructive process and shell tools registered with requires_approval=True (run_background_process, stop_background_process, cli_exec) must not execute their process/shell effect without a recorded user approval in approval_state; unapproved protected calls must be denied with ACCESS_DENIED before execution.",
+        "scope_limits": [
+          "Gate is active only when config.enable_approvals is truthy (core/nodes.py 119-123, 915-917).",
+          "Process tools load only when config.enable_process_tools and the shell tool only when config.enable_shell_tool (tools/tool_registry.py 187-193, 214-218); without those flags the tools are not registered for agent use.",
+          "find_process_by_port carries read-only metadata and is not approval-gated (tools/tool_registry.py 209-211).",
+          "cli_exec carries mutating+destructive+requires_approval (tools/tool_registry.py 220-229), so the approval gate covers any shell invocation, not only destructive ones."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "tools/filesystem.py, tools/delete_tools.py, tools/process_tools.py, and tools/local_shell.py are not supplied; concrete effect commit points inside the approval-gated tools and their calls into delete_directory_path or deny_recursive_destructive_command cannot be cited.",
+      "core/config.py is not supplied; defaults and semantics of enable_approvals, enable_shell_tool, enable_process_tools, enable_filesystem_tools, and model_supports_tools are unknown.",
+      "core/tool_policy.py (ToolMetadata, default_tool_metadata) is not supplied; approval requirements for MCP-loaded tools resolved via _infer_mcp_metadata or config overrides (tools/tool_registry.py 298-314, 406-407) cannot be verified.",
+      "The interrupt-resuming client (CLI/UI) that records the user's approval decision is not part of the supplied source; end-to-end recording of user approval is outside the citable views.",
+      "deny_recursive_destructive_command is defined (core/destructive_guardrails.py 77-87) but no call site appears in supplied source, so no commit point or contract is emitted for it."
+    ],
+    "repository": "maks-mk/simple-ai-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:682b9394e9d7050d4a2e00840c9ca24d"
+  },
+  "request_sha256": "e5a444f6cea237d95a3420946b5be55917b087eec1104b10afeee22fdc03b948",
+  "response_sha256": "17d325bd6ad9eac0be445f7ab962fd3ce5afd408556e8bfea53f6266310f0faf",
+  "state": "completed",
+  "tokens": 41694,
+  "unit": "v24-screen:682b9394e9d7050d4a2e00840c9ca24d"
+}

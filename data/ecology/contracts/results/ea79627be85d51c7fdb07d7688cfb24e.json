@@ -1,0 +1,120 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Runner.run(triage_agent, full_input) at main.py:92: the registered input guardrail executes within this run, and a triggered tripwire aborts the run (exception caught at main.py:98-99) before any handoff or tool effect commits; the preempted downstream effect would commit at requests.get(url) inside get_weather (tools/weather.py:14).",
+        "contract_id": "ecological-contract:f03f3ef568bce00a02b35a47f7c33878",
+        "declared_mechanism": "Input guardrail 'detect_not_related_question' defined with @input_guardrail (main.py:30-37), which runs guardrail_agent (an Agent with output_type NotRelatedQuestion, main.py:20-28) and returns GuardrailFunctionOutput(output_info=result.final_output, tripwire_triggered=result.final_output.is_not_related); registered on triage_agent via input_guardrails=[detect_not_related_question] (main.py:75). A triggered tripwire raises InputGuardrailTripwireTriggered out of Runner.run, caught at main.py:98-99, which prints a travel-only refusal message.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 37,
+            "line_start": 30,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "0ca547ba772a334e05a77d2b08b9ea4f5f19c4aef6f27ddecada48703042025b"
+          },
+          {
+            "line_end": 76,
+            "line_start": 70,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "0ca547ba772a334e05a77d2b08b9ea4f5f19c4aef6f27ddecada48703042025b"
+          },
+          {
+            "line_end": 28,
+            "line_start": 20,
+            "path": "main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ca547ba772a334e05a77d2b08b9ea4f5f19c4aef6f27ddecada48703042025b"
+          },
+          {
+            "line_end": 16,
+            "line_start": 14,
+            "path": "main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ca547ba772a334e05a77d2b08b9ea4f5f19c4aef6f27ddecada48703042025b"
+          },
+          {
+            "line_end": 92,
+            "line_start": 84,
+            "path": "main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0ca547ba772a334e05a77d2b08b9ea4f5f19c4aef6f27ddecada48703042025b"
+          },
+          {
+            "line_end": 48,
+            "line_start": 40,
+            "path": "main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0ca547ba772a334e05a77d2b08b9ea4f5f19c4aef6f27ddecada48703042025b"
+          },
+          {
+            "line_end": 11,
+            "line_start": 10,
+            "path": "tools/weather.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ee112a6252f44cc6b12f7956a8e68d930034176d8872a22591d53d9c40949f28"
+          },
+          {
+            "line_end": 96,
+            "line_start": 90,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "0ca547ba772a334e05a77d2b08b9ea4f5f19c4aef6f27ddecada48703042025b"
+          },
+          {
+            "line_end": 99,
+            "line_start": 90,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "0ca547ba772a334e05a77d2b08b9ea4f5f19c4aef6f27ddecada48703042025b"
+          },
+          {
+            "line_end": 14,
+            "line_start": 13,
+            "path": "tools/weather.py",
+            "role": "commit_point",
+            "source_sha256": "ee112a6252f44cc6b12f7956a8e68d930034176d8872a22591d53d9c40949f28"
+          }
+        ],
+        "forbidden_condition": "A user question classified as not related to traveling (guardrail_agent emits is_not_related=true) being processed by the triage agent pipeline without the guardrail tripping \u2014 i.e., off-topic input causing Runner.run(triage_agent, ...) to proceed to model calls, handoffs, or tool effects such as external weather-API requests.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The openai-agents SDK internals are not in supplied source: the exact lifecycle point at which input_guardrails execute relative to the first model call and to handoffs is inferred only from InputGuardrailTripwireTriggered propagating out of Runner.run (main.py:92, caught at 98-99).",
+          "Whether the triage-level input guardrail also re-executes for sub-runs initiated via handoff (weather/restaurant/attraction agents), or only for the initial triage_agent run, cannot be determined from supplied source.",
+          "Effects performed by get_attractions and get_restaurants (tools/attractions.py, tools/restaurants.py) are not in supplied views and must be obtained to bind those tools to the guarded pipeline.",
+          "Session-history handling after a trip (history remains stale at main.py:81/96 since the except branch does not update it) and its interaction with multi-turn guardrail classification is not specified."
+        ],
+        "protected_operation": "Execution of the triage agent run for user input via Runner.run(triage_agent, full_input), including handoffs to the weather/restaurant/attraction agents and any tool executions they perform, for travel-related requests.",
+        "protected_resource": "The triage agent run and its downstream specialist-agent tool effects, concretely the OpenWeatherMap HTTP API accessed by the get_weather function tool (tools/weather.py:13-14).",
+        "protection_obligation": "Non-travel-related user input must trip the detect_not_related_question input guardrail registered on triage_agent, aborting the agent run at Runner.run (via InputGuardrailTripwireTriggered) so the triage pipeline never proceeds to handoff agents or their downstream external API tool calls (concretely, get_weather's OpenWeatherMap HTTP request), with the tripwire caught at the call site and the request refused.",
+        "scope_limits": [
+          "Only the weather tool's external effect is evidenced in supplied source; reviewer wording also names attractions (and the pipeline includes restaurants), but tools/attractions.py and tools/restaurants.py are not supplied, so their effects are unverified.",
+          "The obligation is enforced at triage_agent entry only; no input_guardrails are shown on weather_agent, restaurant_agent, or attraction_agent (main.py:40-68), so downstream agents are protected only transitively through the guarded triage run.",
+          "The trip decision is produced by an LLM classifier (guardrail_agent, model gpt-4o-mini, main.py:20-28); classification correctness, false-negative rates, and runtime behavior are outside this contract.",
+          "The OpenWeatherMap request's own authentication, validation, and HTTP semantics are out of scope; the request is in scope only as the downstream guarded effect.",
+          "The observed handling of a trip is limited to printing a refusal message at main.py:99; no other remediation or logging is shown."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "tools/attractions.py and tools/restaurants.py are not among the supplied sources; the reviewer claim that the guardrail also gates external API calls for attractions/restaurants is only partially supported (imports at main.py:9-10 and tool attachments at main.py:57, 67) and their effect types cannot be confirmed.",
+      "The openai-agents SDK's internal ordering of input-guardrail evaluation versus model inference, handoffs, and tool execution is not present in supplied source; the 'before the triage agent runs' timing is inferred from the InputGuardrailTripwireTriggered exception propagating out of Runner.run (main.py:92, 98-99).",
+      "Whether input guardrails are re-evaluated on handoff sub-runs (weather_agent, restaurant_agent, attraction_agent) is not determinable from the supplied code.",
+      "Runtime effectiveness and prevalence of the guardrail (e.g., LLM classifier false negatives/positives) are not assessable from source and are intentionally not decided here."
+    ],
+    "repository": "Jianfang-Liang/travel-agent-openai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:ea79627be85d51c7fdb07d7688cfb24e"
+  },
+  "request_sha256": "ff60e5ee8c7b73e1f15ee905687d179749c72b4ae1ed2a84a51139f05ee8ac07",
+  "response_sha256": "ab74baad79f9870c6cac866f8db5cbca2cf20b4595c8f251ec3eb0aa1d6fb43b",
+  "state": "completed",
+  "tokens": 12963,
+  "unit": "v24-screen:ea79627be85d51c7fdb07d7688cfb24e"
+}

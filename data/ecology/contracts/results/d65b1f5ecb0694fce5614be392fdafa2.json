@@ -1,0 +1,270 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "bridge.send(payload) at scene.py:134, which reaches ControlBridge.send()'s frame write onto the named pipe (bridge.py:133-142).",
+        "contract_id": "ecological-contract:0aa5413452a98712cb53a1fd92657791",
+        "declared_mechanism": "send() in scene.py (116-136) dumps the protocol model, loads all available atlases, refuses outright if no manifest is readable (121-129), computes missing references via _unknown() \u2192 scene_contract.unknown_references against every manifest (130, 494-506), raises ToolError naming near-misses before any write (131-132); _known_system() (520-534) additionally checks system membership on the layer tools before send(); protocol limits come from the Pydantic models via build() (138-148).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 32,
+            "line_start": 29,
+            "path": "tools/anatria_mcp/scene.py",
+            "role": "forbidden_condition",
+            "source_sha256": "927dc92277a6bd8a777ecc1f3b1cb5b9fde55ae5203fb995f77a3708a7f46322"
+          },
+          {
+            "line_end": 132,
+            "line_start": 116,
+            "path": "tools/anatria_mcp/scene.py",
+            "role": "guard_registration",
+            "source_sha256": "927dc92277a6bd8a777ecc1f3b1cb5b9fde55ae5203fb995f77a3708a7f46322"
+          },
+          {
+            "line_end": 71,
+            "line_start": 71,
+            "path": "tools/anatria_mcp/scene.py",
+            "role": "guard_registration",
+            "source_sha256": "927dc92277a6bd8a777ecc1f3b1cb5b9fde55ae5203fb995f77a3708a7f46322"
+          },
+          {
+            "line_end": 506,
+            "line_start": 494,
+            "path": "tools/anatria_mcp/scene.py",
+            "role": "guard_registration",
+            "source_sha256": "927dc92277a6bd8a777ecc1f3b1cb5b9fde55ae5203fb995f77a3708a7f46322"
+          },
+          {
+            "line_end": 534,
+            "line_start": 520,
+            "path": "tools/anatria_mcp/scene.py",
+            "role": "guard_registration",
+            "source_sha256": "927dc92277a6bd8a777ecc1f3b1cb5b9fde55ae5203fb995f77a3708a7f46322"
+          },
+          {
+            "line_end": 142,
+            "line_start": 125,
+            "path": "tools/anatria_mcp/bridge.py",
+            "role": "protected_operation",
+            "source_sha256": "ab9cd48827f9dd8e198d9dc35f1df680a3f69eca25e5f3ce60c64a6873c380d5"
+          },
+          {
+            "line_end": 136,
+            "line_start": 133,
+            "path": "tools/anatria_mcp/scene.py",
+            "role": "commit_point",
+            "source_sha256": "927dc92277a6bd8a777ecc1f3b1cb5b9fde55ae5203fb995f77a3708a7f46322"
+          },
+          {
+            "line_end": 142,
+            "line_start": 133,
+            "path": "tools/anatria_mcp/bridge.py",
+            "role": "commit_point",
+            "source_sha256": "ab9cd48827f9dd8e198d9dc35f1df680a3f69eca25e5f3ce60c64a6873c380d5"
+          },
+          {
+            "line_end": 208,
+            "line_start": 202,
+            "path": "tools/anatria_mcp/scene.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "927dc92277a6bd8a777ecc1f3b1cb5b9fde55ae5203fb995f77a3708a7f46322"
+          }
+        ],
+        "forbidden_condition": "Writing a scene command to the control pipe whose organ_id, group, or system references are absent from every loaded atlas manifest, or calling bridge.send() when no atlas manifest could be read so the reference check could not run \u2014 the documented condition where a bad organ_id reaches the viewport and empties it silently.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The implementation of anatria_engine.scene_contract.unknown_references (and XRAY_OPACITY) is not in supplied source; only its import (scene.py:71) and call site (scene.py:504) are shown.",
+          "The viewer-side named-pipe listener (control_bridge.rs, referenced at bridge.py:73-75) is not in supplied source; whether the viewer performs its own reference checks is unestablished.",
+          "Application-side pipe creation and the claimed user-SID ACL enforcement are asserted in bridge.py comments (19-36, 73-76, 217-225) but the creating side is not in supplied source."
+        ],
+        "protected_operation": "Sending entity-naming scene commands (focus_organ, illuminate_structures, isolate_structures, isolate_region, isolate_group, show_all_structures, add_supply, set_layer_visibility, set_layer_opacity, xray_system, apply_pathology_overlay, clear_pathology_overlays, highlight_pathway, clear_pathway, scan_at_structure, set_cross_section) to the running Anatria3D application via ControlBridge.send().",
+        "protected_resource": "The running Anatria3D application's control named pipe (anatria3d-control-<user SID>) and the viewport state it mutates.",
+        "protection_obligation": "Every scene command dispatched from the external MCP viewport tools to the running Anatria3D control pipe must first have its organ_id/group/system references validated against the shipped atlas manifests, and must be refused with ToolError before the wire write when validation finds unknown references or when no manifest could be read (merges the phase-one and phase-two reviewers' duplicate wording for the bridge path).",
+        "scope_limits": [
+          "The say tool sends prose without atlas reference validation by design (scene.py:119-121, 153-161); this contract covers entity-naming scene commands only.",
+          "Validation is against all on-disk manifests (union across atlases), not against what the reader currently has loaded on screen; a command naming a real-but-unloaded structure passes validation and does nothing at the viewer (scene.py:34-38).",
+          "If no manifest can be read, send() refuses the command rather than sending unchecked (scene.py:121-129).",
+          "Per-tool system membership checks (_known_system) exist only on set_layer_visibility, set_layer_opacity and xray_system (scene.py:297, 319, 341); other tools rely on unknown_references for organ_id/group fields.",
+          "Count/range limits (route stops, opacity, severity, isolation size) are enforced by the Pydantic protocol models via build(), not by this reference check (scene.py:138-148)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "ctx.deps.dispatch(command) \u2192 emit(command) writing the stdout scene frame (scene_tools.py:106-108); representative tool-level commit points at 199, 217, 244, 258, 282, 311, 336, 353, 384, 409-411, 439-443, 449, 520-527, 536, 564, 592.",
+        "contract_id": "ecological-contract:a3537f3d90f896b4ddd14a95602054f5",
+        "declared_mechanism": "_resolve(ctx, organ_id) raises ModelRetry with close-match hints when organ_id is absent from ctx.deps.organs (111-127); isolate_group raises ModelRetry when the group is not in ctx.deps.groups (273-281); set_layer_visibility/set_layer_opacity/xray_system raise ModelRetry when the system is not in ctx.deps.systems (347-352, 371-376, 399-403) \u2014 each check executes immediately before the corresponding ctx.deps.dispatch() call.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 7,
+            "line_start": 3,
+            "path": "engine/anatria_engine/scene_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d6b0594a82e46b43f002becb50cc41a4b9e5472c6c7305aefe579eb943c4573f"
+          },
+          {
+            "line_end": 127,
+            "line_start": 111,
+            "path": "engine/anatria_engine/scene_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "d6b0594a82e46b43f002becb50cc41a4b9e5472c6c7305aefe579eb943c4573f"
+          },
+          {
+            "line_end": 281,
+            "line_start": 273,
+            "path": "engine/anatria_engine/scene_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "d6b0594a82e46b43f002becb50cc41a4b9e5472c6c7305aefe579eb943c4573f"
+          },
+          {
+            "line_end": 352,
+            "line_start": 347,
+            "path": "engine/anatria_engine/scene_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "d6b0594a82e46b43f002becb50cc41a4b9e5472c6c7305aefe579eb943c4573f"
+          },
+          {
+            "line_end": 88,
+            "line_start": 86,
+            "path": "engine/anatria_engine/scene_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "d6b0594a82e46b43f002becb50cc41a4b9e5472c6c7305aefe579eb943c4573f"
+          },
+          {
+            "line_end": 199,
+            "line_start": 198,
+            "path": "engine/anatria_engine/scene_tools.py",
+            "role": "commit_point",
+            "source_sha256": "d6b0594a82e46b43f002becb50cc41a4b9e5472c6c7305aefe579eb943c4573f"
+          },
+          {
+            "line_end": 108,
+            "line_start": 106,
+            "path": "engine/anatria_engine/scene_tools.py",
+            "role": "commit_point",
+            "source_sha256": "d6b0594a82e46b43f002becb50cc41a4b9e5472c6c7305aefe579eb943c4573f"
+          },
+          {
+            "line_end": 192,
+            "line_start": 191,
+            "path": "engine/anatria_engine/scene_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d6b0594a82e46b43f002becb50cc41a4b9e5472c6c7305aefe579eb943c4573f"
+          }
+        ],
+        "forbidden_condition": "A hallucinated organ_id, group, or system \u2014 one not present in ctx.deps.organs / ctx.deps.groups / ctx.deps.systems \u2014 becoming a scene command, i.e. reaching ctx.deps.dispatch() and being emitted to the viewport without the loaded manifest vouching for it.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The concrete emit implementation (the stdout writer behind SceneContext.emit) and the consumer of the stdout scene frames are not in supplied source; the communication stratum is assigned from documented behavior at scene_tools.py:3-7 and 86-88.",
+          "The engine entry point that constructs the pydantic-ai Agent and SceneContext and calls register_scene_tools(agent) is not shown in supplied source."
+        ],
+        "protected_operation": "Dispatching scene commands to the viewer during the model's turn from the engine viewport tools (focus_organ, isolate_structures, isolate_region, isolate_group, illuminate_structures, set_layer_visibility, set_layer_opacity, xray_system, apply_pathology_overlay, highlight_pathway, scan_at_structure) via ctx.deps.dispatch().",
+        "protected_resource": "The 3D viewport driven by SceneContext.emit (one scene command written to stdout per dispatch) and the loaded atlas structures held in SceneContext.",
+        "protection_obligation": "No scene command naming an organ_id, group, or system absent from the atlas actually loaded into the engine agent's SceneContext may be dispatched to the viewer: every viewport-moving tool in engine/anatria_engine/scene_tools.py must validate via _resolve / group-membership / system-membership checks raising ModelRetry immediately before ctx.deps.dispatch() (phase-two opinion, engine path).",
+        "scope_limits": [
+          "Applies to the viewport-moving tools registered by register_scene_tools(agent); find_structures is read-only and dispatches nothing (scene_tools.py:150-151).",
+          "Commands that name no atlas entity (add_supply, show_all_structures/ResetView, clear_pathology_overlays, clear_pathway, set_cross_section) have no _resolve call; set_cross_section validates only the position range (scene_tools.py:587-592).",
+          "Validation is against the structures actually loaded into SceneContext (organs/systems/groups fields, 82-102); who constructs SceneContext and loads the manifests is not in supplied source.",
+          "The sequential=True ordering guarantee (scene_tools.py:137-152) is a distinct correctness property of command ordering and is not part of this reference-validation contract.",
+          "Validation via _resolve returns the canonical organ.organ_id used in the dispatched command (e.g. 198-199); the dispatched id is always a manifest-vouched identifier for the entity-naming tools."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The register_scene_tools(mcp, bridge, available_atlases) call inside build_server() (atlas.py:461), which executes the @mcp.tool registrations in tools/anatria_mcp/scene.py register_scene_tools().",
+        "contract_id": "ecological-contract:d261572a19664721cebf80ec720fae6e",
+        "declared_mechanism": "ControlBridge.from_environment() returns None unless ANATRIA3D_BRIDGE strips/lowercases to a truthy value (bridge.py:111-114); build_server() resolves the bridge before any tool registration (atlas.py:279-285), and the fifteen tools are registered only inside the `if bridge is not None:` gate before calling register_scene_tools(mcp, bridge, available_atlases) (atlas.py:458-461).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 285,
+            "line_start": 279,
+            "path": "tools/anatria_mcp/atlas.py",
+            "role": "guard_registration",
+            "source_sha256": "da0ac75768124b5ec4eac3b3ade2e0c2ff83a768a417c3bfc517a4db1fa0ec2c"
+          },
+          {
+            "line_end": 114,
+            "line_start": 102,
+            "path": "tools/anatria_mcp/bridge.py",
+            "role": "guard_registration",
+            "source_sha256": "ab9cd48827f9dd8e198d9dc35f1df680a3f69eca25e5f3ce60c64a6873c380d5"
+          },
+          {
+            "line_end": 13,
+            "line_start": 8,
+            "path": "tools/anatria_mcp/atlas.py",
+            "role": "forbidden_condition",
+            "source_sha256": "da0ac75768124b5ec4eac3b3ade2e0c2ff83a768a417c3bfc517a4db1fa0ec2c"
+          },
+          {
+            "line_end": 114,
+            "line_start": 108,
+            "path": "tools/anatria_mcp/scene.py",
+            "role": "forbidden_condition",
+            "source_sha256": "927dc92277a6bd8a777ecc1f3b1cb5b9fde55ae5203fb995f77a3708a7f46322"
+          },
+          {
+            "line_end": 461,
+            "line_start": 458,
+            "path": "tools/anatria_mcp/atlas.py",
+            "role": "commit_point",
+            "source_sha256": "da0ac75768124b5ec4eac3b3ade2e0c2ff83a768a417c3bfc517a4db1fa0ec2c"
+          },
+          {
+            "line_end": 107,
+            "line_start": 103,
+            "path": "tools/anatria_mcp/scene.py",
+            "role": "protected_operation",
+            "source_sha256": "927dc92277a6bd8a777ecc1f3b1cb5b9fde55ae5203fb995f77a3708a7f46322"
+          },
+          {
+            "line_end": 168,
+            "line_start": 167,
+            "path": "tools/anatria_mcp/scene.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "927dc92277a6bd8a777ecc1f3b1cb5b9fde55ae5203fb995f77a3708a7f46322"
+          }
+        ],
+        "forbidden_condition": "Registering or offering any viewport-driving MCP tool in a server session for which ControlBridge.from_environment() returned None (ANATRIA3D_BRIDGE absent or not in {1,true,yes,on}), such that a non-opted-in client would be given the ability to move the running application's viewport.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "How the reader's in-application consent gesture results in ANATRIA3D_BRIDGE being set in this server's environment is not shown in supplied source (bridge.py:23-36 describes the gesture in prose only).",
+          "Whether any code path outside build_server() can register scene tools on an MCPServer is not established by supplied source."
+        ],
+        "protected_operation": "Registration of the viewport-driving MCP tools onto the MCPServer built by build_server() in tools/anatria_mcp/atlas.py.",
+        "protected_resource": "The MCP server tool surface of tools/anatria_mcp/atlas.py; downstream, the running Anatria3D viewport reachable only through the configured control bridge.",
+        "protection_obligation": "The fifteen viewport-driving MCP tools may be registered on the anatria-atlas MCP server only when ControlBridge.from_environment() returns a bridge, i.e. the reader has explicitly enabled the control bridge via a truthy ANATRIA3D_BRIDGE value; a client that did not opt in is never offered the viewport tools at all (merged from phase-one opinion; per-command validation on this path is contracted separately below).",
+        "scope_limits": [
+          "Governs only tool registration on the MCP server built by build_server(); the engine-internal pydantic-ai agent's viewport tools (engine/anatria_engine/scene_tools.py) are registered on a separate path not governed by ANATRIA3D_BRIDGE in the supplied source.",
+          "The gate is binary on ANATRIA3D_BRIDGE being one of {1,true,yes,on} (bridge.py:214); ANATRIA3D_BRIDGE_PIPE only overrides the derived pipe name and does not affect gating (bridge.py:105-114).",
+          "The gate controls capability availability (registration) only; it does not itself validate the contents of any scene command \u2014 that is the separate per-command contract.",
+          "The read-only tools (search_structures, describe_structure, list_systems, browse_hierarchy, atlas_info, annotated READ_ONLY) are registered unconditionally and are outside this gate."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The anatria_engine.scene_contract module (unknown_references, XRAY_OPACITY) is referenced by tools/anatria_mcp/scene.py but its implementation is not in supplied source.",
+      "The viewer-side control-bridge listener and named-pipe creation/ACL code (Rust, control_bridge.rs / control_acl, referenced at bridge.py:73-75 and 228-235) are not in supplied source.",
+      "The engine entry point that builds the pydantic-ai Agent, constructs SceneContext, and binds emit to an actual stdout writer is not in supplied source.",
+      "The mechanism by which the reader's in-application bridge switch sets ANATRIA3D_BRIDGE in the MCP server process environment is not in supplied source.",
+      "The referenced tests (tests/protocol-contract.test.ts, test_bridge) are not in supplied source.",
+      "Behavior labels (e.g., which reviewer claims are runtime-verified versus declared) are unavailable for this unit."
+    ],
+    "repository": "Nurkan1/Anatria-3D",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d65b1f5ecb0694fce5614be392fdafa2"
+  },
+  "request_sha256": "8c16724646dd58f8b76f321ac73f74d617c2efa7fae89df3be3d3a28dec3522d",
+  "response_sha256": "30d02796c8bfda4f5aef38f3dcb9ac3c65d2af96b24aa916e8be52610ce9ff99",
+  "state": "completed",
+  "tokens": 46991,
+  "unit": "v24-screen:d65b1f5ecb0694fce5614be392fdafa2"
+}

@@ -1,0 +1,175 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The Runner.run call at main.py 51-56: an output-guardrail tripwire raises there, the handler at main.py 69-73 substitutes the refusal, and the turn then commits at main.py 88-95 (render at line 91; append at lines 93-95) with the refusal in place of the guarded result.final_output.",
+        "contract_id": "ecological-contract:169e4ace78728ec5d047267981bef80f",
+        "declared_mechanism": "restaurant_output_guardrail, defined with the @output_guardrail decorator (output_guardrails.py 37-60) and registered in menu_agent.output_guardrails (menu_agent.py line 17); it runs restaurant_output_guardrail_agent and sets tripwire_triggered when is_unprofessional or reveals_internal_info or is_off_topic; Runner.run raises OutputGuardrailTripwireTriggered, caught at main.py 69-73 to return the refusal tuple.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 34,
+            "line_start": 11,
+            "path": "02-openai-agents/customer-support-project/output_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "48a281f79484bc30877b35011a87dd31922d672cc1eda16436401dd673edf0a1"
+          },
+          {
+            "line_end": 60,
+            "line_start": 37,
+            "path": "02-openai-agents/customer-support-project/output_guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "48a281f79484bc30877b35011a87dd31922d672cc1eda16436401dd673edf0a1"
+          },
+          {
+            "line_end": 18,
+            "line_start": 1,
+            "path": "02-openai-agents/customer-support-project/my_agents/menu_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "8e36c08d33d40eed50734eb4fb7bf53dcb97dac951f7e22d1a216c17d7425ef1"
+          },
+          {
+            "line_end": 56,
+            "line_start": 49,
+            "path": "02-openai-agents/customer-support-project/main.py",
+            "role": "protected_operation",
+            "source_sha256": "1dbc40b23871fa0cdafcee07650fb2951ba8de4862c6b7f3cac5ae88a3bd0e83"
+          },
+          {
+            "line_end": 60,
+            "line_start": 58,
+            "path": "02-openai-agents/customer-support-project/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1dbc40b23871fa0cdafcee07650fb2951ba8de4862c6b7f3cac5ae88a3bd0e83"
+          },
+          {
+            "line_end": 73,
+            "line_start": 69,
+            "path": "02-openai-agents/customer-support-project/main.py",
+            "role": "commit_point",
+            "source_sha256": "1dbc40b23871fa0cdafcee07650fb2951ba8de4862c6b7f3cac5ae88a3bd0e83"
+          },
+          {
+            "line_end": 95,
+            "line_start": 88,
+            "path": "02-openai-agents/customer-support-project/main.py",
+            "role": "commit_point",
+            "source_sha256": "1dbc40b23871fa0cdafcee07650fb2951ba8de4862c6b7f3cac5ae88a3bd0e83"
+          }
+        ],
+        "forbidden_condition": "An agent response classified by restaurant_output_guardrail_agent (output_type=RestaurantOutputGuardrailOutput) as rude, offensive, or unprofessional (is_unprofessional); revealing internal system information, policies, prompts, or private implementation details (reveals_internal_info); or off-topic and not relevant to restaurant services (is_off_topic). The tripwire fires when any of the three flags is true (output_guardrails.py 51-55).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether restaurant_output_guardrail is registered on order_agent, reservation_agent, and complaints_agent (their source files are not supplied).",
+          "Whether OutputGuardrailTripwireTriggered can fire when triage_agent completes the run itself: triage_agent declares no output_guardrails (triage_agent.py 147-165), so this obligation binds only on runs ending at a guarded specialist agent via handoff.",
+          "Whether the output guardrail evaluates only the final agent's last output or all intermediate agent outputs across handoff chains (SDK semantics not supplied).",
+          "Whether a tripped output guardrail suppresses session persistence of the withheld response in SQLiteSession (runtime semantics not supplied).",
+          "Whether the Streamlit UI render should be accounted as a distinct client-facing effect stratum separate from the application state mutation."
+        ],
+        "protected_operation": "Rendering the assistant reply in the chat UI (st.write at main.py 91) and appending it to st.session_state['messages'] (main.py 93-95) after run_agent returns the agent-generated result.final_output.",
+        "protected_resource": "The user-facing assistant response content delivered from the specialist agents (evidenced: menu_agent) into the Streamlit chat transcript and session state.",
+        "protection_obligation": "The registered output guardrail restaurant_output_guardrail on the specialist agents (registration evidenced for menu_agent) must trip on responses that are unprofessional, reveal internal system information, or are off-topic, so that at the Runner.run commit point in main.py the OutputGuardrailTripwireTriggered exception yields the fixed refusal reply ('\uc8c4\uc1a1\ud569\ub2c8\ub2e4. \ud574\ub2f9 \uc751\ub2f5\uc740 \uc548\uc804 \uae30\uc900\uc5d0 \ub9de\uc9c0 \uc54a\uc544 \ud45c\uc2dc\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.', responding agent 'Output Guardrail') instead of rendering or storing the guarded agent-generated response. (Merges phase-one and phase-two reviewer wording for the output-side obligation.)",
+        "scope_limits": [
+          "Registration of restaurant_output_guardrail is evidenced only for menu_agent (menu_agent.py line 17); the order/reservation/complaints agents are imported (triage_agent.py 15-17) but their source files are not supplied, so their registrations are not asserted here.",
+          "Covers wiring and enforcement path only; classifier efficacy for any specific response is runtime behavior not decidable here.",
+          "Chat-turn scope only via run_agent in main.py; the commented-out voice-pipeline code (main.py 112-218) is inactive and excluded.",
+          "Effect stratum is anchored on the explicit st.session_state['messages'] mutation; UI rendering and SQLiteSession persistence effects are not separately classified in this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The Runner.run call at main.py 51-56: an input-guardrail tripwire raises there, the handler at main.py 62-67 substitutes the refusal, and the turn then commits at main.py 88-95 (response rendered via st.write at line 91 and appended to st.session_state['messages'] at lines 93-95) with the refusal in place of the guarded reply.",
+        "contract_id": "ecological-contract:b39d1eda0f75ea79914b4d8c0191016d",
+        "declared_mechanism": "off_topic_guardrail, defined with the @input_guardrail decorator (triage_agent.py 41-56) and registered in triage_agent.input_guardrails (triage_agent.py 150-152); it runs input_guardrail_agent and returns GuardrailFunctionOutput(tripwire_triggered=result.final_output.is_off_topic); Runner.run raises InputGuardrailTripwireTriggered, caught at main.py 62-67 to return the refusal tuple.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 38,
+            "line_start": 20,
+            "path": "02-openai-agents/customer-support-project/my_agents/triage_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "62284046d217935e6f9ab98ddc089e0f47fcffbb30071cee0f6683c0613e0433"
+          },
+          {
+            "line_end": 56,
+            "line_start": 41,
+            "path": "02-openai-agents/customer-support-project/my_agents/triage_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "62284046d217935e6f9ab98ddc089e0f47fcffbb30071cee0f6683c0613e0433"
+          },
+          {
+            "line_end": 165,
+            "line_start": 147,
+            "path": "02-openai-agents/customer-support-project/my_agents/triage_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "62284046d217935e6f9ab98ddc089e0f47fcffbb30071cee0f6683c0613e0433"
+          },
+          {
+            "line_end": 56,
+            "line_start": 49,
+            "path": "02-openai-agents/customer-support-project/main.py",
+            "role": "protected_operation",
+            "source_sha256": "1dbc40b23871fa0cdafcee07650fb2951ba8de4862c6b7f3cac5ae88a3bd0e83"
+          },
+          {
+            "line_end": 67,
+            "line_start": 62,
+            "path": "02-openai-agents/customer-support-project/main.py",
+            "role": "commit_point",
+            "source_sha256": "1dbc40b23871fa0cdafcee07650fb2951ba8de4862c6b7f3cac5ae88a3bd0e83"
+          },
+          {
+            "line_end": 95,
+            "line_start": 88,
+            "path": "02-openai-agents/customer-support-project/main.py",
+            "role": "commit_point",
+            "source_sha256": "1dbc40b23871fa0cdafcee07650fb2951ba8de4862c6b7f3cac5ae88a3bd0e83"
+          },
+          {
+            "line_end": 35,
+            "line_start": 34,
+            "path": "02-openai-agents/customer-support-project/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1dbc40b23871fa0cdafcee07650fb2951ba8de4862c6b7f3cac5ae88a3bd0e83"
+          }
+        ],
+        "forbidden_condition": "User chat input judged off-topic (outside the allowed restaurant topics: menu, reservation, order, complaints) or containing inappropriate language, as classified by input_guardrail_agent with output_type=InputGuardRailOutput; the guardrail tripwire fires on result.final_output.is_off_topic.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the Agents SDK raises InputGuardrailTripwireTriggered before any model execution or session writes for the turn (SDK ordering not in supplied source).",
+          "Whether a tripped input guardrail suppresses persistence of the turn to SQLiteSession('restaurant-chat-history', 'restaurant-memory.db') (main.py 28-32).",
+          "Whether off_topic_guardrail evaluates every turn: the session agent is initialized and reset to triage_agent (main.py 34-35, 59), but handoff/run internals are SDK-defined and not supplied.",
+          "Whether models.InputGuardRailOutput.is_off_topic (referenced at triage_agent.py 37 and 55) matches the intended forbidden condition; models.py is not supplied."
+        ],
+        "protected_operation": "Executing the restaurant-support chat turn: Runner.run(st.session_state['agent'], user_input, session=session, context=user_account_ctx) inside run_agent, producing an assistant reply for the Streamlit chat.",
+        "protected_resource": "The restaurant-support chat session served by the session agent (triage_agent) and its user-facing reply committed to the chat transcript.",
+        "protection_obligation": "The registered input guardrail off_topic_guardrail on triage_agent must trip on off-topic or inappropriate user requests, so that at the Runner.run commit point in main.py the InputGuardrailTripwireTriggered exception yields the fixed refusal reply ('\uc800\ub294 \ub808\uc2a4\ud1a0\ub791 \uad00\ub828 \uc9c8\ubb38\uc5d0 \ub300\ud574\uc11c\ub9cc \ub3c4\uc640\ub4dc\ub9ac\uace0 \uc788\uc5b4\uc694...', responding agent 'Input Guardrail') instead of displaying the guarded agent reply for that chat turn. (Merges phase-one and phase-two reviewer wording for the input-side obligation.)",
+        "scope_limits": [
+          "Compiled from supplied line-numbered source only; repository enumeration is not complete and behavior labels are unavailable.",
+          "Covers wiring and enforcement path of off_topic_guardrail only; whether the LLM-based classifier trips for any given input is runtime behavior not decidable here.",
+          "Applies to chat turns executed via run_agent in main.py; the commented-out voice-pipeline code (main.py 112-218) is inactive and excluded.",
+          "Effect stratum is anchored on the explicit st.session_state['messages'] mutation; UI rendering (st.write) is treated as part of the same delivery commit, and SQLiteSession (restaurant-memory.db) persistence effects are not classified in this contract."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source files my_agents/order_agent.py, my_agents/reservation_agent.py, and my_agents/complaints_agent.py (imported at triage_agent.py 15-17) are required to verify the reviewer claim that restaurant_output_guardrail is attached to all four specialist agents; only menu_agent.py is supplied.",
+      "models.py is not supplied; the definitions of InputGuardRailOutput (is_off_topic), RestaurantOutputGuardrailOutput (is_unprofessional, reveals_internal_info, is_off_topic), UserAccountContext, and HandoffData are referenced in source but unsupported.",
+      "Agents SDK library source for Runner.run guardrail execution ordering, tripwire exception timing relative to session persistence, and output-guardrail evaluation over handoff chains is not supplied; commit-point binding relative to SQLiteSession writes cannot be confirmed.",
+      "Behavior labels are unavailable per the stated scope; whether the guardrails trip in practice for given inputs cannot be assessed from the supplied views."
+    ],
+    "repository": "summer-2022/ai-agent-systems",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:9a61502fbd17931d5610020288cbb404"
+  },
+  "request_sha256": "7ef6fa5376806bbd5db2d7c9af844c5c723ce83eb1db8697ba1b6dd652fa0aa7",
+  "response_sha256": "794200241956e700993af36f94f6edc3a740a6cee46eaba5f7ec08528cd333c5",
+  "state": "completed",
+  "tokens": 23092,
+  "unit": "v24-screen:9a61502fbd17931d5610020288cbb404"
+}

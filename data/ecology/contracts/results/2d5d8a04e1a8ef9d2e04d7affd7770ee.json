@@ -1,0 +1,372 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Per-connection delivery 'await connection.send(msg_type, data)' inside RoomManager.broadcast_to_room (backend/room_manager.py:239-245; send at line 243).",
+        "contract_id": "ecological-contract:180456c3498da686460283eb41a51da5",
+        "declared_mechanism": "Success-gated delivery: RoomManager.close_room calls RoomMemory.close_room (owner-scoped UPDATE, rowcount-based) and executes broadcast_to_room('room_closed', ...) only inside the 'if success' branch (backend/room_manager.py:186-193); delivery iterates active_rooms and sends per connection (backend/room_manager.py:226-245).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 193,
+            "line_start": 175,
+            "path": "backend/room_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "7b77b2890f0a156fe36768c3544357ee1f5a5411afbb4673d59dce210c16b392"
+          },
+          {
+            "line_end": 245,
+            "line_start": 226,
+            "path": "backend/room_manager.py",
+            "role": "commit_point",
+            "source_sha256": "7b77b2890f0a156fe36768c3544357ee1f5a5411afbb4673d59dce210c16b392"
+          },
+          {
+            "line_end": 295,
+            "line_start": 288,
+            "path": "backend/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 324,
+            "line_start": 319,
+            "path": "backend/memory.py",
+            "role": "guard_registration",
+            "source_sha256": "f0f466b32e48fae4bb09e0c234e04879cb40314ce2fe6373994bc737589d90d9"
+          },
+          {
+            "line_end": 193,
+            "line_start": 190,
+            "path": "backend/room_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "7b77b2890f0a156fe36768c3544357ee1f5a5411afbb4673d59dce210c16b392"
+          }
+        ],
+        "forbidden_condition": "A 'room_closed' broadcast reaching room members for a close attempt by an unauthenticated or non-owner caller (the success == False path, which instead emits room_error).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether agent code in backend/room_agent.py (not supplied) can invoke broadcast_to_room or the broadcast_callback, and whether any guard applies on that path.",
+          "Delivery semantics/guarantees of WebSocketConnection.send (backend/ws.py not supplied)."
+        ],
+        "protected_operation": "RoomManager.close_room's conditional broadcast of 'room_closed' to the room's active member connections after a successful owner-scoped close.",
+        "protected_resource": "WebSocket connections registered for the room's members in RoomManager.active_rooms[room_id].",
+        "protection_obligation": "Owner-only room closure (communication stratum): the 'room_closed' notification may be delivered to a room's connected members only when the closing caller is the room owner, i.e., only after the owner-scoped close reports success.",
+        "scope_limits": [
+          "No independent authorization is performed at broadcast time; the guard is inherited entirely from the database-stratum owner check (see the closure database contract).",
+          "Reaches only members present in active_rooms at delivery time; members without a live registered connection are not addressed.",
+          "The KP agent's broadcast_callback wiring (backend/app.py:195-201, 240-246) is a separate delivery path into the same broadcast function whose agent-side invocation cannot be established from supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "conn.commit() after 'INSERT INTO memory (...)' with the room_id column inside RoomMemory.add_room_message (backend/memory.py:479-486; commit at line 486).",
+        "contract_id": "ecological-contract:5e2fde68ff246f28c9da02ca0225d73b",
+        "declared_mechanism": "Sequential pre-write guards in handle_room_chat: login check on conn.user_id (backend/app.py:299-301), non-empty room_id/content validation (backend/app.py:303-312), and membership check room_manager.is_user_in_room -> RoomMemory.is_room_member SELECT on room_members (backend/app.py:314-317; backend/room_manager.py:271-273; backend/memory.py:462-469); the write executes only after all guards pass (backend/app.py:319-325).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 317,
+            "line_start": 297,
+            "path": "backend/app.py",
+            "role": "guard_registration",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 317,
+            "line_start": 314,
+            "path": "backend/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 372,
+            "line_start": 372,
+            "path": "backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 325,
+            "line_start": 319,
+            "path": "backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 273,
+            "line_start": 271,
+            "path": "backend/room_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "7b77b2890f0a156fe36768c3544357ee1f5a5411afbb4673d59dce210c16b392"
+          },
+          {
+            "line_end": 469,
+            "line_start": 462,
+            "path": "backend/memory.py",
+            "role": "guard_registration",
+            "source_sha256": "f0f466b32e48fae4bb09e0c234e04879cb40314ce2fe6373994bc737589d90d9"
+          },
+          {
+            "line_end": 281,
+            "line_start": 279,
+            "path": "backend/room_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "7b77b2890f0a156fe36768c3544357ee1f5a5411afbb4673d59dce210c16b392"
+          },
+          {
+            "line_end": 486,
+            "line_start": 471,
+            "path": "backend/memory.py",
+            "role": "commit_point",
+            "source_sha256": "f0f466b32e48fae4bb09e0c234e04879cb40314ce2fe6373994bc737589d90d9"
+          }
+        ],
+        "forbidden_condition": "A message originating from a caller with falsy conn.user_id, or from a caller for whom room_manager.is_user_in_room(conn.user_id, room_id) is false, being inserted into the room-scoped persistent message store.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether RoomAgentManager.handle_player_message or KP agent tool execution (backend/room_agent.py not supplied) writes room messages via RoomMemory.add_room_message, with or without these guards.",
+          "How conn.user_id is populated (backend/ws.py not supplied)."
+        ],
+        "protected_operation": "Handling a 'room_chat' WebSocket message: handle_room_chat -> room_manager.add_message -> RoomMemory.add_room_message INSERT into the memory table with the room_id.",
+        "protected_resource": "Rows of the SQLite 'memory' table scoped by the room_id column in memory.db (the room's persistent message history).",
+        "protection_obligation": "Member-only room message persistence: only authenticated users who are members of a room may persist a message into the room's message history; unauthenticated clients are rejected up front and non-members are rejected by an is_user_in_room check before any write.",
+        "scope_limits": [
+          "Applies to the 'room_chat' path registered at backend/app.py:372; other writers to the memory table (e.g., Memory._insert_message for 1:1 sessions, KP agent writes from unsupplied room_agent.py) are outside this guard chain.",
+          "Membership is evaluated against the persisted room_members table, not the in-memory active-room connection registry.",
+          "Content non-emptiness checks are generic input validation; the obligation asserted here is authentication plus room membership.",
+          "No agent tool, lifecycle hook, or agent-generated input is shown reaching add_message in supplied source; the KP agent dispatch (backend/app.py:337-338) occurs after the guarded write, so agent mediation is not established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Per-connection delivery 'await connection.send(msg_type, data)' inside RoomManager.broadcast_to_room (backend/room_manager.py:239-245; send at line 243).",
+        "contract_id": "ecological-contract:a5e5c075d5087dee21183e17867c9b27",
+        "declared_mechanism": "Caller-side guard chain in handle_room_chat (login at backend/app.py:299-301; membership at backend/app.py:314-317) fully precedes the broadcast_to_room call (backend/app.py:327-335); broadcast_to_room itself performs delivery without additional authorization (backend/room_manager.py:226-245).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 317,
+            "line_start": 299,
+            "path": "backend/app.py",
+            "role": "guard_registration",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 317,
+            "line_start": 314,
+            "path": "backend/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 335,
+            "line_start": 327,
+            "path": "backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 372,
+            "line_start": 372,
+            "path": "backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 245,
+            "line_start": 226,
+            "path": "backend/room_manager.py",
+            "role": "commit_point",
+            "source_sha256": "7b77b2890f0a156fe36768c3544357ee1f5a5411afbb4673d59dce210c16b392"
+          }
+        ],
+        "forbidden_condition": "A 'room_message' broadcast carrying caller-supplied content being delivered to room members when the requester is unauthenticated or not a member of the room.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the KP agent can invoke the broadcast_callback as a tool or from its processing loop (backend/room_agent.py not supplied) and whether any guard applies on that path."
+        ],
+        "protected_operation": "handle_room_chat's broadcast of the validated member's message to all room members via RoomManager.broadcast_to_room (backend/app.py:327-335).",
+        "protected_resource": "WebSocket connections registered for the room's members in RoomManager.active_rooms[room_id].",
+        "protection_obligation": "Member-only room message broadcast: only authenticated room members may cause a 'room_message' to be delivered to the room's members.",
+        "scope_limits": [
+          "The guard lives solely in handle_room_chat; RoomManager.broadcast_to_room is unguarded at its own boundary, so other holders of the function \u2014 notably the KP agent broadcast_callback wired at backend/app.py:195-201 and 240-246 \u2014 are not covered by this obligation as evidenced.",
+          "Does not cover the downstream KP agent dispatch at backend/app.py:337-338.",
+          "Delivery targets only connections present in active_rooms at send time."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "conn.commit() following the owner-scoped UPDATE inside RoomMemory.close_room, with the accept/reject decision read from cursor.rowcount (backend/memory.py:319-324; commit at line 323).",
+        "contract_id": "ecological-contract:ba403b866b08ccbe9c091c903d0176c4",
+        "declared_mechanism": "Two-layer guard: (1) login pre-check rejecting falsy conn.user_id with 'Please log in first' (backend/app.py:279-281); (2) data-scoped owner predicate in the SQL itself \u2014 UPDATE rooms SET status='closed' ... WHERE id = ? AND owner_id = ? \u2014 with success defined as cursor.rowcount > 0 (backend/memory.py:315-324), propagated by RoomManager.close_room (backend/room_manager.py:175-204) and surfaced to the caller as 'Failed to close room,Probably not the homeowner' on the failure path (backend/app.py:294-295).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 295,
+            "line_start": 277,
+            "path": "backend/app.py",
+            "role": "guard_registration",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 371,
+            "line_start": 371,
+            "path": "backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 187,
+            "line_start": 175,
+            "path": "backend/room_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "7b77b2890f0a156fe36768c3544357ee1f5a5411afbb4673d59dce210c16b392"
+          },
+          {
+            "line_end": 324,
+            "line_start": 315,
+            "path": "backend/memory.py",
+            "role": "guard_registration",
+            "source_sha256": "f0f466b32e48fae4bb09e0c234e04879cb40314ce2fe6373994bc737589d90d9"
+          },
+          {
+            "line_end": 322,
+            "line_start": 320,
+            "path": "backend/memory.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f0f466b32e48fae4bb09e0c234e04879cb40314ce2fe6373994bc737589d90d9"
+          },
+          {
+            "line_end": 324,
+            "line_start": 319,
+            "path": "backend/memory.py",
+            "role": "commit_point",
+            "source_sha256": "f0f466b32e48fae4bb09e0c234e04879cb40314ce2fe6373994bc737589d90d9"
+          },
+          {
+            "line_end": 295,
+            "line_start": 294,
+            "path": "backend/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          }
+        ],
+        "forbidden_condition": "The SQLite rooms row for the requested room_id is updated to status='closed' by a close request from a caller with falsy conn.user_id or whose user_id does not match the row's owner_id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether RoomAgentManager.remove_agent (backend/app.py:291) or any room-agent code path can itself trigger room closure \u2014 backend/room_agent.py is not supplied.",
+          "Whether any tool configured in create_agent/init_room_agent_manager (backend/app.py:43-50, 72-79) can reach close_room \u2014 tool implementations not supplied.",
+          "How conn.user_id is established (WebSocketConnection identity/authentication in backend/ws.py, not supplied), on which the login gate at backend/app.py:279-281 depends."
+        ],
+        "protected_operation": "Handling a 'close_room' WebSocket message: handle_close_room -> RoomManager.close_room -> RoomMemory.close_room owner-scoped status UPDATE.",
+        "protected_resource": "The row identified by room_id in the SQLite 'rooms' table (status, updated_at columns) of memory.db.",
+        "protection_obligation": "Owner-only room closure (database stratum): a 'close_room' request may persist the room's status transition to 'closed' only when the authenticated caller's user_id equals the room's owner_id; unauthenticated or non-owner callers must cause no persistent mutation of the room row. (Merges the owner-only closure obligation stated by both reviewers.)",
+        "scope_limits": [
+          "Covers only the 'close_room' WebSocket message path registered at backend/app.py:371; no other invocation path of RoomManager.close_room appears in supplied source.",
+          "The owner check is enforced inside the UPDATE WHERE clause rather than as a separate authorization pre-query; a non-owner attempt still executes a statement but must match zero rows to be rejected.",
+          "Same-obligation effects in other strata are compiled separately: the 'room_closed' member broadcast (communication contract) and the in-memory active-room cleanup plus KP agent removal (backend/app.py:290-291; backend/room_manager.py:195-200) are distinct commit points not covered here.",
+          "No agent tool, agent lifecycle hook, or agent-generated input is shown reaching close_room in supplied source; room_agent.py and agent.py are not supplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Delivery of the history payload to the requesting client: 'await conn.send(\"room_history\", ...)' (backend/app.py:361-364).",
+        "contract_id": "ecological-contract:fc4de9694de6c471ada7acd8550d32ea",
+        "declared_mechanism": "Pre-read guards in handle_load_room_history: login check on conn.user_id (backend/app.py:344-346) and membership check room_manager.is_user_in_room -> RoomMemory.is_room_member (backend/app.py:353-356; backend/room_manager.py:271-273; backend/memory.py:462-469); history is fetched and sent only after both pass (backend/app.py:358-364).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 356,
+            "line_start": 342,
+            "path": "backend/app.py",
+            "role": "guard_registration",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 356,
+            "line_start": 353,
+            "path": "backend/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 373,
+            "line_start": 373,
+            "path": "backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 364,
+            "line_start": 358,
+            "path": "backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 364,
+            "line_start": 361,
+            "path": "backend/app.py",
+            "role": "commit_point",
+            "source_sha256": "6b011ab471ce250af2267faaf172c094f4bdd6a8db906fcb8368785c5f7d4d09"
+          },
+          {
+            "line_end": 285,
+            "line_start": 283,
+            "path": "backend/room_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "7b77b2890f0a156fe36768c3544357ee1f5a5411afbb4673d59dce210c16b392"
+          }
+        ],
+        "forbidden_condition": "Room history being read and returned to a caller with falsy conn.user_id, or to a caller for whom room_manager.is_user_in_room(conn.user_id, room_id) is false.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent path in unsupplied room_agent.py/agent.py can read or relay room history outside this handler.",
+          "How conn.user_id is populated (backend/ws.py not supplied)."
+        ],
+        "protected_operation": "Handling a 'load_room_history' WebSocket message: handle_load_room_history -> room_manager.get_room_messages -> RoomMemory.get_room_messages, followed by delivery of the 'room_history' response.",
+        "protected_resource": "The room's persisted message history (memory table rows scoped by room_id) as disclosed in the 'room_history' response payload.",
+        "protection_obligation": "Member-only room history read: only authenticated users who are members of a room may load and receive its message history; the 'room_history' payload is delivered to the requesting client only after the login and is_user_in_room checks pass.",
+        "scope_limits": [
+          "Read-only disclosure obligation; no persistent mutation is guarded here (the database read itself has no commit point).",
+          "Response is delivered only to the requesting connection; no room-wide broadcast is involved.",
+          "Registered at backend/app.py:373; the guard set mirrors the room_chat path but is compiled separately because the protected operation and commit point differ."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "backend/room_agent.py (RoomAgentManager: initialize, create_agent, handle_player_message, get_agent, remove_agent) is not supplied; agent mediation for all room effects (broadcast, message persistence, closure, KP session binding via set_kp_session) cannot be established, and agent-side guard behavior is unknown.",
+      "backend/ws.py (WebSocketConnection: on/send/handle, session_id/user_id/nickname assignment) is not supplied; the mechanism binding conn.user_id to an authenticated identity \u2014 which all login gates in these contracts depend on \u2014 is unverifiable from supplied source.",
+      "backend/agent.py, backend/llm_client.py, backend/tools/*, and backend/skills/* are not supplied; whether any registered agent tool produces guarded external effects (and of which stratum) cannot be determined.",
+      "Whether the KP agent's broadcast_callback (backend/app.py:195-201, 240-246) is exposed to the model as an invocable tool is undeterminable from supplied source; if it is, an additional unguarded broadcast path into RoomManager.broadcast_to_room may exist but cannot be confirmed.",
+      "Per unit scope, repository enumeration is incomplete and behavior labels are unavailable; only the three supplied views (backend/app.py, backend/memory.py, backend/room_manager.py) were used as evidence."
+    ],
+    "repository": "bridgeL/cocv5",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:2d5d8a04e1a8ef9d2e04d7affd7770ee"
+  },
+  "request_sha256": "efd946dcc271f488357e5e67694f5419ad98cef46b03712091296ff082c4e340",
+  "response_sha256": "ca3c53417d31589ddf385b469fbd11ef00e425643c027e3313d5c9a7c2d935e8",
+  "state": "completed",
+  "tokens": 36006,
+  "unit": "v24-screen:2d5d8a04e1a8ef9d2e04d7affd7770ee"
+}

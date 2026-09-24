@@ -1,0 +1,103 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The `return handler(request)` dispatch at line 90 of human_approval \u2014 the last middleware-controlled point after the approval check, before the tool body executes its outbound HTTP request.",
+        "contract_id": "ecological-contract:e6f884764d37d10481de4a1265d7608c",
+        "declared_mechanism": "The @wrap_tool_call middleware human_approval (lines 79-90), registered in create_agent(middleware=[human_approval]) at lines 93-98: it reads request.tool_call[\"name\"], prompts the human via input() (line 83), returns a denial ToolMessage unless confirm.lower() == \"yes\" (lines 85-89), and only on approval dispatches handler(request) (line 90).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 26,
+            "line_start": 20,
+            "path": "code/agent_langchain.py",
+            "role": "protected_operation",
+            "source_sha256": "3f1d5bcdac7b0e7ca1ca5cf20da818b4659c4c5285fbf901ea09ffec75a9e1e0"
+          },
+          {
+            "line_end": 51,
+            "line_start": 43,
+            "path": "code/agent_langchain.py",
+            "role": "protected_operation",
+            "source_sha256": "3f1d5bcdac7b0e7ca1ca5cf20da818b4659c4c5285fbf901ea09ffec75a9e1e0"
+          },
+          {
+            "line_end": 80,
+            "line_start": 79,
+            "path": "code/agent_langchain.py",
+            "role": "guard_registration",
+            "source_sha256": "3f1d5bcdac7b0e7ca1ca5cf20da818b4659c4c5285fbf901ea09ffec75a9e1e0"
+          },
+          {
+            "line_end": 89,
+            "line_start": 82,
+            "path": "code/agent_langchain.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3f1d5bcdac7b0e7ca1ca5cf20da818b4659c4c5285fbf901ea09ffec75a9e1e0"
+          },
+          {
+            "line_end": 90,
+            "line_start": 90,
+            "path": "code/agent_langchain.py",
+            "role": "commit_point",
+            "source_sha256": "3f1d5bcdac7b0e7ca1ca5cf20da818b4659c4c5285fbf901ea09ffec75a9e1e0"
+          },
+          {
+            "line_end": 98,
+            "line_start": 93,
+            "path": "code/agent_langchain.py",
+            "role": "guard_registration",
+            "source_sha256": "3f1d5bcdac7b0e7ca1ca5cf20da818b4659c4c5285fbf901ea09ffec75a9e1e0"
+          },
+          {
+            "line_end": 95,
+            "line_start": 95,
+            "path": "code/agent_langchain.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3f1d5bcdac7b0e7ca1ca5cf20da818b4659c4c5285fbf901ea09ffec75a9e1e0"
+          },
+          {
+            "line_end": 110,
+            "line_start": 108,
+            "path": "code/agent_langchain.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3f1d5bcdac7b0e7ca1ca5cf20da818b4659c4c5285fbf901ea09ffec75a9e1e0"
+          }
+        ],
+        "forbidden_condition": "Execution of handler(request) \u2014 and thereby the wrapped tool body's external HTTP call (requests.get to OpenWeather at lines 24-26, or tavily_client.search at lines 47-51) \u2014 without the human having supplied 'yes' at the interactive confirmation prompt (any confirm.lower() != \"yes\" must result in the denial ToolMessage at lines 86-89 and no handler dispatch).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The library internals of langchain.agents.middleware.wrap_tool_call are not in the supplied source; the assumptions that handler(request) executes the wrapped tool body and that the middleware intercepts every agent tool dispatch rest on the registration at lines 79 and 97, not on directly evidenced framework code.",
+          "Whether any dispatch path can reach the tool bodies without passing through human_approval (e.g., framework-internal tool handling variants) cannot be determined from the supplied lines.",
+          "Approval-token policy: the prompt at line 83 advertises '(y/n)' while line 85 accepts only the lowercased token 'yes'; whether 'y' is intended to constitute approval is unresolved by the source."
+        ],
+        "protected_operation": "Invocation of the registered agent tools get_weather and get_news through the agent's tool-call dispatch, where each invocation performs an outbound external API request.",
+        "protected_resource": "External HTTP APIs reached by the tools: the OpenWeather data/2.5/weather endpoint built at lines 23-24 and fetched at line 26, and the Tavily search API accessed via tavily_client.search at lines 47-51 (client constructed at line 41).",
+        "protection_obligation": "No agent tool invocation of get_weather (OpenWeather HTTP GET) or get_news (Tavily search) may reach execution unless the human explicitly approves with the exact token 'yes' inside the registered human_approval wrap_tool_call middleware; unapproved calls are denied with a ToolMessage and must never reach the handler(request) dispatch that triggers the external HTTP effect. (Merges the duplicate first- and second-phase reviewer wordings, which describe the same guard, same protected operations, and same commit point.)",
+        "scope_limits": [
+          "The guard covers only tool calls dispatched through the agent created at lines 93-98; direct tool invocation outside agent.invoke is not protected (no active such call site exists \u2014 lines 37 and 71 are commented out).",
+          "The middleware applies uniformly to all registered tools; there is no per-tool or per-effect differentiation between the weather and news calls.",
+          "Approval is interactive terminal input via input() (line 83); non-interactive or headless deployment behavior is outside the supplied source.",
+          "The check is string comparison only (confirm.lower() != \"yes\"); no identity, session, or cryptographic approval binding is present."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source for langchain.agents.middleware.wrap_tool_call semantics (request.tool_call structure, handler(request) execution path, guarantee that the wrapper intercepts all agent tool dispatches) is not supplied; the handler(request)-to-tool-body binding is inferred from registration lines 79 and 97 only.",
+      "No behavior labels or runtime traces are available in the supplied scope, so actual prevalence of unapproved tool executions cannot be assessed from this unit.",
+      "Whether the deployment environment provides an interactive stdin for the input() prompt at line 83 (i.e., whether approval can occur at all outside a TTY) is not established by the supplied source."
+    ],
+    "repository": "SiddharthaSarkar1/city-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:63fd8cad6a03c3c29da12cf59ae3964c"
+  },
+  "request_sha256": "db6cbdc2eb2059cdcda6c725be67dc032ae3da97e181eb10255252a50b5cc024",
+  "response_sha256": "1ec1f5390b7ac8118afbdd527229a11e98db55452936207c444fa9f6834356ed",
+  "state": "completed",
+  "tokens": 8240,
+  "unit": "v24-screen:63fd8cad6a03c3c29da12cf59ae3964c"
+}

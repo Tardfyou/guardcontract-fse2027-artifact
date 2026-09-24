@@ -1,0 +1,85 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "src/dungeon_agents/main.py:378 \u2014 `result = runner.run_sync(game_master, conversation, hooks=tool_hooks)`; the SDK raises InputGuardrailTripwireTriggered at this call before the model processes the input (caught at src/dungeon_agents/main.py:379), the refusal return completes at src/dungeon_agents/main.py:391, and the blocked message is dropped from history at src/dungeon_agents/main.py:742.",
+        "contract_id": "ecological-contract:1eb4b87203dc5af909213ddf0ae0ac36",
+        "declared_mechanism": "OpenAI Agents SDK input guardrail: `build_injection_guardrail(settings)` returns an `@input_guardrail`-decorated `injection_guardrail` attached to the Agent via `input_guardrails=[...]` (src/dungeon_agents/agents/game_master.py:156). Layer 1: deterministic `detect_injection` regex patterns over the reduced input text, returning GuardrailFunctionOutput(tripwire_triggered=True) with output_info blocked_by=pattern:<label> on match. Layer 2: for inputs surviving layer 1, an LLM judge is run via Runner.run(judge, text) and the tripwire fires if the verdict indicates injection. On trip, the SDK raises InputGuardrailTripwireTriggered, which `_play_turn` catches, prints an in-character refusal panel, and returns (None, conversation, None); the main loop then pops the blocked message (conversation.pop()) so it never poisons the history.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 156,
+            "line_start": 146,
+            "path": "src/dungeon_agents/agents/game_master.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "027abfbae0f6681d6436a42eda34fb60306fd07f84804a16dcd12b1925ccfe82"
+          },
+          {
+            "line_end": 64,
+            "line_start": 43,
+            "path": "src/dungeon_agents/agents/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "dc0b6ebf0034c244eb233f172dbd344961e3af6b284e2ce91884185f8aa8959f"
+          },
+          {
+            "line_end": 96,
+            "line_start": 84,
+            "path": "src/dungeon_agents/domain/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a1e0ea6783d43d0c063ce4a2fe76a1b8de1d5a8a3f695db468a55983960c3146"
+          },
+          {
+            "line_end": 391,
+            "line_start": 371,
+            "path": "src/dungeon_agents/main.py",
+            "role": "commit_point",
+            "source_sha256": "52ca131a6f76768b16668ab344bb711e079c89b7b3371c80fbcf1315ab1b62be"
+          },
+          {
+            "line_end": 745,
+            "line_start": 731,
+            "path": "src/dungeon_agents/main.py",
+            "role": "protected_operation",
+            "source_sha256": "52ca131a6f76768b16668ab344bb711e079c89b7b3371c80fbcf1315ab1b62be"
+          }
+        ],
+        "forbidden_condition": "A prompt-injection/manipulation message being processed by the Game Master agent \u2014 i.e., reaching the model run at runner.run_sync \u2014 or a blocked injection message persisting in the conversation history after a refused turn.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Exact content of the JUDGE_INJECTION verdict token and the judge's configuration: src/dungeon_agents/agents/injection_judge.py is not among the supplied views.",
+          "SDK-side guarantee that input guardrails evaluate before the first model call is asserted only by repository comments/docstrings (src/dungeon_agents/agents/game_master.py:146-149; src/dungeon_agents/agents/guardrails.py:4-7); the agents SDK runtime source is not supplied.",
+          "Behavior of the guardrail when the layer-2 LLM judge call fails (exception inside Runner.run(judge, text)) \u2014 block-open vs. fail-open \u2014 is not specified in the supplied source.",
+          "Efficacy of the string reduction for non-string structured user_input (`str(user_input)` at src/dungeon_agents/agents/guardrails.py:47) is not established for structured input lists."
+        ],
+        "protected_operation": "The Game Master turn driven by a real player action: the player message appended to `conversation` (src/dungeon_agents/main.py:733) and submitted via `runner.run_sync(game_master, conversation, hooks=tool_hooks)` in `_play_turn`, together with the post-refusal cleanup that keeps the conversation and game state unchanged.",
+        "protected_resource": "The Game Master agent's input-processing path (its run over the player's message) and the conversation history fed into that run.",
+        "protection_obligation": "Player input that constitutes a prompt-injection/manipulation attempt (instruction override, identity reassignment, system-prompt extraction, system-role impersonation, or a novel manipulation per the LLM judge) must never be processed by the Game Master agent: the SDK input guardrail registered on the agent (input_guardrails=[build_injection_guardrail(settings)], backed by deterministic detect_injection patterns plus an LLM injection judge) must trip with GuardrailFunctionOutput(tripwire_triggered=True) before the agent run at runner.run_sync; on InputGuardrailTripwireTriggered the turn must be refused (the model never runs), an in-character refusal notice shown, the blocked message dropped from the conversation history, and the prior scene and game state left unchanged.",
+        "scope_limits": [
+          "Covers only the Game Master input path through `_play_turn`/`runner.run_sync`; meta-commands (stats, inventory, summary, help, new, save/load, debug) never invoke the agent and are outside this contract (src/dungeon_agents/main.py:356-363, 624-729).",
+          "The guardrail is registered only on the Game Master; the specialist sub-agents (rules_referee, lore_keeper) run as tools without this input guardrail in the supplied source (src/dungeon_agents/agents/game_master.py:123-144).",
+          "Detection coverage is not claimed: layer 1 is a fixed pattern list whose own documentation says it can miss novel phrasings (src/dungeon_agents/domain/guardrails.py:14-18); the contract asserts the trip mechanism and refusal flow, not exhaustive injection detection.",
+          "Output-side mechanisms (Character Judge leak review, Critic coherence review, MAX_SCENE_RETRIES regeneration) and tool-level rule enforcement (inventory/gold/HP) are separate obligations and excluded from this contract.",
+          "The guarded run, if unblocked, would transitively commit further effects (model API traffic plus tool executions and game-state persistence); the contract's commit point is the run invocation itself, and the downstream strata are not separately guarded commit points in the supplied source.",
+          "No runtime behavior or prevalence claims are made; ordering and semantics of the guardrail relative to the model call are asserted by in-repository comments/docstrings only."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "src/dungeon_agents/agents/injection_judge.py (JUDGE_INJECTION constant, judge instructions, and build_injection_judge configuration) is not among the supplied views, so the layer-2 verdict contract cannot be fully specified.",
+      "The OpenAI Agents SDK runtime source that establishes when input guardrails execute relative to the model call is not supplied; the 'before the agent sees the input' ordering rests on repository comments (src/dungeon_agents/agents/game_master.py:146-149; src/dungeon_agents/agents/guardrails.py:4-7).",
+      "No runtime behavior labels, tests, or prevalence data are available for this unit; only static source views were provided."
+    ],
+    "repository": "antoniogomezgallardo/dungeon-agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:251e54b779f7252beb2e92093aad6841"
+  },
+  "request_sha256": "e515c981ea2ab76c1e7d73b2c07147e349c678ae8b4987c186a5faddce06f66e",
+  "response_sha256": "34cca3ed39d41a573216b5cc309af1d54c77e2bc27e636421be74434ac7a4653",
+  "state": "completed",
+  "tokens": 30333,
+  "unit": "v24-screen:251e54b779f7252beb2e92093aad6841"
+}

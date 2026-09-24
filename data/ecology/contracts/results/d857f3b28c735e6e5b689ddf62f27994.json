@@ -1,0 +1,309 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "FastAPI dependency resolution of Depends(_get_tenant) immediately before the /query handler body executes; rejection commits as HTTPException 401 inside _inner (auth.py:243-251).",
+        "contract_id": "ecological-contract:0aba0dd19d16a6800ce71f372378eac6",
+        "declared_mechanism": "get_current_tenant() dependency factory (auth.py:238-257) returns _inner, which raises HTTPException 401 for cred=None, undecodable/expired token, or unknown user before returning TenantInfo; instantiated once as _get_tenant (main.py:276) and attached to the route via tenant: TenantInfo = Depends(_get_tenant) (main.py:344).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 257,
+            "line_start": 238,
+            "path": "apps/api/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "008bd563ca148286a3b52951ccbe574f3f26b6497bd36980a161d1f208b33c95"
+          },
+          {
+            "line_end": 276,
+            "line_start": 275,
+            "path": "apps/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "1a3da19e918004a686e164e50240a99f9593124fc8cdbe89ae9b13cb0efa8c13"
+          },
+          {
+            "line_end": 344,
+            "line_start": 343,
+            "path": "apps/api/main.py",
+            "role": "protected_operation",
+            "source_sha256": "1a3da19e918004a686e164e50240a99f9593124fc8cdbe89ae9b13cb0efa8c13"
+          },
+          {
+            "line_end": 251,
+            "line_start": 243,
+            "path": "apps/api/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "008bd563ca148286a3b52951ccbe574f3f26b6497bd36980a161d1f208b33c95"
+          },
+          {
+            "line_end": 122,
+            "line_start": 108,
+            "path": "apps/api/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "008bd563ca148286a3b52951ccbe574f3f26b6497bd36980a161d1f208b33c95"
+          },
+          {
+            "line_end": 344,
+            "line_start": 343,
+            "path": "apps/api/main.py",
+            "role": "commit_point",
+            "source_sha256": "1a3da19e918004a686e164e50240a99f9593124fc8cdbe89ae9b13cb0efa8c13"
+          },
+          {
+            "line_end": 417,
+            "line_start": 394,
+            "path": "apps/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1a3da19e918004a686e164e50240a99f9593124fc8cdbe89ae9b13cb0efa8c13"
+          }
+        ],
+        "forbidden_condition": "A request to POST /query carrying no Bearer credential, a token that fails signature/expiry validation (decode_token returns None), or a token whose sub names no existing user being admitted to the handler instead of being rejected with HTTP 401.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the admin-only 403 rule on POST /auth/register (main.py:294-302) merits a separate contract: user creation is not bound to any agent tool, lifecycle hook, or agent-generated input in supplied source."
+        ],
+        "protected_operation": "Handling of POST /query requests (the agent-invoking NL2SQL query endpoint).",
+        "protected_resource": "POST /query route and the agent query pipeline it launches (apps/api/main.py).",
+        "protection_obligation": "POST /query \u2014 the HTTP entry point that launches the SQL-reconciliation agent graph \u2014 must reject with HTTP 401 any request lacking a valid, non-expired JWT Bearer token bound to an existing user, before the handler (and any agent execution) runs.",
+        "scope_limits": [
+          "Covers only routes declaring Depends(_get_tenant); supplied source shows many routes without it (/auth/login, /datasources*, /admin/reindex, /feedback, /kb/docs*, /agents*, /trace, /metrics, /health), which are outside this contract.",
+          "Token verification degrades when python-jose is absent: decode_token falls back to unsigned base64 with only an exp check (auth.py:114-122) and create_token is likewise unsigned (auth.py:103-105).",
+          "The same _get_tenant dependency also guards tenant-model-config routes, session CRUD, and /auth/register, but supplied source binds none of those operations to an agent tool, lifecycle hook, or agent-generated input; they are excluded from this agent-mediated contract.",
+          "HTTPBearer(auto_error=False) (auth.py:43) makes a missing header surface as cred=None handled by the 401 branch rather than framework-level rejection."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Return of the rejected state dict {'sql': 'REJECT', 'final_status': 'rejected', ...} (clarify.py:149-155; parallel branches at 157-165 and 168-180).",
+        "contract_id": "ecological-contract:5b0e52c5b6a8222dbbf94cb1fa8f6d9f",
+        "declared_mechanism": "clarify_node calls is_safe(query) (clarify.py:132) and combines the verdict with DML/DDL keyword scanning and injection-pattern checks to return a rejected GraphState update.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 127,
+            "line_start": 122,
+            "path": "recon_v2/orchestration/nodes/clarify.py",
+            "role": "protected_operation",
+            "source_sha256": "60868d49f81d809c61d3905036ffb1e09bdd15b3c4b437a374f40db0ed3166e0"
+          },
+          {
+            "line_end": 132,
+            "line_start": 131,
+            "path": "recon_v2/orchestration/nodes/clarify.py",
+            "role": "guard_registration",
+            "source_sha256": "60868d49f81d809c61d3905036ffb1e09bdd15b3c4b437a374f40db0ed3166e0"
+          },
+          {
+            "line_end": 148,
+            "line_start": 144,
+            "path": "recon_v2/orchestration/nodes/clarify.py",
+            "role": "forbidden_condition",
+            "source_sha256": "60868d49f81d809c61d3905036ffb1e09bdd15b3c4b437a374f40db0ed3166e0"
+          },
+          {
+            "line_end": 165,
+            "line_start": 157,
+            "path": "recon_v2/orchestration/nodes/clarify.py",
+            "role": "forbidden_condition",
+            "source_sha256": "60868d49f81d809c61d3905036ffb1e09bdd15b3c4b437a374f40db0ed3166e0"
+          },
+          {
+            "line_end": 155,
+            "line_start": 149,
+            "path": "recon_v2/orchestration/nodes/clarify.py",
+            "role": "commit_point",
+            "source_sha256": "60868d49f81d809c61d3905036ffb1e09bdd15b3c4b437a374f40db0ed3166e0"
+          },
+          {
+            "line_end": 417,
+            "line_start": 394,
+            "path": "apps/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1a3da19e918004a686e164e50240a99f9593124fc8cdbe89ae9b13cb0efa8c13"
+          }
+        ],
+        "forbidden_condition": "A query for which verdict.is_safe is False and whose text contains 'drop '/'delete '/'update '/'insert '/'alter '/'truncate ' (or which contains '; --' or '/*') continuing through the pipeline rather than being rejected at the clarify node.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "recon_v2/orchestration/graph.py (build_graph) is not supplied; clarify_node's placement inside the executed graph is supported by the state dataflow (main.py:394-417 initial_state/graph.invoke \u2192 GraphState/ctx_registry \u2192 clarify.py:122-125), not by graph wiring source."
+        ],
+        "protected_operation": "Agent graph processing of the user query at clarify_node (GraphState screening).",
+        "protected_resource": "Downstream target database / SQL execution path of the reconciliation agent.",
+        "protection_obligation": "User queries entering the agent orchestration graph that are judged unsafe by is_safe and match DML/DDL keywords, or that carry injection patterns ('; --' or '/*'), must be short-circuited by the clarify node into a rejected GraphState ('sql': 'REJECT', final_status 'rejected') instead of proceeding toward SQL generation/execution.",
+        "scope_limits": [
+          "Rejection requires both an unsafe verdict and a matching keyword (or an injection pattern); an unsafe verdict without those text patterns falls through to the clarification flow rather than rejection.",
+          "The committed effect of this contract is the rejected graph state; database-side commit points are covered by separate sql_runner and SQLTool contracts.",
+          "boundary_edge write-op rejection (clarify.py:168-180) uses a broader keyword list including 'create' but applies only when intent == 'boundary_edge'."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "self.adapter.execute(sql) at sql_runner.py:84, reached only after the safety, dialect-adaptation, LIMIT, and EXPLAIN steps pass.",
+        "contract_id": "ecological-contract:8aa229c058d02d16aee8dc265516a90a",
+        "declared_mechanism": "Step-1 guard is_safe(inp.sql, dialect) in _run returning success=False 'safety rejected' before further steps; apply_limit_guard appends LIMIT 1000 when inp.apply_limit (default True) and no LIMIT present; adapter.explain() pre-validation must succeed before execute; ToolBase.run enforces Pydantic input validation before _run.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 42,
+            "line_start": 34,
+            "path": "recon_v2/tools/sql_runner.py",
+            "role": "protected_operation",
+            "source_sha256": "8fc9ff6aed177470e4a6d8126628e9de8effa6a07ec4209cafffae81f55e1010"
+          },
+          {
+            "line_end": 60,
+            "line_start": 50,
+            "path": "recon_v2/tools/sql_runner.py",
+            "role": "guard_registration",
+            "source_sha256": "8fc9ff6aed177470e4a6d8126628e9de8effa6a07ec4209cafffae81f55e1010"
+          },
+          {
+            "line_end": 81,
+            "line_start": 69,
+            "path": "recon_v2/tools/sql_runner.py",
+            "role": "guard_registration",
+            "source_sha256": "8fc9ff6aed177470e4a6d8126628e9de8effa6a07ec4209cafffae81f55e1010"
+          },
+          {
+            "line_end": 91,
+            "line_start": 83,
+            "path": "recon_v2/tools/sql_runner.py",
+            "role": "commit_point",
+            "source_sha256": "8fc9ff6aed177470e4a6d8126628e9de8effa6a07ec4209cafffae81f55e1010"
+          },
+          {
+            "line_end": 32,
+            "line_start": 20,
+            "path": "recon_v2/infra/sql_safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8b0992374fe68a821a10b7bdafcb54fbed28eb7e7580aaa14dade739e804d46f"
+          },
+          {
+            "line_end": 75,
+            "line_start": 44,
+            "path": "recon_v2/infra/sql_safety.py",
+            "role": "guard_registration",
+            "source_sha256": "8b0992374fe68a821a10b7bdafcb54fbed28eb7e7580aaa14dade739e804d46f"
+          },
+          {
+            "line_end": 95,
+            "line_start": 85,
+            "path": "recon_v2/infra/sql_safety.py",
+            "role": "guard_registration",
+            "source_sha256": "8b0992374fe68a821a10b7bdafcb54fbed28eb7e7580aaa14dade739e804d46f"
+          },
+          {
+            "line_end": 35,
+            "line_start": 26,
+            "path": "recon_v2/tools/__init__.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f363c35c77e57a84a7d7c32e1d700d5da1fa0c80783dfe9a67214c540230589d"
+          },
+          {
+            "line_end": 375,
+            "line_start": 369,
+            "path": "apps/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1a3da19e918004a686e164e50240a99f9593124fc8cdbe89ae9b13cb0efa8c13"
+          },
+          {
+            "line_end": 64,
+            "line_start": 49,
+            "path": "recon_v2/tools/base.py",
+            "role": "guard_registration",
+            "source_sha256": "362a7fbc6b83cbf4023ce84e373261ef4d63630594a69488c69ada3cb802f6da"
+          }
+        ],
+        "forbidden_condition": "inp.sql whose is_safe verdict is unsafe (empty, unparseable, not rooted in SELECT/WITH, or containing Delete/Update/Insert/Drop/Alter/Create/TruncateTable/Command nodes) being passed to self.adapter.execute(); secondarily, a SELECT lacking LIMIT being executed when the LIMIT guard is enabled.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied view shows the orchestration node dispatching sql_runner with model-generated SQL (sql_gen/execute node and ToolRegistry dispatch implementation not provided); mediation is established via registration into the default ToolRegistry wired to ctx.tools plus OpenAI function-schema exposure (base.py:81-91), not an observed dispatch call site."
+        ],
+        "protected_operation": "Execution of agent-supplied SQL via the sql_runner tool (SQLRunnerTool._run).",
+        "protected_resource": "Target SQL databases reachable through SQLAdapter (SQLite/MySQL/PostgreSQL).",
+        "protection_obligation": "During agent tool use, SQLRunnerTool must reject \u2014 before any database execution \u2014 any SQL failing the sql_safety read-only check (root verb SELECT/WITH only; no DML/DDL/Command nodes; parse failure rejects), and must by default auto-append LIMIT 1000 to SELECTs lacking one, so only bounded read-only SQL reaches SQLAdapter.execute().",
+        "scope_limits": [
+          "LIMIT 1000 is applied only when inp.apply_limit is True (default per SQLRunnerInput); a caller may set apply_limit=False and execute SELECTs without LIMIT.",
+          "Guard covers only the sql_runner tool path; recon_core SQLTool and any direct adapter usage are separate surfaces with their own guards.",
+          "is_safe rejects parse failures ('prefer false positives' design), so dialect-valid syntax sqlglot cannot parse is also rejected.",
+          "adapter.explain()/execute() implementations are not in supplied views; pre-validation behavior is taken from the call site contract only."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "c.execute(sql) in _execute (sql_tool.py:136).",
+        "contract_id": "ecological-contract:9a76e9780de611173443fbdb4c884658",
+        "declared_mechanism": "Inline keyword blacklist on sql.strip().upper() (startswith or ' KEYWORD ' containment) returning an error string before sqlite3.connect/c.execute; the sql_validate sub-tool applies the same blacklist before EXPLAIN parsing.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 117,
+            "line_start": 116,
+            "path": "recon_core/tools/builtin/sql_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "3f22e3bebc1da08edbe94f17a306d94617da6dde3c0cf743d73c683182c4497e"
+          },
+          {
+            "line_end": 131,
+            "line_start": 126,
+            "path": "recon_core/tools/builtin/sql_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "3f22e3bebc1da08edbe94f17a306d94617da6dde3c0cf743d73c683182c4497e"
+          },
+          {
+            "line_end": 130,
+            "line_start": 128,
+            "path": "recon_core/tools/builtin/sql_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3f22e3bebc1da08edbe94f17a306d94617da6dde3c0cf743d73c683182c4497e"
+          },
+          {
+            "line_end": 136,
+            "line_start": 133,
+            "path": "recon_core/tools/builtin/sql_tool.py",
+            "role": "commit_point",
+            "source_sha256": "3f22e3bebc1da08edbe94f17a306d94617da6dde3c0cf743d73c683182c4497e"
+          }
+        ],
+        "forbidden_condition": "A statement beginning with, or containing space-delimited, any blacklisted keyword reaching c.execute(sql).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view registers SQLTool into a running agent: recon_v2's build_default_registry registers SQLRunnerTool (tools/__init__.py:29) and recon_core registry/agent wiring is not provided; agent_entry_binding role omitted and mediation recorded as not_established."
+        ],
+        "protected_operation": "sql_execute sub-tool execution (@tool_action-decorated _execute).",
+        "protected_resource": "SQLite database at SQLTool.db_path.",
+        "protection_obligation": "The recon_core SQLTool sql_execute sub-tool must reject any SQL whose normalized text starts with or contains a blacklisted DML/DDL keyword (DROP/DELETE/UPDATE/INSERT/ALTER/CREATE) before executing it against the tool's SQLite database.",
+        "scope_limits": [
+          "Blacklist is startswith/space-delimited containment on uppercased text; statements not matching those exact patterns (keyword embedded without surrounding spaces, PRAGMA/ATTACH, appended statements) fall outside the declared condition.",
+          "The parent SQLTool.run refuses direct invocation (sql_tool.py:32-37); only expanded sub-tools are executable.",
+          "sql_validate shares the blacklist but only EXPLAIN-parses; it imposes no runtime guard on sql_execute."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "recon_v2/orchestration/graph.py (build_graph) is not supplied; clarify_node's registration inside the executed graph is inferred from the state dataflow only.",
+      "No supplied view shows the orchestration node that dispatches SQLRunnerTool with model-generated SQL; the sql_gen node and recon_v2/tools/registry.py dispatch implementation are outside the provided views.",
+      "SQLAdapter.execute/explain semantics (mutation capability, commit behavior) are not in supplied views; the database effect stratum is assigned from the execute call site.",
+      "Agent mediation for the JWT guards on session CRUD, tenant model config, and the /auth/register admin 403 rule is not established by supplied source (no binding to an agent tool, lifecycle hook, or agent-generated input); these ordinary web-auth obligations were screened out of the agent-mediated contract set per scope.",
+      "deploy/Dockerfile cited in reviewer rationale is not among supplied sources; deployment posture (uvicorn on 0.0.0.0:8000) is verifiable only via main.py:1085-1091.",
+      "Runtime behavior labels and prevalence data are unavailable per the stated scope."
+    ],
+    "repository": "Marbacj/SQL-Reconciliation-Agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d857f3b28c735e6e5b689ddf62f27994"
+  },
+  "request_sha256": "e5d87bb2525e489dcf62f378e45b1108b76149962e0b167db7736516e91b5906",
+  "response_sha256": "a101606b9a3573799dbbd7f7cc03ac136a4d3534c0f445b4058a333c9743092e",
+  "state": "completed",
+  "tokens": 60055,
+  "unit": "v24-screen:d857f3b28c735e6e5b689ddf62f27994"
+}

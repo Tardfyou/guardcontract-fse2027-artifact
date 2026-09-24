@@ -1,0 +1,141 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The awaited approved-tool dispatch `output = await tool(context, **arguments)` in Agent._process_confirmations, gated by `if confirmation and confirmation.approved` (agent.py:373-382), which executes delete_file's `os.remove(filename)` (agent_tools/file_tools.py:332) \u2014 the irreversible filesystem mutation.",
+        "contract_id": "ecological-contract:b59480426e593b2a3166488192880108",
+        "declared_mechanism": "Tool-level confirmation declaration plus framework enforcement across the agent loop: (1) delete_file is declared via the @tool decorator with requires_confirmation=True and an explicit confirmation_message (file_tools.py:322-328); the decorator (tools.py:101-141) and BaseTool (tools.py:19-29) persist requires_confirmation and a confirmation template, and BaseTool.get_confirmation_message renders the per-call message (tools.py:42-47). (2) Agent.act() checks tool.requires_confirmation, stages a PendingToolCall with the rendered message, and `continue`s without invoking the tool (agent.py:309-317), persisting staged calls into context.state['pending_tool_calls'] (agent.py:344-345). (3) Agent.run() accepts tool_confirmations and places them into context.state['tool_confirmations'] (agent.py:109-114) and returns status='pending' with the staged calls when present. (4) Agent.step() invokes Agent._process_confirmations when both pending calls and confirmations are in state (agent.py:193-208). (5) Agent._process_confirmations builds tool_call_id-keyed lookups (agent.py:357-366) and executes the staged tool only when `confirmation and confirmation.approved` (agent.py:373-382), otherwise returning an error ToolResult without execution (agent.py:396-408).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 328,
+            "line_start": 322,
+            "path": "agent_tools/file_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "349ad909cfd9de1e065e598f6f016231200b2bb06c047081e309db532b77bb1f"
+          },
+          {
+            "line_end": 141,
+            "line_start": 101,
+            "path": "agent_framework/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "767ea777067d24ee2e0ab035d03c50c45893bf20672b704ed3fafd53f800f5b7"
+          },
+          {
+            "line_end": 29,
+            "line_start": 19,
+            "path": "agent_framework/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "767ea777067d24ee2e0ab035d03c50c45893bf20672b704ed3fafd53f800f5b7"
+          },
+          {
+            "line_end": 47,
+            "line_start": 42,
+            "path": "agent_framework/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "767ea777067d24ee2e0ab035d03c50c45893bf20672b704ed3fafd53f800f5b7"
+          },
+          {
+            "line_end": 317,
+            "line_start": 309,
+            "path": "agent_framework/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "28cddd88a05e04ef45ea1647d978f52f8d87932426f9dbe7ed64b47edff60de5"
+          },
+          {
+            "line_end": 345,
+            "line_start": 344,
+            "path": "agent_framework/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "28cddd88a05e04ef45ea1647d978f52f8d87932426f9dbe7ed64b47edff60de5"
+          },
+          {
+            "line_end": 114,
+            "line_start": 109,
+            "path": "agent_framework/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "28cddd88a05e04ef45ea1647d978f52f8d87932426f9dbe7ed64b47edff60de5"
+          },
+          {
+            "line_end": 408,
+            "line_start": 396,
+            "path": "agent_framework/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "28cddd88a05e04ef45ea1647d978f52f8d87932426f9dbe7ed64b47edff60de5"
+          },
+          {
+            "line_end": 333,
+            "line_start": 329,
+            "path": "agent_tools/file_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "349ad909cfd9de1e065e598f6f016231200b2bb06c047081e309db532b77bb1f"
+          },
+          {
+            "line_end": 382,
+            "line_start": 373,
+            "path": "agent_framework/agent.py",
+            "role": "commit_point",
+            "source_sha256": "28cddd88a05e04ef45ea1647d978f52f8d87932426f9dbe7ed64b47edff60de5"
+          },
+          {
+            "line_end": 332,
+            "line_start": 331,
+            "path": "agent_tools/file_tools.py",
+            "role": "commit_point",
+            "source_sha256": "349ad909cfd9de1e065e598f6f016231200b2bb06c047081e309db532b77bb1f"
+          },
+          {
+            "line_end": 242,
+            "line_start": 240,
+            "path": "agent_framework/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "28cddd88a05e04ef45ea1647d978f52f8d87932426f9dbe7ed64b47edff60de5"
+          },
+          {
+            "line_end": 208,
+            "line_start": 193,
+            "path": "agent_framework/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "28cddd88a05e04ef45ea1647d978f52f8d87932426f9dbe7ed64b47edff60de5"
+          }
+        ],
+        "forbidden_condition": "The delete_file tool's os.remove effect executing without an approved, tool_call_id-matching ToolConfirmation. This includes: (a) Agent.act() invoking a tool whose requires_confirmation is True through the direct dispatch path instead of staging a PendingToolCall and continuing (the check and `continue` at agent.py:309-317 must preempt the invocation at agent.py:322); and (b) Agent._process_confirmations executing a staged call when the confirmation is absent, not approved, or keyed to a different tool_call_id, in which case only an error ToolResult with a rejection reason may be produced (agent.py:396-408).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Model definitions for PendingToolCall and ToolConfirmation (agent_framework/models.py) are not among the supplied views; the approved flag, tool_call_id matching, and confirmation.modified_arguments semantics are supported only by their usage in agent.py:109-114, 344-345, 357-366, and 373-378.",
+          "No supplied view shows a caller constructing an Agent with delete_file in its tools list or delivering ToolConfirmation objects between run() invocations, so end-to-end exercise of the confirmation loop in a deployed agent is unverified.",
+          "How staged pending_tool_calls are carried into the run that supplies tool_confirmations (same ExecutionContext instance vs. session restore via session_manager) is not fixed by any supplied caller code.",
+          "Authority to set ToolConfirmation.approved (i.e., who may approve) is not established by the supplied views; run() accepts tool_confirmations as a caller-provided parameter list (agent.py:86, 109-114)."
+        ],
+        "protected_operation": "Invocation and execution of the delete_file agent tool, whose body performs os.remove(filename) on the file named by the tool's filename argument (agent_tools/file_tools.py:329-333), reached via the framework's tool dispatch in Agent.act() or Agent._process_confirmations.",
+        "protected_resource": "Files on the local filesystem addressed by delete_file's filename argument (supplied via the ToolCall arguments and, after approval, overlaid by confirmation.modified_arguments).",
+        "protection_obligation": "Filesystem deletion performed by the delete_file agent tool (os.remove on its filename argument) must not execute until Agent.act() has deferred the tool call (registered with requires_confirmation=True) into a staged PendingToolCall without invoking the tool, and Agent._process_confirmations has processed a ToolConfirmation with approved=true whose tool_call_id matches that pending call; calls lacking an approved matching confirmation must be rejected with an error ToolResult and must never reach os.remove.",
+        "scope_limits": [
+          "Applies only to tool executions dispatched through the Agent framework's act()/_process_confirmations path for tools registered with requires_confirmation=True; delete_file is the only such registered tool in the supplied views.",
+          "Other filesystem-mutating tools in the supplied views (e.g., unzip_file extracting archives at file_tools.py:50-92) are registered with the default requires_confirmation=False and are outside this contract.",
+          "The interactive DANGEROUS_TOOLS/approval_callback before-tool gate (agent.py:411-431) is a distinct mechanism not shown wired into any Agent instantiation in the supplied views and is not part of this contract's declared mechanism.",
+          "The declared gate checks approval only; _process_confirmations merges confirmation.modified_arguments over the staged arguments (agent.py:374-378), so this contract does not assert argument integrity between staging and execution.",
+          "Hypothesis only: no determination of DEC violation, safety, runtime behavior, or prevalence is made; scope is limited to the supplied line-numbered views."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The module defining PendingToolCall and ToolConfirmation (e.g., agent_framework/models.py) is not among the supplied views; field semantics such as the default of ToolConfirmation.approved, tool_call_id integrity requirements, and any constraints on confirmation.modified_arguments are supported only by usage sites in agent_framework/agent.py.",
+      "No supplied view shows application-level wiring that registers delete_file on an Agent and completes the pending -> confirmation cycle (caller code constructing Agent with delete_file and issuing ToolConfirmations), so end-to-end deployment exercise of the gate is unsupported by the supplied source.",
+      "Repository enumeration is incomplete and behavior labels are unavailable per the stated scope; runtime enforcement strength (e.g., whether client-supplied tool_confirmations can target arbitrary tool_call_ids) cannot be assessed from the supplied views.",
+      "Whether the DANGEROUS_TOOLS/approval_callback mechanism (agent.py:411-431) is ever registered via before_tool_callbacks in any deployment is not shown in the supplied views."
+    ],
+    "repository": "shekkari1999/Agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:8528a7b7d2315f0fb585ef9471057833"
+  },
+  "request_sha256": "960090f1d77bc14cf39dcfca4481eb8927186ea884326e27c50856be360bdf73",
+  "response_sha256": "9785d6304901d705a16488632730a4fb28f955c09fbe0c945c12c42b2ca110b5",
+  "state": "completed",
+  "tokens": 24446,
+  "unit": "v24-screen:8528a7b7d2315f0fb585ef9471057833"
+}

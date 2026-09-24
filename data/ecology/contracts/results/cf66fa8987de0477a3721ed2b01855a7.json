@@ -1,0 +1,115 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "multi_user_share_access.py:25 \u2014 `task_id = cls._share.new_task(category, task_content)` executed inside MultiUserShareAccess.add_task under the asyncio Condition (lines 24-26, followed by notify_all), reached from the guarded call at tools.py:27.",
+        "contract_id": "ecological-contract:79781e3a8d7a7ca9a61abf321a21ab5f",
+        "declared_mechanism": "Closure-captured allowlist in the tool factory: TaskShareToolFactory.build_new_task_tool(allowed_categories) (tools.py:15) builds an @tool-decorated async add_new_task whose first body statement is the guard `if category not in allowed_categories: return \"Invalid category. Only categories {allowed_categories} are allowed.\"` (tools.py:24-25), returning before `await MultiUserShareAccess.add_task(category, content)` (tools.py:27). Each agent module supplies its own module-level allowlist: supervisor.py:5 defines [Category.INFRASTRUCTURE, Category.APPLICATION] and passes it via _get_add_new_task_tool (supervisor.py:11-12); user_agent.py:5 defines [Category.SUPERVISOR] and passes it via _get_add_new_task_tool (user_agent.py:12-13).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 25,
+            "line_start": 15,
+            "path": "multi_agent/task_share/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "510c365eb1a7ead6b83b3e294550075d3ce30cac2935e214896c2fdf179214b5"
+          },
+          {
+            "line_end": 25,
+            "line_start": 24,
+            "path": "multi_agent/task_share/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "510c365eb1a7ead6b83b3e294550075d3ce30cac2935e214896c2fdf179214b5"
+          },
+          {
+            "line_end": 29,
+            "line_start": 27,
+            "path": "multi_agent/task_share/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "510c365eb1a7ead6b83b3e294550075d3ce30cac2935e214896c2fdf179214b5"
+          },
+          {
+            "line_end": 26,
+            "line_start": 21,
+            "path": "multi_agent/task_share/multi_user_share_access.py",
+            "role": "commit_point",
+            "source_sha256": "abe5128c053a3343ec2d3a94319ee8ff675de78068ed710c25124cb71301125a"
+          },
+          {
+            "line_end": 17,
+            "line_start": 16,
+            "path": "multi_agent/task_share/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "510c365eb1a7ead6b83b3e294550075d3ce30cac2935e214896c2fdf179214b5"
+          },
+          {
+            "line_end": 12,
+            "line_start": 5,
+            "path": "multi_agent/agents/supervisor.py",
+            "role": "guard_registration",
+            "source_sha256": "b57e51f229c844e9751a3c667ec9c33dd9c2ec1866300a4eaa72ffcd240a25ab"
+          },
+          {
+            "line_end": 20,
+            "line_start": 19,
+            "path": "multi_agent/agents/supervisor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b57e51f229c844e9751a3c667ec9c33dd9c2ec1866300a4eaa72ffcd240a25ab"
+          },
+          {
+            "line_end": 13,
+            "line_start": 5,
+            "path": "multi_agent/agents/user_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "30c89dafbcc03171bc0bf510225ef1d5be58810c2b42d7eed9dfdb49acce93f3"
+          },
+          {
+            "line_end": 22,
+            "line_start": 20,
+            "path": "multi_agent/agents/user_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "30c89dafbcc03171bc0bf510225ef1d5be58810c2b42d7eed9dfdb49acce93f3"
+          }
+        ],
+        "forbidden_condition": "An add_new_task tool invocation whose category argument is not a member of the registering agent's allowed_categories list reaching the enqueue path \u2014 i.e., `category not in allowed_categories` evaluating true at tools.py:24 without the early return, allowing the call at tools.py:27 to commit a task into a category outside the registering agent's tier.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "BaseAgent (multi_agent/agents/base_agent.py) is not supplied; how the _dynamic_tools factory callables are consumed and whether the resulting tools are bound to a model tool-calling loop is unverified beyond the @tool decorator and class-attribute registration.",
+          "Category enum definition (multi_agent/task_share/category.py) is not supplied; the closed universe of categories and runtime handling of the tool's category argument are unverified.",
+          "TaskShare.new_task implementation (multi_agent/task_share/task_share.py) is not supplied; exact storage/queueing semantics at the commit point are unverified.",
+          "Whether MultiUserShareAccess.add_task is invoked from any non-tool code path that would bypass the allowlist is not determinable from the supplied views."
+        ],
+        "protected_operation": "Adding a new task to the shared task queue via MultiUserShareAccess.add_task(category, content), invoked from the per-agent add_new_task tool.",
+        "protected_resource": "The shared in-memory task queue held by MultiUserShareAccess._share (TaskShare), scoped per Category (multi_user_share_access.py:10-17, 21-35).",
+        "protection_obligation": "Each agent's add_new_task tool must reject any requested task category not present in the _ALLOWED_CATEGORIES list registered at tool construction, before the task is committed to the shared TaskShare, so that per-tier task targeting is enforced: the user-facing agent (UserAgent, allowed=[Category.SUPERVISOR]) cannot enqueue tasks directly to infrastructure/application workers, and the SupervisorAgent (allowed=[Category.INFRASTRUCTURE, Category.APPLICATION]) cannot enqueue tasks into the SUPERVISOR category (i.e., to the user tier or itself). (Merges the two reviewer wordings, which describe the same allowlist guard, commit point, and per-agent registrations.)",
+        "scope_limits": [
+          "The allowlist is enforced only inside the add_new_task tool wrapper; MultiUserShareAccess.add_task itself performs no category authorization, so any caller path that bypasses the tool would not be guarded (no such path is visible in the supplied views, but the module set is not complete).",
+          "Only the category parameter is checked; task content is unconstrained by this guard, and no content validation obligation is asserted here.",
+          "Allowlists are fixed at module definition/registration time; the guard does not validate Category enum membership or coerce the docstring-described integer codes (1/2/3) \u2014 category.py is not supplied.",
+          "Prompt-level task-routing constraints in the agent system prompts (supervisor.py:23-65, user_agent.py:24-40) are not code-enforced and are excluded from this contract.",
+          "The downstream EventManager.publish({\"type\": \"task_added\", ...}) side effect (multi_user_share_access.py:28-33) is not separately characterized by this contract; EventManager source was not supplied.",
+          "The category scoping of the waiting() and get_results() tools (tools.py:34-69) is not covered by this obligation."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "multi_agent/agents/base_agent.py is not supplied; the mechanism by which _dynamic_tools factories are invoked and exposed to the agent's tool-calling loop is unverified (only the @tool decorator and class-attribute registration are visible).",
+      "multi_agent/task_share/category.py is not supplied; the full set of Category values and any coercion of the tool's category argument are unverified.",
+      "multi_agent/task_share/task_share.py is not supplied; the persistence semantics of TaskShare.new_task at the commit point are unverified.",
+      "multi_agent/web/event_manager.py is not supplied; the destination and effect stratum of the EventManager.publish('task_added') side effect (multi_user_share_access.py:28-33) are uncharacterized.",
+      "The repository module set is not complete; whether MultiUserShareAccess.add_task has callers other than the guarded add_new_task tool cannot be determined from supplied source."
+    ],
+    "repository": "DeerMaximum/Cloud-Automation-MCP",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:cf66fa8987de0477a3721ed2b01855a7"
+  },
+  "request_sha256": "ccfd5d97d7298e97ffa47a4a9f1c88773bf8f6d8c4a610995a4778984bdb6acd",
+  "response_sha256": "2276976401d1a53863629766065e06ded5f813ee82b3cce282b01a3a633f1a36",
+  "state": "completed",
+  "tokens": 11598,
+  "unit": "v24-screen:cf66fa8987de0477a3721ed2b01855a7"
+}

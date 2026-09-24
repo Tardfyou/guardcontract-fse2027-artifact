@@ -1,0 +1,233 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guarded effect is prevented at the before-tool-call hook on the assembled BidiAgent, where event.cancel_tool (guardrails.py:75-79) blocks the call before tool execution; the downstream effect commit site (the advance_stage tool body) is not in the supplied source and is therefore not named.",
+        "contract_id": "ecological-contract:2e910685a602654e17f37de01b2ed3a1",
+        "declared_mechanism": "ConfirmationGuardrail hook provider: requires_confirmation('advance_stage', input) is True only when the normalized stage_key is in _CONSEQUENTIAL_STAGES (guardrails.py:24, 38-39); register_hooks subscribes check for both BeforeToolCallEvent and BidiBeforeToolCallEvent (guardrails.py:61-64); check() consumes a one-shot name-keyed grant if present (lines 72-73) and otherwise sets event.cancel_tool (lines 75-79). Wired onto the production agent via BidiAgent(hooks=[guardrail or ConfirmationGuardrail()]) with tools=list(ALL_TOOLS) (assemble.py:131, 133).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 24,
+            "line_start": 23,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 39,
+            "line_start": 38,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 59,
+            "line_start": 43,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 64,
+            "line_start": 61,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 79,
+            "line_start": 66,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 139,
+            "line_start": 129,
+            "path": "apps/agent/src/strqc_agent/assemble.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "08a46e6bae801e0d2fe5e7b12ad81a1b05e28c3f2ea168900c67a064f6a2e4e4"
+          }
+        ],
+        "forbidden_condition": "An advance_stage tool call whose stage_key, normalized via str(...).strip().upper(), is in _CONSEQUENTIAL_STAGES = {'DONE', 'REPORT'} (guardrails.py:24, 38-39) while no one-shot grant for 'advance_stage' is recorded in ConfirmationGuardrail._granted, proceeding past the BeforeToolCallEvent/BidiBeforeToolCallEvent check into tool execution without event.cancel_tool being set.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The reviewer rationale asserts a database write for stage advancements, but the advance_stage implementation is absent from the supplied source, so the downstream effect stratum (database vs other) is unverified.",
+          "The contents of strqc_agent.tools.ALL_TOOLS are not supplied; whether advance_stage is actually registered on the assembled BidiAgent is unverified.",
+          "The production caller of ConfirmationGuardrail.grant()/revoke() for advance_stage is not in supplied source."
+        ],
+        "protected_operation": "Agent tool invocation of advance_stage targeting stage_key DONE or REPORT \u2014 the stage advancements that close out a turnover (guardrails.py:23-24).",
+        "protected_resource": "Turnover close-out stage transitions (DONE/REPORT); the downstream effect site for this tool is not present in the supplied source, so the resource is characterized only at the tool-execution boundary on the assembled agent.",
+        "protection_obligation": "An advance_stage tool call whose target stage_key is DONE or REPORT must be explicitly confirmed by a human via a one-shot ConfirmationGuardrail grant before the call executes; unconfirmed advance_stage calls to those stages must be cancelled at the before-tool-call hook on the assembled BidiAgent.",
+        "scope_limits": [
+          "Only stage_key values normalizing into {'DONE', 'REPORT'} trigger the policy; advancement to any other stage passes without confirmation (guardrails.py:24, 38-39).",
+          "Stage matching is whitespace/case normalized via str(...).strip().upper().",
+          "Grants are keyed by tool name only; once 'advance_stage' is granted, a call to either consequential stage is admitted exactly once regardless of other parameters.",
+          "The advance_stage tool definition, its registration in ALL_TOOLS, and its effect site are not in the supplied source; this contract covers only the name-matched gate at the agent's tool-call boundary.",
+          "The grant ledger is in-memory per ConfirmationGuardrail instance; no persistence appears in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guarded effect is prevented at the before-tool-call hook on the assembled BidiAgent, where event.cancel_tool (guardrails.py:75-79) blocks the call before tool execution; the downstream effect commit site (the open_work_order tool body) is not in the supplied source and is therefore not named.",
+        "contract_id": "ecological-contract:7904c194de79d1d9969e692412163ce0",
+        "declared_mechanism": "ConfirmationGuardrail hook provider: requires_confirmation('open_work_order', input) is True only when the normalized priority is URGENT (guardrails.py:36-37); register_hooks subscribes check for both BeforeToolCallEvent and BidiBeforeToolCallEvent (guardrails.py:61-64); check() consumes a one-shot name-keyed grant if present (lines 72-73) and otherwise sets event.cancel_tool (lines 75-79). Wired onto the production agent via BidiAgent(hooks=[guardrail or ConfirmationGuardrail()]) with tools=list(ALL_TOOLS) (assemble.py:131, 133).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 40,
+            "line_start": 27,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 59,
+            "line_start": 43,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 64,
+            "line_start": 61,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 79,
+            "line_start": 66,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 139,
+            "line_start": 129,
+            "path": "apps/agent/src/strqc_agent/assemble.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "08a46e6bae801e0d2fe5e7b12ad81a1b05e28c3f2ea168900c67a064f6a2e4e4"
+          }
+        ],
+        "forbidden_condition": "An open_work_order tool call whose input priority, normalized via str(...).strip().upper(), equals 'URGENT' (guardrails.py:36-37) while no one-shot grant for 'open_work_order' is recorded in ConfirmationGuardrail._granted, proceeding past the BeforeToolCallEvent/BidiBeforeToolCallEvent check into tool execution without event.cancel_tool being set.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The reviewer rationale asserts a database write for urgent work orders, but the open_work_order implementation is absent from the supplied source, so the downstream effect stratum (database vs other) is unverified.",
+          "The contents of strqc_agent.tools.ALL_TOOLS are not supplied; whether open_work_order is actually registered on the assembled BidiAgent is unverified.",
+          "The production caller of ConfirmationGuardrail.grant()/revoke() for open_work_order is not in supplied source."
+        ],
+        "protected_operation": "Agent tool invocation of open_work_order with priority=URGENT (creation of an urgent work order).",
+        "protected_resource": "Urgent work-order creation; the downstream effect site for this tool is not present in the supplied source, so the resource is characterized only at the tool-execution boundary on the assembled agent.",
+        "protection_obligation": "An open_work_order tool call whose priority is URGENT must be explicitly confirmed by a human via a one-shot ConfirmationGuardrail grant before the call executes; unconfirmed URGENT open_work_order calls must be cancelled at the before-tool-call hook on the assembled BidiAgent.",
+        "scope_limits": [
+          "Only priority values normalizing to URGENT trigger the policy; all other values, including the MEDIUM default when priority is absent, pass without confirmation (guardrails.py:36-37).",
+          "Grants are keyed by tool name only; once 'open_work_order' is granted, any URGENT call with any other parameters is admitted exactly once.",
+          "The open_work_order tool definition, its registration in ALL_TOOLS, and its effect site are not in the supplied source; this contract covers only the name-matched gate at the agent's tool-call boundary.",
+          "The grant ledger is in-memory per ConfirmationGuardrail instance; no persistence appears in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guard's decision commits at the before-tool-call hook on the assembled BidiAgent: setting event.cancel_tool (guardrails.py:75-79) blocks the call before tool execution. If not cancelled, the delivery effect itself commits inside deliver_report when adapter.send() completes the Slack files.completeUploadExternal call successfully (slack_delivery.py:140-141 and 91-102).",
+        "contract_id": "ecological-contract:a8dad901cbdfacffd37f4adc9ddde347",
+        "declared_mechanism": "ConfirmationGuardrail hook provider: register_hooks (guardrails.py:61-64) subscribes check as callback for both BeforeToolCallEvent and BidiBeforeToolCallEvent; check() (guardrails.py:66-79) reads event.tool_use name/input, returns early for non-consequential calls, consumes a one-shot grant if the tool name is in _granted (lines 72-73), and otherwise sets event.cancel_tool with an explicit ask-for-yes message (lines 75-79). The guardrail is wired onto the production agent in assemble.py via BidiAgent(hooks=[guardrail or ConfirmationGuardrail()]) (line 133).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 40,
+            "line_start": 27,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 59,
+            "line_start": 43,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 64,
+            "line_start": 61,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 79,
+            "line_start": 66,
+            "path": "apps/agent/src/strqc_agent/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "78ed326972a1686404acd18135b87013570f5762a7c38a9dd9c0cf1e3e08b57c"
+          },
+          {
+            "line_end": 145,
+            "line_start": 129,
+            "path": "apps/agent/src/strqc_agent/tools/slack_delivery.py",
+            "role": "protected_operation",
+            "source_sha256": "5b3d2c902f1cb75792e0e05a909379ca2c0e22071d10be05a7fb5bce22c4f317"
+          },
+          {
+            "line_end": 102,
+            "line_start": 78,
+            "path": "apps/agent/src/strqc_agent/tools/slack_delivery.py",
+            "role": "commit_point",
+            "source_sha256": "5b3d2c902f1cb75792e0e05a909379ca2c0e22071d10be05a7fb5bce22c4f317"
+          },
+          {
+            "line_end": 139,
+            "line_start": 129,
+            "path": "apps/agent/src/strqc_agent/assemble.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "08a46e6bae801e0d2fe5e7b12ad81a1b05e28c3f2ea168900c67a064f6a2e4e4"
+          }
+        ],
+        "forbidden_condition": "A deliver_report tool call for which requires_confirmation returns True (it does for every deliver_report call regardless of input, guardrails.py:34-35) while no one-shot grant for 'deliver_report' is present in ConfirmationGuardrail._granted, reaching tool execution without event.cancel_tool having been set by the registered before-tool-call check.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied source shows the production caller of ConfirmationGuardrail.grant()/revoke(); the docstring says the frontend/console records grants after collecting user confirmation (guardrails.py:8-9, 53-59), but that intake path is not in the provided views.",
+          "The contents of strqc_agent.tools.ALL_TOOLS are not supplied; deliver_report's inclusion in the agent's tool list is inferred from the import and tools=list(ALL_TOOLS) (assemble.py:18, 131) plus the @tool decorator (slack_delivery.py:129), not from the tools package itself.",
+          "The event.tool_use shape for BidiBeforeToolCallEvent versus BeforeToolCallEvent is assumed by check()'s duck-typing; the strands library schema is not in supplied source."
+        ],
+        "protected_operation": "Agent tool invocation of deliver_report(report_path, summary) \u2014 sending the signed-off readiness report file plus a one-line summary to the stakeholder channel (Slack files.uploadV2 flow in v1).",
+        "protected_resource": "Outbound stakeholder-channel report delivery via the installed DeliveryAdapter: SlackDelivery against https://slack.com/api when SLACK_BOT_TOKEN is configured, otherwise the no-network DryRunDelivery (slack_delivery.py:105-110).",
+        "protection_obligation": "Every deliver_report tool call issued on the assembled BidiAgent must be explicitly confirmed by a human via a one-shot ConfirmationGuardrail grant before the call executes; unconfirmed deliver_report calls must be cancelled at the before-tool-call hook (merged from first- and second-phase reviewer wording).",
+        "scope_limits": [
+          "Policy is purely name-based: any call named deliver_report requires confirmation regardless of report_path/summary values (guardrails.py:34-35).",
+          "Grants are one-shot and keyed only by tool name; check() discards the grant on use (guardrails.py:72-73), so one grant admits exactly one deliver_report call with arbitrary parameters.",
+          "The communication effect exists only when SlackDelivery is installed; with an empty SLACK_BOT_TOKEN, make_delivery_adapter returns DryRunDelivery, which records locally without any network effect (slack_delivery.py:37-46, 105-110).",
+          "The persona-level instruction to ask first is UX only; the hook is described as the hard backstop (guardrails.py:11-12).",
+          "The grant ledger is in-memory per ConfirmationGuardrail instance; no persistence or cross-process sharing appears in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The open_work_order and advance_stage tool implementations (their @tool definitions, registration in ALL_TOOLS, and downstream effect commit sites) are absent from the supplied source; their effect strata beyond the tool-execution boundary cannot be classified from evidence.",
+      "The production path that records one-shot grants (callers of ConfirmationGuardrail.grant()/revoke(), e.g., the frontend/console confirmation flow described at guardrails.py:8-9) is not in the supplied source.",
+      "The contents of strqc_agent.tools.ALL_TOOLS are not supplied, so the exact set of tools registered on the assembled BidiAgent (assemble.py:131) is unverified.",
+      "Strands framework internals (BidiAgent hook dispatch order, BidiBeforeToolCallEvent vs BeforeToolCallEvent event schema, cancel_tool enforcement semantics) are not supplied; guard behavior at the framework boundary is taken only from the repository's usage.",
+      "Behavior/runtime labels are unavailable per the unit scope; no runtime-execution, prevalence, or violation-status claims are made for these hypotheses."
+    ],
+    "repository": "Cato-Labs/RandD",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:38d2b810591f263f1c641b2087e69c37"
+  },
+  "request_sha256": "2bf2d2c93a5422fbbd5bc1748d3f2f682d3228c6d2c79e2501b1065911e78c24",
+  "response_sha256": "a4fee43042d6e31118a3033a36496e94616f91afacaf8bfedc664648a8091704",
+  "state": "completed",
+  "tokens": 20385,
+  "unit": "v24-screen:38d2b810591f263f1c641b2087e69c37"
+}

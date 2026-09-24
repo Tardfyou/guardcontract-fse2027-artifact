@@ -1,0 +1,191 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The input-guardrail phase executes at the start of the triage_agent run lifecycle (agents SDK semantics of input_guardrails), before the agent processes the input or hands off; the block decision commits when waraqat_relevance_guardrail returns GuardrailFunctionOutput with tripwire_triggered=True (guardrails.py:42-45), wired to the agent run at handoffs.py:70-71.",
+        "contract_id": "ecological-contract:11082676458ac06fe3a76d270da74b43",
+        "declared_mechanism": "Input guardrail: waraqat_relevance_guardrail decorated with @input_guardrail (guardrails.py:32-45), which runs guardrail_checker_agent via Runner.run and returns GuardrailFunctionOutput(output_info=eval_report, tripwire_triggered=is_irrelevant); registered on the agent via input_guardrails=[waraqat_relevance_guardrail] (handoffs.py:70).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 37,
+            "line_start": 32,
+            "path": "src/agent/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "d00627fbc988dee4ac1ed7efcaae1f82032258bdf798dc9e55068dc98784017c"
+          },
+          {
+            "line_end": 70,
+            "line_start": 70,
+            "path": "src/agent/handoffs.py",
+            "role": "guard_registration",
+            "source_sha256": "03ab828703e018bcd298baffcb0f444036000e8ab7c5769a62b5741efd72002a"
+          },
+          {
+            "line_end": 45,
+            "line_start": 38,
+            "path": "src/agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d00627fbc988dee4ac1ed7efcaae1f82032258bdf798dc9e55068dc98784017c"
+          },
+          {
+            "line_end": 69,
+            "line_start": 57,
+            "path": "src/agent/handoffs.py",
+            "role": "protected_operation",
+            "source_sha256": "03ab828703e018bcd298baffcb0f444036000e8ab7c5769a62b5741efd72002a"
+          },
+          {
+            "line_end": 45,
+            "line_start": 42,
+            "path": "src/agent/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "d00627fbc988dee4ac1ed7efcaae1f82032258bdf798dc9e55068dc98784017c"
+          },
+          {
+            "line_end": 71,
+            "line_start": 70,
+            "path": "src/agent/handoffs.py",
+            "role": "commit_point",
+            "source_sha256": "03ab828703e018bcd298baffcb0f444036000e8ab7c5769a62b5741efd72002a"
+          },
+          {
+            "line_end": 33,
+            "line_start": 32,
+            "path": "src/agent/guardrails.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d00627fbc988dee4ac1ed7efcaae1f82032258bdf798dc9e55068dc98784017c"
+          },
+          {
+            "line_end": 70,
+            "line_start": 70,
+            "path": "src/agent/handoffs.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "03ab828703e018bcd298baffcb0f444036000e8ab7c5769a62b5741efd72002a"
+          }
+        ],
+        "forbidden_condition": "A user query evaluated as irrelevant (is_relevant=False, so tripwire_triggered=True per guardrails.py:40-45) nonetheless reaching triage_agent processing/handoff instead of being blocked at the input-guardrail phase of the run.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm that run_agent_pipeline (called at main.py:55 in the webhook path and main.py:86 in the polling path) actually executes triage_agent, so the registered guardrail fires in both production and development flows.",
+          "Confirm how the engine handles tripwire_triggered=True (exception, aborted run, fallback reply) in src/agent/engine.py.",
+          "Identify the downstream external effects (e.g., communication delivery) that this guardrail ultimately gates, to determine whether a same-obligation contract in another effect stratum is required.",
+          "Confirm whether inputs handed off to scholar/admin agents remain covered by the root input guardrail in the agents SDK runtime."
+        ],
+        "protected_operation": "Execution of the triage_agent (Waraqat_Layout_Router) run lifecycle on inbound user input, including its routing and handoffs to specialist scholar agents or the admin assistant agent.",
+        "protected_resource": "triage_agent (src/agent/handoffs.py:57-71) and its handoff targets reachable from a run: scholar_agents (handoffs.py:16-32) and admin_assistant_agent (handoffs.py:37-50), combined at handoffs.py:55.",
+        "protection_obligation": "Off-topic queries are forbidden from reaching triage_agent execution: the waraqat_relevance_guardrail input guardrail, registered on triage_agent, must trigger on queries unrelated to Matn Al-Waraqat or its Sharh commentaries and block them at the input-guardrail phase before the agent run proceeds (the reviewer-asserted tripwire handling inside run_agent_pipeline is not confirmable from supplied source). (Second distinct obligation preserved from the merged second-phase wording; excluded by the first-phase reviewer as a content/scope filter rather than an authentication gate.)",
+        "scope_limits": [
+          "The guardrail is a topical relevance/content-scope filter, not an authentication control; it does not verify the sender of the update.",
+          "Registration is shown only on triage_agent; the scholar agents (handoffs.py:16-32) and admin_assistant_agent (handoffs.py:37-50) carry no guardrails in supplied source.",
+          "The only effect bound to this guardrail in supplied source is the in-process agent run (tool_execution); downstream external effects such as the Telegram sendMessage are not bound to this guardrail because src/agent/engine.py is not supplied.",
+          "The tripwire decision is produced by an LLM classification (guardrail_checker_agent, guardrails.py:21-38), not a deterministic rule.",
+          "The reviewer claim that the tripwire is handled in run_agent_pipeline is asserted but not shown in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "verify_telegram_webhook executes during FastAPI dependency resolution prior to handle_webhook_update (declaration at main.py:48); the gated external effect commits when send_message_to_telegram issues the httpx POST to {TELEGRAM_API_URL}/sendMessage (main.py:29-39), triggered from the handler at main.py:56.",
+        "contract_id": "ecological-contract:eecf6da1e1a11e9952416482f8d6d5bc",
+        "declared_mechanism": "FastAPI route dependency: @app.post(\"/webhook\", dependencies=[Depends(verify_telegram_webhook)]) (main.py:48), with verify_telegram_webhook imported from src.telegram.auth (main.py:9); the dependency is declared to execute before the handler body.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 9,
+            "line_start": 9,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "0a258827ed512f80e826497347c3006802edaa8ee641815a76b73062d030f2c9"
+          },
+          {
+            "line_end": 49,
+            "line_start": 48,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "0a258827ed512f80e826497347c3006802edaa8ee641815a76b73062d030f2c9"
+          },
+          {
+            "line_end": 56,
+            "line_start": 51,
+            "path": "main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0a258827ed512f80e826497347c3006802edaa8ee641815a76b73062d030f2c9"
+          },
+          {
+            "line_end": 58,
+            "line_start": 50,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "0a258827ed512f80e826497347c3006802edaa8ee641815a76b73062d030f2c9"
+          },
+          {
+            "line_end": 39,
+            "line_start": 31,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "0a258827ed512f80e826497347c3006802edaa8ee641815a76b73062d030f2c9"
+          },
+          {
+            "line_end": 56,
+            "line_start": 54,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "0a258827ed512f80e826497347c3006802edaa8ee641815a76b73062d030f2c9"
+          },
+          {
+            "line_end": 11,
+            "line_start": 11,
+            "path": "main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0a258827ed512f80e826497347c3006802edaa8ee641815a76b73062d030f2c9"
+          },
+          {
+            "line_end": 56,
+            "line_start": 54,
+            "path": "main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0a258827ed512f80e826497347c3006802edaa8ee641815a76b73062d030f2c9"
+          }
+        ],
+        "forbidden_condition": "A POST /webhook request that has not passed verify_telegram_webhook verification reaching the handle_webhook_update body \u2014 i.e., an unverified Telegram update being parsed (main.py:51-52), passed to run_agent_pipeline (main.py:55), or driving send_message_to_telegram (main.py:56).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm the verification logic and failure semantics of verify_telegram_webhook (what it checks, response status on failure) once src/telegram/auth.py is available.",
+          "Confirm the contents of src.agent.engine.run_agent_pipeline to establish which agents execute and whether the pipeline commits additional external effects beyond the shown sendMessage chain (which would require same-guard contracts in other strata).",
+          "The agent_generated_input_to_guarded_effect classification currently rests on the import from src.agent.engine (main.py:11) and the dataflow parsed_msg.text -> run_agent_pipeline -> agent_output -> send_message_to_telegram (main.py:54-56); if the engine internals are not agent-based, the mediation classification and scope of this contract must be revised.",
+          "Confirm that FastAPI dependency failure reliably aborts the handler in this deployment (uvicorn.run(\"main:app\") at main.py:101)."
+        ],
+        "protected_operation": "Authenticated handling of inbound production Telegram webhook updates, including update parsing, agent pipeline execution on the message text, and transmission of the agent response to the Telegram Bot API.",
+        "protected_resource": "The POST /webhook endpoint of the FastAPI app (main.py:48-58) and its downstream chain: src.agent.engine.run_agent_pipeline and the outbound Telegram sendMessage channel ({TELEGRAM_API_URL}/sendMessage, main.py:17, main.py:31-39).",
+        "protection_obligation": "Inbound POST /webhook requests must pass verify_telegram_webhook authentication (registered as a FastAPI route dependency) before handle_webhook_update parses the update, runs the agent pipeline, or triggers the outbound Telegram sendMessage effect; unverified Telegram updates are forbidden from reaching the handler. (Merged first- and second-phase reviewer wording.) In scope because the supplied handler source explicitly binds the protected operation to the agent lifecycle: the parsed update text is fed to src.agent.engine.run_agent_pipeline and the returned agent output is the content delivered to the Telegram API.",
+        "scope_limits": [
+          "The body of verify_telegram_webhook (src/telegram/auth.py) is not in supplied source; this contract covers only the registration and declared ordering, not the verification logic or rejection behavior.",
+          "The development long-polling path (main.py:63-92, including run_agent_pipeline at main.py:86) fetches updates via getUpdates without any webhook dependency and is not covered by this registration.",
+          "Generic HTTP serving concerns (request parsing, the unconditional HTTP 200 response at main.py:58, CORS) are outside the protected effect; the protected external commit is the Telegram sendMessage delivery.",
+          "The in-process invocation of run_agent_pipeline at main.py:55 is covered only as a step on the path to the communication commit; any additional external effects inside src.agent.engine are not in supplied source and would require separate contracts if evidenced.",
+          "This is an authentication gate, not a content filter; it does not restrict query topic (that is the separate relevance-guardrail obligation)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "src/telegram/auth.py is not supplied: the verification logic, accepted credentials/headers, and failure response of verify_telegram_webhook are unknown.",
+      "src/agent/engine.py is not supplied: whether run_agent_pipeline executes triage_agent, how GuardrailFunctionOutput tripwires are handled, and whether the pipeline commits external effects beyond the shown sendMessage chain are unknown.",
+      "src/telegram/message.py is not supplied: the parsing/validation behavior of TelegramMessagePayload.parse_update and the sanitization performed by format_agent_response are unknown.",
+      "src/agent/tools.py is not supplied: the runtime effects of the scholar tools produced by load_sharh_tools (read_* callables) are unknown, so no tool-level contracts are compiled.",
+      "No configuration/deployment source beyond main.py is supplied, so the relationship between TELEGRAM_TOKEN (main.py:16-17) and webhook verification cannot be established."
+    ],
+    "repository": "raufh10/matn_research",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:29eb6eec0c5517c743470514efdbe8b3"
+  },
+  "request_sha256": "e93c7a4d7c4032442e869591cd95d59b1da99d80c6485bebaf3a8058a8166753",
+  "response_sha256": "ff02716d9352daead21217b6c949f21a7332b3114bb7bb74ba113cda4329afb0",
+  "state": "completed",
+  "tokens": 22988,
+  "unit": "v24-screen:29eb6eec0c5517c743470514efdbe8b3"
+}

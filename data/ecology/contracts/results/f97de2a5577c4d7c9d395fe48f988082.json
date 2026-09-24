@@ -1,0 +1,225 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The guardrail runs at Runner.run entry, before tool dispatch; the guarded effect commits are session.commit() inside the task tools \u2014 create_task (task_tools.py:51), complete_task (:203), update_task (:260), delete_task (:305).",
+        "contract_id": "ecological-contract:10e8044f38bbedc9159ff0d2d0e44460",
+        "declared_mechanism": "OpenAI Agents SDK input guardrail: validate_input_relevance decorated with @input_guardrail(run_in_parallel=False), aliased as blocking_guardrail, and registered on todo_agent via input_guardrails=[blocking_guardrail]; it runs relevance_agent on the input and returns GuardrailFunctionOutput with tripwire_triggered=not is_task_related.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 65,
+            "line_start": 45,
+            "path": "backend/src/agent/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "f12e5d98ece323c33ca78f4ce06d58cbfce463a7a437aaa34a124aa7ccdbcdb8"
+          },
+          {
+            "line_end": 69,
+            "line_start": 68,
+            "path": "backend/src/agent/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "f12e5d98ece323c33ca78f4ce06d58cbfce463a7a437aaa34a124aa7ccdbcdb8"
+          },
+          {
+            "line_end": 79,
+            "line_start": 64,
+            "path": "backend/src/agent/todo_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "5da05e44bca4426398b755ba65a713461ce6e9142a2bce4bd897968a8092e6c6"
+          },
+          {
+            "line_end": 42,
+            "line_start": 26,
+            "path": "backend/src/agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f12e5d98ece323c33ca78f4ce06d58cbfce463a7a437aaa34a124aa7ccdbcdb8"
+          },
+          {
+            "line_end": 65,
+            "line_start": 60,
+            "path": "backend/src/agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f12e5d98ece323c33ca78f4ce06d58cbfce463a7a437aaa34a124aa7ccdbcdb8"
+          },
+          {
+            "line_end": 225,
+            "line_start": 218,
+            "path": "backend/src/api/routes/chatkit.py",
+            "role": "protected_operation",
+            "source_sha256": "2596b0313fa9547b71914b1863ad75a7569ab80a6d28e669b391b9c6205c67c2"
+          },
+          {
+            "line_end": 52,
+            "line_start": 43,
+            "path": "backend/src/mcp/tools/task_tools.py",
+            "role": "commit_point",
+            "source_sha256": "f96cf6f4b0eb3769e05417225eb8a0f3a3f3d12955b8daded628941bff759fec"
+          },
+          {
+            "line_end": 204,
+            "line_start": 190,
+            "path": "backend/src/mcp/tools/task_tools.py",
+            "role": "commit_point",
+            "source_sha256": "f96cf6f4b0eb3769e05417225eb8a0f3a3f3d12955b8daded628941bff759fec"
+          },
+          {
+            "line_end": 261,
+            "line_start": 244,
+            "path": "backend/src/mcp/tools/task_tools.py",
+            "role": "commit_point",
+            "source_sha256": "f96cf6f4b0eb3769e05417225eb8a0f3a3f3d12955b8daded628941bff759fec"
+          },
+          {
+            "line_end": 305,
+            "line_start": 295,
+            "path": "backend/src/mcp/tools/task_tools.py",
+            "role": "commit_point",
+            "source_sha256": "f96cf6f4b0eb3769e05417225eb8a0f3a3f3d12955b8daded628941bff759fec"
+          },
+          {
+            "line_end": 254,
+            "line_start": 214,
+            "path": "backend/src/api/routes/chatkit.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2596b0313fa9547b71914b1863ad75a7569ab80a6d28e669b391b9c6205c67c2"
+          },
+          {
+            "line_end": 31,
+            "line_start": 25,
+            "path": "backend/src/agent/todo_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5da05e44bca4426398b755ba65a713461ce6e9142a2bce4bd897968a8092e6c6"
+          }
+        ],
+        "forbidden_condition": "todo_agent receiving input for which validate_input_relevance sets tripwire_triggered=True (relevance_agent returns is_task_related=False, i.e., input not related to task management) and the run proceeding toward tool execution instead of being blocked.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Agents SDK runtime semantics \u2014 that a tripped input guardrail aborts the run before any tool executes at each of the three Runner.run call sites (chatkit.py:220, 232, 249) \u2014 are not shown in supplied source.",
+          "Failure behavior when relevance_agent itself errors or times out (fail-open vs fail-closed) is not determinable from supplied source."
+        ],
+        "protected_operation": "The Runner.run(todo_agent, request.text) agent run in the authenticated send_message endpoint, including the primary call site and its database-unavailable and corrupted-session fallback call sites.",
+        "protected_resource": "Task rows in the task store mutated by the function_tool-wrapped tools create_task, complete_task, update_task, and delete_task attached to todo_agent.",
+        "protection_obligation": "Input submitted to todo_agent through the send_message endpoint must be evaluated by the registered blocking input guardrail: input classified by relevance_agent as not task-related must trip the tripwire and halt Runner.run before any task-mutating tool (create_task/complete_task/update_task/delete_task) can commit changes to the task store.",
+        "scope_limits": [
+          "The relevance decision is produced by an LLM (relevance_agent on gemini-2.0-flash); deterministic enforcement and classification accuracy are not established by source.",
+          "The guard checks topic relevance only: task-related but destructive requests (e.g., mass deletion) would pass; deletion confirmation exists only as prompt-level dynamic instructions (todo_agent.py:54), not an enforced mechanism.",
+          "The guardrail is declared on todo_agent only; task_tools.py imports FastMCP and its functions are described as MCP tools, so a second invocation path not passing through this guardrail cannot be ruled out from supplied views.",
+          "Guarding is evidenced at the initial input of each Runner.run call; re-validation of tool outputs or subsequent turns is not evidenced."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Dependency rejection (401) precedes all handler effects; guarded commits are session.commit() for the user message (chatkit.py:182) and for the assistant message (chatkit.py:266), and transitively the session.commit() calls inside the task tools (task_tools.py:51/203/260/305) reached via Runner.run(todo_agent, ...).",
+        "contract_id": "ecological-contract:a78df865b3b87279f5108a30743c071a",
+        "declared_mechanism": "FastAPI dependency injection: HTTPBearer security scheme with Depends(get_current_user) on the route; get_current_user calls verify_token, parses the 'sub' UUID, and requires an existing active User, raising HTTPException 401 with WWW-Authenticate: Bearer on each failure path.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 107,
+            "line_start": 101,
+            "path": "backend/src/api/routes/chatkit.py",
+            "role": "guard_registration",
+            "source_sha256": "2596b0313fa9547b71914b1863ad75a7569ab80a6d28e669b391b9c6205c67c2"
+          },
+          {
+            "line_end": 68,
+            "line_start": 23,
+            "path": "backend/src/api/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "182b3013f3ae196345c4dea415e01e40ada9816dc0e42df35cbdfbc1ff64194e"
+          },
+          {
+            "line_end": 86,
+            "line_start": 71,
+            "path": "backend/src/api/auth_utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "97c546271e76b4e4e9e672ec62991286c460c633e56edd0c1fd631a796428ae8"
+          },
+          {
+            "line_end": 66,
+            "line_start": 40,
+            "path": "backend/src/api/dependencies.py",
+            "role": "forbidden_condition",
+            "source_sha256": "182b3013f3ae196345c4dea415e01e40ada9816dc0e42df35cbdfbc1ff64194e"
+          },
+          {
+            "line_end": 182,
+            "line_start": 151,
+            "path": "backend/src/api/routes/chatkit.py",
+            "role": "protected_operation",
+            "source_sha256": "2596b0313fa9547b71914b1863ad75a7569ab80a6d28e669b391b9c6205c67c2"
+          },
+          {
+            "line_end": 182,
+            "line_start": 170,
+            "path": "backend/src/api/routes/chatkit.py",
+            "role": "commit_point",
+            "source_sha256": "2596b0313fa9547b71914b1863ad75a7569ab80a6d28e669b391b9c6205c67c2"
+          },
+          {
+            "line_end": 266,
+            "line_start": 256,
+            "path": "backend/src/api/routes/chatkit.py",
+            "role": "commit_point",
+            "source_sha256": "2596b0313fa9547b71914b1863ad75a7569ab80a6d28e669b391b9c6205c67c2"
+          },
+          {
+            "line_end": 305,
+            "line_start": 295,
+            "path": "backend/src/mcp/tools/task_tools.py",
+            "role": "commit_point",
+            "source_sha256": "f96cf6f4b0eb3769e05417225eb8a0f3a3f3d12955b8daded628941bff759fec"
+          },
+          {
+            "line_end": 254,
+            "line_start": 214,
+            "path": "backend/src/api/routes/chatkit.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2596b0313fa9547b71914b1863ad75a7569ab80a6d28e669b391b9c6205c67c2"
+          },
+          {
+            "line_end": 31,
+            "line_start": 25,
+            "path": "backend/src/agent/todo_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5da05e44bca4426398b755ba65a713461ce6e9142a2bce4bd897968a8092e6c6"
+          }
+        ],
+        "forbidden_condition": "A request to the send_message agent entry endpoint whose Bearer token fails verification (verify_token returns None on JWTError, subject is not a parseable UUID, or no matching active User row exists) being processed past the dependency into handler execution and persistence.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied view shows the FastAPI application mounting the chatkit router, so app-level execution of the Depends(get_current_user) guard in production is unverified.",
+          "Whether any other code path invokes todo_agent/Runner.run without this dependency is not determinable from supplied views (none appears)."
+        ],
+        "protected_operation": "Executing the send_message handler: thread-ownership check, user-message persistence, Runner.run(todo_agent, request.text) dispatch with the authenticated user_id injected into agent context, and assistant-message persistence.",
+        "protected_resource": "Conversation and Message rows written by the send_message handler in the application database, plus Task rows reachable downstream through todo_agent's function_tool-wrapped task tools.",
+        "protection_obligation": "POST /chatkit/threads/{thread_id}/messages \u2014 the production entry point that dispatches todo_agent via Runner.run \u2014 must reject any request lacking a valid, active-user JWT Bearer token: the get_current_user dependency must raise HTTP 401 before the handler persists user/assistant messages or the agent run can reach task-tool database mutations.",
+        "scope_limits": [
+          "Compiled only for the send_message endpoint; the same dependency also guards POST /threads (create_thread, Conversation insert at chatkit.py:90-92) and GET /threads/{thread_id} (read-only queries), but those handlers contain no agent tool, lifecycle hook, or agent-generated input reaching their effects, so they are recorded as scope limits rather than agent-bound contracts.",
+          "The guard establishes authentication (valid token, existing active user) only; per-thread ownership is enforced separately inside the handler (chatkit.py:157-168) and no role-based authorization layer exists.",
+          "Covers Task mutations reached through todo_agent tool dispatch from this endpoint only; any other invocation path for task_tools is not covered by this registration."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied view shows FastAPI application assembly (mounting of the /chatkit router), so production execution of both registered guards is unverified.",
+      "Whether the task tool functions are additionally exposed via an MCP server mount (FastMCP import in task_tools.py), creating a guardrail-bypassing invocation path, is unknown from supplied views.",
+      "Runtime behavior of the OpenAI Agents SDK (input-guardrail ordering relative to tool dispatch; behavior when relevance_agent errors) is not present in supplied source, and behavior/runtime labels are unavailable per scope.",
+      "The get_current_user dependency on create_thread and get_thread is source-supported, but agent mediation for those handlers is not established; they are recorded as scope limits rather than agent-bound contracts pending any source that binds their effects to agent tools, hooks, or agent-generated input."
+    ],
+    "repository": "Nimraakram22/hackathon-2-phase4",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:f97de2a5577c4d7c9d395fe48f988082"
+  },
+  "request_sha256": "95fb476b039daf811040552eb3af79cb398da7414b2a8a721811f381a2ec1945",
+  "response_sha256": "184718fbb887657c0cc800d0431cd8798dbc1fabfe8d092d8761b66c1cd98b45",
+  "state": "completed",
+  "tokens": 27638,
+  "unit": "v24-screen:f97de2a5577c4d7c9d395fe48f988082"
+}

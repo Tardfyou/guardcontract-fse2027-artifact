@@ -1,0 +1,82 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Execution of 'await client.post(\"https://api.together.xyz/v1/images/generations\", ...)' at main.py lines 596-608 inside the httpx.AsyncClient(timeout=90.0) context opened at line 594; the 404/400 refusals raise before the conversation-history append at line 587 and before this POST.",
+        "contract_id": "ecological-contract:f4bc8bbb660f6fc0c5bca4cfced705e4",
+        "declared_mechanism": "Two inline pre-commit refusals at the top of the route handler: 'if request.agent_id not in conversations: raise HTTPException(status_code=404, ...)' (main.py lines 575-576) and 'if not conversations[request.agent_id].get(\"is_image_model\", False): raise HTTPException(status_code=400, ...)' (main.py lines 579-580). Within the supplied file, the is_image_model flag is only set in handle_image_generation_model (main.py lines 271-281), reached from the stable-diffusion branch at main.py lines 84-86.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 571,
+            "line_start": 570,
+            "path": "main.py",
+            "role": "protected_operation",
+            "source_sha256": "b1ce9c872f12a22b9bc215a381de42b9f25d2296213472ba24fe4621ac5680d6"
+          },
+          {
+            "line_end": 580,
+            "line_start": 574,
+            "path": "main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b1ce9c872f12a22b9bc215a381de42b9f25d2296213472ba24fe4621ac5680d6"
+          },
+          {
+            "line_end": 580,
+            "line_start": 574,
+            "path": "main.py",
+            "role": "guard_registration",
+            "source_sha256": "b1ce9c872f12a22b9bc215a381de42b9f25d2296213472ba24fe4621ac5680d6"
+          },
+          {
+            "line_end": 608,
+            "line_start": 596,
+            "path": "main.py",
+            "role": "commit_point",
+            "source_sha256": "b1ce9c872f12a22b9bc215a381de42b9f25d2296213472ba24fe4621ac5680d6"
+          }
+        ],
+        "forbidden_condition": "A /generate-image request referencing an agent_id that is not a key of the in-process conversations dict, or whose agent record lacks is_image_model=True, proceeding to the outbound image-generation API call.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No decorator, registration, callback wiring, tool dispatch, or concrete dataflow in the supplied source ties POST /generate-image to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded POST; an agent_entry_binding citation would be required to upgrade agent_mediation from not_established.",
+          "Whether is_image_model can only be set via handle_image_generation_model (main.py lines 271-281) cannot be confirmed beyond the supplied single file, since repository enumeration is incomplete and other writers to conversations may exist in unprovided views.",
+          "Opinion 2 cited main.py lines 289-291, which contain the /chat-agent existence check rather than the /generate-image guard; whether a parallel contract should be compiled for /chat-agent's guard preceding its conversation-state mutation (line 298) and chat-completions POST (lines 385-393) is unresolved.",
+          "Whether the reviewer intends the state-stratum mutation at main.py line 587 as an additional protected commit point requiring a separate contract is not specified."
+        ],
+        "protected_operation": "Handling of POST /generate-image (invocation of the external image-generation effect on behalf of a stored agent).",
+        "protected_resource": "The external Together image-generation API endpoint https://api.together.xyz/v1/images/generations, gated by the agent record conversations[agent_id] held in the in-memory store declared at main.py line 48.",
+        "protection_obligation": "The POST /generate-image endpoint must refuse with HTTP 404 any request whose agent_id is absent from the conversations store and with HTTP 400 any agent whose stored record is not flagged is_image_model, ensuring the external image-generation POST to https://api.together.xyz/v1/images/generations is never invoked for a nonexistent or non-image-capable agent.",
+        "scope_limits": [
+          "Covers only the /generate-image route in the supplied main.py; /create-agent, /chat-agent, and /agent-name flows are not covered by this contract.",
+          "Targets only the external HTTP commit point; the same guard also precedes an in-memory append to conversations[agent_id]['messages'] at main.py line 587 (state stratum), which the reviewer obligation did not name as a protected commit point.",
+          "conversations is an in-process dict (main.py lines 46-48); guard effectiveness under multi-worker deployment, restarts, or any persistence layer is not determinable from the supplied source.",
+          "No assertion is made about authentication, CORS, rate limiting, or Together-API-side behavior; only the source-visible inline refusals are compiled.",
+          "Agent mediation is not asserted: this contract does not claim the endpoint is reachable only via an agent tool, agent lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Opinion 1's CORS obligation (main.py lines 23-30) was not compiled as a contract: it is an ordinary CORSMiddleware registration with no supplied-source binding to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect, and agent mediation may not be inferred from repository topic or framework metadata; it is therefore out of scope under the stated rules.",
+      "The supplied source contains both the restrictive CORSMiddleware allow-list registration (main.py lines 23-30) and a catch-all OPTIONS handler returning 'Access-Control-Allow-Origin: *' (main.py lines 33-44); which behavior applies to actual preflight traffic is runtime behavior not decidable from the static source and is recorded here without resolution.",
+      "No agent tool registry, agent framework lifecycle hook, or tool-dispatch wiring appears anywhere in the supplied file; whether any endpoint in this unit is agent-mediated cannot be established from the supplied views.",
+      "Repository enumeration is incomplete and behavior labels are unavailable (per stated scope); other files could register additional middleware, tools, or writers to conversations, so all presence/absence conclusions are limited to main.py lines 1-706.",
+      "Deployment characteristics of the in-memory conversations dict (single vs multiple workers, restart behavior, any persistence) are unsupported by the supplied source.",
+      "No reviewer stated distinct protection obligations for the /chat-agent existence check (main.py lines 289-291) or for the other external-effect commit points in the file (chat-completions POSTs at lines 134-143, 385-393, and 519-535); whether parallel contracts should be compiled for them is open."
+    ],
+    "repository": "advik-holalu/InstantAgent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:49845aeca89b7dad2b5f78d42ec22fe9"
+  },
+  "request_sha256": "d51098b71e54b1fff98924c5229d80b2ca30fdf366b070ad47b204c585af5bc3",
+  "response_sha256": "fa70eddbc42384a8435a5259947ac87dc854da57759c9d5e7a071bd66e0a8e80",
+  "state": "completed",
+  "tokens": 23947,
+  "unit": "v24-screen:49845aeca89b7dad2b5f78d42ec22fe9"
+}

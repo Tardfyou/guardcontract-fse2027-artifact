@@ -1,0 +1,151 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "open(absolute_file_path, \"r\", encoding=\"utf-8\", errors=\"ignore\") followed by f.read() at opsmith/agent.py:90-91, where file content is read for return to the model.",
+        "contract_id": "ecological-contract:623233015025ab26814e3b9beef4b9cd",
+        "declared_mechanism": "Tool registration @agent.tool(retries=5) (opsmith/agent.py:47-48) wrapping a guard suite that raises ModelRetry before any open(): duplicate identical-call rejection (62-66), absolute-path rejection (71-75), resolved-path membership in the tracked-file allowlist (77-80), src_dir string-prefix containment (82-85), and regular-file check (87-88); only after all checks pass does open(absolute_file_path, 'r', encoding='utf-8', errors='ignore') execute (90-91).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 48,
+            "line_start": 47,
+            "path": "opsmith/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7217575af82627fac2ed4b93cb90e454b557fe3fcd421aafadc366456b1c8f59"
+          },
+          {
+            "line_end": 105,
+            "line_start": 104,
+            "path": "opsmith/service_detector.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5a62a2af653ee37d9f77fffdda6b20cfb3974bac75947d89359b06f30142457b"
+          },
+          {
+            "line_end": 88,
+            "line_start": 62,
+            "path": "opsmith/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "7217575af82627fac2ed4b93cb90e454b557fe3fcd421aafadc366456b1c8f59"
+          },
+          {
+            "line_end": 77,
+            "line_start": 75,
+            "path": "opsmith/service_detector.py",
+            "role": "guard_registration",
+            "source_sha256": "5a62a2af653ee37d9f77fffdda6b20cfb3974bac75947d89359b06f30142457b"
+          },
+          {
+            "line_end": 85,
+            "line_start": 71,
+            "path": "opsmith/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7217575af82627fac2ed4b93cb90e454b557fe3fcd421aafadc366456b1c8f59"
+          },
+          {
+            "line_end": 61,
+            "line_start": 48,
+            "path": "opsmith/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "7217575af82627fac2ed4b93cb90e454b557fe3fcd421aafadc366456b1c8f59"
+          },
+          {
+            "line_end": 91,
+            "line_start": 90,
+            "path": "opsmith/agent.py",
+            "role": "commit_point",
+            "source_sha256": "7217575af82627fac2ed4b93cb90e454b557fe3fcd421aafadc366456b1c8f59"
+          }
+        ],
+        "forbidden_condition": "An agent-invoked read_repo_files call reaching open() for a filename that (a) is an absolute path, (b) resolves to a location outside ctx.deps.src_dir, or (c) is not a member of the allowlist built from ctx.deps.tracked_files (git-tracked files); likewise opening a resolved path that is not a regular file.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "RepoMap.tracked_files construction and path normalization (opsmith/repo_map.py) are not in the supplied views, so the string-match semantics between allowlist entries and the resolved candidate (opsmith/agent.py:68, 77-80) cannot be confirmed.",
+          "Whether the prefix check str(absolute_file_path).startswith(str(ctx.deps.src_dir)) (opsmith/agent.py:82) is exact when src_dir is relative or contains symlinks (the candidate is resolved at line 77 while src_dir is not resolved before comparison) is not determinable from supplied source.",
+          "Whether every agent run capable of dispatching read_repo_files receives a populated tracked_files allowlist (e.g., deployment strategies constructed with ctx.obj['agent'] at opsmith/main.py:470-473 and 501-504) is not shown in supplied source."
+        ],
+        "protected_operation": "Agent-invoked reads of repository file contents through the read_repo_files tool during agent runs (repo analysis and Dockerfile generation/validation in ServiceDetector).",
+        "protected_resource": "Files under the repository root ctx.deps.src_dir, restricted to git-tracked files listed in AgentDeps.tracked_files (wired from RepoMap.tracked_files).",
+        "protection_obligation": "The @agent.tool-registered read_repo_files tool must reject, via ModelRetry raised before any file is opened, every agent-requested repository file read whose filename is an absolute path, whose resolved path escapes the repository root (ctx.deps.src_dir), or which is absent from the git-tracked tracked_files allowlist (also rejecting non-regular files), so that only git-tracked, in-root, regular files are ever opened and returned to the LLM.",
+        "scope_limits": [
+          "Covers only the read_repo_files agent tool; other open() calls in supplied source (opsmith/service_detector.py:141-142, 149-150, 162-163, 299-300) execute in CLI code, not in agent tool bodies, and are outside this contract.",
+          "ModelRetry returns control to the model with retries=5 (opsmith/agent.py:47); the contract asserts pre-open blocking inside the tool body, not run termination or the outcome of exhausted retries.",
+          "The duplicate identical-call guard (opsmith/agent.py:62-66) limits repeated identical invocations within a conversation but does not itself narrow which files are readable; it is part of the same tool-entry guard suite.",
+          "The allowlist is populated only where AgentDeps is constructed with tracked_files (opsmith/service_detector.py:75-77); AgentDeps.tracked_files defaults to an empty list (opsmith/agent.py:13-16)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "deployment_strategy.destroy(deployment_config, selected_env) at opsmith/main.py:574.",
+        "contract_id": "ecological-contract:6f6b9e2f1b4472a1c35123ba0824251c",
+        "declared_mechanism": "inquirer.Text confirmation prompt carrying the irreversibility warning (opsmith/main.py:560-568); the code proceeds only when delete_confirmation_a.get('confirm') == 'DELETE' (569-570) and otherwise prints a cancellation message and raises typer.Exit (571-572), keeping the destroy call at 574 unreached.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 559,
+            "line_start": 559,
+            "path": "opsmith/main.py",
+            "role": "protected_operation",
+            "source_sha256": "fd927123627af4cf12a4e70b2549472d5e8e459a6b5bd066f8ac51809426cc75"
+          },
+          {
+            "line_end": 568,
+            "line_start": 560,
+            "path": "opsmith/main.py",
+            "role": "guard_registration",
+            "source_sha256": "fd927123627af4cf12a4e70b2549472d5e8e459a6b5bd066f8ac51809426cc75"
+          },
+          {
+            "line_end": 572,
+            "line_start": 569,
+            "path": "opsmith/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fd927123627af4cf12a4e70b2549472d5e8e459a6b5bd066f8ac51809426cc75"
+          },
+          {
+            "line_end": 574,
+            "line_start": 574,
+            "path": "opsmith/main.py",
+            "role": "commit_point",
+            "source_sha256": "fd927123627af4cf12a4e70b2549472d5e8e459a6b5bd066f8ac51809426cc75"
+          }
+        ],
+        "forbidden_condition": "Invocation of deployment_strategy.destroy(deployment_config, selected_env) when the typed confirmation is missing or is anything other than exactly 'DELETE'.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The implementation of the DEPLOYMENT_STRATEGY_REGISTRY strategy classes (the destroy body) is required to identify the true effect stratum and commit point of the guarded destruction.",
+          "Whether the agent mediates the destroy effect (given the agent is passed into the strategy at opsmith/main.py:501-504) requires the strategy source; absent it, agent_mediation remains not_established."
+        ],
+        "protected_operation": "The 'delete' action of the deploy command, which tears down a selected deployment environment.",
+        "protected_resource": "All infrastructure in the selected deployment environment, as the target of deployment_strategy.destroy.",
+        "protection_obligation": "The deploy command's delete action must require the user to type the exact confirmation string 'DELETE' in response to an explicit irreversibility warning before deployment_strategy.destroy is invoked for the selected environment.",
+        "scope_limits": [
+          "The confirmation gate lives in CLI code (opsmith/main.py:559-574); the deployment strategy implementation behind deployment_strategy.destroy is not among the supplied views, so the concrete external effect is not visible.",
+          "The strategy instance is constructed with ctx.obj['agent'] (opsmith/main.py:501-504), but no supplied line binds the destroy path to an agent tool, agent lifecycle hook, or agent-generated input reaching the destroy effect; the confirmation input is human keystrokes via inquirer (569).",
+          "Effect stratum 'other_external' is provisional: the supplied source does not reveal whether destroy executes an OS process (e.g., terraform), mutates files, or produces another class of external effect."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "RepoMap implementation (opsmith/repo_map.py) is not among the supplied views; the construction, absoluteness, and normalization of RepoMap.tracked_files \u2014 which form the read_repo_files allowlist (opsmith/agent.py:68; opsmith/service_detector.py:75-77) \u2014 cannot be verified.",
+      "Deployment strategy implementations (classes behind DEPLOYMENT_STRATEGY_REGISTRY) are not supplied; the concrete effect of deployment_strategy.destroy (opsmith/main.py:574) and any agent mediation of it cannot be determined from supplied source.",
+      "Whether agent runs outside ServiceDetector receive a populated AgentDeps.tracked_files allowlist (AgentDeps.tracked_files defaults to an empty list at opsmith/agent.py:13-16; deployment strategies receive ctx.obj['agent'] at opsmith/main.py:470-473 and 501-504) is not shown in supplied source.",
+      "The system prompt and prompt templates (opsmith/prompts.py) are not supplied; any additional declared guard obligations stated in the agent instructions cannot be evaluated."
+    ],
+    "repository": "abhishek-ram/opsmith-cli",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d24e50d166bc81c394be61861307706f"
+  },
+  "request_sha256": "50c1033e9185dda716515c0bec69ae6a145dbabcff8338e1ac646a46434d9157",
+  "response_sha256": "87ba82a0bb5a4bebbbdce42d52a023174d66f8a409c1c89bd5408f5746c47938",
+  "state": "completed",
+  "tokens": 32778,
+  "unit": "v24-screen:d24e50d166bc81c394be61861307706f"
+}

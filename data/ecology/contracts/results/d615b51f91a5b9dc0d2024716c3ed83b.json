@@ -1,0 +1,272 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guard commits at tool-dispatch time: before_tool_callback returns the gate block before the tool body executes (callbacks.py:145-150). If unguarded, the protected effect commits at doc.render (generate_sow_document.py:279) and the durable .docx write doc.save(output_path) (generate_sow_document.py:290), followed by the session-state path write and artifact save (generate_sow_document.py:292-304).",
+        "contract_id": "ecological-contract:1a1b18c36520680812e1d90bccfe6d9b",
+        "declared_mechanism": "ADK before_tool_callback (before_tool_callback in callbacks.py) wired onto the root Agent (agent.py:175). It invokes _arch_review_gate_blocks, which for a gated tool name without the approval stamp returns a non-None {'status': 'error', ..., 'retryable': True} dict that, per the code's own contract, ADK uses as the tool's response, short-circuiting tool execution before the tool body runs (callbacks.py:84-88, 103-128, 145-150).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 176,
+            "line_start": 172,
+            "path": "agents/pre-sales/app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ba84a828e78d553f10edf4e427b81d2f2b1c9f1d01e299d3a29790fe5faf276b"
+          },
+          {
+            "line_end": 150,
+            "line_start": 131,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "guard_registration",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 101,
+            "line_start": 90,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 128,
+            "line_start": 103,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 115,
+            "line_start": 89,
+            "path": "agents/pre-sales/app/tools/sow/confirm_phase.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d4d0c91b1d7542969632832ba216c0d0621e2f02aa18cd24b0fd21098d690180"
+          },
+          {
+            "line_end": 143,
+            "line_start": 136,
+            "path": "agents/pre-sales/app/tools/sow/confirm_phase.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d4d0c91b1d7542969632832ba216c0d0621e2f02aa18cd24b0fd21098d690180"
+          },
+          {
+            "line_end": 61,
+            "line_start": 42,
+            "path": "agents/pre-sales/app/tools/sow/generate_sow_document.py",
+            "role": "protected_operation",
+            "source_sha256": "327d91b4f40b29797a553afd4a2370c37624dd10fb641910abb38ad4fcc5eadd"
+          },
+          {
+            "line_end": 150,
+            "line_start": 145,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 290,
+            "line_start": 279,
+            "path": "agents/pre-sales/app/tools/sow/generate_sow_document.py",
+            "role": "commit_point",
+            "source_sha256": "327d91b4f40b29797a553afd4a2370c37624dd10fb641910abb38ad4fcc5eadd"
+          },
+          {
+            "line_end": 121,
+            "line_start": 116,
+            "path": "agents/pre-sales/app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ba84a828e78d553f10edf4e427b81d2f2b1c9f1d01e299d3a29790fe5faf276b"
+          }
+        ],
+        "forbidden_condition": "generate_sow_document being dispatched while is_architecture_review_approved(tool_context.state) is False \u2014 i.e., the 'phase.architecture_review_approved' state key has not been stamped True by confirm_phase_completion (which itself requires the 'content_review_approved' prerequisite to be stamped first).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "That a non-None before_tool_callback return replaces the tool result is asserted by the module docstring (callbacks.py:84-88); the ADK runtime source implementing this short-circuit is not supplied.",
+          "stage_sow source (which writes state['app:sow:current'] / 'app:sow:stage') is not supplied, so the upstream dataflow into the guarded effect is only partially supported."
+        ],
+        "protected_operation": "Agent-dispatched tool call to generate_sow_document on the root pre_sales_assistant agent (the final-document generation entry point exposed in _TOOLS).",
+        "protected_resource": "The final SOW document generation path: the .docx rendered to <tempdir>/sow_documents/SOW_<title>_<ts>.docx and the artifact persisted from it.",
+        "protection_obligation": "The root agent's registered before_tool_callback must short-circuit any dispatch of the generate_sow_document tool with a ToolError dict unless the Architecture Review approval stamp (state['phase.architecture_review_approved'], written via confirm_phase_completion) is present in session state. (Merged wording of both reviewer opinions; covers the generate_sow_document half of _ARCH_REVIEW_GATED_TOOLS.)",
+        "scope_limits": [
+          "The approval-stamp precondition exists only at the before_tool_callback dispatch layer; the in-tool checks in generate_sow_document (stage/required-fields/quality/structure) do not re-verify the architecture-review stamp.",
+          "Artifact-save failures after doc.save are swallowed and logged (generate_sow_document.py:310-315); the filesystem write at line 290 is the commit point tracked by this contract.",
+          "Gate matching is by tool-name string against _ARCH_REVIEW_GATED_TOOLS; the validate_sow_content half of the set is emitted as a separate contract because its registration and downstream effect stratum are not established.",
+          "The sow_data size-limit and JSON-parse guards in the same callback are distinct obligations not raised by the reviewed opinions and are not covered here."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "generate_sow_document.py:279 (doc.render) through :290 (doc.save(output_path)) \u2014 the first durable filesystem mutation; followed by the session-state path write (:293) and artifact save (:294-304).",
+        "contract_id": "ecological-contract:f6f1390da9ba5a42de65c5c1408ce18d",
+        "declared_mechanism": "Sequential in-tool guard chain, each step returning a ToolError before any rendering: missing/empty staged payload check (generate_sow_document.py:74-88), stage != 'full' rejection (:90-105), required-field check (:125-160), validate_quality_gates (:162-183), _content_validator.validate (:185-217), and template-existence check (:226-233); the staged payload is deep-copied (:112) so guards never mutate the validated source of truth.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 44,
+            "line_start": 41,
+            "path": "agents/pre-sales/app/tools/sow/generate_sow_document.py",
+            "role": "protected_operation",
+            "source_sha256": "327d91b4f40b29797a553afd4a2370c37624dd10fb641910abb38ad4fcc5eadd"
+          },
+          {
+            "line_end": 88,
+            "line_start": 74,
+            "path": "agents/pre-sales/app/tools/sow/generate_sow_document.py",
+            "role": "forbidden_condition",
+            "source_sha256": "327d91b4f40b29797a553afd4a2370c37624dd10fb641910abb38ad4fcc5eadd"
+          },
+          {
+            "line_end": 105,
+            "line_start": 90,
+            "path": "agents/pre-sales/app/tools/sow/generate_sow_document.py",
+            "role": "forbidden_condition",
+            "source_sha256": "327d91b4f40b29797a553afd4a2370c37624dd10fb641910abb38ad4fcc5eadd"
+          },
+          {
+            "line_end": 160,
+            "line_start": 125,
+            "path": "agents/pre-sales/app/tools/sow/generate_sow_document.py",
+            "role": "forbidden_condition",
+            "source_sha256": "327d91b4f40b29797a553afd4a2370c37624dd10fb641910abb38ad4fcc5eadd"
+          },
+          {
+            "line_end": 183,
+            "line_start": 162,
+            "path": "agents/pre-sales/app/tools/sow/generate_sow_document.py",
+            "role": "forbidden_condition",
+            "source_sha256": "327d91b4f40b29797a553afd4a2370c37624dd10fb641910abb38ad4fcc5eadd"
+          },
+          {
+            "line_end": 217,
+            "line_start": 185,
+            "path": "agents/pre-sales/app/tools/sow/generate_sow_document.py",
+            "role": "forbidden_condition",
+            "source_sha256": "327d91b4f40b29797a553afd4a2370c37624dd10fb641910abb38ad4fcc5eadd"
+          },
+          {
+            "line_end": 290,
+            "line_start": 279,
+            "path": "agents/pre-sales/app/tools/sow/generate_sow_document.py",
+            "role": "commit_point",
+            "source_sha256": "327d91b4f40b29797a553afd4a2370c37624dd10fb641910abb38ad4fcc5eadd"
+          },
+          {
+            "line_end": 121,
+            "line_start": 116,
+            "path": "agents/pre-sales/app/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ba84a828e78d553f10edf4e427b81d2f2b1c9f1d01e299d3a29790fe5faf276b"
+          }
+        ],
+        "forbidden_condition": "Rendering or saving the final document from a staged payload where state['app:sow:stage'] != 'full', where the staged payload is missing/empty, where required fields are absent, where validate_quality_gates reports errors, or where ContentValidator.validate fails \u2014 each condition must produce a ToolError return before doc.render/doc.save.",
+        "missing_evidence_roles": [
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "validate_quality_gates (_sow_helpers) and ContentValidator (shared.validators) implementations are not supplied.",
+          "STATE_SOW/STATE_STAGE values (sub_agents.validation.schema) are not supplied.",
+          "stage_sow implementation (how state['app:sow:stage'] becomes 'full') is not supplied."
+        ],
+        "protected_operation": "In-tool execution of generate_sow_document: rendering the staged SOW into the template (doc.render, generate_sow_document.py:279) and writing the .docx to disk (doc.save, generate_sow_document.py:290).",
+        "protected_resource": "The generated SOW .docx file under <tempdir>/sow_documents/ and the session state key 'sow_document_path' / saved artifact derived from it.",
+        "protection_obligation": "generate_sow_document itself must reject any staged payload that is not stage='full' and must run required-field, quality-gate, and structural-validation checks \u2014 returning ToolError on any failure \u2014 before rendering and saving the .docx artifact (defense-in-depth behind the dispatch-level architecture-review gate).",
+        "scope_limits": [
+          "Implementations of validate_quality_gates and ContentValidator.validate are outside the supplied source; only their invocation and ToolError handling are supported.",
+          "The literal state keys behind STATE_SOW/STATE_STAGE come from sub_agents.validation.schema (not supplied); 'app:sow:current' and 'app:sow:stage' appear only in error strings/docstrings (e.g., :79, :85).",
+          "This chain does not itself check the architecture-review approval stamp; the stamp precondition is enforced only at the before_tool_callback layer (see gate contracts).",
+          "The tool accepts no sow_data argument (the payload is read from state), so the callback's sow_data size/JSON-parse guards do not bind to this tool's current signature.",
+          "Customer-logo fetch (:412-415) and diagram artifact load (:265-267) are downstream side effects after the guards but are failure-tolerant (placeholder fallbacks) and not part of the guarded commit."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The guard commits at dispatch: the stage branch (callbacks.py:93-98) decides applicability and before_tool_callback returns the block (callbacks.py:145-150) before validate_sow_content executes; no downstream external effect for validate_sow_content is established from the supplied source.",
+        "contract_id": "ecological-contract:ff6786b16bc4f38b83e5722675cc57eb",
+        "declared_mechanism": "The same ADK before_tool_callback/_arch_review_gate_blocks wiring on the root Agent; for validate_sow_content the gate branches on the resolved stage argument \u2014 non-'full' stages return None (unblocked) \u2014 otherwise it enforces the approval-stamp check and returns the blocking error dict (callbacks.py:90-101, 145-150).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 176,
+            "line_start": 172,
+            "path": "agents/pre-sales/app/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ba84a828e78d553f10edf4e427b81d2f2b1c9f1d01e299d3a29790fe5faf276b"
+          },
+          {
+            "line_end": 76,
+            "line_start": 69,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 101,
+            "line_start": 93,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 128,
+            "line_start": 103,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 172,
+            "line_start": 168,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "protected_operation",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          },
+          {
+            "line_end": 150,
+            "line_start": 145,
+            "path": "agents/pre-sales/app/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "1b0a3b5676942902d8abcf2910b0d80aff3003839cf5bab3c902e9640c00df61"
+          }
+        ],
+        "forbidden_condition": "validate_sow_content dispatched with resolved stage == 'full' while is_architecture_review_approved(tool_context.state) is False; the gate resolves stage = (args.get('stage') or 'full').strip().lower() and only applies the approval check to the 'full' case (callbacks.py:93-101).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Source for validate_sow_content is not supplied: its implementation, downstream effect stratum, and registration site (root _TOOLS vs. inside sow_quality_loop or another toolset) are unknown.",
+          "Whether ADK propagates the root agent's before_tool_callback to tool calls issued inside sub-agent/AgentTool scopes is not established from supplied source."
+        ],
+        "protected_operation": "Agent-dispatched tool call to validate_sow_content at stage='full' (the final/full-stage validation pass that precedes final document generation).",
+        "protected_resource": "The full-stage SOW validation entry point named in _ARCH_REVIEW_GATED_TOOLS.",
+        "protection_obligation": "The same registered before_tool_callback must short-circuit any dispatch of validate_sow_content whose resolved stage is 'full' (stage omitted defaults to 'full') with the ToolError dict unless the Architecture Review approval stamp is present, while leaving stage='content' calls unblocked.",
+        "scope_limits": [
+          "stage='content' calls are explicitly unblocked (used in Phase 2 Step 1.5 before architecture exists, per callbacks.py:69-76, 93-98).",
+          "Gating is by tool-name string; whether the root's before_tool_callback actually intercepts validate_sow_content depends on its registration, which is not visible in the supplied _TOOLS list (agent.py:116-157).",
+          "Effect stratum 'tool_execution' reflects only that the guard prevents the invocation itself; the tool's own downstream effects are unknown from supplied source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "validate_sow_content source, registration site, and downstream effect stratum are not supplied.",
+      "sub_agents/validation/schema.py (STATE_SOW and STATE_STAGE literal values) is not supplied.",
+      "tools/sow/_sow_helpers.py (validate_quality_gates, sow_data_hash, sow_data_preview) is not supplied.",
+      "shared/validators.py (ContentValidator) is not supplied.",
+      "stage_sow source (which writes state['app:sow:current'] and the stage marker) is not supplied.",
+      "ADK framework source defining before_tool_callback short-circuit semantics and whether the root callback applies to sub-agent/AgentTool dispatch is not supplied."
+    ],
+    "repository": "dajr-gft/pre-sales-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d615b51f91a5b9dc0d2024716c3ed83b"
+  },
+  "request_sha256": "0988cf5d9df88ac2a3098cbf7406ff58ea6c3db09875e48b640244a45d2533fc",
+  "response_sha256": "59f9aa94cf5a9c2ee79c00838f76cab3bc3e0efaf73aaaa535c12d551ad0d43a",
+  "state": "completed",
+  "tokens": 36667,
+  "unit": "v24-screen:d615b51f91a5b9dc0d2024716c3ed83b"
+}

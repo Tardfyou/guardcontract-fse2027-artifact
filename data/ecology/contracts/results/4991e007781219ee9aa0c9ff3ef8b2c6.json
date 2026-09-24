@@ -1,0 +1,105 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "chcode/utils/shell/session.py lines 57-78, culminating in subprocess.Popen([self._provider.shell_path, *spawn_args], ...) at lines 71-78; the guard's blocked short-circuit at lines 52-55 returns before the command is assembled or spawned.",
+        "contract_id": "ecological-contract:066ff1e5e37cf12edc96324acfe28b97",
+        "declared_mechanism": "check_command(command) in chcode/utils/shell/guard.py, invoked as the first step of ShellSession.execute (session.py line 43) before command assembly and subprocess.Popen. The guard applies command-position rules (bare dangerous words must appear at a segment leader after optional sudo/doas prefixes, with relative-path invocations exempt; systemctl danger-subcommand and init 0|6 forms covered) and context/flag regex rules over the raw command string across bash/powershell/cmd dialects, honoring the _guard_enabled master switch and _disabled_categories. On a match it returns GuardResult(blocked=True, category, pattern_id); execute then short-circuits, returning ShellResult(exit_code=126, stderr=reason) with empty output and never building full_command or spawning the shell.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 202,
+            "line_start": 182,
+            "path": "chcode/utils/shell/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a0c5c7b7fb2f33b8119a1a37be715f670e6a93bce2178bd7616bd4d1da91d9be"
+          },
+          {
+            "line_end": 266,
+            "line_start": 205,
+            "path": "chcode/utils/shell/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a0c5c7b7fb2f33b8119a1a37be715f670e6a93bce2178bd7616bd4d1da91d9be"
+          },
+          {
+            "line_end": 304,
+            "line_start": 269,
+            "path": "chcode/utils/shell/guard.py",
+            "role": "guard_registration",
+            "source_sha256": "a0c5c7b7fb2f33b8119a1a37be715f670e6a93bce2178bd7616bd4d1da91d9be"
+          },
+          {
+            "line_end": 55,
+            "line_start": 42,
+            "path": "chcode/utils/shell/session.py",
+            "role": "guard_registration",
+            "source_sha256": "dd93ecbfc818aaa8f4429af4070dff2dc3ff85dbcc84937bfe7c3ddc87cfaed6"
+          },
+          {
+            "line_end": 41,
+            "line_start": 36,
+            "path": "chcode/utils/shell/session.py",
+            "role": "protected_operation",
+            "source_sha256": "dd93ecbfc818aaa8f4429af4070dff2dc3ff85dbcc84937bfe7c3ddc87cfaed6"
+          },
+          {
+            "line_end": 78,
+            "line_start": 57,
+            "path": "chcode/utils/shell/session.py",
+            "role": "commit_point",
+            "source_sha256": "dd93ecbfc818aaa8f4429af4070dff2dc3ff85dbcc84937bfe7c3ddc87cfaed6"
+          },
+          {
+            "line_end": 219,
+            "line_start": 181,
+            "path": "chcode/utils/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8ef1c85c4e26c2bf5e56118af30fd8c15170c631eefc4d4b8539138a28823c4d"
+          },
+          {
+            "line_end": 1666,
+            "line_start": 1650,
+            "path": "chcode/utils/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8ef1c85c4e26c2bf5e56118af30fd8c15170c631eefc4d4b8539138a28823c4d"
+          }
+        ],
+        "forbidden_condition": "A command string matching any active dangerous-command rule (categories recursive_delete, force_kill, system_damage, shutdown) is assembled into full_command and reaches the subprocess.Popen spawn of the provider shell \u2014 i.e., ShellSession.execute proceeds past the check_command verdict on a match, or the guard is bypassed/disabled so that a matching destructive command is executed instead of being short-circuited with exit code 126.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Implementations of BashProvider/PowerShellProvider.build_command, get_spawn_args, and create_cwd_file (called at session.py lines 57-64) are not in the supplied views, so the transformation between the scanned raw command and the spawned full_command cannot be verified.",
+          "The /danger slash-command wiring that calls set_guard_enabled/set_category_enabled (guard.py lines 75-106) and the REPL/config persistence path (~/.chat/chagent. via _load_setting/_update_setting) are not in the supplied views, so whether runtime disabling is user-only or reachable through agent flows is unverified.",
+          "Whether subagent runs (run_subagent, referenced at tools.py line 1289, with get_available_tools documented at lines 1669-1675 as serving subagents) register the same bash tool for subagents is not confirmed by supplied runner/loader source."
+        ],
+        "protected_operation": "Execution of a shell command through ShellSession.execute, which builds the provider command and spawns the shell subprocess; the operation is reached by the agent via the LangChain bash tool, which dispatches its agent-supplied command argument into session.execute.",
+        "protected_resource": "The host OS shell/process execution environment reached through ShellSession.execute's subprocess spawn (the system shell and the machine state that destructive commands such as raw-disk writes, recursive deletion, forced kills, and shutdown target).",
+        "protection_obligation": "Merged from both reviews (phase 1 German / phase 2 English, same obligation): destructive shell commands must not be assembled or executed by ShellSession.execute. check_command must scan the raw command string before any execution and block every match across the four evaluated categories \u2014 recursive deletion (rm with -r/-rf/-fr or --recursive, Remove-Item/ri -Recurse, rmdir|rd /s, del|erase /s), forced kills (kill/killall/pkill -9/-KILL/-SIGKILL, taskkill /f or /t, Stop-Process -Force), system damage (mkfs*, format <drive>:, dd of=/dev/ raw-disk writes, > /dev/sd|nvme|hd raw writes, fork bombs), and shutdown/reboot (shutdown, halt, poweroff, reboot, stop-computer, restart-computer, init 0|6, systemctl poweroff/reboot/halt) \u2014 honoring the global guard switch and disabled-category set, and returning ShellResult(exit_code=126) without spawning the shell subprocess.",
+        "scope_limits": [
+          "The guard is opt-out by design: the master switch _guard_enabled (default True) and the per-category _disabled_categories set allow any rule to be bypassed; check_command returns GuardResult(blocked=False) when disabled or when the matched category is disabled (guard.py lines 30-36, 275-276, 288, 296-297).",
+          "Detection is a string/regex heuristic on the raw command string; only the enumerated bash/powershell/cmd patterns in _match_position and _CONTEXT_RULES are covered, and relative-path invocations of same-named binaries (e.g., ./reboot) are exempt from position-rule matching (guard.py lines 146-159, 281-284).",
+          "Blocked commands return ShellResult(exit_code=126) with a localized reason rather than raising; the guard is enforced only at the ShellSession.execute boundary shown, and no additional enforcement layer appears in the supplied views.",
+          "The guard scans only the raw command argument passed to ShellSession.execute; effects of other tools (write_file, edit, etc.) are outside this obligation.",
+          "Coverage of nested invocation (cmd /c ...) is asserted only for patterns appearing literally in the command string (guard.py lines 3-5)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Shell provider implementations (BashProvider/PowerShellProvider.build_command, get_spawn_args, create_cwd_file, get_env_overrides) are not in the supplied views, so the exact assembled command at the Popen spawn point is unverifiable.",
+      "REPL/config sources wiring the /danger toggle (set_guard_enabled, set_category_enabled) and persistence to ~/.chat/chagent. (_load_setting/_update_setting) are not supplied.",
+      "chcode/agents/runner.py and agent loader sources confirming subagent tool registration are not supplied.",
+      "Runtime behavior labels and prevalence data are unavailable per the stated scope (only supplied source views; repository enumeration incomplete)."
+    ],
+    "repository": "ScarletMercy/chcode",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4991e007781219ee9aa0c9ff3ef8b2c6"
+  },
+  "request_sha256": "9aace453d6dad2ddac62b5bdfc1a655fab5617fd49dd878cf7bb9d6bf3d99d03",
+  "response_sha256": "fcb35e142b03f744eb2ce0f94952dbfcda49ee0fec617f22e7e937151e83f5cc",
+  "state": "completed",
+  "tokens": 34111,
+  "unit": "v24-screen:4991e007781219ee9aa0c9ff3ef8b2c6"
+}

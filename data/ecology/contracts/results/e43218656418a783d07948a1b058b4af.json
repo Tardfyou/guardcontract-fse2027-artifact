@@ -1,0 +1,180 @@
+{
+  "attempt": 2,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Admission in RateLimitMiddleware.dispatch: after window pruning and the limit check, the request timestamp is recorded and call_next(request) forwards the request down the chain (core/middlewares/rate_limit.py:79-83); over-limit requests commit instead to the 429 response at core/middlewares/rate_limit.py:67-77 and never reach the handler.",
+        "contract_id": "ecological-contract:e3f9db3f44233b8249de211ae282e7f2",
+        "declared_mechanism": "app.add_middleware(RateLimitMiddleware) (core/app.py:30) with the constructor default requests_per_minute=40 (core/middlewares/rate_limit.py:21-30); a per-key in-memory sliding window (defaultdict of timestamps pruned to <60 seconds, core/middlewares/rate_limit.py:31, 54-59) with a 429 JSONResponse rejection (core/middlewares/rate_limit.py:67-77) and X-Rate-Limit headers on admitted requests (core/middlewares/rate_limit.py:83-86).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 30,
+            "line_start": 29,
+            "path": "core/app.py",
+            "role": "guard_registration",
+            "source_sha256": "8ae3151b3f1bf73662f0f1f4638ff17e04f8ae8f3b69bd4712544eaa099fdc0f"
+          },
+          {
+            "line_end": 31,
+            "line_start": 21,
+            "path": "core/middlewares/rate_limit.py",
+            "role": "guard_registration",
+            "source_sha256": "a7c0620ef59e95ba46f86884a0e5c81be2933acdaab54faefefe1b4b02ba551d"
+          },
+          {
+            "line_end": 51,
+            "line_start": 44,
+            "path": "core/middlewares/rate_limit.py",
+            "role": "guard_registration",
+            "source_sha256": "a7c0620ef59e95ba46f86884a0e5c81be2933acdaab54faefefe1b4b02ba551d"
+          },
+          {
+            "line_end": 77,
+            "line_start": 53,
+            "path": "core/middlewares/rate_limit.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a7c0620ef59e95ba46f86884a0e5c81be2933acdaab54faefefe1b4b02ba551d"
+          },
+          {
+            "line_end": 107,
+            "line_start": 106,
+            "path": "core/app.py",
+            "role": "protected_operation",
+            "source_sha256": "8ae3151b3f1bf73662f0f1f4638ff17e04f8ae8f3b69bd4712544eaa099fdc0f"
+          },
+          {
+            "line_end": 83,
+            "line_start": 79,
+            "path": "core/middlewares/rate_limit.py",
+            "role": "commit_point",
+            "source_sha256": "a7c0620ef59e95ba46f86884a0e5c81be2933acdaab54faefefe1b4b02ba551d"
+          }
+        ],
+        "forbidden_condition": "A 41st-or-later request within a rolling 60-second window for the same X-API-Key on a '/query' path being forwarded via call_next to the handler: RateLimitMiddleware must instead return JSONResponse(status_code=429) when len(request_history[api_key]) >= requests_per_minute (core/middlewares/rate_limit.py:62-77).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the rate-limited POST /query operation is agent-mediated (depends on the unsupplied processing.process_query implementation and on whether any agent runtime dispatches requests to this endpoint).",
+          "Whether X-API-Key values presented to /query are provisioned to agent runtimes, which would determine whose request volume this per-key limit constrains.",
+          "Relative execution order of RateLimitMiddleware and APIKeyMiddleware (both added via add_middleware at core/app.py:28-30) is a framework-ordering question not resolved by the supplied source."
+        ],
+        "protected_operation": "Processing of POST /query requests (the only supplied route whose path ends in '/query'), including the downstream invocation of process_query at core/app.py:145 that the rate gate precedes.",
+        "protected_resource": "The /query request-processing capacity of the FastAPI app, tracked per API key, guarding access to the query-processing pipeline invoked from core/app.py:145.",
+        "protection_obligation": "Requests to paths ending in '/query' that carry an X-API-Key header must be rate-limited to 40 requests per rolling 60-second window per key: once 40 requests from that key are already recorded in the window, the middleware must return HTTP 429 (with rate_limit metadata) instead of calling the next middleware/handler \u2014 i.e., before the POST /query handler runs and before it commits to invoking process_query. (Primary guard in phase-one wording; retained as the secondary concrete guard in phase-two wording.)",
+        "scope_limits": [
+          "Only request paths ending in '/query' are limited; all other endpoints pass through via call_next unconditionally (core/middlewares/rate_limit.py:44-46).",
+          "Requests without an X-API-Key header bypass rate limiting entirely (core/middlewares/rate_limit.py:49-51), and keys are tracked by raw header value rather than by resolved user identity.",
+          "The window is in-process memory (defaultdict, core/middlewares/rate_limit.py:31, 56-58); it is not shared across processes/workers and resets on restart \u2014 deployment facts beyond the supplied source are not asserted.",
+          "The 40 requests/minute figure is the constructor default (core/middlewares/rate_limit.py:21); the registration at core/app.py:30 passes no override.",
+          "Agent mediation of the limited operation is not established from supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Per-request resolution of the get_current_user dependency on the route (core/app.py:107): either HTTPException 401 is raised (core/app.py:38) or the request commits into the handler body \u2014 for POST /query, execution continues at core/app.py:108 toward the process_query call at core/app.py:145.",
+        "contract_id": "ecological-contract:ffd662e19e050e706512de10a31a910a",
+        "declared_mechanism": "app.add_middleware(APIKeyMiddleware) (core/app.py:28); APIKeyMiddleware.dispatch reads the X-API-Key header and stores the resolved user on request.state.user (core/middlewares/auth.py:29-41), resolving via MySQL SELECT ... FROM auth_user JOIN user_info_apikey ... WHERE uak.key = %s AND uak.is_active = 1 (core/middlewares/auth.py:59-67); each protected route declares user = Depends(get_current_user), and get_current_user raises HTTPException(status_code=401) when request.state.user is falsy (core/app.py:35-39).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 28,
+            "line_start": 27,
+            "path": "core/app.py",
+            "role": "guard_registration",
+            "source_sha256": "8ae3151b3f1bf73662f0f1f4638ff17e04f8ae8f3b69bd4712544eaa099fdc0f"
+          },
+          {
+            "line_end": 41,
+            "line_start": 29,
+            "path": "core/middlewares/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "84e11204089b311ecc666996ace141fcb622d333545e9577cfcda236107e1bd4"
+          },
+          {
+            "line_end": 68,
+            "line_start": 59,
+            "path": "core/middlewares/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "84e11204089b311ecc666996ace141fcb622d333545e9577cfcda236107e1bd4"
+          },
+          {
+            "line_end": 39,
+            "line_start": 35,
+            "path": "core/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8ae3151b3f1bf73662f0f1f4638ff17e04f8ae8f3b69bd4712544eaa099fdc0f"
+          },
+          {
+            "line_end": 107,
+            "line_start": 106,
+            "path": "core/app.py",
+            "role": "protected_operation",
+            "source_sha256": "8ae3151b3f1bf73662f0f1f4638ff17e04f8ae8f3b69bd4712544eaa099fdc0f"
+          },
+          {
+            "line_end": 163,
+            "line_start": 162,
+            "path": "core/app.py",
+            "role": "protected_operation",
+            "source_sha256": "8ae3151b3f1bf73662f0f1f4638ff17e04f8ae8f3b69bd4712544eaa099fdc0f"
+          },
+          {
+            "line_end": 361,
+            "line_start": 360,
+            "path": "core/app.py",
+            "role": "protected_operation",
+            "source_sha256": "8ae3151b3f1bf73662f0f1f4638ff17e04f8ae8f3b69bd4712544eaa099fdc0f"
+          },
+          {
+            "line_end": 108,
+            "line_start": 107,
+            "path": "core/app.py",
+            "role": "commit_point",
+            "source_sha256": "8ae3151b3f1bf73662f0f1f4638ff17e04f8ae8f3b69bd4712544eaa099fdc0f"
+          }
+        ],
+        "forbidden_condition": "A request whose X-API-Key is absent, unknown, or inactive \u2014 such that APIKeyMiddleware leaves request.state.user = None (core/middlewares/auth.py:32, 34-41, 77) \u2014 reaching execution of a protected endpoint handler; get_current_user must instead raise HTTPException(401, 'Not authenticated') (core/app.py:37-38).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether processing.process_query constitutes agent tool execution (or an agent pipeline), which would bind the /query auth gate to agent mediation \u2014 the processing module is not among the supplied sources.",
+          "Whether requests carrying X-API-Key to /query originate from an agent runtime or an agent tool dispatch (i.e., whether this HTTP API is itself invoked as an agent tool) \u2014 no registration or dispatch wiring is present in supplied source.",
+          "Whether user-defined 'custom tools' stored via POST /tools/custom (url_template/method/param_mapping in user_info_usertool) are invoked by an agent as tools \u2014 the invocation code is not supplied."
+        ],
+        "protected_operation": "Authenticated handling of the protected HTTP API operations; in particular POST /query, whose handler proceeds (only once authenticated) to resolve per-user tool parameters and invoke process_query (core/app.py:141-145).",
+        "protected_resource": "The identity-gated API surface of core/app.py: the /query processing capability (and the per-user tool parameters it consumes), per-user API-key records in user_info_apikey, per-user custom-tool records in user_info_usertool, and per-user tool preferences.",
+        "protection_obligation": "Every request to an identity-gated endpoint of the FastAPI app in core/app.py (POST /query, GET /user, POST /api-keys, GET /api-keys, DELETE /api-keys/{api_key_id}, POST /tools/preferences, POST /tools/custom, GET /tools/custom, DELETE /tools/custom/{tool_id}) must be rejected with HTTP 401 unless the X-API-Key header resolves, via APIKeyMiddleware's database lookup, to a user joined with an active (is_active = 1) row in user_info_apikey; enforcement is the get_current_user dependency raising HTTPException(401) before the endpoint handler body executes. (Merged from both reviewer opinions: phase-one wording scoped to POST /query; phase-two wording generalized to all protected endpoints.)",
+        "scope_limits": [
+          "GET /health and GET /tools/builtins declare no get_current_user dependency and are outside this obligation (core/app.py:84-103).",
+          "APIKeyMiddleware never rejects a request by itself; it only resolves identity onto request.state.user \u2014 enforcement exists solely on endpoints that declare Depends(get_current_user).",
+          "Reviewer characterization of process_query as an 'external agent pipeline (LLM and outbound HTTP tool calls)' is not verifiable from supplied source (only the import at core/app.py:9 and the call at core/app.py:145 are visible); this contract is recorded with agent mediation not established.",
+          "Generic request-body validation on /query ('sources' list check, non-empty text, 3500-character cap; core/app.py:119-139) is generic application validation and excluded from this obligation.",
+          "CORS configuration (core/app.py:19-25) is out of scope.",
+          "The /api-keys, /tools/custom, /user, and /tools/preferences endpoints are account/tool-management operations with no source-supplied binding to agent mediation; they are retained only because the merged reviewer wording covers all endpoints gated by get_current_user."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The processing module (processing.process_query, processing.get_user_tool_params) is not among the supplied sources; the reviewer claim that POST /query 'commits to invoking the external agent pipeline (process_query with LLM and outbound HTTP tool calls)' is supported by supplied source only at the import (core/app.py:9) and the call site (core/app.py:145), so the downstream effect's stratum (http / tool_execution / other_external) and its agent mediation cannot be established. If that module shows agent tool execution, a separate contract at commit point core/app.py:145 would be warranted.",
+      "No supplied source shows agent-framework wiring (tool registry, tool decorators, agent lifecycle hooks, or agent-runtime dispatch) binding any endpoint or middleware in this unit to agent mediation; all contracts therefore use agent_mediation 'not_established' and cite no agent_entry_binding evidence.",
+      "The Dockerfile/deployment configuration referenced in the phase-one rationale ('Dockerfile CMD runs core/app.py') is not part of the supplied sources and was not relied upon.",
+      "Whether X-API-Key credentials are issued to or used by an agent runtime is not determinable from the supplied source.",
+      "The execution order of APIKeyMiddleware and RateLimitMiddleware (both registered with app.add_middleware at core/app.py:28-30) depends on Starlette middleware stacking semantics that are not documented in the supplied source; no runtime-order claim is made."
+    ],
+    "repository": "asha-software/newsagent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:e43218656418a783d07948a1b058b4af"
+  },
+  "request_sha256": "beb628d1e73d23de31d0f902210f81fad8face669593bbe78335ee642f888f05",
+  "response_sha256": "829a904962e6dfa0e254056b64acd99f4a32a081c5b8f35f04010d400020599a",
+  "state": "completed",
+  "tokens": 28070,
+  "unit": "v24-screen:e43218656418a783d07948a1b058b4af"
+}

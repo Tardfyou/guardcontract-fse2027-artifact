@@ -1,0 +1,368 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The guard's return of {'text': f\"Search blocked: Searches related to '{topic}' are not permitted for safety reasons.\"} (safety_guardrails.py:188-190), which replaces the search result; a None return (safety_guardrails.py:193) lets the search execute.",
+        "contract_id": "ecological-contract:390749113aed9a80e24da5e86a121474",
+        "declared_mechanism": "The special search branch of tool_usage_guardrail (before_tool_callback) that checks the query against sensitive_topics and returns a non-None blocked response.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 72,
+            "line_start": 72,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 41,
+            "line_start": 41,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/architect_james_brown/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "bc0f39435655822cbf4e71e4532685fd9192c2216ee94592cf969b6216847bc4"
+          },
+          {
+            "line_end": 40,
+            "line_start": 40,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/task_franklin_covey/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "5e02f97ad0f36becff1012aaa5f30c162df31ea549bddee6ae3dc2886ff03cc9"
+          },
+          {
+            "line_end": 174,
+            "line_start": 166,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/tools/safety_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ea8b13da2887fddbdeae0d782d7ffd84dcf7c74e9af6fe44f73e83ba19939574"
+          },
+          {
+            "line_end": 92,
+            "line_start": 77,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/tools/safety_guardrails.py",
+            "role": "protected_operation",
+            "source_sha256": "ea8b13da2887fddbdeae0d782d7ffd84dcf7c74e9af6fe44f73e83ba19939574"
+          },
+          {
+            "line_end": 34,
+            "line_start": 17,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 190,
+            "line_start": 186,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/tools/safety_guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "ea8b13da2887fddbdeae0d782d7ffd84dcf7c74e9af6fe44f73e83ba19939574"
+          },
+          {
+            "line_end": 72,
+            "line_start": 72,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 41,
+            "line_start": 41,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/architect_james_brown/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "bc0f39435655822cbf4e71e4532685fd9192c2216ee94592cf969b6216847bc4"
+          },
+          {
+            "line_end": 40,
+            "line_start": 40,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/task_franklin_covey/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5e02f97ad0f36becff1012aaa5f30c162df31ea549bddee6ae3dc2886ff03cc9"
+          }
+        ],
+        "forbidden_condition": "A tool call whose resolved tool_name equals 'search' and whose args contain a 'query' string in which any sensitive_topics entry appears as a case-insensitive substring (safety_guardrails.py:167-173).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The name under which any GoogleSearchTool-based tool registers itself in tool callbacks at runtime (whether it resolves to 'search').",
+          "Whether scoped_search, or any tool that would resolve to tool_name 'search', is attached to any agent in unsupplied registration/runner code."
+        ],
+        "protected_operation": "Execution of the search tool call with its query argument (the outbound web-search effect that ScopedSearchTool/GoogleSearchTool performs, agent.py:20-34).",
+        "protected_resource": "The search-tool invocation path on the agents where the guardrail is registered (guide_agent, tech_architect_agent, task_master_agent); the supplied ScopedSearchTool instance is the only search tool defined (agent.py:17-37).",
+        "protection_obligation": "The tool_usage_guardrail, registered as before_tool_callback on all three LlmAgents, must block executions of the search tool when the query argument contains sensitive topics (hack, crack, exploit, bypass, nsfw, porn, medical diagnosis), returning a blocked-text response instead of performing the web search.",
+        "scope_limits": [
+          "Branch fires only when the resolved tool_name is exactly 'search' and 'query' is present in args; missing tool info or any exception yields None (fail-open).",
+          "In the supplied views, scoped_search (agent.py:37) is NOT included in all_tools (agent.py:56) and is not passed to any of the three LlmAgent tools lists (agent.py:68; architect agent.py:38; task agent.py:37), so no tool named 'search' is shown registered and the branch may never fire in the supplied wiring.",
+          "Blocked attempts are recorded in callback state ('blocked_search_attempts', safety_guardrails.py:177-185) before the blocked return."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The guard's return of {'status': 'error', 'error_message': f'Tool usage blocked: {tool_name} cannot be used with restricted arguments.'} (safety_guardrails.py:161-164), which replaces the tool result; a None return (safety_guardrails.py:193) lets the tool execute.",
+        "contract_id": "ecological-contract:65e22eea7a2511d82c21757cb60282de",
+        "declared_mechanism": "tool_usage_guardrail wired as before_tool_callback in each LlmAgent constructor; it resolves tool name/args (callback_context.tool_name/tool_args, or tool['name']/args), consults the blocked_args map (safety_guardrails.py:118-130), and returns a non-None error dict for matches.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 72,
+            "line_start": 72,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 41,
+            "line_start": 41,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/architect_james_brown/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "bc0f39435655822cbf4e71e4532685fd9192c2216ee94592cf969b6216847bc4"
+          },
+          {
+            "line_end": 40,
+            "line_start": 40,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/task_franklin_covey/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "5e02f97ad0f36becff1012aaa5f30c162df31ea549bddee6ae3dc2886ff03cc9"
+          },
+          {
+            "line_end": 130,
+            "line_start": 117,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/tools/safety_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ea8b13da2887fddbdeae0d782d7ffd84dcf7c74e9af6fe44f73e83ba19939574"
+          },
+          {
+            "line_end": 145,
+            "line_start": 133,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/tools/safety_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ea8b13da2887fddbdeae0d782d7ffd84dcf7c74e9af6fe44f73e83ba19939574"
+          },
+          {
+            "line_end": 92,
+            "line_start": 77,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/tools/safety_guardrails.py",
+            "role": "protected_operation",
+            "source_sha256": "ea8b13da2887fddbdeae0d782d7ffd84dcf7c74e9af6fe44f73e83ba19939574"
+          },
+          {
+            "line_end": 46,
+            "line_start": 40,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 164,
+            "line_start": 160,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/tools/safety_guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "ea8b13da2887fddbdeae0d782d7ffd84dcf7c74e9af6fe44f73e83ba19939574"
+          },
+          {
+            "line_end": 72,
+            "line_start": 72,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 41,
+            "line_start": 41,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/architect_james_brown/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "bc0f39435655822cbf4e71e4532685fd9192c2216ee94592cf969b6216847bc4"
+          },
+          {
+            "line_end": 40,
+            "line_start": 40,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/task_franklin_covey/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5e02f97ad0f36becff1012aaa5f30c162df31ea549bddee6ae3dc2886ff03cc9"
+          }
+        ],
+        "forbidden_condition": "A tool call whose resolved tool_name is memorize, memorize_list, or get_memory and whose string argument value contains (case-insensitive substring) any blocked value listed for that argument in blocked_args \u2014 e.g., memorize(key='password', ...), memorize_list(key='credentials', ...), get_memory(key='secret').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Downstream effect of the memory tools (session-state mutation vs external store) cannot be classified because tools/memory source is not supplied; tool_execution is used for the intercepted in-process invocation itself.",
+          "Whether the runtime tool_name resolved by the guard exactly matches the FunctionTool-registered names in the installed ADK version."
+        ],
+        "protected_operation": "Execution of the FunctionTool-wrapped memory functions memorize, memorize_list, and get_memory (the in-process tool invocation before the function body runs).",
+        "protected_resource": "The memory_tools registered on all three agents via FunctionTool(memorize), FunctionTool(memorize_list), FunctionTool(get_memory) (agent.py:40-46; architect agent.py:13-19; task agent.py:13-19), passed as part of all_tools to each LlmAgent.",
+        "protection_obligation": "The tool_usage_guardrail, registered as before_tool_callback on all three LlmAgents, must block executions of the memorize, memorize_list, and get_memory function tools when their string key/value arguments contain blocklisted sensitive values (keys: password/secret/credit_card/ssn/private_key, and passwords/secrets/credentials/private_data for memorize_list; values: hack/bypass/exploit/crack/sensitive), returning an error result instead of executing the tool.",
+        "scope_limits": [
+          "Fail-open: returns None when tool name or args cannot be resolved (safety_guardrails.py:114-115) or on any exception (safety_guardrails.py:194-197).",
+          "Only memorize, memorize_list, and get_memory have argument blocklists; forget, list_memories, and the state_aware tools (get_agent_responses, get_conversation_summary, store_user_preference) are unchecked.",
+          "Only string argument values are substring-checked (safety_guardrails.py:143-145); non-string values are not blocked.",
+          "Blocked attempts are recorded in callback state ('blocked_tool_attempts', safety_guardrails.py:148-158) before the error return."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The early return of {'text': '\u26a0\ufe0f Search blocked due to sensitive content in query.'} (agent.py:29-31), which skips super().call (agent.py:34).",
+        "contract_id": "ecological-contract:8b57df777304ef64c466b576b01862f2",
+        "declared_mechanism": "Inline filter inside ScopedSearchTool.call that checks the query before delegating to super().call (agent.py:27-34).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 31,
+            "line_start": 27,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 25,
+            "line_start": 17,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 34,
+            "line_start": 33,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 31,
+            "line_start": 28,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "commit_point",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          }
+        ],
+        "forbidden_condition": "A query whose lowercased text contains any of the terms ['diagnose', 'symptoms', 'nsfw'] (agent.py:28).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "Any registration of scoped_search as an agent tool or its invocation via agent tool dispatch (none shown in supplied views).",
+          "Whether GoogleSearchTool.call issues a network request in the installed ADK version (http stratum inferred from the 'Performs web searches' docstring, agent.py:18)."
+        ],
+        "protected_operation": "Invocation of the parent GoogleSearchTool.call with the site-scoped query (agent.py:34), i.e., the outbound web-search execution.",
+        "protected_resource": "The scoped_search ScopedSearchTool instance (agent.py:37), a GoogleSearchTool subclass whose call is the guarded entry point.",
+        "protection_obligation": "ScopedSearchTool.call must refuse to perform the underlying web search when the query contains 'diagnose', 'symptoms', or 'nsfw', returning a blocked-text response instead of invoking GoogleSearchTool.call.",
+        "scope_limits": [
+          "No agent-entry binding is shown: scoped_search is instantiated (agent.py:37) but excluded from all_tools (agent.py:56) and absent from every supplied agent tools list (agent.py:68; architect agent.py:38; task agent.py:37), so no agent-mediated path to this filter appears in supplied views.",
+          "The site-scoping suffix (site:stackoverflow.com OR site:github.com OR site:arxiv.org) is appended to every query before the filter outcome is irrelevant to it (agent.py:25).",
+          "Filter is an exact-substring check over three fixed terms only."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The guard's return of the error dict {'content': \"I'm unable to process requests related to security exploits, malware, explicit content, or sensitive personal data...\"} (safety_guardrails.py:65-68), which replaces the model result; a None return (safety_guardrails.py:71) lets the LLM request proceed.",
+        "contract_id": "ecological-contract:b0398394e93261986b0b5a7f0ac75da9",
+        "declared_mechanism": "input_safety_guardrail wired as before_model_callback in each LlmAgent constructor; the guard extracts the user message (message_context.user_message, llm_request['message'], or callback_context.user_message), scans it against blocked_terms regexes, and returns a non-None error dict to suppress the model call.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 71,
+            "line_start": 71,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 40,
+            "line_start": 40,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/architect_james_brown/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "bc0f39435655822cbf4e71e4532685fd9192c2216ee94592cf969b6216847bc4"
+          },
+          {
+            "line_end": 39,
+            "line_start": 39,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/task_franklin_covey/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "5e02f97ad0f36becff1012aaa5f30c162df31ea549bddee6ae3dc2886ff03cc9"
+          },
+          {
+            "line_end": 52,
+            "line_start": 40,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/tools/safety_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ea8b13da2887fddbdeae0d782d7ffd84dcf7c74e9af6fe44f73e83ba19939574"
+          },
+          {
+            "line_end": 17,
+            "line_start": 7,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/tools/safety_guardrails.py",
+            "role": "protected_operation",
+            "source_sha256": "ea8b13da2887fddbdeae0d782d7ffd84dcf7c74e9af6fe44f73e83ba19939574"
+          },
+          {
+            "line_end": 74,
+            "line_start": 59,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 71,
+            "line_start": 64,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/tools/safety_guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "ea8b13da2887fddbdeae0d782d7ffd84dcf7c74e9af6fe44f73e83ba19939574"
+          },
+          {
+            "line_end": 71,
+            "line_start": 71,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fe534c24cdbb9071afb8d6034e40a5835c934fe52788be14fe4422b7f82fc672"
+          },
+          {
+            "line_end": 40,
+            "line_start": 40,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/architect_james_brown/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "bc0f39435655822cbf4e71e4532685fd9192c2216ee94592cf969b6216847bc4"
+          },
+          {
+            "line_end": 39,
+            "line_start": 39,
+            "path": "agents/guide_zero_simulation/guide_zero_simulation/sub_agents/task_franklin_covey/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5e02f97ad0f36becff1012aaa5f30c162df31ea549bddee6ae3dc2886ff03cc9"
+          }
+        ],
+        "forbidden_condition": "User input whose lowercased text matches any regex in the blocked_terms list (e.g., hack/exploit/bypass/crack near system/security/authentication; create/write/generate near malware/virus/ransomware/exploit; password near steal/hack/crack; nsfw/porn/explicit; personal data/credit card/social security).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which message source (message_context.user_message vs llm_request['message'] vs callback_context.user_message) is populated at runtime by the installed ADK version.",
+          "Confirmation that a non-None before_model_callback return short-circuits the LLM API request in the pinned ADK version."
+        ],
+        "protected_operation": "Dispatch of the LLM request (model invocation) during the agent run for each registered LlmAgent.",
+        "protected_resource": "The model-invocation path of guide_agent (model=DEFAULT_MODEL, agent.py:63), tech_architect_agent (model=gemini_pro, architect agent.py:37), and task_master_agent (model=gemini_flash, task agent.py:36).",
+        "protection_obligation": "The input_safety_guardrail, registered as before_model_callback on all three LlmAgents (guide_agent/Zero_Simulation, tech_architect_agent/James_Brown, task_master_agent/Franklin_Covey), must prevent user input matching restricted patterns (security exploit/hacking phrasing, malware generation, password-stealing phrasing, explicit/NSFW content, personal data such as credit card or social security references) from reaching the LLM.",
+        "scope_limits": [
+          "Fail-open: the guard returns None (no block) when callback_context is absent, no user message is found (safety_guardrails.py:20-38), or on any exception (safety_guardrails.py:72-75).",
+          "Protection is a fixed regex blocklist over lowercased input; only listed patterns are blocked, and matched attempts are additionally recorded in callback state ('blocked_input_attempts', safety_guardrails.py:53-62).",
+          "Whether ADK's before_model_callback non-None return actually suppresses the model call in the installed runtime is not verifiable from supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source for tools/memory.py (memorize, memorize_list, forget, get_memory, list_memories) is not supplied, so the underlying effect stratum of blocked memory-tool calls (state vs external persistence) cannot be confirmed; tool_execution is used for the intercepted in-process invocation only.",
+      "ADK runtime semantics are not verifiable from supplied views: whether a non-None return from before_model_callback / before_tool_callback actually suppresses the LLM request or tool execution in the installed version, and how tool_name resolves for FunctionTool/GoogleSearchTool instances.",
+      "No supplied view registers scoped_search or any tool named 'search' on an agent (scoped_search is absent from all_tools and all agent tools lists), leaving the tool_usage_guardrail search branch's target tool unidentified.",
+      "Runner/entrypoint, models.py, prompts, and any deployment configuration sources are not supplied, so the end-to-end agent run lifecycle and message/tool dispatch paths binding these callbacks cannot be fully verified.",
+      "Behavior labels and runtime prevalence data are unavailable for this repository; nothing here establishes that violations occur, only that these guard mechanisms and registrations are declared in source."
+    ],
+    "repository": "turnono/google-ai-agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:bd574ca11a765d6acf9a8f7c0d7f7cba"
+  },
+  "request_sha256": "7bbfcbc2c15e2acbcd8c44cd737bdc2640fd170729dd3cf98d3f422580aa1f5e",
+  "response_sha256": "c8f24d4521536964c2c4d5e8500b1bfd5873b057e92450529c4e9580a5dc0533",
+  "state": "completed",
+  "tokens": 17390,
+  "unit": "v24-screen:bd574ca11a765d6acf9a8f7c0d7f7cba"
+}

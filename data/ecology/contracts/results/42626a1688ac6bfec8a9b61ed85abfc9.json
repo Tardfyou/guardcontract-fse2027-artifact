@@ -1,0 +1,264 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "HookResult(allow=False) returned by safety_gate_handler at the PRE_TOOL_USE lifecycle point (app.py:452-458), before the execute tool runs; non-matching commands return HookResult(allow=True) (app.py:460).",
+        "contract_id": "ecological-contract:09d356b11239870973a4428da3859cae",
+        "declared_mechanism": "safety_gate_handler registered as Hook(event=HookEvent.PRE_TOOL_USE, handler=safety_gate_handler, matcher='execute', timeout=5) in the module-level HOOKS list and wired via hooks=HOOKS into create_deep_agent; on regex match it returns HookResult(allow=False, reason=\u2026) with a BLOCKED message.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 442,
+            "line_start": 433,
+            "path": "workspace/jarvis/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 450,
+            "line_start": 443,
+            "path": "workspace/jarvis/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 458,
+            "line_start": 452,
+            "path": "workspace/jarvis/app.py",
+            "role": "commit_point",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 477,
+            "line_start": 463,
+            "path": "workspace/jarvis/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 740,
+            "line_start": 739,
+            "path": "workspace/jarvis/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 725,
+            "line_start": 716,
+            "path": "workspace/jarvis/app.py",
+            "role": "protected_operation",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 557,
+            "line_start": 555,
+            "path": "workspace/jarvis/app.py",
+            "role": "protected_operation",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 1874,
+            "line_start": 1868,
+            "path": "workspace/jarvis/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          }
+        ],
+        "forbidden_condition": "An execute-tool 'command' string matching any enumerated dangerous pattern \u2014 rm -rf / , rm -rf *, mkfs., dd if=\u2026 of=/dev/, chmod -R 777 /, or the :(){ fork-bomb pattern \u2014 being dispatched to execution (app.py:443-450, 452-458).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Framework enforcement semantics of HookResult(allow=False) (pydantic_deep internals not supplied): how the block is surfaced to the model and whether the agent run continues afterward.",
+          "Hook behavior when the timeout=5 expires, and whether the PRE_TOOL_USE hook fires for execute calls issued by subagents.",
+          "Ordering of the PRE_TOOL_USE hook relative to middleware before_tool_execute and interrupt_on deferral for a single execute call."
+        ],
+        "protected_operation": "Agent model-initiated execute tool calls running shell commands in the per-session Docker sandbox, registered via include_execute=True in create_deep_agent and documented as 'execute(command) \u2014 Run a shell command in the Docker sandbox'.",
+        "protected_resource": "The per-session Docker sandbox container's filesystem and OS state targeted by destructive shell commands (filesystem reformatting, dd writes to /dev/, recursive permission/root deletions, fork bombs).",
+        "protection_obligation": "The agent's execute tool must not run dangerous shell commands: a blocking PRE_TOOL_USE lifecycle hook (safety_gate) matching only the 'execute' tool must return HookResult(allow=False) for any command matching the dangerous_patterns list, preventing the command from executing in the session sandbox.",
+        "scope_limits": [
+          "The hook matcher restricts enforcement to the tool named 'execute' (app.py:474); shell effects reached through other agent tools or MCP toolsets are not gated by this hook.",
+          "Detection is limited to the six enumerated regexes applied to the raw command string (app.py:443-450); no command normalization or decoding is performed in the supplied source.",
+          "The gate composes with, but is distinct from, the interrupt_on human-approval gate on the same tool (app.py:753-757); their relative ordering is not established by supplied source.",
+          "Application code paths that call backend.execute directly (upload verification app.py:1516, file listing app.py:1548, base64/cat file serving app.py:1670, 2055, 2072) do not pass through this agent-side hook by construction."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The agent run suspends with result.output as DeferredToolRequests before the execute tool executes (app.py:1238-1265); the tool effect can only occur in the continuation run started with DeferredToolResults approvals (app.py:1310-1316).",
+        "contract_id": "ecological-contract:7c39c09cee26b824446e7bcb58b3af5b",
+        "declared_mechanism": "create_deep_agent(interrupt_on={'execute': True, 'write_file': False}) (app.py:753-757) producing pydantic-ai DeferredToolRequests; WebSocket approval protocol (approval_required event, 'approval' messages) with handle_approval mapping frontend decisions to ToolApproved/ToolDenied and resuming the run with DeferredToolResults; new prompts rejected while approval is pending (app.py:1009-1019).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 757,
+            "line_start": 753,
+            "path": "workspace/jarvis/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 725,
+            "line_start": 716,
+            "path": "workspace/jarvis/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 650,
+            "line_start": 646,
+            "path": "workspace/jarvis/app.py",
+            "role": "protected_operation",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 1265,
+            "line_start": 1238,
+            "path": "workspace/jarvis/app.py",
+            "role": "commit_point",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 1316,
+            "line_start": 1287,
+            "path": "workspace/jarvis/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 1019,
+            "line_start": 1004,
+            "path": "workspace/jarvis/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 1915,
+            "line_start": 1915,
+            "path": "workspace/jarvis/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          }
+        ],
+        "forbidden_condition": "Execution of a deferred execute tool call without a ToolApproved decision for its tool_call_id supplied via DeferredToolResults in the continuation run (app.py:1295-1316); i.e., any path that auto-executes the call bypassing the approval round-trip.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Framework semantics of deferred tools (pydantic-ai internals not supplied): whether guards/hooks re-run and args are re-validated when the approved call resumes.",
+          "Whether interrupt_on approval gating propagates to execute calls issued from subagents.",
+          "Behavior when the user denies the call beyond ToolDenied being returned to the model (app.py:1301) \u2014 e.g., retry dynamics \u2014 is runtime behavior not decidable from supplied source."
+        ],
+        "protected_operation": "Agent model-initiated execute tool calls (shell command execution in the session Docker sandbox), the same guarded operation as the safety-gate contract but gated at the approval/deferral boundary.",
+        "protected_resource": "The per-session Docker sandbox reachable through the execute tool (the shell-execution effect suspended pending approval).",
+        "protection_obligation": "The execute tool must not execute without human-in-the-loop approval: interrupt_on must defer execute tool calls into DeferredToolRequests, the frontend must receive an approval_required event, and execution may resume only after handle_approval supplies ToolApproved for the tool_call_id (denials become ToolDenied).",
+        "scope_limits": [
+          "Only tools flagged in interrupt_on are approval-gated; write_file is explicitly not gated (app.py:756, 1915), so file writes rely solely on the PermissionCapability path screen from contract 1.",
+          "The approver is whichever client controls the WebSocket session; supplied source shows no approver authentication beyond a client-supplied session_id (app.py:964-970, 987, 1005-1007, 1297-1301).",
+          "New prompts are rejected while an approval is pending, but supplied source shows no expiry or cleanup of session.pending_approval_state other than the /reset path (app.py:1009-1019, 1242-1245)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The ModelRetry raise inside PermissionCapability.before_tool_execute (audit_middleware.py:136-145), which fires before the file tool body executes; non-matching calls pass args through unchanged (audit_middleware.py:147).",
+        "contract_id": "ecological-contract:d71ece56ed9880274092a3bd514537a0",
+        "declared_mechanism": "PermissionCapability.before_tool_execute middleware (audit_middleware.py:116-147) raising pydantic_ai ModelRetry with a denial reason on regex match, checking only tools in FILE_TOOLS and only the single 'path' or 'pattern' argument; instantiated as module-level permission_cap and bound via create_deep_agent(middleware=[audit_cap, permission_cap]).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 102,
+            "line_start": 91,
+            "path": "workspace/jarvis/audit_middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4b6606017639f6ca2ea89f1e3bc3c217a00c1bae404ad9217d1fa180673a8366"
+          },
+          {
+            "line_end": 105,
+            "line_start": 104,
+            "path": "workspace/jarvis/audit_middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "4b6606017639f6ca2ea89f1e3bc3c217a00c1bae404ad9217d1fa180673a8366"
+          },
+          {
+            "line_end": 135,
+            "line_start": 108,
+            "path": "workspace/jarvis/audit_middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "4b6606017639f6ca2ea89f1e3bc3c217a00c1bae404ad9217d1fa180673a8366"
+          },
+          {
+            "line_end": 145,
+            "line_start": 136,
+            "path": "workspace/jarvis/audit_middleware.py",
+            "role": "commit_point",
+            "source_sha256": "4b6606017639f6ca2ea89f1e3bc3c217a00c1bae404ad9217d1fa180673a8366"
+          },
+          {
+            "line_end": 484,
+            "line_start": 483,
+            "path": "workspace/jarvis/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 725,
+            "line_start": 716,
+            "path": "workspace/jarvis/app.py",
+            "role": "protected_operation",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 742,
+            "line_start": 739,
+            "path": "workspace/jarvis/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          },
+          {
+            "line_end": 1886,
+            "line_start": 1883,
+            "path": "workspace/jarvis/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bdb69eb7486ae054b3c7a228712131ab10f6268d0756ce23704fc5e41d993e01"
+          }
+        ],
+        "forbidden_condition": "An invocation of read_file/write_file/edit_file/glob/grep whose 'path' or 'pattern' argument string matches any BLOCKED_PATH_PATTERNS regex (/etc/passwd, /etc/shadow, .env or .env., /root/, .ssh/, /proc/, /sys/, id_rsa, id_ed25519) proceeding past the middleware into tool execution.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Actual argument schemas of the console toolset's file tools (pydantic_deep package source not supplied): confirmation that every screened tool carries its target under 'path'/'pattern', and whether grep's plural 'paths' argument (documented at app.py:553) is ever screened.",
+          "Framework ordering: whether before_tool_execute middleware runs before or after the interrupt_on deferral and the PRE_TOOL_USE hook for the same tool call.",
+          "Whether capability middleware and hooks fire for tool calls issued inside subagents (task delegation, max_nesting_depth=2 at app.py:734)."
+        ],
+        "protected_operation": "Agent model-initiated calls to the five FILE_TOOLS file tools against the per-session Docker sandbox filesystem, registered into the agent via include_filesystem=True in create_deep_agent.",
+        "protected_resource": "Sensitive filesystem paths in the per-session sandbox container: /etc/passwd, /etc/shadow, .env files, /root/, .ssh/ directories including id_rsa/id_ed25519 private keys, /proc/, and /sys/.",
+        "protection_obligation": "The deep agent's file tools (read_file, write_file, edit_file, glob, grep) must not access sensitive paths in the session sandbox: PermissionCapability.before_tool_execute must intercept each such tool call before execution and raise ModelRetry when the path argument matches any BLOCKED_PATH_PATTERNS regex, forcing the model to retry rather than execute (merged from first- and second-phase reviewer wording; the second-phase mention of execute/PermissionCapability split into contracts 2 and 3).",
+        "scope_limits": [
+          "Screening applies only to the five tools named in FILE_TOOLS (audit_middleware.py:104-105, 128-129); the execute tool, MCP toolsets (GitHub/PostgreSQL), ls, and delegation tools are not path-screened by this capability.",
+          "Only the single 'path' or 'pattern' argument value is extracted and checked (audit_middleware.py:132-133); list-valued or differently named path arguments are not screened in the supplied implementation.",
+          "Enforcement is retry semantics (ModelRetry), not a hard denial: the class docstring states the agent retries with a different approach (audit_middleware.py:112-114), so repeated attempts are structurally possible.",
+          "read_file/glob/grep guard against disclosure (reads) rather than mutation; the 'file' stratum strictly describes the write_file/edit_file mutation path, while the read-side blocking prevents sensitive content from entering the model context.",
+          "Matching is regex on the raw path string as supplied; no path canonicalization or normalization is performed in the supplied source.",
+          "Guarded effects are sandbox-container filesystem accesses (app.py:6, 798-800); the capability does not screen the application's non-agent HTTP file endpoints (e.g., app.py:1558-1623)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Console toolset implementations and argument schemas for read_file/write_file/edit_file/glob/grep/execute live in the pydantic_deep package and are not present in the supplied views; cannot confirm which argument keys carry target paths or that the capability's 'path'/'pattern' extraction (audit_middleware.py:133) covers all five tools (grep is documented with a plural 'paths' argument at app.py:553).",
+      "create_deep_agent / Hook / AbstractCapability framework semantics (enforcement of HookResult(allow=False), how ModelRetry surfaces to the model, middleware-vs-hook-vs-interrupt_on ordering, hook timeout behavior, propagation to subagents) are not supplied and are required to confirm the declared commit points hold end-to-end.",
+      "DockerSandbox / SessionManager isolation properties (what container filesystem is exposed, whether the blocked paths such as /etc/passwd or /root/ exist in-container, host-exposure boundaries) are not supplied beyond docstrings (app.py:6, 852-857).",
+      "No runtime behavior, enforcement-outcome, or prevalence data is available for these guards (scope note supplied with the unit: repository enumeration is incomplete and behavior labels are unavailable)."
+    ],
+    "repository": "0wenwatt/jarvis",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:42626a1688ac6bfec8a9b61ed85abfc9"
+  },
+  "request_sha256": "706e47f17074834fd648f5186b255a42da15e783a1bc7edda444095b22566e2e",
+  "response_sha256": "c603a0b1a367db13867c7912c2fae9b1571e7374cd25573138032d21aad9258d",
+  "state": "completed",
+  "tokens": 49646,
+  "unit": "v24-screen:42626a1688ac6bfec8a9b61ed85abfc9"
+}

@@ -1,0 +1,340 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Return of DietarySafetyGuard.awrap_model_call for the final prose round \u2014 the violating model response is replaced by the safe retraction ModelResponse before the model-node result propagates into the conversation and the user-facing stream (app/agents/app.py 448-455).",
+        "contract_id": "ecological-contract:20341b668f8731188b83969b7619c74e",
+        "declared_mechanism": "DietarySafetyGuard.awrap_model_call (app/agents/app.py 420-471): loads recorded allergens via _diet_allergies and short-circuits when none are recorded (425-429); bypasses rounds that still issue tool_calls (436-443); judges the reply text via _find_recommended_allergen (LLM side-call with callbacks=[] to keep the verdict out of the user stream, fail-closed exception handling; 356-387); on a hit, re-submits the request with a system safety-check HumanMessage (456-470) up to MAX_RETRY=2, and on the final hit returns ModelResponse([safe_msg]) replacing the violating reply (450-455). Registered as the first middleware in init_agent_infra (635-651) and wired into the agent via create_agent(..., middleware=middleware) (660-668).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 330,
+            "line_start": 324,
+            "path": "app/agents/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 387,
+            "line_start": 385,
+            "path": "app/agents/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 401,
+            "line_start": 390,
+            "path": "app/agents/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 446,
+            "line_start": 420,
+            "path": "app/agents/app.py",
+            "role": "protected_operation",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 455,
+            "line_start": 448,
+            "path": "app/agents/app.py",
+            "role": "commit_point",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 651,
+            "line_start": 635,
+            "path": "app/agents/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 668,
+            "line_start": 660,
+            "path": "app/agents/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          }
+        ],
+        "forbidden_condition": "A final user-facing model reply (last message is an AIMessage with no pending tool_calls) whose prose recommends a recorded allergen \u2014 in recommended dishes, ingredient lists, shopping lists, or cooking steps \u2014 being committed for delivery to the user; per the fail-closed rule, a round whose allergen judge raises an error is also treated as violating (app/agents/app.py 385-387).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether astream('messages') token streaming (app/agents/app.py 826-843) can emit text from intermediate violating attempts before awrap_model_call returns the replaced response is not established by the supplied source; the streaming boundary relative to the middleware wrapper is unresolved.",
+          "The consumer/transport of _stream_agent's yielded chunks (HTTP/SSE route) is outside the supplied view, so the commit point is bound to the model-call return rather than to a verified user-delivery transport."
+        ],
+        "protected_operation": "Generation and release of the agent's final natural-language reply to the user (the non-tool-calling model round whose prose the user will actually see).",
+        "protected_resource": "The user-facing reply text, scoped by the per-user recorded allergen list read from the LangGraph store namespace ('memories', user_id, 'diet') (app/agents/app.py 324-330).",
+        "protection_obligation": "For users with recorded allergens, the final user-facing agent reply must never present any recorded allergen as something the user can eat: DietarySafetyGuard (registered AgentMiddleware) screens each candidate final model reply at the awrap_model_call boundary, retries offending replies with a corrective safety-check instruction up to MAX_RETRY=2, and on a persistent hit withholds the reply and substitutes a safe retraction message; allergen-judge failure is treated as a violation (fail closed). [Merged from both reviewers' DietarySafetyGuard wording.]",
+        "scope_limits": [
+          "Applies only when at least one allergen is recorded for the configured user_id; users without recorded allergens bypass the guard entirely at zero cost (app/agents/app.py 425-429).",
+          "Only rounds whose last message is an AIMessage without tool_calls are evaluated; tool-calling rounds pass through unevaluated by design (app/agents/app.py 436-443, 405-414).",
+          "The judge inspects only AIMessage string content and only the first 2000 characters of it (app/agents/app.py 368, 405-418).",
+          "The guard is bypassed when request.runtime.store is None (app/agents/app.py 421-423).",
+          "Detection is a single LLM judgment per round; this contract records the declared mechanism and does not assert its detection efficacy or decide any outcome."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Execution of the delete action inside the *_profile_manage tool bound at construction by create_manage_memory_tool (app/agents/tools.py 384-414); the concrete persistence/deletion statement lies in the langmem library, which is not part of the supplied source \u2014 the HITL gate applies to the pending tool call before tool execution.",
+        "contract_id": "ecological-contract:2bac222a7cf1f88b3f0d9924027e7873",
+        "declared_mechanism": "profile_delete_cfg = InterruptOnConfig(allowed_decisions=['approve','reject'], description=_describe_profile_delete, when=<action == 'delete'>) shared across the three tool names in _hitl_interrupt_on() (app/agents/app.py 551-581); HumanInTheLoopMiddleware registered in init_agent_infra's middleware list and passed to create_agent (652-658, 660-668); the delete confirmation text is built by _describe_profile_delete (551-553); decisions resume via resume_agent (742-760).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 553,
+            "line_start": 551,
+            "path": "app/agents/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 564,
+            "line_start": 556,
+            "path": "app/agents/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 581,
+            "line_start": 571,
+            "path": "app/agents/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 658,
+            "line_start": 652,
+            "path": "app/agents/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 633,
+            "line_start": 623,
+            "path": "app/agents/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 414,
+            "line_start": 384,
+            "path": "app/agents/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          },
+          {
+            "line_end": 380,
+            "line_start": 379,
+            "path": "app/agents/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          },
+          {
+            "line_end": 564,
+            "line_start": 549,
+            "path": "app/agents/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          }
+        ],
+        "forbidden_condition": "Execution of any of the three *_profile_manage tool calls with args action == 'delete' (deletion of an existing long-term profile memory) without a recorded human 'approve' decision.",
+        "missing_evidence_roles": [
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "The actual delete commit inside langmem's create_manage_memory_tool (which store API is called, hard vs soft delete) is not in the supplied source; effect_stratum 'database' is inferred from the Postgres-backed store configuration (app/agents/app.py 610-611) and the namespace/profile-memory semantics in app/agents/tools.py 379-414."
+        ],
+        "protected_operation": "Agent-invoked deletion of long-term profile memories via the LangMem manage-memory tools.",
+        "protected_resource": "Long-term profile memories held in the LangGraph store namespaces ('memories', user_id, 'diet'|'kitchen'|'household') on the Postgres-backed AsyncPostgresStore (app/agents/tools.py 348-352, 379-380; app/agents/app.py 610-611).",
+        "protection_obligation": "Agent tool calls to diet_profile_manage, kitchen_profile_manage, or household_profile_manage with action='delete' must not execute without an explicit human approve decision: a shared InterruptOnConfig in _hitl_interrupt_on() gates the delete action through HumanInTheLoopMiddleware before the LangMem manage-memory tool executes, with approve/reject supplied via resume_agent. [Merged from both reviewers' HITL wording.]",
+        "scope_limits": [
+          "Only action='delete' is intercepted; create/update actions pass without confirmation by declared design (app/agents/app.py 556-564, 571-575).",
+          "The gate is conditional on enable_hitl=True, identical to the inventory_remove gate (app/agents/app.py 652-658).",
+          "The LangMem reflection executors are created with enable_deletes=True (app/agents/app.py 623-633); that background reflection delete path is a separate mechanism and is NOT covered by this HITL gate \u2014 this contract covers only the three agent-invoked tools."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "store.put(ns, 'items', payload) inside inventory_remove persisting the reduced item list (app/agents/tools.py 272-279); the HITL interrupt is raised against the pending tool call before this write.",
+        "contract_id": "ecological-contract:480c223b1c56f1993cb592f243bcdc33",
+        "declared_mechanism": "_hitl_interrupt_on() builds remove_cfg = InterruptOnConfig(allowed_decisions=['approve','reject'], description=_describe_inventory_remove, when=<len(items) >= 3>) mapped to tool name 'inventory_remove' (app/agents/app.py 542-548, 565-581); init_agent_infra appends HumanInTheLoopMiddleware(interrupt_on=_hitl_interrupt_on(), description_prefix=...) when enable_hitl (default True) and passes the middleware list to create_agent (584-591, 652-658, 660-668); triggered interrupts surface to the frontend as {'type':'interrupt','action_requests':[...]} and pause the run (780-791); approve/reject decisions resume via resume_agent (742-760).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 543,
+            "line_start": 542,
+            "path": "app/agents/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 581,
+            "line_start": 565,
+            "path": "app/agents/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 591,
+            "line_start": 584,
+            "path": "app/agents/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 658,
+            "line_start": 652,
+            "path": "app/agents/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 791,
+            "line_start": 780,
+            "path": "app/agents/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 271,
+            "line_start": 265,
+            "path": "app/agents/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          },
+          {
+            "line_end": 279,
+            "line_start": 272,
+            "path": "app/agents/tools.py",
+            "role": "commit_point",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          },
+          {
+            "line_end": 556,
+            "line_start": 549,
+            "path": "app/agents/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          }
+        ],
+        "forbidden_condition": "Execution of inventory_remove with len(items) >= _INVENTORY_REMOVE_CONFIRM_THRESHOLD (3) without a recorded human 'approve' decision (a 'reject' decision must prevent execution).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Pre-execution interception semantics (interrupt raised before the tools node executes the call, so the store.put is unreachable without approval) reflects the documented purpose of HumanInTheLoopMiddleware, but the library source is not supplied; confirm the middleware gates strictly before tool execution."
+        ],
+        "protected_operation": "Agent-invoked execution of the inventory_remove tool that rewrites the user's saved inventory list.",
+        "protected_resource": "The user's inventory items persisted in the LangGraph AsyncPostgresStore under namespace ('inventory', user_id), key 'items' (app/agents/tools.py 46-47 and 272-279; Postgres-backed store setup at app/agents/app.py 610-611).",
+        "protection_obligation": "An agent-initiated inventory_remove call removing three or more items must not execute without an explicit human approve decision: HumanInTheLoopMiddleware (InterruptOnConfig registered for 'inventory_remove' with a when-predicate) interrupts the run with an approve/reject action request before the tool executes, and execution proceeds only after a decision supplied via resume_agent. [Merged from both reviewers' HITL wording.]",
+        "scope_limits": [
+          "Only bulk removals of >= 3 items are gated; removals of 1-2 items pass without confirmation by declared design (app/agents/app.py 542-543, 556-564).",
+          "The gate exists only when init_agent_infra runs with enable_hitl=True (the default); enable_hitl=False removes the middleware for offline eval (app/agents/app.py 584-591, 652-658).",
+          "Decision space is limited to approve/reject per allowed_decisions (app/agents/app.py 565-570); frontend is documented as supporting only approve/reject (556-564)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The web_search return statements selecting cleaned vs raw content (app/agents/tools.py 188-192); the returned string becomes the ToolMessage content in the run's message state that the model subsequently reads.",
+        "contract_id": "ecological-contract:4d73679be5ebb17ecb8480e8a58994b0",
+        "declared_mechanism": "Inside web_search: when _guardrail_model is injected (set to summary_model in init_agent_infra, app/agents/app.py 613-614), the first 3000 characters are judged by _GUARDRAIL_PROMPT (app/agents/tools.py 167-175); a 'yes' verdict triggers _fuzzy_remove_regex excision of the LLM-quoted injection text, or full discard with a safety notice when no concrete text is quoted (125-141, 177-187); the scrubbed content is compressed and wrapped in <tool_output> tags before return (188-192).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 122,
+            "line_start": 105,
+            "path": "app/agents/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          },
+          {
+            "line_end": 149,
+            "line_start": 144,
+            "path": "app/agents/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          },
+          {
+            "line_end": 175,
+            "line_start": 167,
+            "path": "app/agents/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          },
+          {
+            "line_end": 187,
+            "line_start": 177,
+            "path": "app/agents/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          },
+          {
+            "line_end": 192,
+            "line_start": 188,
+            "path": "app/agents/tools.py",
+            "role": "commit_point",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          },
+          {
+            "line_end": 614,
+            "line_start": 613,
+            "path": "app/agents/app.py",
+            "role": "guard_registration",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          },
+          {
+            "line_end": 556,
+            "line_start": 549,
+            "path": "app/agents/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c9e4cbf07f232abf267b540e159e648d4d34d4e775faa92e738f6114f3a11247"
+          },
+          {
+            "line_end": 668,
+            "line_start": 660,
+            "path": "app/agents/app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5ceb77530d66f2b31a1d04a1fe0ae3d2c6c335f4c77237ae60e642015429e8c4"
+          }
+        ],
+        "forbidden_condition": "Malicious instruction content in web_search results \u2014 attempts to ignore/override/replace system rules or role, trigger tool calls (e.g., data deletion or settings changes), impersonate system/admin messages, or exfiltrate the system prompt \u2014 passing through to the model in the tool's returned text (criteria defined at app/agents/tools.py 105-122).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The stated obligation ('must be scrubbed before reaching the model') cannot be read as an unconditional guarantee from this source because the detector-failure path returns raw content; whether the fail-open degradation is an accepted limitation is a binding question for the DEC consumer.",
+          "Production activation depends on init_agent_infra having injected _guardrail_model (app/agents/app.py 613-614); no supplied source shows a runtime assertion of this before tool use."
+        ],
+        "protected_operation": "The web_search tool's return of external search content into the agent conversation as model-readable tool output.",
+        "protected_resource": "web_search tool output text (raw Tavily result or its LLM-compressed form) delivered into the agent model context.",
+        "protection_obligation": "web_search tool output returned to the agent must be screened for prompt-injection/malicious instructions before reaching the model, with detected injection text excised via fuzzy matching \u2014 or the entire result discarded when the injection cannot be located \u2014 via the _guardrail_model LLM check embedded in the web_search tool. [From reviewer 1; the source mechanism is conditional, see scope limits.]",
+        "scope_limits": [
+          "Fail-open on detector failure: if the guardrail LLM raises, the check is skipped and raw content is passed through (app/agents/tools.py 172-175); when _guardrail_model is None, no detection runs at all (app/agents/tools.py 167).",
+          "Only the first 3000 characters of the raw result are submitted to the detector (app/agents/tools.py 170).",
+          "Excision is best-effort: it depends on the detector quoting the injection verbatim; non-matching quotes leave the original content unchanged, and whitespace/punctuation-only quotes return the original text (app/agents/tools.py 125-141).",
+          "The system-prompt XML-isolation rules for user input and tool output (app/agents/app.py 158-163) are advisory prompt text, not code-enforced scrubbing, and are excluded from this contract.",
+          "The external search request/response itself is an http effect and is not the guarded effect here; this contract covers only the content committed into model-visible conversation state."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The langmem library source behind create_manage_memory_tool is not supplied; the concrete delete commit for *_profile_manage action='delete' (store API call, hard vs soft delete) is unverified \u2014 app/agents/tools.py 384-414 shows only tool construction and instructions.",
+      "HumanInTheLoopMiddleware / InterruptOnConfig library internals (exact pre-execution gating, decision dispatch on resume, behavior on missing decisions) are not in the supplied views; only their registration and usage in app/agents/app.py are visible.",
+      "The HTTP/API layer that consumes call_agent/_stream_agent and the FastAPI lifespan invoking init_agent_infra are not supplied; the user-delivery transport for the final reply and the production wiring that guarantees enable_hitl=True and _guardrail_model injection are unverified from source.",
+      "No supplied source establishes whether astream 'messages' token streaming can surface intermediate model attempts inside DietarySafetyGuard's retry loop before the replacement response is committed (app/agents/app.py 433-455 vs 826-843).",
+      "Whether the LangMem reflection-executor delete path (enable_deletes=True, app/agents/app.py 623-633) can delete profile memories without HITL review, and whether that path is reachable from agent behavior, is not established by the supplied source."
+    ],
+    "repository": "Allen900913/langchain_AIChef",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:357d5e7b49cc68e5db639194c3ae2109"
+  },
+  "request_sha256": "b29cd43ab1749b30cfc4eb94f228c8700c4e64a81affb5551dfac5ee56c68085",
+  "response_sha256": "9ec141a440f11d47ec0519d43c30ca4458d9157c142d9bb874859869a49c92dc",
+  "state": "completed",
+  "tokens": 50045,
+  "unit": "v24-screen:357d5e7b49cc68e5db639194c3ae2109"
+}

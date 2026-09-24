@@ -1,0 +1,141 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guard executes at workflow.py:343-344 in run_tool_call, before the dispatch map is built and before execute_with_tool_audit invokes the executor; the filesystem effect commits when executor() runs (tooling.py:116) and the tool performs its effect \u2014 src.rename(dst) (filesystem.py:48), target.unlink() (filesystem.py:58), mkdir + handle.write (filesystem.py:64-67), target.read_text (filesystem.py:81), target.mkdir (filesystem.py:87), and base.iterdir/stat listing (filesystem.py:25-35) \u2014 reached via dispatch_map[name](**args) at workflow.py:366-368.",
+        "contract_id": "ecological-contract:b6880a31e07dfdf5229844358762e37a",
+        "declared_mechanism": "enforce_workspace_scope_for_fs (aiagent/tooling.py:88-100) resolves both workspace and candidate dir_path and raises ValueError on escape; it is invoked in run_tool_call (aiagent/workflow.py:343-344) when restrict_filesystem_to_workspace is true and project_root is non-None, after validate_tool_arguments (workflow.py:341-342) and before _build_dispatch_map/_execute/execute_with_tool_audit (workflow.py:346-378). The flag is config-driven and defaults enabled: FILESYSTEM_WORKSPACE_ONLY parses to True by default (aiagent/env.py:89; RuntimeConfig field at env.py:19). Each tool additionally enforces per-directory containment of the file argument via _resolve_in_dir (aiagent/tools/filesystem.py:9-16).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 26,
+            "line_start": 19,
+            "path": "aiagent/tooling.py",
+            "role": "guard_registration",
+            "source_sha256": "7fdc5191df070d10520b20b613d97897ab500763048c86ccde56c4db625feaaf"
+          },
+          {
+            "line_end": 100,
+            "line_start": 88,
+            "path": "aiagent/tooling.py",
+            "role": "guard_registration",
+            "source_sha256": "7fdc5191df070d10520b20b613d97897ab500763048c86ccde56c4db625feaaf"
+          },
+          {
+            "line_end": 344,
+            "line_start": 341,
+            "path": "aiagent/workflow.py",
+            "role": "guard_registration",
+            "source_sha256": "e931bd04347ddd9a771e256420f80aa8ebbe32a046ab1b81c57f997006332120"
+          },
+          {
+            "line_end": 89,
+            "line_start": 89,
+            "path": "aiagent/env.py",
+            "role": "guard_registration",
+            "source_sha256": "226fca6bd2723e425835d3aedb6d77af1c6135bac4ed0e1f6a0c06ce48d0b429"
+          },
+          {
+            "line_end": 100,
+            "line_start": 91,
+            "path": "aiagent/tooling.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7fdc5191df070d10520b20b613d97897ab500763048c86ccde56c4db625feaaf"
+          },
+          {
+            "line_end": 16,
+            "line_start": 9,
+            "path": "aiagent/tools/filesystem.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0f39db1eb5036095728eb135d70d1105fc97419eeb1dfdd685c91773aa49f891"
+          },
+          {
+            "line_end": 36,
+            "line_start": 19,
+            "path": "aiagent/tools/filesystem.py",
+            "role": "protected_operation",
+            "source_sha256": "0f39db1eb5036095728eb135d70d1105fc97419eeb1dfdd685c91773aa49f891"
+          },
+          {
+            "line_end": 88,
+            "line_start": 39,
+            "path": "aiagent/tools/filesystem.py",
+            "role": "protected_operation",
+            "source_sha256": "0f39db1eb5036095728eb135d70d1105fc97419eeb1dfdd685c91773aa49f891"
+          },
+          {
+            "line_end": 378,
+            "line_start": 346,
+            "path": "aiagent/workflow.py",
+            "role": "commit_point",
+            "source_sha256": "e931bd04347ddd9a771e256420f80aa8ebbe32a046ab1b81c57f997006332120"
+          },
+          {
+            "line_end": 118,
+            "line_start": 111,
+            "path": "aiagent/tooling.py",
+            "role": "commit_point",
+            "source_sha256": "7fdc5191df070d10520b20b613d97897ab500763048c86ccde56c4db625feaaf"
+          },
+          {
+            "line_end": 154,
+            "line_start": 138,
+            "path": "aiagent/workflow.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e931bd04347ddd9a771e256420f80aa8ebbe32a046ab1b81c57f997006332120"
+          },
+          {
+            "line_end": 314,
+            "line_start": 297,
+            "path": "aiagent/workflow.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e931bd04347ddd9a771e256420f80aa8ebbe32a046ab1b81c57f997006332120"
+          },
+          {
+            "line_end": 199,
+            "line_start": 191,
+            "path": "aiagent/tools/filesystem.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0f39db1eb5036095728eb135d70d1105fc97419eeb1dfdd685c91773aa49f891"
+          }
+        ],
+        "forbidden_condition": "Any of the six filesystem tools in _FILESYSTEM_TOOL_NAMES (tooling.py:19-26) being dispatched where arguments['dir_path'] is absent or empty (ValueError 'requires dir_path within workspace') or where Path(raw_dir_path).expanduser().resolve() is not relative_to(project_root.expanduser().resolve()) (ValueError 'dir_path escapes workspace'). Defense-in-depth forbidden condition inside the tools: a name/filename/old_name/new_name argument whose resolved target escapes the tool's resolved dir_path ('Path escapes the target directory').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No supplied source shows the production call sites that load RuntimeConfig and pass restrict_filesystem_to_workspace and a non-None project_root into executechainedtoolcall, complete_after_tool_results, or run_tool_call, so end-to-end default-on wiring from FILESYSTEM_WORKSPACE_ONLY is unconfirmed.",
+          "Whether run_tool_call is the sole runtime execution path for the six filesystem tools (no alternative dispatch site appears in the supplied views, but repository enumeration is not complete).",
+          "Whether relative dir_path arguments occur in operation and whether CWD-relative resolution matches the intended workspace anchoring."
+        ],
+        "protected_operation": "Dispatch and execution of agent tool calls for list_dir, rename_file, delete_file, write_file, read_file, and create_dir inside run_tool_call's _execute closure, executed via execute_with_tool_audit.",
+        "protected_resource": "Files and directories under the resolved project_root workspace (the workspace containment boundary), including their contents and metadata exposed by reads/listings.",
+        "protection_obligation": "Agent-invoked filesystem tools (list_dir, rename_file, delete_file, write_file, read_file, create_dir) must not be executed with a dir_path that resolves outside the project workspace: run_tool_call must invoke enforce_workspace_scope_for_fs (rejecting escaping, missing, or empty dir_path values) after argument validation and before the tool dispatches and commits its filesystem effect inside execute_with_tool_audit. Merged from first- and second-phase reviewer wording, which describes the same registered workspace-containment guard.",
+        "scope_limits": [
+          "Enforcement is conditional: the guard runs only when restrict_filesystem_to_workspace is true and project_root is non-None (workflow.py:343); run_tool_call and executechainedtoolcall signatures default these to False/None, while env.py:89 defaults the env flag to True.",
+          "enforce_workspace_scope_for_fs validates only arguments['dir_path']; containment of filename/old_name/new_name/name arguments is delegated to _resolve_in_dir inside each tool, not to the workspace guard.",
+          "The guard covers only the six names in _FILESYSTEM_TOOL_NAMES; other tools (web, weather, skills, history/search_history, anythingllmquery, get_system_datetime) are out of this obligation's scope.",
+          "The workspace check exists only on the run_tool_call path; direct invocation of the filesystem tool functions elsewhere would receive only the per-directory _resolve_in_dir check.",
+          "The guard fails closed on missing/empty dir_path for the six filesystem tools (tooling.py:92-93).",
+          "Relative dir_path values are resolved against the process working directory (Path.resolve in tooling.py:96 and filesystem.py:10-11), not against project_root, so CWD determines whether relative paths pass.",
+          "The tool-call audit log containment (tooling.py:139-145) is a separate mechanism and is not part of this contract."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied source view wires load_runtime_config/RuntimeConfig into executechainedtoolcall, complete_after_tool_results, or run_tool_call; signature defaults are restrict_filesystem_to_workspace=False and project_root=None, so whether the env default-on flag (env.py:89) is honored at every entry point is unconfirmed.",
+      "Behavior labels and runtime data are unavailable; prevalence of out-of-workspace dir_path attempts cannot be assessed from the supplied sources.",
+      "No supplied evidence establishes whether run_tool_call is the only code path that executes the six filesystem tools at runtime (repository enumeration is not complete)."
+    ],
+    "repository": "wwwt200521-wt/AI-Assistant",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:c80367ba7195e92c86e3fb4f1759aa83"
+  },
+  "request_sha256": "8b7bc06ef9bdb75f20343fef77bd0c88103ebd875bb432981b708f18cbdf1829",
+  "response_sha256": "a9febe51af8846bd876b15567380e1597745a2ef4df0012b7d44abbe55b5f95d",
+  "state": "completed",
+  "tokens": 19367,
+  "unit": "v24-screen:c80367ba7195e92c86e3fb4f1759aa83"
+}

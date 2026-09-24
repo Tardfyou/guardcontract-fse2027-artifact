@@ -1,0 +1,185 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await repo.set(_KEY_ENABLED_MUTATIONS, or.dumps(safe_mutations).decode()) (settings.py:1839) \u2014 the settings-table write.",
+        "contract_id": "ecological-contract:269cc7504de45fc02f27c441a836e6ca",
+        "declared_mechanism": "Server-side allowlist filter: safe_mutations = [t for t in body.enabled_mutations if t in _SKILL_TOOL_NAMES] computed before the write (settings.py:1838); allowlist constants declared at settings.py:55-61 (mirrored at graph.py:15-17); persisted read helper _get_enabled_mutations at settings.py:603-610.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 61,
+            "line_start": 51,
+            "path": "backend/src/analytics_agent/api/settings.py",
+            "role": "forbidden_condition",
+            "source_sha256": "441c4266273c13eb1230bc03f620bf7a5f0794aa3186f69c3ff5b6f6804147fd"
+          },
+          {
+            "line_end": 1836,
+            "line_start": 1832,
+            "path": "backend/src/analytics_agent/api/settings.py",
+            "role": "protected_operation",
+            "source_sha256": "441c4266273c13eb1230bc03f620bf7a5f0794aa3186f69c3ff5b6f6804147fd"
+          },
+          {
+            "line_end": 1839,
+            "line_start": 1838,
+            "path": "backend/src/analytics_agent/api/settings.py",
+            "role": "guard_registration",
+            "source_sha256": "441c4266273c13eb1230bc03f620bf7a5f0794aa3186f69c3ff5b6f6804147fd"
+          },
+          {
+            "line_end": 1839,
+            "line_start": 1839,
+            "path": "backend/src/analytics_agent/api/settings.py",
+            "role": "commit_point",
+            "source_sha256": "441c4266273c13eb1230bc03f620bf7a5f0794aa3186f69c3ff5b6f6804147fd"
+          },
+          {
+            "line_end": 610,
+            "line_start": 603,
+            "path": "backend/src/analytics_agent/api/settings.py",
+            "role": "guard_registration",
+            "source_sha256": "441c4266273c13eb1230bc03f620bf7a5f0794aa3186f69c3ff5b6f6804147fd"
+          }
+        ],
+        "forbidden_condition": "Persisting an enabled_mutation_tools value that includes any name outside _SKILL_TOOL_NAMES (committing unvalidated or arbitrary tool names as enabled mutation tools).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which components read _KEY_ENABLED_MUTATIONS and feed the value into agent graph construction?",
+          "Do any other writers (seeding, migrations, alternate endpoints) set the enabled_mutation_tools key without the _SKILL_TOOL_NAMES filter?",
+          "Is PUT /api/settings/tools exposed with authentication/authorization in deployment (not visible in supplied source)?"
+        ],
+        "protected_operation": "Persistence of the enabled mutation-tools allowlist through SettingsRepo.set under the key enabled_mutation_tools in the update_tools endpoint.",
+        "protected_resource": "The settings-table row keyed 'enabled_mutation_tools' (_KEY_ENABLED_MUTATIONS), the declared persisted source of agent mutation-tool enablement.",
+        "protection_obligation": "The persisted enabled_mutation_tools setting must contain only tool names from the _SKILL_TOOL_NAMES allowlist ({publish_analysis, save_correction}); the PUT /api/settings/tools endpoint filters body.enabled_mutations through that allowlist before committing the settings write that feeds agent mutation-tool enablement.",
+        "scope_limits": [
+          "Supplied source shows no path from this persisted setting into build_graph's enabled_mutations parameter; the linkage is by shared key/constant naming only.",
+          "No authentication or authorization is visible on PUT /api/settings/tools in the supplied view; access control is outside this contract.",
+          "The filter is name-equality against a hardcoded set; it validates names only, not tool semantics or implementations.",
+          "This contract covers the settings persistence write only; agent toolset registration gating is a separate contract in this unit."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "skill_tools assembly and all_tools aggregation (graph.py:68, graph.py:81), finalized when create_agent(model=llm, tools=all_tools, ...) binds the toolset to the agent (graph.py:130-135).",
+        "contract_id": "ecological-contract:d33454c0efca0096fc51963787143ca3",
+        "declared_mechanism": "Opt-in allowlist gating: build_graph forwards 'enabled_mutations or set()' to build_skill_tools (graph.py:68); the loader constructs a StructuredTool only for skill ids present in enabled_skills with a registered implementation and skips unknown ids with a warning (loader.py:84-112); module-level _SKILL_TOOL_NAMES frozenset {publish_analysis, save_correction} declares the opt-in set (graph.py:15-17); the settings API persists only names filtered through _SKILL_TOOL_NAMES (settings.py:1838-1839).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 17,
+            "line_start": 15,
+            "path": "backend/src/analytics_agent/agent/graph.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9b88506791d82b835ae2031d6b98ea802e60d1b90908c3a27d5ba8959e1e248e"
+          },
+          {
+            "line_end": 47,
+            "line_start": 39,
+            "path": "backend/src/analytics_agent/agent/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "9b88506791d82b835ae2031d6b98ea802e60d1b90908c3a27d5ba8959e1e248e"
+          },
+          {
+            "line_end": 68,
+            "line_start": 65,
+            "path": "backend/src/analytics_agent/agent/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "9b88506791d82b835ae2031d6b98ea802e60d1b90908c3a27d5ba8959e1e248e"
+          },
+          {
+            "line_end": 112,
+            "line_start": 84,
+            "path": "backend/src/analytics_agent/skills/loader.py",
+            "role": "guard_registration",
+            "source_sha256": "1216beb33f7d57f72fc588b8510d8a609b86129393b1c2dbd6916c8fd9991613"
+          },
+          {
+            "line_end": 70,
+            "line_start": 56,
+            "path": "backend/src/analytics_agent/skills/loader.py",
+            "role": "protected_operation",
+            "source_sha256": "1216beb33f7d57f72fc588b8510d8a609b86129393b1c2dbd6916c8fd9991613"
+          },
+          {
+            "line_end": 81,
+            "line_start": 81,
+            "path": "backend/src/analytics_agent/agent/graph.py",
+            "role": "commit_point",
+            "source_sha256": "9b88506791d82b835ae2031d6b98ea802e60d1b90908c3a27d5ba8959e1e248e"
+          },
+          {
+            "line_end": 135,
+            "line_start": 130,
+            "path": "backend/src/analytics_agent/agent/graph.py",
+            "role": "commit_point",
+            "source_sha256": "9b88506791d82b835ae2031d6b98ea802e60d1b90908c3a27d5ba8959e1e248e"
+          },
+          {
+            "line_end": 135,
+            "line_start": 130,
+            "path": "backend/src/analytics_agent/agent/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9b88506791d82b835ae2031d6b98ea802e60d1b90908c3a27d5ba8959e1e248e"
+          },
+          {
+            "line_end": 1841,
+            "line_start": 1832,
+            "path": "backend/src/analytics_agent/api/settings.py",
+            "role": "guard_registration",
+            "source_sha256": "441c4266273c13eb1230bc03f620bf7a5f0794aa3186f69c3ff5b6f6804147fd"
+          },
+          {
+            "line_end": 610,
+            "line_start": 603,
+            "path": "backend/src/analytics_agent/api/settings.py",
+            "role": "guard_registration",
+            "source_sha256": "441c4266273c13eb1230bc03f620bf7a5f0794aa3186f69c3ff5b6f6804147fd"
+          }
+        ],
+        "forbidden_condition": "publish_analysis or save_correction being present in all_tools passed to create_agent (i.e., exposed for model invocation) when not explicitly enabled via the enabled_mutations set passed to build_graph.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which request-time component reads the enabled_mutation_tools setting (e.g., via _get_enabled_mutations) and passes it into build_graph?",
+          "Can any caller invoke build_graph with an enabled_mutations set not derived from the allowlist-filtered setting?",
+          "What external effect do _publish_analysis_impl and _save_correction_impl commit on invocation, and in which effect stratum?",
+          "Should the disabled_tools setting also apply to skill_tools, and is its absence intentional?"
+        ],
+        "protected_operation": "Assembly and registration of opt-in write-back skill tools into the agent's tool list (build_skill_tools -> skill_tools -> all_tools -> create_agent).",
+        "protected_resource": "The agent toolset assembled in build_graph (all_tools), specifically the publish_analysis and save_correction skill tools backed by _publish_analysis_impl / _save_correction_impl.",
+        "protection_obligation": "Write-back mutation skill tools (publish_analysis, save_correction) may be assembled into the agent toolset handed to create_agent only when their names appear in the enabled_mutations set supplied to build_graph, which is declared to originate from the persisted enabled_mutation_tools setting. (Merged first- and second-phase reviewer wording.)",
+        "scope_limits": [
+          "Registration-time gate only: the supplied view shows no per-invocation re-check of enablement once tools are registered.",
+          "datahub_skills.py implementations are not supplied; the external effects committed when these tools run are outside this contract.",
+          "skill_tools are not filtered by the disabled_tools set that applies to datahub_tools, engine_tools, and chart_tools (graph.py:59, 72, 79-80); the disabled-tools mechanism is a separate control.",
+          "MCP/context-platform tools and engine tools are assembled on separate paths not governed by enabled_mutations.",
+          "graph.py declares _SKILL_TOOL_NAMES but the supplied view shows no use of it inside build_graph; build-time enforcement rests entirely on iterating the caller-provided enabled_mutations set.",
+          "End-to-end guarantee depends on callers sourcing enabled_mutations from the allowlist-filtered persisted setting; no call site of build_graph appears in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied view contains a call site of build_graph; the runtime flow from the persisted enabled_mutation_tools setting (settings.py:1839; read helper settings.py:603-610) into build_graph(enabled_mutations=...) is unverified.",
+      "analytics_agent/skills/datahub_skills.py (holding _publish_analysis_impl and _save_correction_impl) is not supplied; the effects of invoking publish_analysis/save_correction are unknown. The reviewers' claim that these implementations upsert documents/descriptions into DataHub is not supported by the supplied source.",
+      "No authentication/authorization middleware for the settings router is visible in the supplied views.",
+      "No supplied evidence establishes whether writers other than update_tools can modify the enabled_mutation_tools settings key.",
+      "The _SKILL_TOOL_NAMES frozenset declared in graph.py (lines 15-17) is not referenced elsewhere in the supplied graph.py view; whether build-time callers re-validate the enabled_mutations set against it is undetermined."
+    ],
+    "repository": "datahub-project/analytics-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:61b59f483719095f029ab8853dde0ba7"
+  },
+  "request_sha256": "5b734d3a38d67b79cd1bfe01a51f13652cda1e848f04e72a8f11b01952c91d88",
+  "response_sha256": "ae6ba3f8691342cf6749cac7c1c1c31bd1be34773ec985270a1813b08e491448",
+  "state": "completed",
+  "tokens": 47260,
+  "unit": "v24-screen:61b59f483719095f029ab8853dde0ba7"
+}

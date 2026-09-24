@@ -1,0 +1,234 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "server/api/publish.py:215-217 - acquisition of the per-platform lock ('async with lock:') immediately enclosing 'success = await publisher.do_login()'; for contended requests the rejection commits earlier at publish.py:210-211.",
+        "contract_id": "ecological-contract:af0e6383959e00a5c964837a6c488c4f",
+        "declared_mechanism": "Module-level _publish_locks: dict[str, asyncio.Lock] with lazy per-platform _get_lock(platform); optimistic lock.locked() check raising _already_running(platform) (HTTPException 429, headers Retry-After: 5); mutual exclusion via 'async with lock:' wrapping 'await publisher.do_login()'. Source comment (publish.py:208-209) states that on a single asyncio event loop the locked() check and lock acquisition have no intervening await, and that the 'async with lock' block provides the actual mutual exclusion while the check is only an optimistic early return.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 28,
+            "line_start": 22,
+            "path": "server/api/publish.py",
+            "role": "guard_registration",
+            "source_sha256": "19082251ee749f3214b8f62819393fdd3bf5b3aaf432b691bf1863ed4bc0598d"
+          },
+          {
+            "line_end": 42,
+            "line_start": 31,
+            "path": "server/api/publish.py",
+            "role": "forbidden_condition",
+            "source_sha256": "19082251ee749f3214b8f62819393fdd3bf5b3aaf432b691bf1863ed4bc0598d"
+          },
+          {
+            "line_end": 205,
+            "line_start": 201,
+            "path": "server/api/publish.py",
+            "role": "protected_operation",
+            "source_sha256": "19082251ee749f3214b8f62819393fdd3bf5b3aaf432b691bf1863ed4bc0598d"
+          },
+          {
+            "line_end": 211,
+            "line_start": 207,
+            "path": "server/api/publish.py",
+            "role": "guard_registration",
+            "source_sha256": "19082251ee749f3214b8f62819393fdd3bf5b3aaf432b691bf1863ed4bc0598d"
+          },
+          {
+            "line_end": 217,
+            "line_start": 215,
+            "path": "server/api/publish.py",
+            "role": "commit_point",
+            "source_sha256": "19082251ee749f3214b8f62819393fdd3bf5b3aaf432b691bf1863ed4bc0598d"
+          },
+          {
+            "line_end": 166,
+            "line_start": 155,
+            "path": "server/publishers/base.py",
+            "role": "protected_operation",
+            "source_sha256": "992b3164e74ec90e2715b5d37103ddb4a508f10bc62c7c1a2049730d3d082ba0"
+          },
+          {
+            "line_end": 176,
+            "line_start": 168,
+            "path": "server/publishers/base.py",
+            "role": "commit_point",
+            "source_sha256": "992b3164e74ec90e2715b5d37103ddb4a508f10bc62c7c1a2049730d3d082ba0"
+          }
+        ],
+        "forbidden_condition": "Two concurrent executions of publisher.do_login() for the same platform, i.e., a second login request proceeding for a platform whose per-platform lock is already held (\"A task is already running for {platform}\").",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source registers this endpoint as an agent tool, wires it to an agent lifecycle hook, or shows agent-generated input reaching publisher.do_login(); agent_mediation is recorded as not_established.",
+          "Concrete do_login() implementations per platform (server/publishers/wechat_mp.py, douyin, xiaohongshu modules) are not in supplied views; WechatMpPublisher.do_login's effect type (API-token flow suggested by error handling at publish.py:224-230 vs browser flow) is not established.",
+          "Whether the app.py global exception handler referenced at publish.py:35-36 preserves the Retry-After header when enveloping the 429 is not shown in supplied source."
+        ],
+        "protected_operation": "HTTP POST /api/publish/{platform}/login handler invoking await publisher.do_login() on the platform's registered publisher in deps.PUBLISHERS.",
+        "protected_resource": "Per-platform login flow of the publisher instance keyed by {platform} in deps.PUBLISHERS (xiaohongshu / wechat_mp / douyin), including the browser login session and the cookies state it produces.",
+        "protection_obligation": "POST /api/publish/{platform}/login must not execute publisher.do_login() concurrently for the same platform: a per-platform asyncio.Lock registered in _publish_locks (via _get_lock) serializes the login flow, and any request arriving while the lock is held is rejected with HTTP 429 (Retry-After: 5) via _already_running before the lock-guarded login executes.",
+        "scope_limits": [
+          "Guard applies only to the /publish/{platform}/login route; POST /publish (publish.py:71-112) dispatches publish background tasks without taking _publish_locks.",
+          "Serialization is per asyncio event loop / process only; no cross-process or distributed lock is shown.",
+          "The optimistic locked()->429 check is an advisory fast-fail; actual mutual exclusion is the 'async with lock' block per the source comment at publish.py:208-209.",
+          "The guarded region encloses effects beyond the process stratum, notably the cookies file write via BrowserPublisher.save_cookies (base.py:120-125, invoked at base.py:185-186) and browser navigation to the platform login URL; these downstream effects are not separately contracted here.",
+          "Unknown platform values are rejected before lock acquisition (publish.py:203-205); the guard performs no platform validation beyond deps.PUBLISHERS membership."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "tasks.py:83-85 - 'task.cancel()' prevents the duplicate dispatched task from executing and 'return False' reports the rejection; uncontended registration commits at tasks.py:86-88.",
+        "contract_id": "ecological-contract:da10da177c2d1db87f4796e4929961cf",
+        "declared_mechanism": "Name-keyed dict self._background_tasks (tasks.py:61); register_background dedupe: if existing is not None and not existing.done() then task.cancel(), log warning, return False; otherwise store the handle and attach add_done_callback to pop the name on completion (tasks.py:80-88).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 64,
+            "line_start": 59,
+            "path": "server/api/tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "12d177d85fb380997a7b33df2841af28f90f2f38b32526959ab836d2fb748814"
+          },
+          {
+            "line_end": 79,
+            "line_start": 74,
+            "path": "server/api/tasks.py",
+            "role": "protected_operation",
+            "source_sha256": "12d177d85fb380997a7b33df2841af28f90f2f38b32526959ab836d2fb748814"
+          },
+          {
+            "line_end": 88,
+            "line_start": 74,
+            "path": "server/api/tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "12d177d85fb380997a7b33df2841af28f90f2f38b32526959ab836d2fb748814"
+          },
+          {
+            "line_end": 85,
+            "line_start": 80,
+            "path": "server/api/tasks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "12d177d85fb380997a7b33df2841af28f90f2f38b32526959ab836d2fb748814"
+          },
+          {
+            "line_end": 85,
+            "line_start": 83,
+            "path": "server/api/tasks.py",
+            "role": "commit_point",
+            "source_sha256": "12d177d85fb380997a7b33df2841af28f90f2f38b32526959ab836d2fb748814"
+          }
+        ],
+        "forbidden_condition": "Duplicate dispatch of a same-named background loop: registering a new task under a name whose existing handle is present and not done (two concurrently running instances of, e.g., the newsnow_crawl_loop referenced in comments).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Callers of register_background (comments reference unified lifespan/toggle startup paths at tasks.py:60 and 78) are not in supplied source; concrete loop names and loop bodies are unknown.",
+          "No supplied source ties background loop dispatch to an agent tool, agent lifecycle hook, or agent-generated input; agent_mediation is recorded as not_established."
+        ],
+        "protected_operation": "Dispatch/registration of a named long-running background asyncio task via TaskManager.register_background(name, task).",
+        "protected_resource": "The TaskManager._background_tasks name slot - the single-running-instance invariant for each named long-running background loop.",
+        "protection_obligation": "A long-running background loop registered by name must not be dispatched twice concurrently: TaskManager.register_background(name, task) cancels a newly dispatched task and returns False when a same-named loop is still running, and removes the registry entry when the loop completes.",
+        "scope_limits": [
+          "Covers only long-running loops registered through register_background; short tasks registered via register_short (tasks.py:110-126) are tracked for shutdown/observability but are not deduplicated.",
+          "The underlying loop bodies (e.g., the newsnow crawl loop referenced at tasks.py:59-60) are not in supplied source; their external effect stratum is not established, so this contract's stratum reflects the in-process task-execution commit point at which the duplicate is cancelled.",
+          "Dedupe is per TaskManager instance (module-level singleton task_manager, tasks.py:249); no cross-process dedupe is shown.",
+          "Rejection has no HTTP surface: it is internal (task.cancel() plus a False return); the callers that observe the False return are not in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "base.py:195-196 - acquisition of self._lock at publish() entry; the enclosed external effect commits at the Playwright browser process launch in _publish_impl (base.py:285) and the storage_state cookie write (base.py:292-293), all inside the lock.",
+        "contract_id": "ecological-contract:ecf10cf33860bffa175eab560d6a7776",
+        "declared_mechanism": "Instance-level asyncio.Lock created in BrowserPublisher.__init__ (self._lock, base.py:100) and taken for the whole publish() body via 'async with self._lock:' (base.py:195-196); unlike the login route there is no 429 fast-fail - contended callers queue on the lock.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 102,
+            "line_start": 96,
+            "path": "server/publishers/base.py",
+            "role": "guard_registration",
+            "source_sha256": "992b3164e74ec90e2715b5d37103ddb4a508f10bc62c7c1a2049730d3d082ba0"
+          },
+          {
+            "line_end": 196,
+            "line_start": 195,
+            "path": "server/publishers/base.py",
+            "role": "commit_point",
+            "source_sha256": "992b3164e74ec90e2715b5d37103ddb4a508f10bc62c7c1a2049730d3d082ba0"
+          },
+          {
+            "line_end": 110,
+            "line_start": 93,
+            "path": "server/api/publish.py",
+            "role": "forbidden_condition",
+            "source_sha256": "19082251ee749f3214b8f62819393fdd3bf5b3aaf432b691bf1863ed4bc0598d"
+          },
+          {
+            "line_end": 155,
+            "line_start": 148,
+            "path": "server/api/publish.py",
+            "role": "protected_operation",
+            "source_sha256": "19082251ee749f3214b8f62819393fdd3bf5b3aaf432b691bf1863ed4bc0598d"
+          },
+          {
+            "line_end": 227,
+            "line_start": 224,
+            "path": "server/publishers/base.py",
+            "role": "protected_operation",
+            "source_sha256": "992b3164e74ec90e2715b5d37103ddb4a508f10bc62c7c1a2049730d3d082ba0"
+          },
+          {
+            "line_end": 287,
+            "line_start": 282,
+            "path": "server/publishers/base.py",
+            "role": "commit_point",
+            "source_sha256": "992b3164e74ec90e2715b5d37103ddb4a508f10bc62c7c1a2049730d3d082ba0"
+          }
+        ],
+        "forbidden_condition": "Concurrent invocation of BrowserPublisher.publish() on the same publisher instance; each POST /publish request spawns its own background task via task_manager.register_short (publish.py:93-110), so overlapping requests for the same platform can call publish() simultaneously unless serialized by the instance lock.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds POST /publish or publisher.publish() to an agent tool, agent lifecycle hook, or agent-generated input; title/content/article_id originate from the HTTP request body (publish.py:62-90) but no agent origin is shown, so agent_mediation is not_established.",
+          "Publisher subclass hierarchy (which of the three publishers inherit BrowserPublisher._lock) is not shown in supplied views.",
+          "Config values PUBLISH_TIMEOUT and COOKIES_DIR are imported (base.py:16) but their definitions are not supplied."
+        ],
+        "protected_operation": "BrowserPublisher.publish(title, content, ...) - invoked by _run_publish_task at publish.py:148-155 and internally running _publish_impl through asyncio.to_thread(_run_playwright, ...) (base.py:224-227).",
+        "protected_resource": "The per-platform BrowserPublisher instance's browser-automation session and its cookies file (self.cookies_path, COOKIES_DIR/{platform}.).",
+        "protection_obligation": "For each BrowserPublisher instance, only one publish() flow may execute at a time: the instance's asyncio.Lock (self._lock) serializes the entire publish body, including any in-flow automatic login or re-login via do_login(), the Playwright publish run, and the cookies save.",
+        "scope_limits": [
+          "Lock is per publisher instance; different platform instances do not exclude one another, and this lock is a distinct mechanism from the _publish_locks guard used by the /publish/{platform}/login route.",
+          "Only BrowserPublisher subclasses are covered; whether WechatMpPublisher / DouyinPublisher / XiaohongshuPublisher subclass BrowserPublisher (and thus share this lock) is not established from supplied views.",
+          "This is not a global publish mutex: publishes to distinct platforms may still run concurrently.",
+          "The cookies file read/write (base.py:111-125) inside the guarded region is a file-stratum effect enclosed by this contract, not separately contracted."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Agent mediation: no supplied source view registers any of these operations as an agent tool, wires them to an agent lifecycle hook, or shows agent-generated input reaching the guarded effects; agent_entry_binding evidence is therefore absent and agent_mediation is not_established for all contracts.",
+      "Publisher implementations for wechat_mp / douyin / xiaohongshu (server/publishers/*.py) are not supplied; the concrete effect type of do_login()/publish() per platform (e.g., WechatMpPublisher's token API flow implied by publish.py:224-230 vs a browser flow) is not established, and the per-platform subclass relationship to BrowserPublisher._lock is unknown.",
+      "Callers of TaskManager.register_background (lifespan/toggle startup paths referenced in comments) and the background loop bodies (e.g., newsnow crawl loop) are not supplied; the external effect stratum of the guarded loops cannot be pinned beyond the in-process dispatch commit point.",
+      "The app.py global exception handler referenced at publish.py:35-36 (which adds code/type to the 429 envelope and forwards headers) is not supplied; preservation of the Retry-After header end-to-end is unverified.",
+      "TaskManager._lock additionally serializes internal mutations of the task registry and SSE subscriber list (tasks.py:58, 172-173, 209-240, 242-246); no reviewed obligation raised it, so it was not compiled as a contract and its inclusion in scope is left open.",
+      "Config values PUBLISH_TIMEOUT, COOKIES_DIR, and WECHAT_APP_ID/WECHAT_APP_SECRET are imported but their definitions are not in supplied views."
+    ],
+    "repository": "awaygu/shiyuan-ai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a82aad23cff862e61ca67d1190705796"
+  },
+  "request_sha256": "1860c51255f7f44e81e8cbfb98b86221617d34fc35d54fea39331333bb3af5ec",
+  "response_sha256": "d61843902622a2df115e9763bbf9f65f6c09bf35fa94a4565a90a639dcb423c6",
+  "state": "completed",
+  "tokens": 28945,
+  "unit": "v24-screen:a82aad23cff862e61ca67d1190705796"
+}

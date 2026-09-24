@@ -1,0 +1,303 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "src/sqldbagent/safety/execution.py:79-80 \u2014 `with engine.begin() as connection:` followed by `result = connection.execute(text(guard_result.normalized_sql))`, i.e., the transactional database statement execution in run().",
+        "contract_id": "ecological-contract:2b6d9b384d90090912ac6919425c4a9c",
+        "declared_mechanism": "SafeQueryService.run invokes self._guard.guard(sql, max_rows=..., access_mode=...) and short-circuits (returns a QueryExecutionResult without executing) unless guard_result.allowed is true and guard_result.normalized_sql is present; only text(guard_result.normalized_sql) is executed inside engine.begin(); QueryGuardService rewrites the AST to clamp/add LIMIT to policy.max_rows; _resolve_sync_engine routes access_mode=='writable' to the dedicated write_engine (ConfigurationError if absent) and read_only traffic to the default engine.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 63,
+            "line_start": 46,
+            "path": "src/sqldbagent/safety/execution.py",
+            "role": "protected_operation",
+            "source_sha256": "96cc5e33c087fa25b317a077c035ae3fcab6fcd298cb509185286fb0812428f1"
+          },
+          {
+            "line_end": 75,
+            "line_start": 65,
+            "path": "src/sqldbagent/safety/execution.py",
+            "role": "guard_registration",
+            "source_sha256": "96cc5e33c087fa25b317a077c035ae3fcab6fcd298cb509185286fb0812428f1"
+          },
+          {
+            "line_end": 68,
+            "line_start": 44,
+            "path": "src/sqldbagent/safety/guard.py",
+            "role": "guard_registration",
+            "source_sha256": "0d6a318c2bdc3fa22f54267b61e30cbeeb767d1e11de96fd23458bf63b9f9b64"
+          },
+          {
+            "line_end": 125,
+            "line_start": 101,
+            "path": "src/sqldbagent/safety/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0d6a318c2bdc3fa22f54267b61e30cbeeb767d1e11de96fd23458bf63b9f9b64"
+          },
+          {
+            "line_end": 181,
+            "line_start": 167,
+            "path": "src/sqldbagent/safety/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0d6a318c2bdc3fa22f54267b61e30cbeeb767d1e11de96fd23458bf63b9f9b64"
+          },
+          {
+            "line_end": 246,
+            "line_start": 227,
+            "path": "src/sqldbagent/safety/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0d6a318c2bdc3fa22f54267b61e30cbeeb767d1e11de96fd23458bf63b9f9b64"
+          },
+          {
+            "line_end": 275,
+            "line_start": 248,
+            "path": "src/sqldbagent/safety/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0d6a318c2bdc3fa22f54267b61e30cbeeb767d1e11de96fd23458bf63b9f9b64"
+          },
+          {
+            "line_end": 217,
+            "line_start": 210,
+            "path": "src/sqldbagent/safety/execution.py",
+            "role": "guard_registration",
+            "source_sha256": "96cc5e33c087fa25b317a077c035ae3fcab6fcd298cb509185286fb0812428f1"
+          },
+          {
+            "line_end": 80,
+            "line_start": 78,
+            "path": "src/sqldbagent/safety/execution.py",
+            "role": "commit_point",
+            "source_sha256": "96cc5e33c087fa25b317a077c035ae3fcab6fcd298cb509185286fb0812428f1"
+          }
+        ],
+        "forbidden_condition": "A disallowed or unguarded statement reaching the sync execution commit: SQL that fails to parse, contains multiple statements, is a non-Query statement in read_only mode, contains a disallowed operation (read_only: Delete/Update/Insert/Merge plus Create/Drop/Alter/Command/Copy/Grant/Revoke/TruncateTable/Use/Call; writable mode still forbids the DDL/Command list), references a schema outside policy.allowed_schemas, requests writable mode when policy.allow_writes is false, or would return more rows than the effective max_rows without a clamping LIMIT \u2014 none of these may be executed; writable execution without a configured write engine must raise rather than fall back to the default engine.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source shows which component invokes SafeQueryService.run or where the sql argument originates; no agent tool registration, lifecycle hook, or agent-input dataflow is present in the supplied views.",
+          "The composition root constructing SafeQueryService with concrete Engine and QueryGuardService instances is not supplied.",
+          "SafetySettings definition and defaults (allow_writes, allowed_schemas, max_rows, statement_timeout_seconds) are not in the supplied views.",
+          "Implementations of should_apply_row_limit and to_sqlglot_dialect (safety/policies.py) are not supplied."
+        ],
+        "protected_operation": "Guarded synchronous execution of a single SQL statement via SafeQueryService.run(sql, max_rows, access_mode).",
+        "protected_resource": "The configured datasource reached through the SafeQueryService sync engine (and its tables/schemas).",
+        "protection_obligation": "Every SQL statement executed through SafeQueryService.run must first pass QueryGuardService.guard under the datasource SafetySettings (parse, single-statement requirement, operation allowlist per access mode, schema allowlist, row-limit normalization), and only guard-approved normalized SQL may be committed to the datasource; writable execution additionally requires policy.allow_writes and is routed to a dedicated write engine.",
+        "scope_limits": [
+          "Sync path only; the async path is covered by a separate contract.",
+          "The guard is statement-text analysis via SQLGlot AST matching (statement.find(node_type)); the supplied guard.py logic is treated as the declared mechanism, not as verified bypass-resistant behavior.",
+          "Writable DML (Delete/Update/Insert/Merge) is permitted when policy.allow_writes is true and a dedicated write engine is configured; this contract forbids unguarded/unauthorized writes on the default path, not writes per se.",
+          "QueryGuardService.lint applies no guard rewrites and is not on the execution path.",
+          "The origin of the sql argument (human, CLI, or agent) is not established in the supplied views; the gate applies to whichever caller invokes run()."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "src/sqldbagent/safety/execution.py:154-155 \u2014 `async with engine.begin() as connection:` followed by `result = await connection.execute(text(guard_result.normalized_sql))`, i.e., the transactional database statement execution in run_async().",
+        "contract_id": "ecological-contract:d31169bd1c9072ce2d8a00452a1bdd7f",
+        "declared_mechanism": "SafeQueryService.run_async invokes self._guard.guard(sql, max_rows=..., access_mode=...) and short-circuits without execution unless guard_result.allowed and guard_result.normalized_sql are present; only text(guard_result.normalized_sql) is executed via await connection.execute inside engine.begin(); _resolve_async_engine returns write_async_engine only for access_mode=='writable' (ConfigurationError otherwise) and the default async engine for read_only (ConfigurationError if absent).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 133,
+            "line_start": 113,
+            "path": "src/sqldbagent/safety/execution.py",
+            "role": "protected_operation",
+            "source_sha256": "96cc5e33c087fa25b317a077c035ae3fcab6fcd298cb509185286fb0812428f1"
+          },
+          {
+            "line_end": 138,
+            "line_start": 135,
+            "path": "src/sqldbagent/safety/execution.py",
+            "role": "forbidden_condition",
+            "source_sha256": "96cc5e33c087fa25b317a077c035ae3fcab6fcd298cb509185286fb0812428f1"
+          },
+          {
+            "line_end": 150,
+            "line_start": 140,
+            "path": "src/sqldbagent/safety/execution.py",
+            "role": "guard_registration",
+            "source_sha256": "96cc5e33c087fa25b317a077c035ae3fcab6fcd298cb509185286fb0812428f1"
+          },
+          {
+            "line_end": 230,
+            "line_start": 219,
+            "path": "src/sqldbagent/safety/execution.py",
+            "role": "guard_registration",
+            "source_sha256": "96cc5e33c087fa25b317a077c035ae3fcab6fcd298cb509185286fb0812428f1"
+          },
+          {
+            "line_end": 68,
+            "line_start": 44,
+            "path": "src/sqldbagent/safety/guard.py",
+            "role": "guard_registration",
+            "source_sha256": "0d6a318c2bdc3fa22f54267b61e30cbeeb767d1e11de96fd23458bf63b9f9b64"
+          },
+          {
+            "line_end": 246,
+            "line_start": 227,
+            "path": "src/sqldbagent/safety/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0d6a318c2bdc3fa22f54267b61e30cbeeb767d1e11de96fd23458bf63b9f9b64"
+          },
+          {
+            "line_end": 275,
+            "line_start": 248,
+            "path": "src/sqldbagent/safety/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0d6a318c2bdc3fa22f54267b61e30cbeeb767d1e11de96fd23458bf63b9f9b64"
+          },
+          {
+            "line_end": 155,
+            "line_start": 154,
+            "path": "src/sqldbagent/safety/execution.py",
+            "role": "commit_point",
+            "source_sha256": "96cc5e33c087fa25b317a077c035ae3fcab6fcd298cb509185286fb0812428f1"
+          }
+        ],
+        "forbidden_condition": "A disallowed or unguarded statement reaching the async execution commit: SQL that fails to parse, contains multiple statements, is a non-Query statement in read_only mode, contains a disallowed operation (read_only: Delete/Update/Insert/Merge plus Create/Drop/Alter/Command/Copy/Grant/Revoke/TruncateTable/Use/Call; writable mode still forbids the DDL/Command list), references a schema outside policy.allowed_schemas, requests writable mode when policy.allow_writes is false, or would exceed the effective max_rows without a clamping LIMIT \u2014 none of these may be executed; async execution with no configured async engine, or writable async execution with no configured write_async_engine, must raise ConfigurationError rather than execute on a fallback engine.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source shows which component invokes SafeQueryService.run_async or where the sql/access_mode arguments originate; no agent tool registration, lifecycle hook, or agent-input dataflow is present in the supplied views.",
+          "The composition root wiring the async engine(s) and shared guard into SafeQueryService is not supplied.",
+          "SafetySettings definition and defaults are not supplied; QueryGuardResult/QueryExecutionResult model definitions are not supplied."
+        ],
+        "protected_operation": "Guarded asynchronous execution of a single SQL statement via SafeQueryService.run_async(sql, max_rows, access_mode).",
+        "protected_resource": "The configured datasource reached through the SafeQueryService async engine (or dedicated write_async_engine for writable mode).",
+        "protection_obligation": "Every SQL statement executed through SafeQueryService.run_async must first pass QueryGuardService.guard under the datasource SafetySettings (parse, single-statement requirement, operation allowlist per access mode, schema allowlist, row-limit normalization), and only guard-approved normalized SQL may be committed to the datasource asynchronously; writable execution additionally requires policy.allow_writes and a dedicated write_async_engine.",
+        "scope_limits": [
+          "Async path only; the sync path is covered by a separate contract.",
+          "Guard semantics are shared with the sync contract (same QueryGuardService); detection strength is not assessed.",
+          "Writable DML remains possible when policy.allow_writes is true and write_async_engine is configured; this contract forbids unguarded/unauthorized async writes, not writes per se.",
+          "The origin of the sql argument (human, CLI, or agent) is not established in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "New-connection establishment on engines built by EngineManager: the 'connect' listener executes PRAGMA query_only = ON at factory.py:229-233 and SET default_transaction_read_only / SET statement_timeout at factory.py:245-252 before the connection enters use; for MSSQL the policy is committed into the rendered connection URL at factory.py:196-208, which create_engine (factory.py:128-131) and create_async_engine (factory.py:168-171) consume for all later connections. All SQL later executed over these connections (e.g., execution.py:80 and 155) commits under the enforced session policy.",
+        "contract_id": "ecological-contract:f3fcebb77b248a775b6798641667dd04",
+        "declared_mechanism": "EngineManager._apply_url_policy rewrites the SQLAlchemy URL for MSSQL read_only datasources (rewrites or appends ApplicationIntent=ReadOnly inside odbc_connect, and strips stray applicationintent keys) before create_engine/create_async_engine; EngineManager._apply_connection_policy registers SQLAlchemy 'connect' event listeners on the engine (targeting engine.sync_engine for AsyncEngine) that execute PRAGMA query_only = ON (SQLite, only when safety.read_only) and SET default_transaction_read_only = on plus SET statement_timeout from safety.statement_timeout_seconds (Postgres).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 107,
+            "line_start": 96,
+            "path": "src/sqldbagent/engines/factory.py",
+            "role": "protected_operation",
+            "source_sha256": "55bb29f6d661047c343412edbe0417cb0cf1ebdf5c79cb855cf38af55a10c789"
+          },
+          {
+            "line_end": 208,
+            "line_start": 175,
+            "path": "src/sqldbagent/engines/factory.py",
+            "role": "guard_registration",
+            "source_sha256": "55bb29f6d661047c343412edbe0417cb0cf1ebdf5c79cb855cf38af55a10c789"
+          },
+          {
+            "line_end": 235,
+            "line_start": 210,
+            "path": "src/sqldbagent/engines/factory.py",
+            "role": "guard_registration",
+            "source_sha256": "55bb29f6d661047c343412edbe0417cb0cf1ebdf5c79cb855cf38af55a10c789"
+          },
+          {
+            "line_end": 252,
+            "line_start": 237,
+            "path": "src/sqldbagent/engines/factory.py",
+            "role": "guard_registration",
+            "source_sha256": "55bb29f6d661047c343412edbe0417cb0cf1ebdf5c79cb855cf38af55a10c789"
+          },
+          {
+            "line_end": 133,
+            "line_start": 128,
+            "path": "src/sqldbagent/engines/factory.py",
+            "role": "guard_registration",
+            "source_sha256": "55bb29f6d661047c343412edbe0417cb0cf1ebdf5c79cb855cf38af55a10c789"
+          },
+          {
+            "line_end": 173,
+            "line_start": 168,
+            "path": "src/sqldbagent/engines/factory.py",
+            "role": "guard_registration",
+            "source_sha256": "55bb29f6d661047c343412edbe0417cb0cf1ebdf5c79cb855cf38af55a10c789"
+          },
+          {
+            "line_end": 233,
+            "line_start": 229,
+            "path": "src/sqldbagent/engines/factory.py",
+            "role": "commit_point",
+            "source_sha256": "55bb29f6d661047c343412edbe0417cb0cf1ebdf5c79cb855cf38af55a10c789"
+          },
+          {
+            "line_end": 252,
+            "line_start": 245,
+            "path": "src/sqldbagent/engines/factory.py",
+            "role": "commit_point",
+            "source_sha256": "55bb29f6d661047c343412edbe0417cb0cf1ebdf5c79cb855cf38af55a10c789"
+          },
+          {
+            "line_end": 208,
+            "line_start": 196,
+            "path": "src/sqldbagent/engines/factory.py",
+            "role": "commit_point",
+            "source_sha256": "55bb29f6d661047c343412edbe0417cb0cf1ebdf5c79cb855cf38af55a10c789"
+          },
+          {
+            "line_end": 275,
+            "line_start": 261,
+            "path": "src/sqldbagent/safety/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0d6a318c2bdc3fa22f54267b61e30cbeeb767d1e11de96fd23458bf63b9f9b64"
+          }
+        ],
+        "forbidden_condition": "A new DBAPI connection established for a datasource without the declared dialect policy applied: a SQLite session without query_only=ON for a read_only datasource; a Postgres session without default_transaction_read_only=on for a read_only datasource, or without statement_timeout set; an MSSQL connection string whose ApplicationIntent is not ReadOnly or that retains a conflicting applicationintent parameter for a read_only datasource \u2014 such connections could commit the write/DDL effects and unbounded reads the statement guard forbids (guard.py:261-275).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The supplied views do not show SafeQueryService's engine/async_engine/write_engine instances originating from EngineManager, so the chain 'guard-gated execution runs on policy-enforced engines' is not bound by source.",
+          "Construction of the optional write_engine/write_async_engine (and whether they intentionally omit the read-only policy) is not shown.",
+          "DatasourceSettings/SafetySettings field definitions and defaults (read_only, allow_writes, allowed_schemas, statement_timeout_seconds) are not supplied.",
+          "No agent tool, lifecycle hook, or agent-input dataflow binding these engines to agent-mediated execution appears in the supplied views."
+        ],
+        "protected_operation": "Creation and use of engine-managed database connections for a configured datasource via EngineManager.create_sync_engine / create_async_engine, over which SQL statements are subsequently executed.",
+        "protected_resource": "The configured datasource database (its tables/schemas behind the read_only safety policy).",
+        "protection_obligation": "Engines built by EngineManager for a datasource must enforce the datasource read-only and timeout policy at the connection layer: SQLite read_only datasources get PRAGMA query_only = ON on every new connection; Postgres datasources get SET default_transaction_read_only = on when read_only and SET statement_timeout on every connection; MSSQL read_only datasources get ApplicationIntent=ReadOnly forced into the connection string \u2014 serving as defense-in-depth beneath the statement-level guard so write/DDL effects and unbounded queries cannot commit even if a statement guard is bypassed.",
+        "scope_limits": [
+          "SQLite listener is attached only when datasource.safety.read_only is true (factory.py:220-221); non-read_only SQLite datasources get no session policy.",
+          "Postgres read-only SET is conditional on safety.read_only; statement_timeout is applied unconditionally for Postgres (factory.py:247-250).",
+          "MSSQL enforcement is connection-string only; _apply_connection_policy registers no listener for MSSQL or any dialect other than SQLITE/POSTGRES.",
+          "The URL policy applies only when the dialect is MSSQL and safety.read_only is true (factory.py:178-179).",
+          "Policy attaches only to engines created through EngineManager; connections created outside these factories are not covered by the supplied views.",
+          "Enforcement is session-scoped; server-side role privileges, grants, and database-level user permissions are outside the supplied source.",
+          "The reviewers' end-to-end chain (factory-policy engines feeding SafeQueryService) is not bound by supplied source; see pending binding questions."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source registers SafeQueryService, QueryGuardService, or EngineManager as an agent tool, decorator, lifecycle hook, or dispatch target, and no concrete dataflow from agent-generated input to the guarded database effects is shown; agent_mediation is not_established for all contracts and no agent_entry_binding evidence is cited.",
+      "The composition root that constructs SafeQueryService with engines produced by EngineManager is not in the supplied views; the reviewers' end-to-end chain (connection-policy engines feeding the guarded commit) is not fully bound by source.",
+      "Supporting modules are not supplied: core/config.py (SafetySettings, DatasourceSettings), core/enums.py (Dialect members), core/models/query.py (QueryExecutionResult), safety/models.py (QueryGuardResult), safety/policies.py (should_apply_row_limit, to_sqlglot_dialect), and adapters/shared.py (require_dependency).",
+      "Callers of SafeQueryService.run/run_async and the provenance of the sql and access_mode arguments (human vs agent-generated) are not shown in the supplied views.",
+      "How the optional write_engine/write_async_engine are constructed (e.g., whether they omit the read-only connection policy) is not shown.",
+      "Behavior labels and tests are unavailable per unit scope; enforcement efficacy (e.g., SQLGlot parsing/detection bypass resistance) is declared, not assessed."
+    ],
+    "repository": "pr1m8/sqldbagent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:f60bb3caf47cb155a36a8c15f3f27784"
+  },
+  "request_sha256": "aafe92930cbc3b6e5a3a8a6ab7d5731b06171d3f6e9ab315de9f7d19870a91fd",
+  "response_sha256": "a30c3c423b7a53a4df5a65727f591a80e537fc17dc2bb36e60b4055050a5bf5d",
+  "state": "completed",
+  "tokens": 30133,
+  "unit": "v24-screen:f60bb3caf47cb155a36a8c15f3f27784"
+}

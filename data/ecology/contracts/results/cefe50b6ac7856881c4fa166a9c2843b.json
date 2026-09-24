@@ -1,0 +1,418 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "backend/services/pgvector_store.py:121 (refusal \u2014 return False before any destructive SQL) versus line 129 (DROP TABLE IF EXISTS policy_chunks executed only when the operator flag is set).",
+        "contract_id": "ecological-contract:0b96c4dc62a8d34847348524222de20a",
+        "declared_mechanism": "settings.allow_destructive_reindex flag check: when unset, log.error explaining the refusal and recovery path ('Run an explicit re-index, or set ALLOW_DESTRUCTIVE_REINDEX=1') and return False to degrade; the DROP proceeds only when the flag is set, with a log.warning.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 87,
+            "line_start": 78,
+            "path": "backend/services/pgvector_store.py",
+            "role": "protected_operation",
+            "source_sha256": "a6a83b451d861b3ab8eccc4a2dc67d13fdce3f0d45a89848170ab0005b3dca18"
+          },
+          {
+            "line_end": 104,
+            "line_start": 91,
+            "path": "backend/services/pgvector_store.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a6a83b451d861b3ab8eccc4a2dc67d13fdce3f0d45a89848170ab0005b3dca18"
+          },
+          {
+            "line_end": 121,
+            "line_start": 105,
+            "path": "backend/services/pgvector_store.py",
+            "role": "guard_registration",
+            "source_sha256": "a6a83b451d861b3ab8eccc4a2dc67d13fdce3f0d45a89848170ab0005b3dca18"
+          },
+          {
+            "line_end": 129,
+            "line_start": 129,
+            "path": "backend/services/pgvector_store.py",
+            "role": "commit_point",
+            "source_sha256": "a6a83b451d861b3ab8eccc4a2dc67d13fdce3f0d45a89848170ab0005b3dca18"
+          }
+        ],
+        "forbidden_condition": "Implicit DROP TABLE IF EXISTS policy_chunks \u2014 silent erasure of live policy embeddings \u2014 during dimension-mismatch self-heal when ALLOW_DESTRUCTIVE_REINDEX is not set.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Establish whether agent-mediated flows (e.g. chat search_policy \u2192 services.rag.retrieve, or policy ingestion) reach ensure_schema, since services/rag and ingestion pipelines are unsupplied.",
+          "Confirm the mapping between core.vectorstore.vector_store (used by policy_qa_agent) and PgVectorStore."
+        ],
+        "protected_operation": "Vector-store schema initialization/self-heal (PgVectorStore.ensure_schema), reached from upsert_chunks, search, and delete_policy on first use.",
+        "protected_resource": "The policy_chunks table and its live embedding rows in Postgres.",
+        "protection_obligation": "pgvector_store.ensure_schema must refuse to DROP and recreate the policy_chunks table when the stored embedding dimension differs from the current embedder dimension unless settings.allow_destructive_reindex is explicitly enabled, degrading instead (return False so callers treat pgvector as unavailable and RAG falls back). [Merged first- and second-phase reviewer wording.]",
+        "scope_limits": [
+          "The guard permits operator-authorized destruction: when allow_destructive_reindex is set, the DROP at line 129 proceeds.",
+          "Refusal degrades (returns False) rather than raising; per in-source comments (108-111, 158-160) callers then treat pgvector as unavailable.",
+          "Supplied callers of ensure_schema are pgvector_store's own upsert_chunks/search/delete_policy; no agent-tool or ingestion binding appears in the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The early return of the blocked dict at backend/agents/policy_qa_agent.py:128-145, before the rag.query call at line 152.",
+        "contract_id": "ecological-contract:1d2a6a4d8540bbb0e66bc2871f5c5bd8",
+        "declared_mechanism": "detect_prompt_injection gate returning a blocked result dict (REFUSAL_MESSAGE, empty source_documents, confidence 0.0, needs_review True) plus memory.log_audit('policy_qa_agent', 'prompt_injection_blocked', ..., 'blocked') and upsert_agent(status='idle', last_action='blocked injection attempt').",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 23,
+            "path": "backend/core/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dc47429f0b5ee67b9d5b7f428d1f875b5fe463d98eb7292e6bd6749a19fa4a31"
+          },
+          {
+            "line_end": 123,
+            "line_start": 107,
+            "path": "backend/agents/policy_qa_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "b2b03e7a439417aea30805b0a7fc8026b8387ccc557311854439bbcbb7397f09"
+          },
+          {
+            "line_end": 128,
+            "line_start": 125,
+            "path": "backend/agents/policy_qa_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "b2b03e7a439417aea30805b0a7fc8026b8387ccc557311854439bbcbb7397f09"
+          },
+          {
+            "line_end": 145,
+            "line_start": 128,
+            "path": "backend/agents/policy_qa_agent.py",
+            "role": "commit_point",
+            "source_sha256": "b2b03e7a439417aea30805b0a7fc8026b8387ccc557311854439bbcbb7397f09"
+          },
+          {
+            "line_end": 104,
+            "line_start": 91,
+            "path": "backend/agents/policy_qa_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2b03e7a439417aea30805b0a7fc8026b8387ccc557311854439bbcbb7397f09"
+          },
+          {
+            "line_end": 154,
+            "line_start": 147,
+            "path": "backend/agents/policy_qa_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2b03e7a439417aea30805b0a7fc8026b8387ccc557311854439bbcbb7397f09"
+          }
+        ],
+        "forbidden_condition": "A query matching injection patterns reaching rag.query retrieval/synthesis (or the registered retrieve/generate graph nodes and the qdrant_search tool) before refusal.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm the dataflow from rag.query (services/rag, unsupplied) to the concrete vector store (core.vectorstore.vector_store vs services.pgvector_store) and to the synthesis LLM call.",
+          "Determine whether the qdrant_search/get_policy_doc tools are separately guarded when invoked outside run()."
+        ],
+        "protected_operation": "PolicyQAAgent.run(query) \u2014 policy question answering via the active vector backend and RAG synthesis, with audit logging of the interaction.",
+        "protected_resource": "The policy RAG pipeline (retrieved contexts and synthesized answer) and the policy_qa_agent audit/state records.",
+        "protection_obligation": "HR policy-QA queries processed by PolicyQAAgent.run must be screened with detect_prompt_injection and, on a match, refused (answer=REFUSAL_MESSAGE, needs_review=True) and audit-logged with agent status updated, before retrieval or synthesis executes, so injected instructions never reach the policy RAG retrieval/synthesis path.",
+        "scope_limits": [
+          "run() in the supplied source executes retrieval via services.rag.query (152) rather than invoking the compiled LangGraph; the retrieve\u2192generate node registration (91-104) is shown but not exercised from run().",
+          "services/rag is not supplied, so the downstream synthesis effect (assumed provider LLM call \u2192 http) and the concrete vector-backend binding are unverified.",
+          "TokenBudgetGuard input/output validation (117-122) precedes the gate but is a separate cost control, not part of this obligation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The CapabilityUnavailable raises at backend/services/resume_vlm.py:117-125 before any rendering or network effect; if the gates pass, egress commits at the run_fireworks_chat_body call (144).",
+        "contract_id": "ecological-contract:47e2ab8aaa71ec29fd03493fc9cc4121",
+        "declared_mechanism": "Enablement gate raising CapabilityUnavailable ('disabled; set ENABLE_RESUME_VLM=true only after approving image egress') plus provider/liveness gate (llm_provider()=='fireworks' and llm_active()); model id restricted via validate_model or pick_model_for_role over configured_models (127-132).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 115,
+            "line_start": 102,
+            "path": "backend/services/resume_vlm.py",
+            "role": "protected_operation",
+            "source_sha256": "d4eb864347a848aacd4000260a2091129606d884c0529e25bbe453733e528fc3"
+          },
+          {
+            "line_end": 125,
+            "line_start": 116,
+            "path": "backend/services/resume_vlm.py",
+            "role": "guard_registration",
+            "source_sha256": "d4eb864347a848aacd4000260a2091129606d884c0529e25bbe453733e528fc3"
+          },
+          {
+            "line_end": 125,
+            "line_start": 117,
+            "path": "backend/services/resume_vlm.py",
+            "role": "commit_point",
+            "source_sha256": "d4eb864347a848aacd4000260a2091129606d884c0529e25bbe453733e528fc3"
+          },
+          {
+            "line_end": 144,
+            "line_start": 134,
+            "path": "backend/services/resume_vlm.py",
+            "role": "commit_point",
+            "source_sha256": "d4eb864347a848aacd4000260a2091129606d884c0529e25bbe453733e528fc3"
+          }
+        ],
+        "forbidden_condition": "Resume image egress to the external Fireworks VLM when settings.enable_resume_vlm is false, or when llm_provider() != 'fireworks' or llm_active() is false.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Identify the caller (resume intake pipeline or agent tool) that invokes parse_resume_pdf to bind this obligation to an operational entry point.",
+          "Confirm whether core.fireworks.validate_model enforces the ALLOWED_MODELS allow-list for the vision model id."
+        ],
+        "protected_operation": "parse_resume_pdf \u2014 rendering bounded PDF pages to PNG data URLs (134-138) and invoking run_fireworks_chat_body with the image-bearing request body (139-144).",
+        "protected_resource": "Candidate resume content (page images) crossing the system boundary to the external vision model.",
+        "protection_obligation": "Scanned-resume extraction must not render resume PDF pages as images or transmit them to the external Fireworks vision model unless ENABLE_RESUME_VLM is explicitly enabled and a live Fireworks provider with an allowlisted model is configured; otherwise the capability is refused with CapabilityUnavailable.",
+        "scope_limits": [
+          "The gate is an enablement/provider check, not content minimization; once enabled, full rendered page images egress.",
+          "validate_model and configured_models live in core/fireworks.py, which is not supplied; their allowlist semantics are unverified.",
+          "No caller of parse_resume_pdf appears in the supplied source; the intake-pipeline or agent-tool binding is not shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The early return at backend/agents/chat_agent.py:444-448, executed after redact_pii/sanitize_text pre-flight (427-431) and before get_agent (450), _fallback_chat (452), and agent.run (466-470).",
+        "contract_id": "ecological-contract:4b51c898796169764ad4affe09e2deba",
+        "declared_mechanism": "detect_prompt_injection regex gate wired at the top of chat(); on match, memory.log_audit('chat_agent', 'prompt_injection_blocked', {'message': message}, {'refused': True}, 'blocked') and immediate return of REFUSAL_MESSAGE with tool_calls=[{'tool': 'injection_guard'}] and mode 'degraded'.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 23,
+            "path": "backend/core/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dc47429f0b5ee67b9d5b7f428d1f875b5fe463d98eb7292e6bd6749a19fa4a31"
+          },
+          {
+            "line_end": 431,
+            "line_start": 404,
+            "path": "backend/agents/chat_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "569d63c974cf718548a6732951072ca36b3fbf29824a0412675cdb34e6e48179"
+          },
+          {
+            "line_end": 443,
+            "line_start": 433,
+            "path": "backend/agents/chat_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "569d63c974cf718548a6732951072ca36b3fbf29824a0412675cdb34e6e48179"
+          },
+          {
+            "line_end": 448,
+            "line_start": 444,
+            "path": "backend/agents/chat_agent.py",
+            "role": "commit_point",
+            "source_sha256": "569d63c974cf718548a6732951072ca36b3fbf29824a0412675cdb34e6e48179"
+          },
+          {
+            "line_end": 144,
+            "line_start": 132,
+            "path": "backend/api/routes/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "584a1b98ff88d42995f60f3d9657a6baccd9054c197af31699aa63fcfb1b54b6"
+          },
+          {
+            "line_end": 228,
+            "line_start": 191,
+            "path": "backend/api/routes/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "584a1b98ff88d42995f60f3d9657a6baccd9054c197af31699aa63fcfb1b54b6"
+          },
+          {
+            "line_end": 210,
+            "line_start": 140,
+            "path": "backend/agents/chat_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "569d63c974cf718548a6732951072ca36b3fbf29824a0412675cdb34e6e48179"
+          },
+          {
+            "line_end": 470,
+            "line_start": 450,
+            "path": "backend/agents/chat_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "569d63c974cf718548a6732951072ca36b3fbf29824a0412675cdb34e6e48179"
+          }
+        ],
+        "forbidden_condition": "A chat message matching the prompt-injection/jailbreak regex patterns (backend/core/guardrails.py:23-36) being passed onward to agent.run (LLM inference plus tool dispatch) or to the deterministic _fallback_chat dispatch (e.g. triage_ticket case opening).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm that governed_chat (backend/agents/pydantic_chat_agent.py, unsupplied) routes user messages through chat_agent.chat or an equivalent detect_prompt_injection gate before any LLM/tool effect.",
+          "Determine whether history content rendered into the prompt (459-461) must also be injection-screened."
+        ],
+        "protected_operation": "Processing one user chat turn via chat_agent.chat(message, history, session_id), covering both the live agent.run path and the _fallback_chat deterministic tool-dispatch path.",
+        "protected_resource": "The chat agent's execution context (system prompt, conversation history rendered into the prompt) and its registered tool suite.",
+        "protection_obligation": "User chat messages processed by the chat agent must be screened with core.guardrails.detect_prompt_injection and, on a match, refused with REFUSAL_MESSAGE and audit-logged (memory.log_audit 'prompt_injection_blocked', status 'blocked') before any LLM inference or agent tool dispatch executes in chat_agent.chat, so injected override instructions can never reach the agent run or its registered tools (search_policy, triage_ticket, get_case_status, list_open_cases, check_attrition).",
+        "scope_limits": [
+          "The guard is enforced inside chat_agent.chat; the /chat/stream live branch (backend/api/routes/chat.py:229-280) builds the agent and calls agent.run_stream after redact_pii/sanitize_text only \u2014 detect_prompt_injection is not invoked on that path in the supplied source.",
+          "Only the current message is injection-screened; history turns are redacted/sanitized (428-431) but never passed to detect_prompt_injection.",
+          "Coverage of the live POST /chat route depends on governed_chat (imported at chat.py:23, called at chat.py:144), whose source is not supplied.",
+          "The deterministic fallback path still dispatches tools downstream of the guard; the persistence stratum of triage_ticket case creation is not classifiable from supplied source (triage_agent not supplied), so http is recorded for the nearest concrete prevented effect (provider LLM inference via agent.run)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "backend/services/osint_guardrails.py:93 \u2014 the OSINTRequest is returned only after all consent/purpose/source checks (which raise otherwise); observations are subsequently built at 119-123 from sanitized claims.",
+        "contract_id": "ecological-contract:8185b1b5b8089223f4f52539b21aef2f",
+        "declared_mechanism": "OSINTPolicyError raises in validate_request (82-92) and _validate_source (153-167); osint_enabled() master opt-in flag (68-70); sanitize_claims dropping PROTECTED_FIELDS and truncating string claims to 2000 chars (96-105).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 70,
+            "line_start": 68,
+            "path": "backend/services/osint_guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "5d419a491ace61b89ba9b9b968c6717d03866d9c1651f139afff5ced7735a147"
+          },
+          {
+            "line_end": 93,
+            "line_start": 73,
+            "path": "backend/services/osint_guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "5d419a491ace61b89ba9b9b968c6717d03866d9c1651f139afff5ced7735a147"
+          },
+          {
+            "line_end": 92,
+            "line_start": 82,
+            "path": "backend/services/osint_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5d419a491ace61b89ba9b9b968c6717d03866d9c1651f139afff5ced7735a147"
+          },
+          {
+            "line_end": 168,
+            "line_start": 153,
+            "path": "backend/services/osint_guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "5d419a491ace61b89ba9b9b968c6717d03866d9c1651f139afff5ced7735a147"
+          },
+          {
+            "line_end": 123,
+            "line_start": 108,
+            "path": "backend/services/osint_guardrails.py",
+            "role": "protected_operation",
+            "source_sha256": "5d419a491ace61b89ba9b9b968c6717d03866d9c1651f139afff5ced7735a147"
+          },
+          {
+            "line_end": 93,
+            "line_start": 93,
+            "path": "backend/services/osint_guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "5d419a491ace61b89ba9b9b968c6717d03866d9c1651f139afff5ced7735a147"
+          }
+        ],
+        "forbidden_condition": "Constructing an OSINTRequest, observations, or a professional graph from a non-consented subject, a disallowed purpose, a non-allowlisted or non-HTTPS source, or claims containing protected fields (age, race, health, gender, etc.).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Identify any agent tool, lifecycle hook, or route that invokes the OSINT boundary so the obligation can be bound to an operational effect.",
+          "Determine the intended external effect stratum (e.g. future network collection) once a concrete adapter is installed."
+        ],
+        "protected_operation": "validate_request \u2192 OSINTRequest issuance (73-93) and build_observations/build_graph observation construction (108-150), backed by sanitize_claims minimization (96-105).",
+        "protected_resource": "OSINT observation/graph data about a data subject.",
+        "protection_obligation": "Professional-OSINT processing must be rejected with OSINTPolicyError unless the data subject gave explicit consent, the purpose is in ALLOWED_PURPOSES (professional_credential_review / public_work_sample_review), and every source is an HTTPS host on the OSINT_ALLOWED_DOMAINS allowlist; the capability stays opt-in via OSINT_ENABLED, and protected-trait fields are dropped before observations are built.",
+        "scope_limits": [
+          "The module intentionally contains no scraper or network client (docstring lines 2-7); the guarded effect as supplied is in-process construction, and any downstream collection effect class is not established from supplied source.",
+          "OSINT_ALLOWED_DOMAINS defaults to github.com,orcid.org and is operator-configurable (160-164).",
+          "No caller of validate_request/build_observations/build_graph appears in the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "model_id selection and client/model construction inside the factories \u2014 backend/core/llm_factory.py:97-116 (Fireworks) and 127-136 (AMD/vLLM); allowlist enforcement at 196-203 before the CrewAI adapter is built.",
+        "contract_id": "ecological-contract:ead54df9c161481a6d63d7d1beb72e39",
+        "declared_mechanism": "_allowed_models() reading the injected ALLOWED_MODELS and raising on empty (21-27); pick_model_for_role returning only members of the injected list (39-77); explicit membership enforcement raising 'CrewAI model must be present in ALLOWED_MODELS' (197-199).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 27,
+            "line_start": 21,
+            "path": "backend/core/llm_factory.py",
+            "role": "guard_registration",
+            "source_sha256": "7947a1f92f6c92e9e400c723f0bd22284e31b26b204fe1d0f41e188c2e5a9e10"
+          },
+          {
+            "line_end": 42,
+            "line_start": 39,
+            "path": "backend/core/llm_factory.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7947a1f92f6c92e9e400c723f0bd22284e31b26b204fe1d0f41e188c2e5a9e10"
+          },
+          {
+            "line_end": 166,
+            "line_start": 154,
+            "path": "backend/core/llm_factory.py",
+            "role": "protected_operation",
+            "source_sha256": "7947a1f92f6c92e9e400c723f0bd22284e31b26b204fe1d0f41e188c2e5a9e10"
+          },
+          {
+            "line_end": 116,
+            "line_start": 97,
+            "path": "backend/core/llm_factory.py",
+            "role": "commit_point",
+            "source_sha256": "7947a1f92f6c92e9e400c723f0bd22284e31b26b204fe1d0f41e188c2e5a9e10"
+          },
+          {
+            "line_end": 203,
+            "line_start": 196,
+            "path": "backend/core/llm_factory.py",
+            "role": "commit_point",
+            "source_sha256": "7947a1f92f6c92e9e400c723f0bd22284e31b26b204fe1d0f41e188c2e5a9e10"
+          },
+          {
+            "line_end": 138,
+            "line_start": 119,
+            "path": "backend/agents/chat_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "569d63c974cf718548a6732951072ca36b3fbf29824a0412675cdb34e6e48179"
+          }
+        ],
+        "forbidden_condition": "An LLM client/model being constructed with a model id absent from ALLOWED_MODELS, or any construction proceeding when the allow-list is empty/unset (RuntimeError 'ALLOWED_MODELS is empty or unset - harness must inject this').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm that remaining LLM call sites (crew modules, run_text_completion callers, rag synthesis) route model construction through model_for_key / get_request_scoped_model.",
+          "Confirm whether the anthropic legacy branch is reachable in the protected deployment and whether it must also enforce ALLOWED_MODELS.",
+          "Verify core/runtime_key.llm_provider / llm_active gating that selects the factory branch (module unsupplied)."
+        ],
+        "protected_operation": "Model construction for live inference: pick_model_for_role selection inside fireworks_model_for (97) and amd_vllm_model_for (127), the explicit membership check in crewai_llm_for (196-199), dispatched via model_for_key / get_request_scoped_model.",
+        "protected_resource": "LLM provider model selection \u2014 which model id inference executes against (and is attributed/billed for).",
+        "protection_obligation": "Every live LLM model construction for provider calls must be performed through the role-based allowlisted factory (fireworks_model_for / amd_vllm_model_for / model_for_key / crewai_llm_for), so inference targets only model ids present in the injected ALLOWED_MODELS allow-list and construction fails loudly when the allow-list is empty; no provider-default or caller-chosen model id may bypass the factory.",
+        "scope_limits": [
+          "anthropic_model_for_key (139-151) does not consult ALLOWED_MODELS \u2014 it uses runtime_settings.selected_model() or settings.claude_model \u2014 so allowlist enforcement is not uniform across the provider branches shown in source.",
+          "run_fireworks_chat_body relies on core.fireworks.validate_model for its model id (line 308), and that module is not supplied.",
+          "The runtime_settings.selected_model override path (57-59) is honored only when the selected id is a member of the injected list.",
+          "The commit point guards construction; provider-side execution of the inference request is downstream and only implied here."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "backend/agents/pydantic_chat_agent.py (governed_chat) is not supplied; whether the live POST /chat route (chat.py:144) enforces the prompt-injection guard and the model-allowlist factory cannot be verified.",
+      "backend/services/rag.py is not supplied; bindings from rag.retrieve / rag.query to services.pgvector_store and to any synthesis LLM call are unverified.",
+      "backend/core/fireworks.py (validate_model, configured_models, build_resume_vision_body, is_scale_up_exception) is not supplied; its allowlist semantics are unknown.",
+      "backend/core/runtime_key.py (llm_active, llm_provider, effective_api_key, request_api_key) is not supplied.",
+      "backend/core/vectorstore.py (vector_store imported by policy_qa_agent) is not supplied; its relation to PgVectorStore is unverified.",
+      "backend/agents/triage_agent.py and attrition_agent.py internals are not supplied; the strata of chat-tool side effects (e.g. case persistence) cannot be classified.",
+      "No supplied caller exists for services.resume_vlm.parse_resume_pdf or any services.osint_guardrails function, so no agent_entry_binding could be cited for those obligations (recorded as not_established).",
+      "core/guardrails.py also exports blind_demographics (89-109), but no supplied source binds it to a resume-scoring effect or caller; no contract is compiled for it."
+    ],
+    "repository": "W4sP4nx2/HR-AI-Operations",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:cefe50b6ac7856881c4fa166a9c2843b"
+  },
+  "request_sha256": "0f47a68d0a620d5a639c36b2e189b15f8fbc59077fb6c02c51f35a05e2bb5adc",
+  "response_sha256": "87d2830065c6ee0c4db099c43f3a5eb86d97383a6ef16e0f9588c4f54c832383",
+  "state": "completed",
+  "tokens": 53002,
+  "unit": "v24-screen:cefe50b6ac7856881c4fa166a9c2843b"
+}

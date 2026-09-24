@@ -1,0 +1,351 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Middleware interception of each tool call within the deep-agent execution loop; when a run limit is exceeded the additional tool call is not executed and exit_behavior='continue' surfaces the limit error to the LLM.",
+        "contract_id": "ecological-contract:29d735a13dd5ef3190d967e165ae9440",
+        "declared_mechanism": "build_deep_agent_middleware appends ToolCallLimitMiddleware(tool_name=\"write_file\", run_limit=wf_limit [default 20 from TF_WRITE_FILE_RUN_LIMIT], exit_behavior=\"continue\") and ToolCallLimitMiddleware(run_limit=gt_limit [default 60 from TF_GLOBAL_TOOL_RUN_LIMIT], exit_behavior=\"continue\"); the stack is built in TFCoordinator.build_agent and passed to create_deep_agent(middleware=middleware).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 48,
+            "line_start": 44,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7c44302e533b5bd6129d74c1c434c9195e6a15738c38130e4fbbc2edf414af15"
+          },
+          {
+            "line_end": 87,
+            "line_start": 70,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "7c44302e533b5bd6129d74c1c434c9195e6a15738c38130e4fbbc2edf414af15"
+          },
+          {
+            "line_end": 104,
+            "line_start": 96,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "7c44302e533b5bd6129d74c1c434c9195e6a15738c38130e4fbbc2edf414af15"
+          },
+          {
+            "line_end": 121,
+            "line_start": 110,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "7c44302e533b5bd6129d74c1c434c9195e6a15738c38130e4fbbc2edf414af15"
+          },
+          {
+            "line_end": 564,
+            "line_start": 546,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_cordinator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "76d56e6b5df46454064010003b0285d26ebc9effa66ed38ba06333411a12a921"
+          }
+        ],
+        "forbidden_condition": "More than 20 write_file tool invocations in a single deep-agent run, or more than 60 total tool invocations in a single run (declared purpose: 'prevents infinite write-retry loops'; 'Global tool call limit per single invocation').",
+        "missing_evidence_roles": [
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "ToolCallLimitMiddleware interception/continue semantics are langchain library behavior not shown in supplied views.",
+          "Whether subagents invoked via task() share the coordinator's middleware stack and limits is not established from supplied views."
+        ],
+        "protected_operation": "Agent tool invocations during a deep-agent run \u2014 specifically write_file calls under the per-tool cap and all tool calls under the global cap.",
+        "protected_resource": "The per-run tool-execution budget of the TFCoordinator deep agent (and downstream targets protected from unbounded write_file looping).",
+        "protection_obligation": "The TFCoordinator deep agent must cap per-run tool invocations \u2014 at most 20 write_file calls per run and at most 60 total tool calls per run \u2014 via ToolCallLimitMiddleware instances registered into create_deep_agent, so a runaway agent tool loop cannot exceed these budgets.",
+        "scope_limits": [
+          "Limits are per run (per deep-agent invocation) and env-overridable (TF_WRITE_FILE_RUN_LIMIT, TF_GLOBAL_TOOL_RUN_LIMIT); explicit arguments to build_deep_agent_middleware override the defaults.",
+          "exit_behavior='continue' means the agent run continues after a breach; the middleware caps invocation counts and does not validate tool inputs or outputs.",
+          "The underlying effect of write_file (virtual filesystem vs real disk) depends on the deep agent backend (make_backend implementation not in supplied views); the guarded commit is the invocation gate, not a specific storage effect.",
+          "Limits cover tool calls only; model calls are covered by the separate model-call-limit middleware (separate contract)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "File writes inside _sync_skills_to_disk, triggered at the per-service call site: (local_skill_dir / 'SKILL.md').write_text(skill_md, ...) and file_path.write_text(content, encoding='utf-8') for each reference file; these execute only for services not skipped by the gate.",
+        "contract_id": "ecological-contract:3c5d5243b25dfeb9241a0a521d5ed370",
+        "declared_mechanism": "_check_skill_exists(state_dict, skill_dir, str(provider_version)) parses the existing SKILL.md frontmatter; when the provider-version matches, the per-service loop logs 'skipping generation to preserve overrides' and continues, so the _sync_skills_to_disk call for that service is never reached.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 64,
+            "line_start": 39,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 332,
+            "line_start": 330,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 289,
+            "line_start": 286,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 285,
+            "line_start": 265,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 252,
+            "line_start": 240,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "commit_point",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 426,
+            "line_start": 426,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "commit_point",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 264,
+            "line_start": 261,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          }
+        ],
+        "forbidden_condition": "_sync_skills_to_disk writing skill files (SKILL.md plus references/assets/scripts files) for a service whose existing up-to-date skill (matching provider-version) is marked for preservation \u2014 clobbering manually-authored skill directories on disk.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The planner graph node that dispatches write_service_skills_tool is not in supplied views (PlannerSupervisorAgent.build_graph is not shown); the @tool registration establishes tool status, but the dispatch wiring inside the planner is unverified.",
+          "The exact frontmatter format of metadata.provider-version versus the '6.0' default comparison string is not shown (skill_templates.render_skill_md is not supplied)."
+        ],
+        "protected_operation": "Per-service skill generation and persistence inside write_service_skills_tool: rendering skill files and syncing them to ./skills/{service}-module-generator/ via _sync_skills_to_disk.",
+        "protected_resource": "Manually-authored skill directories under ./skills/{service}-module-generator/ on local disk (SKILL.md plus references/, assets/, and scripts/ files).",
+        "protection_obligation": "The skill writer must not overwrite manually-authored skill directories on local disk: when /skills/{service}-module-generator already exists in agent state with a SKILL.md provider-version matching the current provider version, generation for that service must be skipped so the disk sync (_sync_skills_to_disk) never rewrites those files.",
+        "scope_limits": [
+          "The existence/version gate reads only the agent-state files dict (state.get('files')), not the disk; disk protection therefore depends on the virtual filesystem having been seeded from disk (e.g., seed_files via input_transform) \u2014 if the SKILL.md entry is absent from state, an existing on-disk skill can be overwritten.",
+          "Protection requires an exact provider-version string match; malformed or unparseable SKILL.md frontmatter is swallowed (except: pass) and treated as not up-to-date, permitting regeneration.",
+          "Stale-version skills (version mismatch) are intentionally regenerated, so the guard does not protect them from overwrite.",
+          "Disk sync is env-gated (SKILL_WRITER_SYNC_DISK, default 'true'); when disabled, the file-stratum commit does not occur at all."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "existing_files.update(files_dict) at line 450 and the returned Command(update={'files': existing_files, ...}) at lines 456-464, applied to graph state when the tool result is committed.",
+        "contract_id": "ecological-contract:89a4875c643482dfbb3ddc2efb763002",
+        "declared_mechanism": "The _check_skill_exists gate and continue (lines 330-332) ensure rendered files are accumulated into files_dict only for services that pass the gate (lines 422-423); the final merge (line 450) and returned Command (lines 456-464) therefore cannot contain entries for protected up-to-date skills.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 64,
+            "line_start": 39,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 332,
+            "line_start": 330,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 289,
+            "line_start": 286,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 423,
+            "line_start": 422,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "commit_point",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 450,
+            "line_start": 448,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "commit_point",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 464,
+            "line_start": 456,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "commit_point",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          },
+          {
+            "line_end": 264,
+            "line_start": 261,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_planner/new_module/exec_planner_tool/skill_writer_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "78d7ba4624e1ee4919531ff45b2730c0311f75384eacc29cd3ccf1426f06ecb3"
+          }
+        ],
+        "forbidden_condition": "Merging rendered skill files into the agent state files dict for a service whose existing up-to-date skill directory should be preserved \u2014 i.e., existing_files.update(files_dict) / the returned Command(update={'files': ...}) containing entries that replace preserved /skills/{service}-module-generator/* state.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether any other graph node later overwrites the 'files' key (no other writer is visible in supplied views) is unverified.",
+          "The planner graph node that dispatches write_service_skills_tool is not in supplied views; tool-dispatch wiring inside PlannerSupervisorAgent is unverified."
+        ],
+        "protected_operation": "The tool's terminal virtual-filesystem state update: per-service accumulation into files_dict (files_dict.update(rendered_files)) followed by the merged Command(update={'files': existing_files, ...}) returned to the graph.",
+        "protected_resource": "Existing /skills/{service}-module-generator/* entries in the deep agent's virtual filesystem state (the 'files' state key).",
+        "protection_obligation": "The skill writer must not overwrite existing up-to-date skill entries in the deep agent's virtual filesystem state: services whose skill exists with a matching provider-version must be excluded from the 'files' update returned to the graph, preserving the existing state entries.",
+        "scope_limits": [
+          "The gate reads only the current state files dict; a skill present on disk but absent from state has no VFS entries to preserve (disk-side protection is covered by the separate file-stratum contract).",
+          "Exact provider-version match is required; frontmatter parse failures fall through to regeneration (overwrite permitted).",
+          "The returned Command also updates execution_planner_output and messages; only the 'files' key is covered by this obligation.",
+          "existing_files is copied from state captured at tool start; any concurrent modifications to the 'files' key during the tool run would be replaced by the whole-key update \u2014 concurrency behavior is outside this overwrite-protection obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The deep agent framework's interrupt gate at 'delete_module' tool invocation: the invocation is suspended before execution and may only proceed once an allowed decision (approve/edit/reject) is supplied; absent that decision the tool effect never commits.",
+        "contract_id": "ecological-contract:a18d92e31e5969d5ab9c91bb06571d71",
+        "declared_mechanism": "TFCoordinator.get_interrupt_config() returns {\"delete_module\": {\"allowed_decisions\": [\"approve\", \"edit\", \"reject\"]}}, and build_agent() registers it into the deep agent runtime via create_deep_agent(..., interrupt_on=self.get_interrupt_config(), ...).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 486,
+            "line_start": 480,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_cordinator.py",
+            "role": "guard_registration",
+            "source_sha256": "76d56e6b5df46454064010003b0285d26ebc9effa66ed38ba06333411a12a921"
+          },
+          {
+            "line_end": 481,
+            "line_start": 481,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_cordinator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "76d56e6b5df46454064010003b0285d26ebc9effa66ed38ba06333411a12a921"
+          },
+          {
+            "line_end": 564,
+            "line_start": 550,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_cordinator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "76d56e6b5df46454064010003b0285d26ebc9effa66ed38ba06333411a12a921"
+          },
+          {
+            "line_end": 564,
+            "line_start": 550,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_cordinator.py",
+            "role": "guard_registration",
+            "source_sha256": "76d56e6b5df46454064010003b0285d26ebc9effa66ed38ba06333411a12a921"
+          }
+        ],
+        "forbidden_condition": "Execution/commit of the 'delete_module' tool operation without a supplied allowed human decision \u2014 the deep agent must interrupt and wait rather than run the destructive operation unattended (declared intent: 'require approval before destructive file operations').",
+        "missing_evidence_roles": [
+          "commit_point",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Where the 'delete_module' tool is defined and registered (absent from all supplied views).",
+          "What backend effect delete_module performs, needed to fix the effect stratum of the guarded operation.",
+          "deepagents interrupt_on runtime semantics (interrupt-before-tool enforcement and decision replay, including what 'edit' permits) are not shown in supplied views."
+        ],
+        "protected_operation": "Invocation and execution of the 'delete_module' tool by the TFCoordinator deep agent.",
+        "protected_resource": "The module target of the destructive 'delete_module' operation (concrete target resource is not identified in the supplied views).",
+        "protection_obligation": "TFCoordinator must require an allowed human-in-the-loop decision ('approve', 'edit', or 'reject') before the 'delete_module' operation executes, enforced by the deep agent interrupt configuration wired into create_deep_agent via interrupt_on=self.get_interrupt_config().",
+        "scope_limits": [
+          "Only the named tool 'delete_module' is gated by this interrupt config; no other tool or workflow step is covered.",
+          "Supplied views show coordinator-level tools limited to sync_workspace and the generic user-input tool (get_tools), so the gate's binding to an actually registered 'delete_module' tool is not verified by supplied source.",
+          "The concrete effect of delete_module (filesystem deletion, terraform operation, or other) is not shown; effect_stratum reflects the invocation-gating commit point only.",
+          "Prompt-level HITL gates in COORDINATOR_SYSTEM_PROMPT (commit gate, next-steps gate) are prompt policies without shown code enforcement and are excluded from this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Middleware interception of each model call in the deep-agent loop; at the limit the middleware ends the run gracefully (exit_behavior='end') instead of raising, preventing further model invocations.",
+        "contract_id": "ecological-contract:ac76e7706342a189b240cee117c2a099",
+        "declared_mechanism": "build_deep_agent_middleware appends ModelCallLimitMiddleware(run_limit=mc_limit [default 40 from TF_MODEL_CALL_RUN_LIMIT], exit_behavior=\"end\"); the stack is built in TFCoordinator.build_agent and passed to create_deep_agent(middleware=middleware).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 51,
+            "line_start": 50,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7c44302e533b5bd6129d74c1c434c9195e6a15738c38130e4fbbc2edf414af15"
+          },
+          {
+            "line_end": 80,
+            "line_start": 80,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "7c44302e533b5bd6129d74c1c434c9195e6a15738c38130e4fbbc2edf414af15"
+          },
+          {
+            "line_end": 134,
+            "line_start": 123,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "7c44302e533b5bd6129d74c1c434c9195e6a15738c38130e4fbbc2edf414af15"
+          },
+          {
+            "line_end": 564,
+            "line_start": 546,
+            "path": "aws_orchestrator_agent/core/agents/tf_operator/tf_cordinator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "76d56e6b5df46454064010003b0285d26ebc9effa66ed38ba06333411a12a921"
+          }
+        ],
+        "forbidden_condition": "More than 40 model/LLM invocations in a single deep-agent run ('caps excessive LLM calls'; default from TF_MODEL_CALL_RUN_LIMIT).",
+        "missing_evidence_roles": [
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "ModelCallLimitMiddleware counting semantics (pre- vs post-invocation) are library behavior not shown in supplied views.",
+          "LLM provider/endpoint configuration (create_model) is not in supplied views, so the network stratum of the model call cannot be confirmed from source."
+        ],
+        "protected_operation": "LLM model invocations made by the deep agent during a run.",
+        "protected_resource": "The per-run model-call budget of the TFCoordinator deep agent.",
+        "protection_obligation": "The TFCoordinator deep agent must cap model (LLM) invocations at 40 per run via ModelCallLimitMiddleware registered into create_deep_agent, ending the run gracefully when the limit is reached.",
+        "scope_limits": [
+          "Limit is per run, env-overridable (TF_MODEL_CALL_RUN_LIMIT), and overridable via the model_call_limit argument to build_deep_agent_middleware.",
+          "exit_behavior='end' stops the run gracefully at the limit rather than raising an exception.",
+          "The model provider transport/config (create_model and LLM_DEEPAGENT_* config) is not in supplied views; the http stratum is inferred from the middleware's described effect of capping external LLM API calls.",
+          "This contract covers model calls only; tool-call limits are covered by a separate contract."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied view defines or registers a tool named 'delete_module'; the interrupt gate's target tool registration (coordinator get_tools shows only sync_workspace and the generic user-input tool) is unverified.",
+      "The concrete effect of 'delete_module' (filesystem deletion, terraform operation, or other external effect) is not shown, so the effect stratum for the HITL contract reflects invocation gating only.",
+      "deepagents create_deep_agent runtime semantics (interrupt_on enforcement point, middleware propagation to subagents, Command 'files' update semantics) are library behavior not shown in supplied views.",
+      "PlannerSupervisorAgent.build_graph and the subagent spec wiring that dispatches write_service_skills_tool are not in supplied views.",
+      "LLM provider transport (create_model / LLM_DEEPAGENT_* config) is not shown; the http stratum for the model-call-limit contract is inferred from the middleware's described effect of capping LLM API calls.",
+      "TFOperatorBackendMixin.make_backend and sync_workspace_to_disk implementations are not shown, so the underlying effects of write_file and workspace sync (virtual FS state vs real disk) are unverified.",
+      "skill_templates.render_skill_md is not supplied, so the SKILL.md frontmatter format compared by _check_skill_exists (metadata.provider-version vs default '6.0') cannot be confirmed.",
+      "Prompt-level HITL gates in COORDINATOR_SYSTEM_PROMPT (commit gate, next-steps gate) and the 'require_approval' context flag set in build_context (tf_cordinator.py line 707) have no shown code-level enforcement consumer in supplied views; no contracts were emitted for them.",
+      "The 'Docker-deployed production' characterization in one reviewer opinion is not supported by any supplied source view and was not carried into any contract."
+    ],
+    "repository": "talkops-ai/aws-orchestrator-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:dcff50e247fa3652fbd83f825121d887"
+  },
+  "request_sha256": "2e21aa980c33a347fcb63abdacb714e03ac5c8480331911526ff0a06116bbd7f",
+  "response_sha256": "1ca7b995989ebf5f4556cd12f1b291aab8c5ad89acef934c46980bfc5909c0b5",
+  "state": "completed",
+  "tokens": 45455,
+  "unit": "v24-screen:dcff50e247fa3652fbd83f825121d887"
+}

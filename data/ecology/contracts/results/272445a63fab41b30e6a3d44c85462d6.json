@@ -1,0 +1,127 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Tools are provisioned from the read-only connection at mcp.get_tools (agent.py:337); each protected effect commits when tools_node dispatches 'await tool.ainvoke(call.get(\"args\", {}))' (agent.py:477-478). The remote enforcement point (the MCP endpoint honoring X-MCP-Readonly) is outside the supplied source.",
+        "contract_id": "ecological-contract:05045a27f34f784c46b53b83a1b8eedf",
+        "declared_mechanism": "Read-only connection registration: the MultiServerMCPClient 'github' entry declares the header 'X-MCP-Readonly': 'true' at client creation (agent.py:324-334, header at agent.py:331), constraining the single connection through which all agent tools are fetched and invoked.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 29,
+            "line_start": 29,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          },
+          {
+            "line_end": 334,
+            "line_start": 324,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          },
+          {
+            "line_end": 331,
+            "line_start": 331,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          },
+          {
+            "line_end": 330,
+            "line_start": 330,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          },
+          {
+            "line_end": 340,
+            "line_start": 336,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          },
+          {
+            "line_end": 487,
+            "line_start": 464,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          },
+          {
+            "line_end": 337,
+            "line_start": 337,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "commit_point",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          },
+          {
+            "line_end": 478,
+            "line_start": 477,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "commit_point",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          },
+          {
+            "line_end": 349,
+            "line_start": 349,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          },
+          {
+            "line_end": 463,
+            "line_start": 457,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          },
+          {
+            "line_end": 550,
+            "line_start": 549,
+            "path": "github-whisper/backend/src/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "308f7a50139d3f63f927f403b63a6d51b3dee51ad964e067c3b73d6476087657"
+          }
+        ],
+        "forbidden_condition": "Execution of a mutating (write) GitHub operation through any tool served by the read-only 'github' MCP connection when that tool is dispatched by the agent's tools node.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the remote MCP endpoint at GITHUB_MCP_URL honors 'X-MCP-Readonly': 'true' for every toolset listed in 'X-MCP-Toolsets' cannot be determined from the supplied source.",
+          "The concrete set and names of tools returned by mcp.get_tools (i.e., whether write-capable tools are actually exposed to the agent) is not enumerated in the supplied source.",
+          "Whether the GITHUB_PAT is itself scoped read-only is not determinable from the supplied source.",
+          "Whether the langchain_mcp_adapters MultiServerMCPClient enforces or rejects write tool calls client-side under the readonly header is not shown in the supplied source."
+        ],
+        "protected_operation": "Agent-mediated GitHub MCP tool usage: tools fetched from the 'github' MCP connection via mcp.get_tools, bound to the LLM via llm.bind_tools, and executed in tools_node via tool.ainvoke.",
+        "protected_resource": "The 'github' MCP server connection (http transport to GITHUB_MCP_URL = 'https://api.githubcopilot.com/mcp/', authenticated with the GITHUB_PAT bearer token) and the GitHub resources reachable through its declared toolsets (repos, issues, actions, discussions, notifications, pull_requests, users, projects).",
+        "protection_obligation": "Mutating (write) GitHub operations are forbidden through the agent's GitHub MCP tools: the 'github' MCP server connection to GITHUB_MCP_URL must be registered read-only ('X-MCP-Readonly': 'true' alongside the Bearer PAT Authorization header) so that every tool invocation the agent executes via that connection is restricted to read-only GitHub operations. (Merges the phase-first and phase-second reviewer wordings of the same obligation.)",
+        "scope_limits": [
+          "Covers only tools served by the 'github' MCP connection registered in create_agent; no other GitHub access paths, MCP servers, or tools are covered by the supplied source.",
+          "The guard is a declarative connection header only; the supplied source contains no client-side write/read filtering of tools (line 338 filters solely on name/invoke attributes) and no enforcement logic inside tools_node.",
+          "Remote server-side enforcement of X-MCP-Readonly is outside the supplied source and is not verified by this contract.",
+          "The Bearer PAT Authorization header is authentication context for the connection; ordinary web authentication itself is out of scope beyond its role in binding this agent connection."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Remote MCP server enforcement semantics for the 'X-MCP-Readonly' header; the server side of GITHUB_MCP_URL is not included in the supplied source.",
+      "Enumerated list of tools returned by mcp.get_tools for the 'github' connection; write-capable tool exposure cannot be confirmed from the supplied source.",
+      "GITHUB_PAT scope and permission configuration; the credential is read from the environment and its grants are not visible in the supplied source.",
+      "Behavior labels and runtime traces for tool invocations were unavailable per the supplied scope note, so prevalence and runtime behavior of the guard are not assessable.",
+      "Internal behavior of langchain_mcp_adapters MultiServerMCPClient (whether the readonly header triggers any client-side filtering) is not present in the supplied source."
+    ],
+    "repository": "serkan-ozal/browser-devtools-mcp-demo",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:272445a63fab41b30e6a3d44c85462d6"
+  },
+  "request_sha256": "7e191d3e8fbfeb6c42cfc6f0b79c96a88fcdb06303c9fb9c7a666d8b61e24ad8",
+  "response_sha256": "aab19a1605e5c6fbc9561859569e8c2aa40f181ad06a242f8d203f3c39307e65",
+  "state": "completed",
+  "tokens": 16714,
+  "unit": "v24-screen:272445a63fab41b30e6a3d44c85462d6"
+}

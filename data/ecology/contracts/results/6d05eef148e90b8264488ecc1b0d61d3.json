@@ -1,0 +1,114 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "result = await Runner.run(db_agent, query) in the POST /ask handler (server/main.py:420); the input-guardrail tripwire is evaluated during this agent run, before any registered MongoDB tool is invoked. Both reviewers identified this single commit point; no additional commit point in a different stratum is supported by the supplied source.",
+        "contract_id": "ecological-contract:722867f5e427aa1729b24534b0602b25",
+        "declared_mechanism": "The @input_guardrail-decorated db_input_guardrail (server/main.py:135-142), which runs Runner.run(guardrail_agent, input_data) and returns GuardrailFunctionOutput with tripwire_triggered=not result.final_output.IsValidQuery. guardrail_agent (lines 115-132) is instructed to reject forbidden keywords, injection patterns, and anything related to modifying the database, and to accept only safe MongoDB READ queries, with output_type=DbGuardrailOutput. The guardrail is registered on db_agent via input_guardrails=[db_input_guardrail] (line 372).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 44,
+            "line_start": 30,
+            "path": "server/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9ae2338793066b1ab8f3966b6e5b56e93438d52bbac372eb874dee6cb2c28a59"
+          },
+          {
+            "line_end": 132,
+            "line_start": 115,
+            "path": "server/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9ae2338793066b1ab8f3966b6e5b56e93438d52bbac372eb874dee6cb2c28a59"
+          },
+          {
+            "line_end": 142,
+            "line_start": 135,
+            "path": "server/main.py",
+            "role": "guard_registration",
+            "source_sha256": "9ae2338793066b1ab8f3966b6e5b56e93438d52bbac372eb874dee6cb2c28a59"
+          },
+          {
+            "line_end": 372,
+            "line_start": 372,
+            "path": "server/main.py",
+            "role": "guard_registration",
+            "source_sha256": "9ae2338793066b1ab8f3966b6e5b56e93438d52bbac372eb874dee6cb2c28a59"
+          },
+          {
+            "line_end": 165,
+            "line_start": 145,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "9ae2338793066b1ab8f3966b6e5b56e93438d52bbac372eb874dee6cb2c28a59"
+          },
+          {
+            "line_end": 383,
+            "line_start": 351,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "9ae2338793066b1ab8f3966b6e5b56e93438d52bbac372eb874dee6cb2c28a59"
+          },
+          {
+            "line_end": 420,
+            "line_start": 404,
+            "path": "server/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ae2338793066b1ab8f3966b6e5b56e93438d52bbac372eb874dee6cb2c28a59"
+          },
+          {
+            "line_end": 382,
+            "line_start": 373,
+            "path": "server/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ae2338793066b1ab8f3966b6e5b56e93438d52bbac372eb874dee6cb2c28a59"
+          },
+          {
+            "line_end": 420,
+            "line_start": 420,
+            "path": "server/main.py",
+            "role": "commit_point",
+            "source_sha256": "9ae2338793066b1ab8f3966b6e5b56e93438d52bbac372eb874dee6cb2c28a59"
+          }
+        ],
+        "forbidden_condition": "A user query containing FORBIDDEN_KEYWORDS (drop, delete, remove, truncate, update, insert) or INJECTION_PATTERNS (e.g., 'ignore previous instructions', 'bypass', 'act as admin', 'override system'), or otherwise requesting database modification, being classified IsValidQuery=true by the guardrail agent and allowed to proceed past the input-guardrail check into db_agent's run and MongoDB tool dispatch.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm at runtime that the agents SDK executes input_guardrails before any tool dispatch within Runner.run; the SDK's internal ordering is not present in the supplied source.",
+          "Determine failure semantics of the guardrail chain: if guardrail_agent errors or emits unparseable output, does the tripwire fail open (allowing the unsafe query into tool dispatch) or fail closed (DbGuardrailOutput parsing and exception behavior are not shown).",
+          "Confirm what input_data the SDK passes to db_input_guardrail \u2014 the full assembled prompt (including mongo_url, db_name, collection) versus only data.userQuery \u2014 since the whole f-string built at lines 404-418 is what reaches Runner.run at line 420.",
+          "Confirm the observable outcome when the tripwire fires in the /ask handler (whether the resulting exception is converted to HTTP 500 by the generic handler at lines 424-426) \u2014 this is runtime behavior not demonstrated in source."
+        ],
+        "protected_operation": "db_agent execution of its registered MongoDB access function tools (fetch_documents, get_movie_by_title, search_movies_by_title, get_movies_by_genre, get_movies_by_director, get_movies_by_cast_member, get_top_rated_movies, get_movies_released_after) during Runner.run on a user query originating from the POST /ask handler.",
+        "protected_resource": "The MongoDB database/collection addressed by the request's db_url/resolved db_name/collection_name, reachable in the supplied source only through db_agent's registered function tools (each opening a MongoClient to the caller-supplied mongo_url).",
+        "protection_obligation": "Merged from the two reviewer opinions (identical obligation, guard, and commit point): the @input_guardrail db_input_guardrail registered on db_agent must reject any user query submitted to POST /ask that is not a safe MongoDB READ query \u2014 i.e., a query containing destructive keywords (drop/delete/remove/truncate/update/insert), prompt-injection patterns, or any request to modify the database \u2014 by triggering its tripwire at agent-input time, so that Runner.run(db_agent, query) aborts before db_agent dispatches any MongoDB access tool.",
+        "scope_limits": [
+          "The two reviewer opinions describe the same obligation, guard, and commit point and are merged into this single contract.",
+          "All eight tools registered on db_agent in the supplied source are read-only (find/find_one with limits and projections); no write-path tool exists in the supplied source, so this contract asserts a guard over agent tool execution, not an observed database mutation effect (stratum is tool_execution, not database).",
+          "The accept/reject classification is LLM-mediated via guardrail_agent; FORBIDDEN_KEYWORDS and INJECTION_PATTERNS appear only inside guardrail_agent's instruction text \u2014 db_input_guardrail performs no deterministic keyword scan in the supplied source.",
+          "The handler's own resolve_db_name(data.db_url) call at line 402 (using MongoClient directly at lines 91-102) occurs before Runner.run and is not covered by the guardrail; the contract covers only the agent-run/tool-execution path.",
+          "Runtime effectiveness of the tripwire (that the agents SDK aborts Runner.run before tool dispatch when tripwire_triggered=true) is framework behavior not shown in the supplied file.",
+          "CORS configuration, API-key handling, and other generic validation in the handler are outside this contract's scope."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No source for the OpenAI Agents SDK ('agents' package) is supplied, so the ordering guarantee that input guardrails execute before tool calls inside Runner.run is framework-inferred rather than source-verified.",
+      "No tests, logs, or runtime traces are supplied demonstrating that unsafe or injection-laden queries actually trip db_input_guardrail in this deployment (behavior labels are unavailable per the stated scope).",
+      "No dependency/requirements source is supplied to confirm the agents SDK version or that GuardrailFunctionOutput tripwire semantics match the mechanism assumed by the reviewers.",
+      "No deployment or client-side source is supplied showing how InputTypes fields (api_key, db_url, collection_name, userQuery) are produced beyond the handler's local validation at lines 388-398."
+    ],
+    "repository": "iutkarsh077/Database_Agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:6d05eef148e90b8264488ecc1b0d61d3"
+  },
+  "request_sha256": "08e86ad8b508ec48b7c5da53cc3085213e91e5c5a3f73fe9e8a817356d15de82",
+  "response_sha256": "8200e3b80ea7eeff9d8af440e3902a4851d2a9f4df7bc241ddbc026a2eae898b",
+  "state": "completed",
+  "tokens": 13624,
+  "unit": "v24-screen:6d05eef148e90b8264488ecc1b0d61d3"
+}

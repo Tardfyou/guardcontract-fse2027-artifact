@@ -1,0 +1,373 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "asyncio.create_subprocess_exec in _run_once (middleware.py:145-150), reached via _exec from the read_resource branches (middleware.py:567, 576).",
+        "contract_id": "ecological-contract:104a84d92bea00bf4a1bc3ae953f8427",
+        "declared_mechanism": "Per-task rate limit checked before any branch (middleware.py:555-557); the ConfigMap branch validates name and namespace against _NAME_PAT and returns BLOCKED on failure (559-564); the URL branch validates against _URL_PAT and returns BLOCKED on failure (571-573); both branches call _exec with literal argv lists (567, 576), and _run_once uses asyncio.create_subprocess_exec \u2014 no shell \u2014 for argv lists (144-150).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 564,
+            "line_start": 559,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 573,
+            "line_start": 571,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 67,
+            "line_start": 66,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 557,
+            "line_start": 555,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 578,
+            "line_start": 565,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 150,
+            "line_start": 145,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 545,
+            "line_start": 544,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 599,
+            "line_start": 599,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          }
+        ],
+        "forbidden_condition": "Spawning a subprocess for an agent-supplied reference that fails validation \u2014 an invalid ConfigMap reference (name or namespace not matching _NAME_PAT) or a malformed URL (not matching _URL_PAT) returns BLOCKED \u2014 or reaching the spawn through any shell-interpolated string; only the fixed argv-list calls at middleware.py:567 and 576 are permitted commit forms.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Where read_resource / EXECUTOR_TOOLS is bound into the live agent runtime is not shown in the supplied views.",
+          "Whether the network effects of the curl branch require an additional communication-stratum guard is not determined by the supplied source."
+        ],
+        "protected_operation": "The read_resource ConfigMap fetch and URL fetch, each executed via _exec on behalf of an agent-supplied path_or_url argument.",
+        "protected_resource": "The executor host's subprocess surface (the kubectl/curl argv) reached from agent-supplied references, and the cluster API or network endpoints those binaries contact.",
+        "protection_obligation": "ConfigMap and URL fetches requested through the read_resource tool must have the agent-supplied reference validated (DNS-label pattern for configmap name and namespace; strict http(s) URL pattern) and be executed only in the fixed argv forms (kubectl get configmap <name> -n <ns> -o yaml; curl -sL --max-time 15 -- <url>) before any subprocess spawn.",
+        "scope_limits": [
+          "These branches do not pass through _pre_flight, assess_command, the autonomy engine, or the approval gate; the reviewers' assertion that read_resource operations pass the parser-based safety assessment is not supported by the supplied source.",
+          "Validation is format-only; the content of fetched ConfigMaps or URLs is returned to the agent unfiltered, and no content-level guard is declared here.",
+          "The read-only shape comes from the fixed argv (kubectl get / curl -sL); no independent mechanism beyond the fixed argv prevents other kubectl verbs through this path."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "p.read_text(encoding='utf-8', errors='replace')[:MAX_OUTPUT] at middleware.py:592 \u2014 the point where file contents are obtained for return to the agent.",
+        "contract_id": "ecological-contract:45cc4e1c982d0b1ea6980d182c27551d",
+        "declared_mechanism": "read_resource resolves the requested path with pathlib.Path.resolve and checks p.is_relative_to(root) against get_settings().safety.read_paths before p.read_text (middleware.py:580-594); the per-task ToolRateLimiter is checked first (555-557); read_paths defaults to ['/etc/kopilot'] and an empty list disables file reads entirely (config.py:109-111).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 589,
+            "line_start": 580,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 557,
+            "line_start": 555,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 111,
+            "line_start": 109,
+            "path": "src/kopilot/config.py",
+            "role": "guard_registration",
+            "source_sha256": "8d8e26ac916e5af0c93538bb86fbfe7fdac78e5761757b2df40e52c21fd0d6c4"
+          },
+          {
+            "line_end": 592,
+            "line_start": 590,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 554,
+            "line_start": 544,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 545,
+            "line_start": 544,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 599,
+            "line_start": 599,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          }
+        ],
+        "forbidden_condition": "Returning file contents to the agent for a requested path whose resolved location is not relative to any configured read_paths root (such requests are refused with 'BLOCKED: file reads are restricted to ...'); when read_paths is empty, all local file reads are disabled.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "The effective runtime value of SAFETY_READ_PATHS in deployments is environment configuration, not derivable from the supplied source.",
+          "Where read_resource / EXECUTOR_TOOLS is bound into the live agent runtime is not shown in the supplied views."
+        ],
+        "protected_operation": "The read_resource local-file branch: reading a documentation file from the executor filesystem (pathlib read_text) and returning its contents to the agent.",
+        "protected_resource": "The executor filesystem outside the configured read_paths roots; the readable set is confined to those roots (default ['/etc/kopilot'], config.py:109-111).",
+        "protection_obligation": "Local-file reads served to the agent through the read_resource tool must resolve inside one of the configured safety.read_paths roots before the file's contents are read and returned to the agent.",
+        "scope_limits": [
+          "Read-side (information-disclosure) restriction only; no filesystem mutation is guarded by this contract.",
+          "Covers only the local-file branch; the ConfigMap and URL branches of read_resource use different validation and commit paths.",
+          "The allowed-root set is deployment configuration (SAFETY_READ_PATHS); source fixes only the default value.",
+          "Check and read occur sequentially in one coroutine after resolve(); no claim is made about concurrent filesystem changes between the containment check and read_text."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "asyncio.create_subprocess_shell / asyncio.create_subprocess_exec in _run_once (middleware.py:137-150), reached from execute_approved via _run_and_record and _exec (middleware.py:487-493, 287, 176-190).",
+        "contract_id": "ecological-contract:ac552423ac9bb95c9a1ce062eae3b399",
+        "declared_mechanism": "execute_approved re-evaluates _current_verdict (middleware.py:425, defined at 217-221: _BLOCKED_PATTERNS then assess_command, without consuming a rate-limit slot) and get_engine().decide (426) before any execution: REFUSE leads to brake refusal with no execution (428-447); blocked_now leads to DENIED with no execution (449-479); only otherwise does it call _run_and_record and _exec (487-493).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 426,
+            "line_start": 415,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 221,
+            "line_start": 217,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 447,
+            "line_start": 428,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 479,
+            "line_start": 449,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 150,
+            "line_start": 135,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 494,
+            "line_start": 487,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 373,
+            "line_start": 354,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          }
+        ],
+        "forbidden_condition": "Executing the approved command req.command when (a) the autonomy engine now returns REFUSE (an emergency brake engaged after the approval was granted, or observe mode) \u2014 execution refused; or (b) the fresh verdict is not allowed and either does not require approval or is CRITICAL ('blocked_now') \u2014 execution blocked because the safety assessment changed after the approval was granted.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "kopilot.executor.approvals internals (exact-match semantics of consume_if_approved versus execute_approved's request lookup, approval lifecycle, decided_by) are not supplied.",
+          "kopilot.executor.autonomy brake conditions are not supplied.",
+          "The HTTP endpoint that invokes execute_approved is not in the supplied views."
+        ],
+        "protected_operation": "Execution of an approved, agent-originated command via execute_approved, the execution path out of the approval queue created by _guarded_run.",
+        "protected_resource": "The executor host's OS process/shell surface and the Kubernetes cluster state reachable through it, the same target as the originating tool call.",
+        "protection_obligation": "A command stored in the approval queue (originating from an agent tool call) may be executed through the approval path only if, at execution time, the fresh safety verdict (denylist plus assess_command) and the autonomy brake still permit it; a stored approval must not bypass the current gate.",
+        "scope_limits": [
+          "Covers only the execution-time re-check of stored approvals; the request-time gate that created the approval is covered by the tool-pipeline contract.",
+          "The command content is agent-generated (created via store.request from a tool-dispatched _guarded_run call), but the execution trigger is a human approval action referenced as POST /approvals/{id}/approve; that HTTP route's source is not supplied.",
+          "Rate limiting is deliberately not re-applied on this path (_current_verdict does not spend a rate slot, middleware.py:217-221)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "asyncio.create_subprocess_shell / asyncio.create_subprocess_exec inside _run_once (middleware.py:137-150), reached from _guarded_run via _run_and_record and _exec (middleware.py:287, 176-190).",
+        "contract_id": "ecological-contract:d9faef4a4b71a1b54fb8747b97ba5458",
+        "declared_mechanism": "_guarded_run (middleware.py:315-404) routes every command through _pre_flight (middleware.py:224-240: _BLOCKED_PATTERNS denylist at 226-228, ToolRateLimiter.check at 230-236, assess_command at 238) and the autonomy decision at 321, then refuses in observe mode (322-328), auto-approves under a recorded policy (329-352), consumes or creates a human approval request (354-385), or returns BLOCKED without executing (387-401); only a permitted verdict reaches _run_and_record and then _exec (345, 363, 404). assess_command (safety.py:427-485) blocks protected-namespace mutations outright (439-447), requires approval for all-namespace destructive operations (449-455), opaque commands (457-467), destructive verbs (469-475), and other mutations (477-483), with require_approval_destructive defaulting to true and protected_namespaces defaulting to the three system namespaces (config.py:96-112).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 321,
+            "line_start": 315,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 240,
+            "line_start": 224,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 385,
+            "line_start": 354,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 112,
+            "line_start": 96,
+            "path": "src/kopilot/config.py",
+            "role": "guard_registration",
+            "source_sha256": "8d8e26ac916e5af0c93538bb86fbfe7fdac78e5761757b2df40e52c21fd0d6c4"
+          },
+          {
+            "line_end": 64,
+            "line_start": 49,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 447,
+            "line_start": 439,
+            "path": "src/kopilot/agent/safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "37b3ce4a1c3997cdf133890fa5c722e63289ad1763973bcc759385337dd8a5fa"
+          },
+          {
+            "line_end": 483,
+            "line_start": 449,
+            "path": "src/kopilot/agent/safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "37b3ce4a1c3997cdf133890fa5c722e63289ad1763973bcc759385337dd8a5fa"
+          },
+          {
+            "line_end": 150,
+            "line_start": 135,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 190,
+            "line_start": 176,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 511,
+            "line_start": 497,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 541,
+            "line_start": 514,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 511,
+            "line_start": 497,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          },
+          {
+            "line_end": 599,
+            "line_start": 599,
+            "path": "src/kopilot/executor/middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b918a47542b1a91f5e9bbc22d562a9432d08fd689555cfff149178f1c30189f8"
+          }
+        ],
+        "forbidden_condition": "A tool-supplied command reaching the subprocess spawn without a permitting verdict, specifically: (a) any match against the _BLOCKED_PATTERNS catastrophic denylist (rm -rf /, --no-preserve-root, fork bomb, mkfs, dd of=/dev/, shutdown/reboot/halt, chmod 000 /, chown /, find / -delete, > /dev/[sh]d*); (b) any mutating command targeting a protected namespace (kube-system, kube-public, kube-node-lease) \u2014 allowed=False at CRITICAL risk with no approval path; (c) destructive operations across all namespaces \u2014 approval required; (d) opaque commands (unparseable pipelines, kubectl exec/cp/attach payloads, unrecognised binaries) \u2014 allowed only if require_approval_destructive is false, otherwise approval required; (e) destructive commands \u2014 approval required while require_approval_destructive is true (the default); (f) mutating commands not provably read-only \u2014 approval required; (g) any mutating command refused by autonomy level 0 or an engaged emergency brake.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Where EXECUTOR_TOOLS is consumed and bound into a live agent runtime is not shown in the supplied views.",
+          "kopilot.executor.autonomy (AutonomyDecision logic, brakes, granting_policy) is imported but not supplied; the observe-refuse and auto-approve conditions are unverified.",
+          "kopilot.executor.approvals (ApprovalStore.request / consume_if_approved / approve semantics) is not supplied."
+        ],
+        "protected_operation": "Agent-invoked execution of kubectl, helm, and shell command strings via the run_kubectl/run_helm/run_shell tools collected in EXECUTOR_TOOLS.",
+        "protected_resource": "The executor host's OS process/shell surface, and the Kubernetes cluster state reachable through kubectl/helm invoked on it, in particular the protected namespaces kube-system, kube-public, and kube-node-lease.",
+        "protection_obligation": "Every kubectl, helm, or shell command string dispatched through the agent tools run_kubectl, run_helm, or run_shell must be blocked, refused, or held for explicit human approval \u2014 or affirmatively allowed \u2014 by the _guarded_run pipeline (_BLOCKED_PATTERNS denylist, per-task rate limiter, assess_command verdict, autonomy-engine decision, approval gate) before any subprocess is spawned for it; mutations of protected namespaces are blocked outright, and destructive/mutating/opaque commands are refused in observe mode or held for human approval.",
+        "scope_limits": [
+          "Covers only run_kubectl, run_helm, and run_shell; read_resource does not pass through _guarded_run/_pre_flight/assess_command.",
+          "The gate is parser-based and fails toward approval, not outright blockage: commands _split_pipeline cannot parse are opaque and approval-gated unless they also hit the denylist or a protected namespace; the source itself states this gate is one layer behind scoped RBAC (safety.py:16-17, middleware.py:44-47).",
+          "Setting SAFETY_REQUIRE_APPROVAL_DESTRUCTIVE=false makes destructive/mutating/opaque verdicts allowed=True so those commands execute without approval (safety.py:459, 471, 479); this contract presumes the default true (config.py:102).",
+          "Autonomy-level auto-approval executes mutations without a human in the loop; its conditions live in kopilot.executor.autonomy, which is not among the supplied views.",
+          "Approval-gated commands can later execute via execute_approved; the execution-time re-check on that path is captured in a separate contract."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied source shows EXECUTOR_TOOLS being consumed by a concrete agent runtime (graph, server, or harness); agent dispatch of these tools is asserted by the @tool decorators and the module docstring (middleware.py:1-6), but the runtime binding is outside the supplied views.",
+      "kopilot.executor.autonomy (get_engine, AutonomyDecision, emergency brakes, granting_policy) is imported but its source is not supplied; the observe-refuse and auto-approve decision conditions cannot be verified.",
+      "kopilot.executor.approvals (ApprovalStore request/consume_if_approved/record_auto and the approve endpoint) is not supplied; approval lifecycle and exact-match semantics are unverified.",
+      "kopilot.taskscope (current_task_id, record_risk) and kopilot.outputs.audit are not supplied; the rate-limit bucketing key and audit-ledger semantics are unverified.",
+      "The reviewers' claim that read_resource passes assess_command/_guarded_run is contradicted by middleware.py:544-596 (it calls _exec directly); if some other binding routes read_resource through the safety gate, it is not in the supplied views.",
+      "Effective deployment values for SAFETY_REQUIRE_APPROVAL_DESTRUCTIVE, SAFETY_PROTECTED_NAMESPACES, SAFETY_READ_PATHS, AUTONOMY_LEVEL, and AUTONOMY_AUTOPILOT_NAMESPACES are environment-dependent and not derivable from the supplied source.",
+      "The HTTP approval endpoint referenced at middleware.py:382 (POST /approvals/{id}/approve) is not in the supplied views, so the human-approval entry path cannot be compiled as a contract."
+    ],
+    "repository": "kopilot-ai/kopilot",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1417be3d9e6df46d45f44006d093fdff"
+  },
+  "request_sha256": "a4031335899b2d75085297612687104d49ec3db1f9151fffb882658e06b85a63",
+  "response_sha256": "95a0414f1610479473a22fbfa3f818ec91308e7c8185a46d84c5a616a2eae85a",
+  "state": "completed",
+  "tokens": 38903,
+  "unit": "v24-screen:1417be3d9e6df46d45f44006d093fdff"
+}

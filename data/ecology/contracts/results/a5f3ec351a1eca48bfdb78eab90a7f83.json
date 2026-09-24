@@ -1,0 +1,196 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "agent.run_sync(cleaned_question, deps=deps, message_history=message_history) at mwaa_agent/agent.py:87 \u2014 only the cleaned return value of prevalidate_question is ever submitted; a raised ValidationError aborts run_question before this call, and the webapp converts it to an error response without any model call.",
+        "contract_id": "ecological-contract:5cf5eaead37152205911938ba8cf068f",
+        "declared_mechanism": "prevalidate_question (mwaa_agent/validation/prevalidation.py:21-43) invoked unconditionally as the first step of run_question (agent.py:82), before tracer attachment and agent.run_sync (agent.py:84-87); it raises validation.ValidationError for empty/oversized/out-of-scope input and returns the question with CREDENTIAL_PATTERNS redactions applied; the webapp caller catches ValidationError and returns an error ChatResponse so rejected input never reaches the model (webapp.py:120-122).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 9,
+            "line_start": 1,
+            "path": "mwaa_agent/validation/prevalidation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ee031a170df3826edb495967a4bcbe0f1d1361ff86c66cc93388d4126a25acd"
+          },
+          {
+            "line_end": 38,
+            "line_start": 29,
+            "path": "mwaa_agent/validation/prevalidation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5ee031a170df3826edb495967a4bcbe0f1d1361ff86c66cc93388d4126a25acd"
+          },
+          {
+            "line_end": 43,
+            "line_start": 40,
+            "path": "mwaa_agent/validation/prevalidation.py",
+            "role": "guard_registration",
+            "source_sha256": "5ee031a170df3826edb495967a4bcbe0f1d1361ff86c66cc93388d4126a25acd"
+          },
+          {
+            "line_end": 82,
+            "line_start": 82,
+            "path": "mwaa_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "fc4ea09f0bc469c3a764041a38a07e6d0143edd09bd14955093f18f768975382"
+          },
+          {
+            "line_end": 91,
+            "line_start": 56,
+            "path": "mwaa_agent/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "fc4ea09f0bc469c3a764041a38a07e6d0143edd09bd14955093f18f768975382"
+          },
+          {
+            "line_end": 87,
+            "line_start": 87,
+            "path": "mwaa_agent/agent.py",
+            "role": "commit_point",
+            "source_sha256": "fc4ea09f0bc469c3a764041a38a07e6d0143edd09bd14955093f18f768975382"
+          },
+          {
+            "line_end": 122,
+            "line_start": 119,
+            "path": "apps/web/webapp.py",
+            "role": "commit_point",
+            "source_sha256": "483d6f43405abaa29e4bc8ad7179b8f54ca68f1775386ec2a446b44c5dfec259"
+          },
+          {
+            "line_end": 120,
+            "line_start": 120,
+            "path": "apps/web/webapp.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "483d6f43405abaa29e4bc8ad7179b8f54ca68f1775386ec2a446b44c5dfec259"
+          }
+        ],
+        "forbidden_condition": "A question that is empty (prevalidation.py:29-31), longer than 4000 characters (prevalidation.py:32-36), out-of-scope per check_in_scope (prevalidation.py:38), or containing credential-shaped text (prevalidation.py:40-42) reaching the model invocation at agent.py:87; per the module contract, a pasted-in secret must never reach Claude or the Anthropic API even on an otherwise-valid question (prevalidation.py:8-9).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The out-of-scope criteria (mwaa_agent/validation/scope.py) and the credential pattern set/redaction implementation (mwaa_agent/patterns.py) are outside the supplied lines, so the substantive scope rules and detection coverage are unverified; whether the scope check encodes any agent-specific rule versus generic AWS-topic filtering is unsupported.",
+          "Mediation is classified as direct_tool because the guarded commit is the agent's own model invocation (agent.run_sync) executed directly within run_question, with the gate bound at that entry; the guard is plain sequential code rather than a registered PydanticAI hook or @agent.tool \u2014 confirm this taxonomy mapping.",
+          "Whether model/tool behavior inside agent.run_sync can re-introduce unvalidated question content into further effects is not determinable from the supplied views."
+        ],
+        "protected_operation": "The agent invocation performed by run_question: agent.run_sync(cleaned_question, deps=deps, message_history=...) at mwaa_agent/agent.py:87 \u2014 the single entry point both the CLI and the webapp call (agent.py:13-16), where the validated question becomes the model prompt.",
+        "protected_resource": "The LLM endpoint/account backing the agent (AGENT_MODEL, default anthropic:claude-sonnet-4-5, agent.py:43) and the question-content channel into the agent run, including any downstream agent-tool effects driven by that content; also the submitter's own credential material, which must not leak into model context.",
+        "protection_obligation": "Every question must pass prevalidate_question \u2014 non-empty, at most MAX_QUESTION_LENGTH (4000) characters, in-scope per check_in_scope, and credential-redacted \u2014 before it is submitted to the model in run_question, so that no rejected or credential-bearing question text ever reaches the LLM (Anthropic API) or, through the agent run, downstream agent-tool execution.",
+        "scope_limits": [
+          "The gate binds only the new question string; restored message_history is passed to agent.run_sync unvalidated in the supplied source (agent.py:87).",
+          "Enforcement reaches only callers that route through run_question; the source frames direct agent.run_sync use as something callers 'should' avoid (agent.py:64-65), not as a hard boundary.",
+          "Credential handling is redaction-then-proceed: found secrets are stripped and the cleaned question still goes to the model (prevalidation.py:40-43); this contract asserts nothing about residual leakage risk.",
+          "The output-side postvalidate_output gate (agent.py:88) is present in source but was not raised as a reviewer obligation and is not compiled here.",
+          "This is a compiled protection-contract hypothesis only: no DEC violation, safety, runtime-behavior, or prevalence determination is made."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "FastAPI dependency resolution of require_auth before route-handler dispatch: the HTTPException(401) raised at webapp.py:62-65 terminates the request with a 401 response so that no route handler \u2014 and no agent invocation behind POST /api/chat \u2014 executes on bad or missing credentials.",
+        "contract_id": "ecological-contract:6f6db8c13c0e672181eb6097a559ebcb",
+        "declared_mechanism": "require_auth (webapp.py:56-66): FastAPI HTTPBasic dependency comparing submitted username/password to CHAT_USERNAME/CHAT_PASSWORD via secrets.compare_digest and raising HTTP 401 with WWW-Authenticate: Basic on mismatch; registered for every route via FastAPI(title=..., dependencies=[Depends(require_auth)]) at webapp.py:69; backed by a fail-closed module-level RuntimeError if CHAT_USERNAME or CHAT_PASSWORD is unset (webapp.py:46-51).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 51,
+            "line_start": 46,
+            "path": "apps/web/webapp.py",
+            "role": "forbidden_condition",
+            "source_sha256": "483d6f43405abaa29e4bc8ad7179b8f54ca68f1775386ec2a446b44c5dfec259"
+          },
+          {
+            "line_end": 66,
+            "line_start": 56,
+            "path": "apps/web/webapp.py",
+            "role": "guard_registration",
+            "source_sha256": "483d6f43405abaa29e4bc8ad7179b8f54ca68f1775386ec2a446b44c5dfec259"
+          },
+          {
+            "line_end": 65,
+            "line_start": 62,
+            "path": "apps/web/webapp.py",
+            "role": "commit_point",
+            "source_sha256": "483d6f43405abaa29e4bc8ad7179b8f54ca68f1775386ec2a446b44c5dfec259"
+          },
+          {
+            "line_end": 69,
+            "line_start": 69,
+            "path": "apps/web/webapp.py",
+            "role": "guard_registration",
+            "source_sha256": "483d6f43405abaa29e4bc8ad7179b8f54ca68f1775386ec2a446b44c5dfec259"
+          },
+          {
+            "line_end": 124,
+            "line_start": 108,
+            "path": "apps/web/webapp.py",
+            "role": "protected_operation",
+            "source_sha256": "483d6f43405abaa29e4bc8ad7179b8f54ca68f1775386ec2a446b44c5dfec259"
+          },
+          {
+            "line_end": 120,
+            "line_start": 119,
+            "path": "apps/web/webapp.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "483d6f43405abaa29e4bc8ad7179b8f54ca68f1775386ec2a446b44c5dfec259"
+          },
+          {
+            "line_end": 8,
+            "line_start": 8,
+            "path": "mwaa_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fc4ea09f0bc469c3a764041a38a07e6d0143edd09bd14955093f18f768975382"
+          },
+          {
+            "line_end": 52,
+            "line_start": 52,
+            "path": "mwaa_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fc4ea09f0bc469c3a764041a38a07e6d0143edd09bd14955093f18f768975382"
+          },
+          {
+            "line_end": 88,
+            "line_start": 82,
+            "path": "mwaa_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fc4ea09f0bc469c3a764041a38a07e6d0143edd09bd14955093f18f768975382"
+          }
+        ],
+        "forbidden_condition": "Any HTTP request lacking valid CHAT_USERNAME/CHAT_PASSWORD HTTP-Basic credentials (or supplying no credentials) being processed by any webapp route \u2014 concretely reaching the POST /api/chat handler and thereby the agent run that performs MWAA reads and consumes Anthropic API credits. The source additionally forbids startup without both credential env vars configured (fail-closed), so the app can never run in a reachable-but-unauthenticated state (webapp.py:46-51).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The agent tool layer is not in the supplied views (mwaa_agent/tools.py and mwaa_agent/mwaa_client.py absent): that model-dispatched @agent.tool calls perform the asserted AWS MWAA reads rests on agent.py:8 (\"the @agent.tool functions Claude can call\"), webapp.py:48-49 and 71-76, and reviewer rationale \u2014 not on tool bodies.",
+          "Whether any route other than POST /api/chat can reach agent- or tool-mediated effects is not established by the supplied source.",
+          "Mediation is classified as agent_generated_input_to_guarded_effect because the guarded effects behind the route materialize during agent.run_sync via model-generated tool dispatch; confirm this mapping against the study taxonomy."
+        ],
+        "protected_operation": "Handling of any HTTP request to the webapp's routes (GET /, GET /api/health, POST /api/chat, DELETE /api/chat/{session_id}); the load-bearing case is POST /api/chat, whose handler passes the user's question into run_question(_agent, ...) and thereby drives the PydanticAI agent loop (agent.run_sync) with its model calls and registered agent tools (webapp.py:108-124).",
+        "protected_resource": "The webapp's route surface and, behind it, the AWS MWAA environment access and Anthropic API budget reachable through the agent run triggered by POST /api/chat (MwaaClient constructed with MWAA_ENV_NAME/AWS settings at webapp.py:71-76; per-question Anthropic spend asserted at webapp.py:48-49).",
+        "protection_obligation": "Every route of the production FastAPI webapp must reject unauthenticated or bad-credential HTTP requests with HTTP 401 before any route handler executes, via the require_auth HTTP-Basic dependency registered app-wide at app construction; in particular, no unauthenticated request may reach the POST /api/chat handler that invokes the MWAA diagnosis agent (AWS MWAA reads and Anthropic API spend). (Merged from phase-first and phase-second reviewer wording, which state the same app-wide require_auth obligation.)",
+        "scope_limits": [
+          "The app-wide dependency covers all four routes, but the agent-effect rationale (MWAA reads, Anthropic spend) is source-supported only for POST /api/chat; GET / serves a static file (webapp.py:96-99), GET /api/health returns a dict (webapp.py:102-105), and DELETE /api/chat/{session_id} only mutates the in-process _sessions dict (webapp.py:134-137).",
+          "Coverage of the CLI caller (main.py) and of deployment-layer exposure controls (e.g., App Runner configuration, TLS) is not evidenced by the supplied views; this contract covers only the FastAPI application layer.",
+          "The guard checks per-request HTTP-Basic credentials against env-var values only; CORS, brute-force protection, lockout, and session semantics are outside this obligation.",
+          "This is a compiled protection-contract hypothesis only: no DEC violation, safety, runtime-behavior, or prevalence determination is made."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "mwaa_agent/tools.py and mwaa_agent/mwaa_client.py are absent from the supplied views: the identities and bodies of the registered @agent.tool functions and the MWAA client's operations (including whether they are reads, writes, or how they authenticate) are unsupported.",
+      "mwaa_agent/validation/scope.py and mwaa_agent/patterns.py are absent: the out-of-scope rule set and the CREDENTIAL_PATTERNS/redact implementation are unsupported, so gate coverage cannot be assessed.",
+      "mwaa_agent/errors.py (ValidationError) and mwaa_agent/tracing.py are not supplied; their semantics are inferred from usage sites only.",
+      "main.py (the CLI caller) and any deployment/infrastructure configuration (e.g., App Runner settings, TLS termination) are not supplied; caller coverage and transport protection outside the FastAPI app cannot be assessed.",
+      "apps/web/static/chat.html is not supplied; client-side credential handling is unknown.",
+      "Behavior labels and runtime prevalence data are unavailable per the unit scope; no runtime-behavior or prevalence determination is made."
+    ],
+    "repository": "kpopenclaw-cloud/mwaa-ai-agent-mvp",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a5f3ec351a1eca48bfdb78eab90a7f83"
+  },
+  "request_sha256": "21339f65d0ab7730219683ab5a756f2d01e45ebcac3f8cdceeccb5baab7dd305",
+  "response_sha256": "02c082dbeeb7c2db435b8e16bf80d66c7d944347dbf3a0c67951d4ce904da681",
+  "state": "completed",
+  "tokens": 31925,
+  "unit": "v24-screen:a5f3ec351a1eca48bfdb78eab90a7f83"
+}

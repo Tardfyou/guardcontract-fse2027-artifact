@@ -1,0 +1,294 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Callback return at guardrails.py:122-126 \u2014 masking is committed in place and the request is allowed to proceed toward the Gemini API ('sanitizes and lets the call proceed').",
+        "contract_id": "ecological-contract:6abc73bbcbbda0f582de774537535cbb",
+        "declared_mechanism": "ADK before_model_callback (guardrails.before_model_callback) registered on root_agent (agent.py:45); applies mask_pii to every text part, records redaction kinds to session state, and returns None so the sanitized request proceeds (guardrails.py:113-126).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 47,
+            "line_start": 42,
+            "path": "agent/docdefend_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "cdcbb3e1588527ac0ea266a1bf2e2350dcd590cab1c36a9cf76750e716310202"
+          },
+          {
+            "line_end": 45,
+            "line_start": 45,
+            "path": "agent/docdefend_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "cdcbb3e1588527ac0ea266a1bf2e2350dcd590cab1c36a9cf76750e716310202"
+          },
+          {
+            "line_end": 112,
+            "line_start": 103,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          },
+          {
+            "line_end": 63,
+            "line_start": 36,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          },
+          {
+            "line_end": 121,
+            "line_start": 113,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "protected_operation",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          },
+          {
+            "line_end": 126,
+            "line_start": 122,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          }
+        ],
+        "forbidden_condition": "An outgoing llm_request text part containing pattern-matched PII at the moment the request leaves for the Gemini API (guardrails.py:103-112: 'mask identifiers in every text part before the request leaves for the Gemini API'; 'the raw note never crosses the network with identifiers intact').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The Gemini API transport implementation and exact network-send point are framework internals not in supplied source.",
+          "Whether any non-text request parts could carry identifiers is undetermined from supplied source."
+        ],
+        "protected_operation": "The outbound model request: before_model_callback traverses llm_request.contents[].parts[].text and rewrites matched spans in place on every request (guardrails.py:113-121).",
+        "protected_resource": "The outbound request payload to the Gemini API (LLM request contents/parts text, including conversation history text).",
+        "protection_obligation": "Patient identifiers must be masked in every text part of every outgoing LLM request (with conversation history re-masked each turn) before the request leaves for the Gemini API; the raw clinical note must not cross the network with identifiers intact.",
+        "scope_limits": [
+          "Only parts with non-None .text are masked; function-response parts are untouched so terminology data is not mangled (guardrails.py:109-111, 114-121).",
+          "Regex-based masking with documented limitations (e.g., unlabeled names, guardrails.py:37-39); sanitize-not-block, never rejects the request (guardrails.py:126).",
+          "Effective only if ADK invokes the callback on every model request; the network transport itself is ADK framework code not in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "before_tool_callback returns None at guardrails.py:99-100 after in-place arg mutation \u2014 the tool call is allowed with masked args; the downstream external-API transmission commit inside the tool is not in supplied source.",
+        "contract_id": "ecological-contract:a4488fbae230293aea147e404200c3d7",
+        "declared_mechanism": "before_tool_callback registered on root_agent (agent.py:46) applies mask_pii (guardrails.py:66-73) to string args, logs redactions to session state, then returns None so the call proceeds with masked args (guardrails.py:85-100).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 47,
+            "line_start": 42,
+            "path": "agent/docdefend_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "cdcbb3e1588527ac0ea266a1bf2e2350dcd590cab1c36a9cf76750e716310202"
+          },
+          {
+            "line_end": 46,
+            "line_start": 45,
+            "path": "agent/docdefend_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "cdcbb3e1588527ac0ea266a1bf2e2350dcd590cab1c36a9cf76750e716310202"
+          },
+          {
+            "line_end": 9,
+            "line_start": 6,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          },
+          {
+            "line_end": 63,
+            "line_start": 32,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          },
+          {
+            "line_end": 91,
+            "line_start": 77,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "protected_operation",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          },
+          {
+            "line_end": 100,
+            "line_start": 86,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          }
+        ],
+        "forbidden_condition": "A string tool argument containing a pattern-matched patient identifier passing into tool execution unredacted; under-redaction is explicitly not acceptable (guardrails.py:32-35) and PHI must not cross the process boundary to an external API (guardrails.py:6-9).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The external NLM/terminology API request commit point and its stratum (nominally http) lie inside unsupplied tool/MCP code (build_terminology_toolset, validate_cpt); a separate http-stratum contract cannot be bound from supplied source.",
+          "Whether PII can reach external APIs via non-string or nested argument structures is undetermined."
+        ],
+        "protected_operation": "Argument passing for each allowlisted agent tool invocation: before_tool_callback scans and rewrites each top-level string arg in place via mask_pii before allowing the call (guardrails.py:77-91).",
+        "protected_resource": "Outgoing tool-call arguments (args dict) destined for the terminology MCP tools / NLM APIs and the local validate_cpt tool.",
+        "protection_obligation": "Patient identifiers matching the PII pattern set (NAME, SSN, PHONE, EMAIL, MRN, DOB) must be redacted from string tool-call arguments before an allowlisted tool executes, so PHI never crosses the process boundary to external terminology/NLM APIs.",
+        "scope_limits": [
+          "Only top-level string values in args are scanned (isinstance(val, str)); nested lists/dicts are not recursed (guardrails.py:86-91).",
+          "Regex masking only; labeled names only, unlabeled names are a documented limitation; over-redaction accepted (guardrails.py:32-42).",
+          "Sanitize-not-block: detected PII is redacted and the call proceeds; only allowlist failures block (guardrails.py:82-91, 100)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The before_tool_callback return: the error-dict return at guardrails.py:83 short-circuits execution before the tool runs; the None return at guardrails.py:99-100 is the allow commit preceding tool execution.",
+        "contract_id": "ecological-contract:a63302277033ae075d02b47c07d2d8df",
+        "declared_mechanism": "ADK before_tool_callback (guardrails.before_tool_callback) registered on root_agent (agent.py:46); per the callback contract, returning a dict short-circuits the tool call and returning None allows it (guardrails.py:77-78, 82-83, 99-100).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 47,
+            "line_start": 42,
+            "path": "agent/docdefend_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "cdcbb3e1588527ac0ea266a1bf2e2350dcd590cab1c36a9cf76750e716310202"
+          },
+          {
+            "line_end": 46,
+            "line_start": 45,
+            "path": "agent/docdefend_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "cdcbb3e1588527ac0ea266a1bf2e2350dcd590cab1c36a9cf76750e716310202"
+          },
+          {
+            "line_end": 41,
+            "line_start": 40,
+            "path": "agent/docdefend_agent/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "cdcbb3e1588527ac0ea266a1bf2e2350dcd590cab1c36a9cf76750e716310202"
+          },
+          {
+            "line_end": 30,
+            "line_start": 23,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "protected_operation",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          },
+          {
+            "line_end": 83,
+            "line_start": 81,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          },
+          {
+            "line_end": 78,
+            "line_start": 77,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          },
+          {
+            "line_end": 100,
+            "line_start": 99,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          },
+          {
+            "line_end": 15,
+            "line_start": 1,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          }
+        ],
+        "forbidden_condition": "Execution of a tool whose name (getattr(tool, 'name', str(tool))) is not in ALLOWED_TOOLS; before_tool_callback refuses such calls with an error dict that short-circuits execution (guardrails.py:81-83).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "tools.py (build_terminology_toolset) and the validate_cpt implementation are not in supplied source; whether MCP dispatch-time tool names equal the ALLOWED_TOOLS strings is unverified.",
+          "ADK framework tool-dispatch internals that guarantee callback invocation on every tool call are not in supplied source."
+        ],
+        "protected_operation": "Agent-initiated tool invocation/dispatch on the root agent's registered tool surface (agent.py:40-41), gated per-call by before_tool_callback (guardrails.py:77-91).",
+        "protected_resource": "The root agent's tool execution surface: MCP terminology tools (search_icd10, expand_icd10, search_hcpcs, search_loinc, search_rxnorm) plus the local validate_cpt tool (ALLOWED_TOOLS, guardrails.py:23-30).",
+        "protection_obligation": "Only tools listed in ALLOWED_TOOLS may execute during agent operation; any agent-initiated tool invocation whose runtime tool name is outside the allowlist must be short-circuited before the tool runs.",
+        "scope_limits": [
+          "Allowlist is a static module-level set (guardrails.py:23-30); changes require code modification.",
+          "Decision keys on getattr(tool, 'name', str(tool)); no handling of name collisions or dispatch-time naming differences.",
+          "Only governs tool calls passing through this agent's before_tool_callback; downstream effects of allowlisted tools are governed (if at all) elsewhere."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "reconcile_grounding's mutation and return of the corrected report (postprocess.py:47-63); the downstream delivery/persistence point of the report is not in supplied source.",
+        "contract_id": "ecological-contract:aa29628cba64e7efe9742dc404a9d9c4",
+        "declared_mechanism": "Deterministic reconciliation against the grounded_codes recorded by the agent's after_tool_callback (guardrails.py:129-139); unverified claims downgraded to grounded=false, groundingSource=None, riskLevel=HIGH, status=NOT_SUPPORTED, with a GROUNDING OVERRIDE appended to overallRiskSummary (postprocess.py:38-63).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 8,
+            "line_start": 1,
+            "path": "agent/docdefend_agent/postprocess.py",
+            "role": "guard_registration",
+            "source_sha256": "26d726cf50b3e16340e40cbbb940f20f0423e2fcde228326c6e07098e6a29d04"
+          },
+          {
+            "line_end": 44,
+            "line_start": 35,
+            "path": "agent/docdefend_agent/postprocess.py",
+            "role": "protected_operation",
+            "source_sha256": "26d726cf50b3e16340e40cbbb940f20f0423e2fcde228326c6e07098e6a29d04"
+          },
+          {
+            "line_end": 54,
+            "line_start": 47,
+            "path": "agent/docdefend_agent/postprocess.py",
+            "role": "forbidden_condition",
+            "source_sha256": "26d726cf50b3e16340e40cbbb940f20f0423e2fcde228326c6e07098e6a29d04"
+          },
+          {
+            "line_end": 63,
+            "line_start": 55,
+            "path": "agent/docdefend_agent/postprocess.py",
+            "role": "commit_point",
+            "source_sha256": "26d726cf50b3e16340e40cbbb940f20f0423e2fcde228326c6e07098e6a29d04"
+          },
+          {
+            "line_end": 139,
+            "line_start": 129,
+            "path": "agent/docdefend_agent/guardrails.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a49a3ea122cd6d514ec3d1d29f291cfb334d21124d0f94d1998c2bd560e23fa8"
+          }
+        ],
+        "forbidden_condition": "A codeAnalysis entry with grounded=true whose normalized code is not in the tool-verified grounded_codes set; such claims are overridden (postprocess.py:47-54).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Call-site wiring (postprocess.py:7 declares use by run_local.py and evals/run_evals.py) is not in supplied source; how model output and session grounded_codes flow into reconcile_grounding is unverified, so this contract's operational reach is provisional.",
+          "The final delivery/persistence commit point and effect stratum of the report (returned to caller, written to file, etc.) are not established from supplied source."
+        ],
+        "protected_operation": "Production of the defensibility report's per-code grounding fields: reconcile_grounding enforces the MUST-ground rule, mutating entries and overallRiskSummary, then returns the corrected report (postprocess.py:35-63).",
+        "protected_resource": "The final DocDefend defensibility report object (codeAnalysis entries: grounded, groundingSource, riskLevel, status; overallRiskSummary).",
+        "protection_obligation": "A grounding claim of grounded:true in the final report's codeAnalysis entries must correspond to a code actually confirmed by an agent tool (session state grounded_codes recorded by after_tool_callback); unbacked claims must be deterministically downgraded before the report ships.",
+        "scope_limits": [
+          "Operates only on the report dict structure ('codeAnalysis' entries and overallRiskSummary); the report's downstream use (e.g., billing decisions) cannot be bound from supplied source.",
+          "Verified set depends on after_tool_callback capture; responses explicitly marked found:false are excluded from grounding (guardrails.py:224-233)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "agent/docdefend_agent/tools.py (build_terminology_toolset) and the validate_cpt implementation are not supplied; downstream commit points and effect strata of allowlisted tool effects (e.g., HTTP requests to NLM APIs) cannot be bound, and dispatch-time tool names cannot be confirmed against ALLOWED_TOOLS.",
+      "run_local.py and evals/run_evals.py are not supplied; invocation wiring for validate_inputs, build_user_message, detect_injection, extract_, and reconcile_grounding is not visible, so no contract is compiled for the pre-flight input validation or prompt delimiting in guardrails.py:151-206 despite their deterministic checks (they are not registered as callbacks in supplied source).",
+      "detect_injection is log-only and never blocks (guardrails.py:203-206); whether it is wired into the run path at all is unsupported, so no protection contract is compiled for it.",
+      "prompts.INSTRUCTION content and ADK framework internals (request transport to Gemini, callback invocation guarantees, tool dispatch naming) are not supplied.",
+      "Tier B MedGemma sub-agent is planned only (agent.py:7-12); no contract compiled for it.",
+      "Provenance note: the phase-first reviewer obligation merged allowlist + tool-arg PII + model-request PII into one statement; duplicate wording was merged and split into the distinct per-commit-point contracts above (tool_execution x2, http x1, state x1) with no distinct supported obligation dropped."
+    ],
+    "repository": "aabdur1/docdefend-mvp",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1b265ddd76f4ac3e5b603031ca26c121"
+  },
+  "request_sha256": "1b1e157288309ad383b321557077ce1eebc5435c417114a9b72a4722f124b642",
+  "response_sha256": "ee266817f5cb29c6609da4652fa768271f37ca1c9e20b0108cef8b8f5fa97a62",
+  "state": "completed",
+  "tokens": 25775,
+  "unit": "v24-screen:1b265ddd76f4ac3e5b603031ca26c121"
+}

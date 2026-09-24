@@ -1,0 +1,1084 @@
+{
+  "attempt": "complete_shard_reconciliation",
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "middleware.py:281 \u2014 'await self.app(scope, receive, send)' inside _run_app_with_context, reached only after the guard's allow decisions (request context variables set at 261-278, reset in finally).",
+        "contract_id": "ecological-contract:10b8f5073750b6206c1e5d5cf5fc2220",
+        "declared_mechanism": "Middleware stack registration in AuthAdapter._get_access_control_middleware (adapter.py:119-139); ResourceGuardMiddleware.__call__ raw-path carve-out membership test, canonical-path resolution with MalformedPathError deny, verifier.resolve_resource_ids with fail-closed deny on resolution failure, all-scopes match, self._deny responses (middleware.py:75-210); _run_app_with_context as the sole forward path.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 139,
+            "line_start": 119,
+            "path": "core/skeleton/src/tai42_skeleton/access_control/adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "b4ac58b596f22615a33b3bfc1f4a4d92e6f573df056a0da8a57acd692943c8e3"
+          },
+          {
+            "line_end": 142,
+            "line_start": 75,
+            "path": "core/skeleton/src/tai42_skeleton/access_control/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "918cfe4b5500aa68b4350ea8a104820959415812e6dbc6642a327e318f26de05"
+          },
+          {
+            "line_end": 210,
+            "line_start": 178,
+            "path": "core/skeleton/src/tai42_skeleton/access_control/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "918cfe4b5500aa68b4350ea8a104820959415812e6dbc6642a327e318f26de05"
+          },
+          {
+            "line_end": 290,
+            "line_start": 252,
+            "path": "core/skeleton/src/tai42_skeleton/access_control/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "918cfe4b5500aa68b4350ea8a104820959415812e6dbc6642a327e318f26de05"
+          }
+        ],
+        "forbidden_condition": "Forwarding to the app a request to a protected route from an unauthenticated caller (401) or an authenticated caller lacking every required protected resource scope (403); a malformed path (NUL/control/backslash or non-ASCII) denied 403; a route-resolution verifier failure denied 403; an unauthenticated request to an authenticated-always-allowed path denied 401.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Where AuthAdapter/_get_access_control_middleware is consumed to build the app is not in the supplied ranges.",
+          "Whether any protected HTTP route is itself agent-facing is not shown in the supplied source.",
+          "Contents of settings.authenticated_always_allowed_paths are not in the supplied source."
+        ],
+        "protected_operation": "HTTP/websocket request dispatch to protected routes \u2014 the downstream ASGI app invocation.",
+        "protected_resource": "Route-table-protected HTTP/websocket routes, resolved to protected resource ids via the verifier.",
+        "protection_obligation": "ResourceGuardMiddleware, installed by AuthAdapter._get_access_control_middleware after AuthenticationMiddleware and AuthContextMiddleware, must deny (401/403) dispatch of any http or websocket request to a protected route unless the caller is authenticated and authorized for every resolved protected resource id (wildcard scope satisfies all; requiring all, not any), deciding in __call__ before the downstream app runs; malformed paths and route-resolution failures must deny fail-closed.",
+        "scope_limits": [
+          "Ordinary web request authentication/authorization at the HTTP edge; the supplied source does not bind this dispatch itself to an agent tool, agent lifecycle hook, or agent-generated input, so it is outside agent scope unless such a binding is supplied.",
+          "The middleware stack is returned only when access-control settings.enable is true (adapter.py:120-121); disabled means no middleware at all.",
+          "_run_app_with_context does carry scopes/claims context for the separate tool-edge check (middleware.py:264-278), but that downstream check is a distinct obligation.",
+          "The middle of __call__ (public-route handling, lines ~143-177) is partially outside the supplied view."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "binding.py:638 \u2014 await enforce_run_tier(self._app, key) executes before argument work, the invoked-tool deposit, and dispatch_scope/_dispatch_tool, so a refused run has no visible effect; tier.py:117-119 \u2014 the middleware fences before call_next so a fenced denial never opens a budget window; both precede the tool body.",
+        "contract_id": "ecological-contract:32bfb32cb80197393cc136a9ec5760f4",
+        "declared_mechanism": "ToolTierRegistry.register tier map (duplicate registration raises), resolve_run_tier (preset base_tool / branch base_of inheritance), enforce_run_tier admin check via resolve_caller, invoked at the top of ToolBinding.run_tool and inside ToolTierFenceMiddleware.on_call_tool installed on the main server and every sub-MCP mount before the turn-budget middleware.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 92,
+            "line_start": 72,
+            "path": "core/skeleton/src/tai42_skeleton/tools/builtin/sandbox_exec.py",
+            "role": "protected_operation",
+            "source_sha256": "c51cebb79c8f797b03d331101efa82adecc357843bb5a52ce272c939a3d68278"
+          },
+          {
+            "line_end": 100,
+            "line_start": 95,
+            "path": "core/skeleton/src/tai42_skeleton/tools/builtin/sandbox_exec.py",
+            "role": "guard_registration",
+            "source_sha256": "c51cebb79c8f797b03d331101efa82adecc357843bb5a52ce272c939a3d68278"
+          },
+          {
+            "line_end": 70,
+            "line_start": 60,
+            "path": "core/skeleton/src/tai42_skeleton/tools/tier.py",
+            "role": "guard_registration",
+            "source_sha256": "4f6112b0fe3a47eecb88d0b50ed9a489ccc97cd7c2de7e258ca4f9717e56f48f"
+          },
+          {
+            "line_end": 91,
+            "line_start": 73,
+            "path": "core/skeleton/src/tai42_skeleton/tools/tier.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4f6112b0fe3a47eecb88d0b50ed9a489ccc97cd7c2de7e258ca4f9717e56f48f"
+          },
+          {
+            "line_end": 102,
+            "line_start": 94,
+            "path": "core/skeleton/src/tai42_skeleton/tools/tier.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4f6112b0fe3a47eecb88d0b50ed9a489ccc97cd7c2de7e258ca4f9717e56f48f"
+          },
+          {
+            "line_end": 120,
+            "line_start": 107,
+            "path": "core/skeleton/src/tai42_skeleton/tools/tier.py",
+            "role": "commit_point",
+            "source_sha256": "4f6112b0fe3a47eecb88d0b50ed9a489ccc97cd7c2de7e258ca4f9717e56f48f"
+          },
+          {
+            "line_end": 638,
+            "line_start": 632,
+            "path": "core/skeleton/src/tai42_skeleton/tools/binding.py",
+            "role": "commit_point",
+            "source_sha256": "56dbeeec983e246e3e9fcdb929667c185ffa9a5c094bfba4514a893130d0f704"
+          },
+          {
+            "line_end": 646,
+            "line_start": 639,
+            "path": "core/skeleton/src/tai42_skeleton/tools/binding.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "56dbeeec983e246e3e9fcdb929667c185ffa9a5c094bfba4514a893130d0f704"
+          }
+        ],
+        "forbidden_condition": "A non-administrator principal running a fenced/secret-tier tool (or a preset/branch over one): enforce_run_tier raises ForbiddenError naming the tool and tier, and ToolTierFenceMiddleware converts the platform refusal into ToolError at the MCP edge; a duplicate tier registration that could silently swap a tool's authorization character also raises loudly.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether other built-in or extension tools carry 'fenced'/'secret' registrations is not visible in the supplied views.",
+          "The claim that a detached fire's refusal is 'a recorded failed run' depends on dispatch_scope/run-index machinery only partially described in the run_tool docstring."
+        ],
+        "protected_operation": "Running the fenced tool \u2014 concretely sandbox_exec's sandbox.create_session(spec) plus session.exec(argv, stdin=..., timeout_seconds=...) command execution in the requested image/workspace.",
+        "protected_resource": "The fenced/secret tool execution surface (base tools, presets over them, and extension branches of them), concretely the sandbox_exec sandbox command-execution tool registered on tai42_app.tools.",
+        "protection_obligation": "A tool registered at the 'fenced' or 'secret' tier \u2014 concretely sandbox_exec, registered 'fenced' via tai42_app.tools.register_tier at import \u2014 and any preset or extension branch composed over it (resolve_run_tier inherits the base tool's tier) may be run only by an administrator; every other caller is refused loudly (ForbiddenError / ToolError) before the tool body executes, at both the shared in-process run_tool seam and the MCP tools/call edge.",
+        "scope_limits": [
+          "The fence is generic over all tools at the run seams, but the only concrete fenced registration and tool body in the supplied views is sandbox_exec (process-level sandbox command execution).",
+          "The agent client-runnable door cited by reviewers (ToolBinding._client_runnable, ~binding.py:908) and the tier= parameter of @app.tools.tool (~binding.py:1038) are outside the supplied view ranges; only run_tool and the MCP middleware seams are evidenced.",
+          "resolve_caller semantics ('returns an admin with access control off'; background/hook/schedule fires resolve a bound execution identity) are asserted in tier.py docstrings; the implementation is not in view."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "turn.py:2807-2818 \u2014 the turn body runs only inside 'async with _intake_lease_held(intake.message_id, intake_token), caps.run_reserved(intake.thread_id)' before _complete_turn; thread_lease.py:104-116 cancels the body mid-span on lease loss so the outcome write never completes.",
+        "contract_id": "ecological-contract:57609b7084e501aa5058a62532eee076",
+        "declared_mechanism": "ThreadTurnLease.held: SET NX PX acquisition with unbounded polling (thread_lease.py:137-147), heartbeat task refresh while the body runs, CancelledError from a lost-lease signal translated to ThreadLeaseLostError (thread_lease.py:105-116), token-guarded unconditional release (thread_lease.py:130-133); an explicit local no-op only when no conversations Redis exists (in_memory).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 13,
+            "line_start": 1,
+            "path": "core/skeleton/src/tai42_skeleton/conversations/thread_lease.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f2f323d168853ad8f9a33e2a173422d71bdb014cefa6420abe3e77acf0c364cc"
+          },
+          {
+            "line_end": 135,
+            "line_start": 83,
+            "path": "core/skeleton/src/tai42_skeleton/conversations/thread_lease.py",
+            "role": "guard_registration",
+            "source_sha256": "f2f323d168853ad8f9a33e2a173422d71bdb014cefa6420abe3e77acf0c364cc"
+          },
+          {
+            "line_end": 147,
+            "line_start": 137,
+            "path": "core/skeleton/src/tai42_skeleton/conversations/thread_lease.py",
+            "role": "guard_registration",
+            "source_sha256": "f2f323d168853ad8f9a33e2a173422d71bdb014cefa6420abe3e77acf0c364cc"
+          },
+          {
+            "line_end": 2818,
+            "line_start": 2800,
+            "path": "core/skeleton/src/tai42_skeleton/conversations/turn.py",
+            "role": "commit_point",
+            "source_sha256": "84d36b8276981aa862a7500838b3995b26a810bbceeff1749fcc5e927ef798a5"
+          }
+        ],
+        "forbidden_condition": "Two workers concurrently running turns on the same thread (each forking the same parent agent checkpoint with last-write-wins memory loss, dropping one turn's memory); a turn continuing to run or write after its lease expired or was taken by another worker; release by a non-holder token.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The actual child checkpoint/outcome write inside _complete_turn is not in the supplied ranges; only the lease span wrapping it is visible.",
+          "The _release token-checked Lua body and the heartbeat refresher body are not in the supplied ranges (token-guard asserted by comment at thread_lease.py:130-133).",
+          "The caps.run_reserved implementation is not in the supplied ranges.",
+          "Whether turn execution is reachable from an agent tool or lifecycle hook is not shown in the supplied source."
+        ],
+        "protected_operation": "Executing a conversation turn (the _complete_turn body) \u2014 reading the parent memory and writing the child outcome/checkpoint.",
+        "protected_resource": "The per-conversation-thread turn execution and the thread's agent checkpoint/memory (conversation thread state).",
+        "protection_obligation": "At most one worker may run a turn (or operator send) on a conversation thread at a time: every turn body must hold the thread's cross-worker token-fenced Redis lease (SET NX PX acquisition, heartbeat refresh, token-checked release) for its whole run_reserved span, and a turn whose lease lapses or is adopted by another worker must be cancelled as a loud retriable ThreadLeaseLostError before its outcome (the child agent checkpoint write) commits.",
+        "scope_limits": [
+          "With settings.in_memory (no conversations Redis) the lease is an explicit local no-op and no cross-worker mutual exclusion exists (thread_lease.py:88-92).",
+          "The checkpoint/memory persistence layer is not in the supplied source; stratum recorded as state pending confirmation.",
+          "The per-worker FIFO in conversations.caps serializes only within one worker; cross-worker exclusion rests entirely on this lease.",
+          "Agent-runtime concurrency infrastructure; the supplied source does not bind turn execution to an agent tool, agent lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "whatsapp_inbound awaits raw = await _authenticated_body(request) (inbound.py:326) \u2014 including the constant-time compare \u2014 and returns the mapped error response before payload = .loads(raw) (inbound.py:331) and the _iter_values/_process_value dispatch; the handler docstring fixes the order as bounded body read (413) -> X-Hub-Signature-256 -> parse -> dispatch.",
+        "contract_id": "ecological-contract:62ecb84f9ce487e11e3a8ac91c5eb2f5",
+        "declared_mechanism": "_authenticated_body: require_secret(whatsapp_settings().app_secret, ...) -> read_bounded_body(_MAX_BODY_BYTES) -> _validate_signature (sha256= prefix check, bytes.fromhex, hmac.new SHA-256 over the raw body, hmac.compare_digest); _auth_error_response maps PayloadTooLarge -> 413, SignatureRejectedError -> 401, ValueError -> logged 500.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 217,
+            "line_start": 197,
+            "path": "plugins/channel-whatsapp/src/tai42_channel_whatsapp/inbound.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c71c93b1a0a18de398d0d5286237e14dab5aca55029b30be25b5ebd237a8f2fb"
+          },
+          {
+            "line_end": 241,
+            "line_start": 220,
+            "path": "plugins/channel-whatsapp/src/tai42_channel_whatsapp/inbound.py",
+            "role": "guard_registration",
+            "source_sha256": "c71c93b1a0a18de398d0d5286237e14dab5aca55029b30be25b5ebd237a8f2fb"
+          },
+          {
+            "line_end": 308,
+            "line_start": 301,
+            "path": "plugins/channel-whatsapp/src/tai42_channel_whatsapp/inbound.py",
+            "role": "guard_registration",
+            "source_sha256": "c71c93b1a0a18de398d0d5286237e14dab5aca55029b30be25b5ebd237a8f2fb"
+          },
+          {
+            "line_end": 321,
+            "line_start": 310,
+            "path": "plugins/channel-whatsapp/src/tai42_channel_whatsapp/inbound.py",
+            "role": "commit_point",
+            "source_sha256": "c71c93b1a0a18de398d0d5286237e14dab5aca55029b30be25b5ebd237a8f2fb"
+          },
+          {
+            "line_end": 333,
+            "line_start": 322,
+            "path": "plugins/channel-whatsapp/src/tai42_channel_whatsapp/inbound.py",
+            "role": "commit_point",
+            "source_sha256": "c71c93b1a0a18de398d0d5286237e14dab5aca55029b30be25b5ebd237a8f2fb"
+          },
+          {
+            "line_end": 345,
+            "line_start": 335,
+            "path": "plugins/channel-whatsapp/src/tai42_channel_whatsapp/inbound.py",
+            "role": "protected_operation",
+            "source_sha256": "c71c93b1a0a18de398d0d5286237e14dab5aca55029b30be25b5ebd237a8f2fb"
+          },
+          {
+            "line_end": 19,
+            "line_start": 14,
+            "path": "plugins/channel-whatsapp/src/tai42_channel_whatsapp/register.py",
+            "role": "guard_registration",
+            "source_sha256": "cbfc13956b50b88b9edd4c58b75f879f9601efce8e14ac3b9dcb69ef8879fd9f"
+          }
+        ],
+        "forbidden_condition": "A POST whose X-Hub-Signature-256 header is missing, not in sha256=<hex> form, non-hex, or mismatching being parsed or dispatched (SignatureRejectedError -> 401); the check being skipped or weakened by an unset/empty app secret (ValueError -> logged 500); a truncated rather than loud-413 body read.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether bridged WhatsApp messages become agent input (conversation -> agent execution) is not established in the supplied views; no agent tool, lifecycle hook, or agent-generated input is bound to this door in the cited source."
+        ],
+        "protected_operation": "Processing Meta webhook batches: .loads of the raw body, then per-value _process_value dispatch of every status (delivery receipts) and message (wamid dedupe -> pending-question correlation -> bridge on miss / forward to the callback door).",
+        "protected_resource": "The WhatsApp conversation/correlation pipeline and delivery-receipt state reachable from the public inbound door \u2014 per the source, nothing in the body is trusted until the signature validates.",
+        "protection_obligation": "No POST body to the unauthenticated WhatsApp webhook /api/channels/whatsapp/inbound may be parsed or processed unless its X-Hub-Signature-256 \u2014 HMAC-SHA256 over the exact bounded raw body, constant-time compared against the configured app secret \u2014 validates first, fail-closed: an unset/empty CHANNEL_WHATSAPP_APP_SECRET is a loud logged 500 (never a skipped check) and any missing/malformed/mismatching signature is a uniform 401, with the bounded read -> signature -> parse -> dispatch order enforced in whatsapp_inbound.",
+        "scope_limits": [
+          "Covers the POST path only; the GET subscription handshake (_verify_handshake over hub.verify_token, constant-time) is a separate mechanism outside this signature contract.",
+          "The route is registered by import side effect (register.py importing inbound); the /api/channels/whatsapp/inbound path is documented as out-of-band Meta configuration, not shown as a decorator argument in view.",
+          "Batch partial-failure semantics (per-item dedupe, aggregated re-raise for Meta redelivery) are processing behavior downstream of the gate."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The SET NX PX acquisition in workspace_lease (lease.py:84-86), taken inside each engine's drive path before session creation \u2014 claude_code enters the lease in _drive_workspace before _drive_session (agent.py:413-416); langchain's DeepAgentSession.leased holds the lease around cls.acquire (session.py:133-134) so the lease-loser raises before any session or cred exists.",
+        "contract_id": "ecological-contract:63e842481f242c55532efd72f6987619",
+        "declared_mechanism": "workspace_lease(workspace_key, lease_ms): SET <uuid token> NX PX lease_ms with lease_ms sized to run timeout + LEASE_HEADROOM_SECONDS so it never expires under a live drive, positive-ack loud refusal, deliberately no heartbeat, and token-checked compare-and-delete release via _RELEASE_LEASE_SCRIPT.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 23,
+            "line_start": 1,
+            "path": "plugins/agents/src/tai42_agents/_internal/park/lease.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fe69e1ee91bbef27fb281cf11826176202774d274c683fc58dcd21b7246499d1"
+          },
+          {
+            "line_end": 90,
+            "line_start": 71,
+            "path": "plugins/agents/src/tai42_agents/_internal/park/lease.py",
+            "role": "guard_registration",
+            "source_sha256": "fe69e1ee91bbef27fb281cf11826176202774d274c683fc58dcd21b7246499d1"
+          },
+          {
+            "line_end": 86,
+            "line_start": 81,
+            "path": "plugins/agents/src/tai42_agents/_internal/park/lease.py",
+            "role": "commit_point",
+            "source_sha256": "fe69e1ee91bbef27fb281cf11826176202774d274c683fc58dcd21b7246499d1"
+          },
+          {
+            "line_end": 416,
+            "line_start": 404,
+            "path": "plugins/agents/src/tai42_agents/claude_code/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c4d516b5ea021b529cc7d46486744474c49fdfd9545eb19956da46712a95c221"
+          },
+          {
+            "line_end": 429,
+            "line_start": 413,
+            "path": "plugins/agents/src/tai42_agents/claude_code/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "c4d516b5ea021b529cc7d46486744474c49fdfd9545eb19956da46712a95c221"
+          },
+          {
+            "line_end": 135,
+            "line_start": 113,
+            "path": "plugins/agents/src/tai42_agents/langchain_deep_agent/session.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5db4cc432d8f1a17520cd60f73809a26861f587ebf556b154553823dab643fbc"
+          },
+          {
+            "line_end": 150,
+            "line_start": 137,
+            "path": "plugins/agents/src/tai42_agents/langchain_deep_agent/session.py",
+            "role": "protected_operation",
+            "source_sha256": "5db4cc432d8f1a17520cd60f73809a26861f587ebf556b154553823dab643fbc"
+          }
+        ],
+        "forbidden_condition": "A second worker acquiring the lease for a workspace_key while another holder still owns it (SET NX returns not-set, raising WorkspaceLeaseHeldError), which would put two sessions on a volume that 'is NOT idempotent under concurrent drives \u2014 two sessions writing it corrupt each other'; likewise any release path that could drop a reclaimer's fresh lease (prevented by the token-checked eval-script delete).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The lease is wired inline at each agent engine's turn-drive lifecycle boundary (AsyncExitStack entry in _drive_workspace; the leased() contextmanager) rather than via a registered hook callback; the agent-drives-to-guarded-effect dataflow is explicit in the cited lines, but whether the study's agent_lifecycle_hook category should cover inline drive-boundary wiring is a classification question."
+        ],
+        "protected_operation": "Creating and driving the persistent sandbox session bound to a threaded workspace_key \u2014 session creation, credential materialization on the shared volume, and the turn drive (claude_code _drive_workspace -> _drive_session; langchain DeepAgentSession.leased -> acquire).",
+        "protected_resource": "The durable agent workspace volume named by workspace_key (agent-namespaced per thread_id), serialized cross-worker by the Redis key 'agent:park:wslock:<workspace_key>'.",
+        "protection_obligation": "No two workers may concurrently open or drive a sandbox session on the same durable agent workspace volume: both durable-workspace engines (claude_code and langchain_deep_agent) must hold the per-workspace Redis lease 'agent:park:wslock:<workspace_key>' across the whole threaded turn drive, acquired before any session is created, with a held lease a loud WorkspaceLeaseHeldError and release only via the token-checked compare-and-delete script.",
+        "scope_limits": [
+          "Ephemeral uuid4 tool-face workspaces take no lease and never touch Redis (agent.py:410-412; session.py context at 128-129).",
+          "A crash frees the volume only after lease_ms expiry; there is no heartbeat (a heartbeated short lease expiring under a live drive is named as itself a corruption vector).",
+          "The guard is a Redis cross-worker mutex, deliberately not an in-container flock (lease.py:21-22).",
+          "DeepAgentSession.acquire's docstring notes a threaded run must reach it THROUGH leased; calling acquire directly on a threaded key bypasses the lease and is reserved for tests (session.py:147-150)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "authz/middleware.py:62-66 \u2014 'await check(identity, resolved.operation, resolved.call_arguments)' with PermissionDenied re-raised as ToolError before 'return await call_next(context)' at line 66; the tool body executes only via call_next.",
+        "contract_id": "ecological-contract:67aa186e2aaf5967dbfff65dd0638e91",
+        "declared_mechanism": "AuthzMiddleware.on_call_tool (resolve_dispatch -> authz.check -> PermissionDenied-as-ToolError -> call_next); authz.check/_authorize_pinned_route (route pin, fail-closed versioned reads); PolicyEnforcer.enforce (jq with deny-on-configured-empty); role_level_decision_for_route (hard fence on the caller's own policy, level grant map); verifier.resolve_resource_ids (single canonical path form; malformed-path and encoded-slash fail-closed denies).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 58,
+            "line_start": 38,
+            "path": "core/skeleton/src/tai42_skeleton/authz/middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "323a1d9bb896efafe0f497220f68e65642b4e2982241c27872a186b158babffd"
+          },
+          {
+            "line_end": 66,
+            "line_start": 59,
+            "path": "core/skeleton/src/tai42_skeleton/authz/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "323a1d9bb896efafe0f497220f68e65642b4e2982241c27872a186b158babffd"
+          },
+          {
+            "line_end": 235,
+            "line_start": 184,
+            "path": "core/skeleton/src/tai42_skeleton/authz/check.py",
+            "role": "guard_registration",
+            "source_sha256": "b856081eedea1bf4a86dcee953d6708579786efbcd067d858816430552ae126a"
+          },
+          {
+            "line_end": 278,
+            "line_start": 258,
+            "path": "core/skeleton/src/tai42_skeleton/authz/check.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b856081eedea1bf4a86dcee953d6708579786efbcd067d858816430552ae126a"
+          },
+          {
+            "line_end": 173,
+            "line_start": 143,
+            "path": "core/skeleton/src/tai42_skeleton/access_control/policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c63576199d5e10c5ff6085b118d30867fcf36c41a15b0cdcfa1786869a74c199"
+          },
+          {
+            "line_end": 137,
+            "line_start": 86,
+            "path": "core/skeleton/src/tai42_skeleton/access_control/role_grants.py",
+            "role": "forbidden_condition",
+            "source_sha256": "df626f5237ec28864d89b60e4590dbd6574cb0dc162571b8b59bd75a567bc791"
+          },
+          {
+            "line_end": 222,
+            "line_start": 181,
+            "path": "core/skeleton/src/tai42_skeleton/access_control/verifier.py",
+            "role": "forbidden_condition",
+            "source_sha256": "df4233ef6090683084e72dcd49dc143066e5c1f120c9dca699cca0b4ca44efce"
+          }
+        ],
+        "forbidden_condition": "An external caller dispatching a projected MCP operation (tools/call) with: no resolvable caller identity; a synthesized path that fails to pin to the operation's own registered route; a failed policy-version read; no resource configured for the resolved path; a scope miss; a false, configured-but-empty, or errored jq condition; non-admin access to a fenced or secret route; or a governing role whose grant document is missing (LEVEL_MISS). Malformed-path and encoded-slash-with-no-raw-route resolutions deny fail-closed.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Where AuthzMiddleware is installed on MCP-serving FastMCP instances is not in the supplied ranges; the installation is reviewer-asserted.",
+          "Implementations of synthesize_path, _own_route, resolve_caller_identity, and resolve_dispatch are not in the supplied ranges.",
+          "The remainder of _authorize_pinned_route (scope-coverage and owner second-pass assembly beyond check.py:278) is not in the supplied view; the scope and fence terms are evidenced via access_control/policy.py and role_grants.py.",
+          "Whether the MCP client is an AI agent is not stated in source; the agent_entry_binding rests on the tools/call dispatch wiring."
+        ],
+        "protected_operation": "Dispatch of a projected MCP operation (tools/call) to the tool body (call_next).",
+        "protected_resource": "The projected MCP tool surface (operations registered as tools) and the live authorization policy data (resources, scopes, policies, role grants) behind it.",
+        "protection_obligation": "AuthzMiddleware.on_call_tool must fail-closed deny any external MCP tools/call dispatch of a projected operation unless the acting caller identity clears every ANDed term \u2014 the path synthesized from the operation's own registered route template pins to that route via _own_route before any layer reads it, route-to-resource resolution yields configured resources under one policy version threaded through every versioned read, owner-attenuated scope coverage holds, jq policy conditions enforce true (a configured-but-empty condition denies; evaluation faults deny as PolicyEvaluationError), and the per-tag level fence passes (fenced/secret routes decided against the caller's OWN policy, admin-only, never grantable through an owner; a governing role pointer naming a missing role denies) \u2014 converting any PermissionDenied into a ToolError before call_next so the tool body never runs.",
+        "scope_limits": [
+          "With access control disabled (ac_settings.enable false) everything is allowed, and internal principals bypass the check entirely (check.py:209-212).",
+          "The pre-auth login surface short-circuits ahead of all terms but never ahead of the route pin (check.py docstring, lines 200-201).",
+          "The binding is to the MCP tools/call dispatch surface; the supplied source never states that the caller is an AI agent rather than any external MCP client.",
+          "When resolve_dispatch returns None (an unresolved name), the check is skipped and dispatch proceeds to call_next (middleware.py:59-66)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "storage.py:157 -> 169/176 \u2014 _reject_unsafe('resource id', resource_id) before 'await provider.upload(resource_id, content_text)' / 'await provider.upload_bytes(resource_id, data)' in upload_resource; storage.py:218 -> 221 \u2014 _reject_unsafe('directory path', dir_path) before 'await provider.delete_dir(dir_path)' in delete_dir.",
+        "contract_id": "ecological-contract:79c3c6b79d8713cf062348bb68cf0afe",
+        "declared_mechanism": "_is_unsafe_path (leading '/' or a '..' segment) plus _reject_unsafe raising BadRequestError (storage.py:74-83), invoked at the top of each operation before the provider call; the module docstring fixes the guard inside the operation so the MCP tool edge and CLI are defended as well as the HTTP route (storage.py:13-16).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 21,
+            "line_start": 9,
+            "path": "core/skeleton/src/tai42_skeleton/operations/storage.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "903fa9458644cac804b66ad7562e38e99743800ca3cad9a03dcd7d44a74f17b9"
+          },
+          {
+            "line_end": 231,
+            "line_start": 187,
+            "path": "core/skeleton/src/tai42_skeleton/operations/projection.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f7bcbe95a71ef4cce9eec2b1dc8e259906ed07b3f6fac03f0f83f9022440a46f"
+          },
+          {
+            "line_end": 83,
+            "line_start": 74,
+            "path": "core/skeleton/src/tai42_skeleton/operations/storage.py",
+            "role": "guard_registration",
+            "source_sha256": "903fa9458644cac804b66ad7562e38e99743800ca3cad9a03dcd7d44a74f17b9"
+          },
+          {
+            "line_end": 187,
+            "line_start": 144,
+            "path": "core/skeleton/src/tai42_skeleton/operations/storage.py",
+            "role": "commit_point",
+            "source_sha256": "903fa9458644cac804b66ad7562e38e99743800ca3cad9a03dcd7d44a74f17b9"
+          },
+          {
+            "line_end": 228,
+            "line_start": 216,
+            "path": "core/skeleton/src/tai42_skeleton/operations/storage.py",
+            "role": "commit_point",
+            "source_sha256": "903fa9458644cac804b66ad7562e38e99743800ca3cad9a03dcd7d44a74f17b9"
+          }
+        ],
+        "forbidden_condition": "An absolute path (leading '/') or a path containing a '..' segment being passed to the provider's stat/upload/upload_bytes/delete/delete_dir \u2014 a filesystem traversal outside the store.",
+        "missing_evidence_roles": [
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "stat_resource and delete_resource bodies (guard invocations and provider calls) are not in the supplied ranges.",
+          "Projection of these specific operations onto the MCP tool surface (staging plus config) is not shown; the agent_entry_binding rests on the operations-to-MCP registration path (projection.py:187-231) and the module docstring's explicit MCP-edge statement (storage.py:13-14).",
+          "Whether the MCP caller is an AI agent is not stated in source."
+        ],
+        "protected_operation": "Storage operations that read or mutate the store \u2014 upload_resource (provider.upload / provider.upload_bytes) and delete_dir (provider.delete_dir) shown; stat_resource/delete_resource asserted at the same pattern.",
+        "protected_resource": "The filesystem-backed storage provider's store tree.",
+        "protection_obligation": "Every storage operation must reject \u2014 inside the operation itself, before any filesystem-backed provider call (stat/upload/upload_bytes/delete/delete_dir) \u2014 any resource id or directory path that is absolute (leading '/') or contains a '..' segment, via _reject_unsafe raising a loud 400 BadRequestError, so no edge (HTTP route, projected MCP tool, CLI) can move the effect outside the store; provider boundary ValueErrors surface as 400, never 500.",
+        "scope_limits": [
+          "The MCP tool edge is one of several covered edges (HTTP route, CLI); the guard binds all edges because it sits inside the operation.",
+          "Actual MCP exposure of these operations depends on registry staging and api_tools config (destructive operations require expose_destructive; projection.py:176-181), not shown for these specific operations.",
+          "Only upload_resource and delete_dir bodies are in the supplied view; the reviewer's stat_resource/delete_resource claims are unverified here.",
+          "The provider's concrete path handling (traversal behavior) is not in the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The route-admission fence at the action='fenced' registrations of PUT and DELETE /api/hooks/topics/{topic}/verifier (routers/hooks.py:490-505), enforced before the operation mutates the binding.",
+        "contract_id": "ecological-contract:96130fbb98a8612dd2249972c50afaf5",
+        "declared_mechanism": "register_operation_route(..., action='fenced') on both doors, which the module contract declares makes both verifier doors ADMIN-ONLY; the same contract states a bound ingress verifies the raw body before parsing and dispatches nothing on failure (401, constant message).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 32,
+            "line_start": 29,
+            "path": "core/skeleton/src/tai42_skeleton/routers/hooks.py",
+            "role": "protected_operation",
+            "source_sha256": "80e7dada5a0ec171f66584d732912071da19fea17ff780c1e6b4a6ae27333f18"
+          },
+          {
+            "line_end": 39,
+            "line_start": 34,
+            "path": "core/skeleton/src/tai42_skeleton/routers/hooks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "80e7dada5a0ec171f66584d732912071da19fea17ff780c1e6b4a6ae27333f18"
+          },
+          {
+            "line_end": 183,
+            "line_start": 170,
+            "path": "core/skeleton/src/tai42_skeleton/routers/hooks.py",
+            "role": "protected_operation",
+            "source_sha256": "80e7dada5a0ec171f66584d732912071da19fea17ff780c1e6b4a6ae27333f18"
+          },
+          {
+            "line_end": 505,
+            "line_start": 490,
+            "path": "core/skeleton/src/tai42_skeleton/routers/hooks.py",
+            "role": "guard_registration",
+            "source_sha256": "80e7dada5a0ec171f66584d732912071da19fea17ff780c1e6b4a6ae27333f18"
+          },
+          {
+            "line_end": 505,
+            "line_start": 490,
+            "path": "core/skeleton/src/tai42_skeleton/routers/hooks.py",
+            "role": "commit_point",
+            "source_sha256": "80e7dada5a0ec171f66584d732912071da19fea17ff780c1e6b4a6ae27333f18"
+          }
+        ],
+        "forbidden_condition": "A non-admin (non-'fenced'-tier) caller's set/replace (PUT) or remove (DELETE) of a topic's verifier binding being admitted \u2014 which would let a hooks-write holder take the lock off a topic whose hooks fire under keys it could never bind, or replace that lock with one whose secret it chooses.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The module states the management doors adapt operations in tai42_skeleton.operations.hooks, 'the same manager the MCP hook-management tools drive', but no MCP tool wiring reaching these operations appears in the supplied views \u2014 whether agent tool dispatch can reach the binding mutation is unconfirmed.",
+          "The operation handlers (_set_topic_verifier_op / _delete_topic_verifier_op) and the binding storage lie in an unsupplied range of routers/hooks.py."
+        ],
+        "protected_operation": "The admin-gated management operations that set/replace or remove a topic verifier binding, exposed as PUT /api/hooks/topics/{topic}/verifier and DELETE /api/hooks/topics/{topic}/verifier.",
+        "protected_resource": "Per-topic webhook verifier bindings in the hooks manager \u2014 the binding that /universal_webhook/{topic} fetches (get_topic_verifier) before raw-body verification and background dispatch.",
+        "protection_obligation": "Setting, replacing, or removing a webhook topic's verifier binding \u2014 the sole authentication of the public /universal_webhook/{topic} ingress \u2014 is reserved to administrator-tier callers; both binding doors (PUT and DELETE /api/hooks/topics/{topic}/verifier) carry the identical 'fenced' gate because removing a lock and replacing one reach the same state, so gating only the unbind would leave the rebind as its bypass.",
+        "scope_limits": [
+          "The binding itself is application state in the hooks manager, but in the supplied views it is reachable only through these fenced HTTP doors; any non-HTTP path to the binding store is not in view.",
+          "Covers only the two verifier-binding doors; the ingress's own verification/replay behavior is a separate contract, and the trigger-link and hook register/unregister doors (action='read'/'write') are out of scope here.",
+          "The enforcement code behind register_operation_route's 'fenced' action is not in the supplied views; the admin-only character rests on the registrations plus the module-contract text."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Inside the advisory-locked transaction, after read_target and count_other_enabled_admins and before any row write: update_user 409s at the demote check (routes_users.py:292-295) and the disable check (304-307) before apply_role/set_user_disabled/guard writes; delete_user 409s (351-357) before remove_policy/session/invite/row deletes.",
+        "contract_id": "ecological-contract:9c5417c2273a2abfffe09e4f22724b02",
+        "declared_mechanism": "store.admin_guard_txn(): one transaction taking the fixed pg_advisory_xact_lock, yielding _AdminGuard whose read_target / count_other_enabled_admins / set_role / set_disabled / delete and session-and-invite cleanup all run on that single locked cursor, committing or rolling back together on block exit.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 265,
+            "line_start": 253,
+            "path": "plugins/accounts-postgres/src/tai42_accounts_postgres/routes_users.py",
+            "role": "forbidden_condition",
+            "source_sha256": "03dead6fb84500091a1f707ea42379a3052ae4f69ae1b0f514a9995d35b40c80"
+          },
+          {
+            "line_end": 295,
+            "line_start": 284,
+            "path": "plugins/accounts-postgres/src/tai42_accounts_postgres/routes_users.py",
+            "role": "commit_point",
+            "source_sha256": "03dead6fb84500091a1f707ea42379a3052ae4f69ae1b0f514a9995d35b40c80"
+          },
+          {
+            "line_end": 310,
+            "line_start": 304,
+            "path": "plugins/accounts-postgres/src/tai42_accounts_postgres/routes_users.py",
+            "role": "commit_point",
+            "source_sha256": "03dead6fb84500091a1f707ea42379a3052ae4f69ae1b0f514a9995d35b40c80"
+          },
+          {
+            "line_end": 341,
+            "line_start": 336,
+            "path": "plugins/accounts-postgres/src/tai42_accounts_postgres/routes_users.py",
+            "role": "forbidden_condition",
+            "source_sha256": "03dead6fb84500091a1f707ea42379a3052ae4f69ae1b0f514a9995d35b40c80"
+          },
+          {
+            "line_end": 361,
+            "line_start": 349,
+            "path": "plugins/accounts-postgres/src/tai42_accounts_postgres/routes_users.py",
+            "role": "commit_point",
+            "source_sha256": "03dead6fb84500091a1f707ea42379a3052ae4f69ae1b0f514a9995d35b40c80"
+          },
+          {
+            "line_end": 233,
+            "line_start": 216,
+            "path": "plugins/accounts-postgres/src/tai42_accounts_postgres/stores.py",
+            "role": "guard_registration",
+            "source_sha256": "c0649a19754b07963738f3c5c33e9bfd7ad5ee68c009802662d73a7c8b6fe8a3"
+          },
+          {
+            "line_end": 265,
+            "line_start": 248,
+            "path": "plugins/accounts-postgres/src/tai42_accounts_postgres/stores.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c0649a19754b07963738f3c5c33e9bfd7ad5ee68c009802662d73a7c8b6fe8a3"
+          }
+        ],
+        "forbidden_condition": "A role change away from 'admin', a disable, or a delete of a currently-enabled admin user when guard.count_other_enabled_admins(user_id) == 0 under the advisory lock \u2014 'cannot demote/disable/delete the last enabled admin' (409); a concurrent guarded removal blocks at the lock and re-evaluates the count against committed state.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds these user-management routes to an agent tool, agent lifecycle hook, or agent-generated input."
+        ],
+        "protected_operation": "User mutation flows PUT /users/{user_id} (update_user: role change / disable under the guard) and DELETE /users/{user_id} (delete_user), writing accounts_users on the guard's own cursor.",
+        "protected_resource": "The enabled-admin rows of accounts_users \u2014 the deployment's last enabled administrator (role = 'admin' AND disabled = FALSE basis).",
+        "protection_obligation": "In the accounts-postgres plugin, demoting, disabling, or deleting the last enabled administrator is forbidden: every role change and disable (and every delete) runs inside one pg_advisory_xact_lock-serialized transaction (store.admin_guard_txn) that re-reads the target's committed role/disabled and counts other enabled admins on the locked cursor before any row mutation, answering 409 when the count is zero, so two concurrent last-admin removals can never both pass.",
+        "scope_limits": [
+          "Pure re-enable needs no guard per the handler structure; the guard bites only where a role change, disable, or delete could orphan the admins.",
+          "The HTTP routes declare action='write'; the authorization layer deciding who may call them is not in the supplied views.",
+          "Provider-side effects (admin.apply_role, admin.set_user_disabled, admin.remove_policy) are invoked inside/around the guard but their implementations are out of view."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "projection.py:216-225 \u2014 the registration loop 'app.tools.tool(force=True, name=op.name, tags=set(op.tags), annotations=annotations)(_make_tool(op))'; tier-1 operations never reach it (filtered in _selected_operations at 150-162, invoked at line 214).",
+        "contract_id": "ecological-contract:bc562d940f019633688515ffc35bf814",
+        "declared_mechanism": "@operation(meta_executor=True) stamped on run_tool (tools.py:164-174); TIER1_META_EXECUTORS name hardcode plus the meta_executor/caller_context flags in _tier1_reason (projection.py:42-77); is_tier2 default-exclusion via authority_changing flag or /api/auth/ route prefix; _selected_operations skipping tier-1 operations even when named in include (with a loud warning) and raising on unknown includes (projection.py:128-184); project_operations logging every tier-1 block even when projection is disabled.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 174,
+            "line_start": 164,
+            "path": "core/skeleton/src/tai42_skeleton/operations/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "af5d0f1275754e94fe6bf368010e5943c0670cab59aa1fbdd2f474cf423ff37b"
+          },
+          {
+            "line_end": 77,
+            "line_start": 42,
+            "path": "core/skeleton/src/tai42_skeleton/operations/projection.py",
+            "role": "guard_registration",
+            "source_sha256": "f7bcbe95a71ef4cce9eec2b1dc8e259906ed07b3f6fac03f0f83f9022440a46f"
+          },
+          {
+            "line_end": 184,
+            "line_start": 128,
+            "path": "core/skeleton/src/tai42_skeleton/operations/projection.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f7bcbe95a71ef4cce9eec2b1dc8e259906ed07b3f6fac03f0f83f9022440a46f"
+          },
+          {
+            "line_end": 231,
+            "line_start": 187,
+            "path": "core/skeleton/src/tai42_skeleton/operations/projection.py",
+            "role": "commit_point",
+            "source_sha256": "f7bcbe95a71ef4cce9eec2b1dc8e259906ed07b3f6fac03f0f83f9022440a46f"
+          },
+          {
+            "line_end": 225,
+            "line_start": 216,
+            "path": "core/skeleton/src/tai42_skeleton/operations/projection.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f7bcbe95a71ef4cce9eec2b1dc8e259906ed07b3f6fac03f0f83f9022440a46f"
+          }
+        ],
+        "forbidden_condition": "Projecting a tier-1 operation (meta_executor flag, caller_context flag, or the name run_tool) onto the MCP tool surface \u2014 including via api_tools.include \u2014 or default-projecting a tier-2 authority-changing operation; a projected run-any-tool tool would be a universal authz bypass, and a projected caller-context operation would let an MCP caller supply another principal's identity.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Decorators for create_schedule and submit_run (and any caller_context-flagged operations) are not in the supplied source; tier-1 coverage for them rests on the TIER1_META_EXECUTORS name hardcode.",
+          "The boot/reload call site invoking project_operations is not in the supplied ranges.",
+          "Whether the MCP client is an AI agent is not stated in source; the agent_entry_binding rests on the MCP tool-registration wiring."
+        ],
+        "protected_operation": "The boot/reload registration of operations onto the MCP tool surface (project_operations -> app.tools.tool(force=True, ...)).",
+        "protected_resource": "The composition of the MCP tool surface (which operations are invocable as tools).",
+        "protection_obligation": "Meta-executor operations that run any tool by name (run_tool, and per the tier list create_schedule, submit_run) and caller-context identity operations must never be registered as MCP tools \u2014 enforced unconditionally at the project_operations boot/reload registration point (tier 1), even when named in api_tools.include \u2014 and authority-changing operations (authority_changing flag or /api/auth/ route prefix) must stay off the default MCP surface unless explicitly included (tier 2).",
+        "scope_limits": [
+          "The immediate commit mutates the in-process tool registry that composes the invocable MCP surface; the operation bodies' own effects are separate obligations.",
+          "With api_tools.enabled false the projected surface is empty (projection.py:210-212).",
+          "Tier-2 operations can be included explicitly by config; the obligation is default-exclusion only.",
+          "The binding is to the MCP tool surface; the supplied source does not state that MCP callers are AI agents."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The ingress's _verify_ingress call on a bound topic (routers/hooks.py:181-183): it returns a terminal response for a failed verification (401/405/500) or a refused replay (the idempotent already-seen 200, dispatching nothing), and None only for a legitimate first delivery; parse and dispatch happen only after None.",
+        "contract_id": "ecological-contract:c326d9c767bcd518bc1177d4a857bdee",
+        "declared_mechanism": "GitHubWebhookVerifier registered under 'github' on tai42_app.webhook_verifiers (import side effect, duplicate raises loudly): verify() with fail-closed secret resolution (os.environ[secret_env], empty -> ValueError), header form checks, expected digest hmac.new(secret, body, sha256), hmac.compare_digest, all failures WebhookVerificationError/ValueError; replay_defense() returning SeenSetClaim(key='github:<delivery_id>', ttl_seconds=window) with _DEFAULT_REPLAY_WINDOW_SECONDS=86400 and strict window validation; post_only=True (raw-body-only signature, so a GET delivery is rejected).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 17,
+            "line_start": 12,
+            "path": "plugins/webhook-verifier-github/src/tai42_webhook_verifier_github/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "589a634fbb761515d63a4f512189010a8a10aa9ab6f082c6bdb0c74a720147e5"
+          },
+          {
+            "line_end": 44,
+            "line_start": 35,
+            "path": "plugins/webhook-verifier-github/src/tai42_webhook_verifier_github/verifier.py",
+            "role": "guard_registration",
+            "source_sha256": "3c184fe1f992a30fd330280ed0239be529deb93a861014c0f5f6df1d689a44bb"
+          },
+          {
+            "line_end": 81,
+            "line_start": 46,
+            "path": "plugins/webhook-verifier-github/src/tai42_webhook_verifier_github/verifier.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3c184fe1f992a30fd330280ed0239be529deb93a861014c0f5f6df1d689a44bb"
+          },
+          {
+            "line_end": 95,
+            "line_start": 83,
+            "path": "plugins/webhook-verifier-github/src/tai42_webhook_verifier_github/verifier.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3c184fe1f992a30fd330280ed0239be529deb93a861014c0f5f6df1d689a44bb"
+          },
+          {
+            "line_end": 110,
+            "line_start": 98,
+            "path": "plugins/webhook-verifier-github/src/tai42_webhook_verifier_github/verifier.py",
+            "role": "guard_registration",
+            "source_sha256": "3c184fe1f992a30fd330280ed0239be529deb93a861014c0f5f6df1d689a44bb"
+          },
+          {
+            "line_end": 183,
+            "line_start": 176,
+            "path": "core/skeleton/src/tai42_skeleton/routers/hooks.py",
+            "role": "commit_point",
+            "source_sha256": "80e7dada5a0ec171f66584d732912071da19fea17ff780c1e6b4a6ae27333f18"
+          },
+          {
+            "line_end": 191,
+            "line_start": 185,
+            "path": "core/skeleton/src/tai42_skeleton/routers/hooks.py",
+            "role": "protected_operation",
+            "source_sha256": "80e7dada5a0ec171f66584d732912071da19fea17ff780c1e6b4a6ae27333f18"
+          }
+        ],
+        "forbidden_condition": "Dispatching a GitHub delivery that is unsigned, badly formed, mismatching, a replay of an already-claimed delivery id within the window, or undefendable (a valid signature with no delivery-id header is refused rather than dispatched undefended); also running the verifier keyed by an empty secret, which would key the HMAC into a signature anyone could forge.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The _verify_ingress implementation, the binding store (manager.get_topic_verifier), and the seen-set mechanics behind SeenSetClaim are in unsupplied ranges or outside the supplied files.",
+          "No agent tool, lifecycle hook, or agent-generated input binding is shown for webhook-verifier-bound topics."
+        ],
+        "protected_operation": "Dispatch of a bound topic's delivery to its registered hooks via the universal_webhook ingress \u2014 parse_any_payload followed by the BackgroundTask(manager.on_event, topic=..., payload=...) dispatch.",
+        "protected_resource": "Topics bound to the 'github' verifier on tai42_app.webhook_verifiers (bound only through the fenced PUT door) and the hooks those topics fire.",
+        "protection_obligation": "A webhook delivery on a topic bound to the registered 'github' verifier must not be dispatched unless the delivery's X-Hub-Signature-256 HMAC-SHA256 over the exact raw body verifies (constant-time compare) and the delivery passes the seen-set replay defense on its X-GitHub-Delivery id; the verifier fails closed on a missing config key, missing environment variable, empty secret, missing/malformed/mismatching signature, a missing delivery id, or a non-int/non-positive replay window.",
+        "scope_limits": [
+          "The post_only GET-rejection wiring and the terminal-response contract are stated at the ingress/module-contract level; the _verify_ingress implementation and the seen-set claim storage are not in the supplied views.",
+          "This contract covers the verifier's per-delivery behavior once bound; binding a topic to it is governed by the companion verifier-binding fence contract.",
+          "Standard-library-only hmac/hashlib per the module docstring; no third-party crypto surface to audit."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "backup/sections.py:290-299 \u2014 'await scan.assert_usable(params.execution_key, bound_fingerprint=params.execution_key_fingerprint)' per restored hook, TokenFreeConditionError recorded and the record skipped before hook registration; conversations/backup.py:109-118 \u2014 the same assertion per restored conversation route before the route is restored.",
+        "contract_id": "ecological-contract:d1c2b3b983d2bd8842c25359bcd126ed",
+        "declared_mechanism": "assert_token_free_evaluable with load-bearing gate order (control characters -> jq compile -> source shape -> budgeted lex/parse -> _TaintAnalysis.assert_safe), raising TokenFreeConditionError naming the offending construct (token_free.py:1028-1053); _require_safe/_projection taint rules (token_free.py:890-977); ExecutionKeyScan.assert_usable invoked per record at the restore doors, with per-record error-and-skip on TokenFreeConditionError/ExecutionKeyAuthorityError.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 902,
+            "line_start": 890,
+            "path": "core/skeleton/src/tai42_skeleton/authz/token_free.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7010cad4a0665fbfb67e5f6229c950dc52193256fac2fbb1c19fc5fee21e82d6"
+          },
+          {
+            "line_end": 977,
+            "line_start": 942,
+            "path": "core/skeleton/src/tai42_skeleton/authz/token_free.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7010cad4a0665fbfb67e5f6229c950dc52193256fac2fbb1c19fc5fee21e82d6"
+          },
+          {
+            "line_end": 1053,
+            "line_start": 1028,
+            "path": "core/skeleton/src/tai42_skeleton/authz/token_free.py",
+            "role": "guard_registration",
+            "source_sha256": "7010cad4a0665fbfb67e5f6229c950dc52193256fac2fbb1c19fc5fee21e82d6"
+          },
+          {
+            "line_end": 299,
+            "line_start": 290,
+            "path": "core/skeleton/src/tai42_skeleton/backup/sections.py",
+            "role": "commit_point",
+            "source_sha256": "2422d5e262a26d10f464258f806671e81caba82fa23e53b32095c02c6b19bdc8"
+          },
+          {
+            "line_end": 118,
+            "line_start": 109,
+            "path": "core/skeleton/src/tai42_skeleton/conversations/backup.py",
+            "role": "commit_point",
+            "source_sha256": "8216fc54710fc47e81e7f02b116aa72081b934645631d5d65603514c789f40a0"
+          }
+        ],
+        "forbidden_condition": "Installing or accepting an execution key whose condition: lets the whole auth context reach the result (ROOT taint); reads an identity claim beyond the single .identity.owner_user_id projection; reaches into the context without naming a field statically; selects elements by a context-dependent index; contains control characters, non-compiling text, or source shapes the analyzer refuses; or otherwise depends on identity claims absent at a background fire.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The ExecutionKeyScan.assert_usable implementation (and the unasserted 'pass-role half') is not in the supplied ranges.",
+          "The register/create doors calling scan.assert_usable are not in the supplied ranges.",
+          "The fire-time evaluation path for a background execution (how the condition is evaluated and what an absent-claim evaluation would do) is not in the supplied source.",
+          "Values of _OWNER_REFERENCE / OWNER_USER_ID_CLAIM and the full source-shape gate are outside the supplied ranges."
+        ],
+        "protected_operation": "Acceptance/registration of execution keys on webhook hooks and conversation routes (backup/restore doors shown; register/create doors asserted at parity), ahead of tokenless background executions evaluating those conditions.",
+        "protected_resource": "Execution keys and their bound jq policy conditions on webhook hooks and conversation routes, and the tokenless background-execution authorization they will later gate.",
+        "protection_obligation": "A jq policy condition must be proven token-free evaluable before it is accepted on any execution key for a tokenless background execution (webhook hooks and conversation routes): it may consume the auth context only through a statically named field, may project identity only as .identity.owner_user_id, must not let the ROOT context reach a builtin, operator, constructor, or the condition's result, and must compile from control-character-free text of acceptable source shape \u2014 refused with TokenFreeConditionError otherwise \u2014 with enforcement doors at hook/route registration and at backup/restore, so no fail-open condition (one that evaluates true under an absent identity claim) can be installed and later fire authorized.",
+        "scope_limits": [
+          "The immediate commit is acceptance/registration of hooks, routes, and their execution keys (application state); the downstream tokenless executions (e.g. webhook deliveries, conversation turns) commit in other strata not shown in the supplied source.",
+          "Only the backup/restore doors are visible; register/create-door enforcement parity (manager.register / put_route) is reviewer-asserted, not shown.",
+          "The webhook restore route is described as admin-only fenced, and the pass-role half of the assertion is intentionally not asserted there (sections.py:291-293).",
+          "No supplied source binds these background executions to an agent tool, agent lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "slack_inbound: bounded read, then secret resolution (fail-closed 500), then _verify_signature (401) all complete before .loads and claim_dedupe (inbound.py:165-216); slack_interactive: the identical gate before _parse_interactive_payload and action handling (inbound.py:448-460); signature and dedupe run before correlation or the bridge.",
+        "contract_id": "ecological-contract:d4b9bd7f97e817aec6d96c2f58327616",
+        "declared_mechanism": "_verify_signature over b\"v0:<timestamp>:<raw body>\": timestamp present, ASCII-digit, within _MAX_TIMESTAMP_SKEW_SECONDS=300; signature v0=-prefixed, 64-hex, valid hex; hmac.new SHA-256 with hmac.compare_digest (constant-time); _misconfigured logged constant 500 for an unset/empty secret; read_bounded_body(_MAX_BODY_BYTES=1MiB) with a loud 413 before any HMAC work.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 27,
+            "line_start": 16,
+            "path": "plugins/channel-slack/src/tai42_channel_slack/inbound.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6d0ae15afe90a11cdd3ffe2be1426e203b25a22468291cee3c76f9a9ae47f7d3"
+          },
+          {
+            "line_end": 145,
+            "line_start": 111,
+            "path": "plugins/channel-slack/src/tai42_channel_slack/inbound.py",
+            "role": "guard_registration",
+            "source_sha256": "6d0ae15afe90a11cdd3ffe2be1426e203b25a22468291cee3c76f9a9ae47f7d3"
+          },
+          {
+            "line_end": 155,
+            "line_start": 148,
+            "path": "plugins/channel-slack/src/tai42_channel_slack/inbound.py",
+            "role": "guard_registration",
+            "source_sha256": "6d0ae15afe90a11cdd3ffe2be1426e203b25a22468291cee3c76f9a9ae47f7d3"
+          },
+          {
+            "line_end": 181,
+            "line_start": 165,
+            "path": "plugins/channel-slack/src/tai42_channel_slack/inbound.py",
+            "role": "commit_point",
+            "source_sha256": "6d0ae15afe90a11cdd3ffe2be1426e203b25a22468291cee3c76f9a9ae47f7d3"
+          },
+          {
+            "line_end": 221,
+            "line_start": 201,
+            "path": "plugins/channel-slack/src/tai42_channel_slack/inbound.py",
+            "role": "protected_operation",
+            "source_sha256": "6d0ae15afe90a11cdd3ffe2be1426e203b25a22468291cee3c76f9a9ae47f7d3"
+          },
+          {
+            "line_end": 436,
+            "line_start": 429,
+            "path": "plugins/channel-slack/src/tai42_channel_slack/inbound.py",
+            "role": "guard_registration",
+            "source_sha256": "6d0ae15afe90a11cdd3ffe2be1426e203b25a22468291cee3c76f9a9ae47f7d3"
+          },
+          {
+            "line_end": 460,
+            "line_start": 448,
+            "path": "plugins/channel-slack/src/tai42_channel_slack/inbound.py",
+            "role": "commit_point",
+            "source_sha256": "6d0ae15afe90a11cdd3ffe2be1426e203b25a22468291cee3c76f9a9ae47f7d3"
+          },
+          {
+            "line_end": 473,
+            "line_start": 462,
+            "path": "plugins/channel-slack/src/tai42_channel_slack/inbound.py",
+            "role": "protected_operation",
+            "source_sha256": "6d0ae15afe90a11cdd3ffe2be1426e203b25a22468291cee3c76f9a9ae47f7d3"
+          }
+        ],
+        "forbidden_condition": "Unverified traffic being processed \u2014 parse, dedupe claim, correlation/answer forwarding, modal open, or conversation bridging reached without a passing signature; a truncated rather than loud-413 body read feeding the HMAC; an empty signing secret making the HMAC forgeable; even an unverified url_verification echo confirming the endpoint to anyone.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the bridged or forwarded Slack messages subsequently reach agent tool execution is not shown in the supplied views; no agent tool, lifecycle hook, or agent-generated input is bound to these doors in the cited source."
+        ],
+        "protected_operation": "Processing Slack deliveries at the two doors: url_verification challenge echo; event_callback handling (claim_dedupe then _process_event: typed-answer forward vs conversation bridge); and interactivity handling (_parse_interactive_payload then _handle_block_actions / _handle_view_submission).",
+        "protected_resource": "The Slack correlation stores, callback-door forwarding, modal opening, and conversation bridging reachable from the two public doors \u2014 per the module contract, no message reaches either without passing transport auth first.",
+        "protection_obligation": "Every request reaching the public Slack /inbound (Events API) and /interactive doors \u2014 both public because Slack cannot present the deployment api key \u2014 must have its X-Slack-Signature v0 HMAC over the exact bounded raw body verified fail-closed before any processing: unset/empty signing secret gives a logged constant 500, any request-side verification defect gives one uniform 401 (no oracle), and only then may the payload be parsed, the event_id dedupe claimed, an answer forwarded, a modal opened, or a message bridged to its conversation.",
+        "scope_limits": [
+          "One commit point gates heterogeneous downstream effects (dedupe state claim, answer forwarding, conversation bridging); those downstream deliveries are consequences of the single ingress gate, not separately fenced commit points in the supplied views.",
+          "Covers only the two doors in this module; their mounting/route-base resolution lives outside it.",
+          "Post-claim failure handling (release_dedupe so Slack retries reprocess; loud 500) is processing semantics outside the authentication gate."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "main's decision site: 'passes, reason = _gate_passes(mode, old_version, args.version, bool(findings))' at api_gate.py:526, culminating in _fail(...) at api_gate.py:537 when the breaking diff is in a disallowed bump (and _fail at api_gate.py:105 for an unnamed mode); the publish downstream of the gate process is blocked by this failure.",
+        "contract_id": "ecological-contract:f71d7e7bb467fd54ae1a11bde79fa69f",
+        "declared_mechanism": "griffe-based public-API diff classification; the .github/api-gate.yml mode switch; _allowed_bumps(mode, new_major) (api_gate.py:96-105, with _fail on an unnamed mode); _gate_passes returning (passes, reason) with the reason naming mode, version class, allowed set, and actual bump (api_gate.py:463-481); main printing findings and invoking _fail on a disallowed bump (api_gate.py:525-537).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 52,
+            "path": "core/cli/pyproject.toml",
+            "role": "guard_registration",
+            "source_sha256": "304abf90b6015b6aa43144073643318510729c64cb445facbb140600e06e0519"
+          },
+          {
+            "line_end": 21,
+            "line_start": 1,
+            "path": "core/cli/src/tai42_cli/api_gate.py",
+            "role": "forbidden_condition",
+            "source_sha256": "03090e19ee7b0c3585c7d92da578bac44aa569e2987fa9c9d1b24754a153ad08"
+          },
+          {
+            "line_end": 105,
+            "line_start": 96,
+            "path": "core/cli/src/tai42_cli/api_gate.py",
+            "role": "guard_registration",
+            "source_sha256": "03090e19ee7b0c3585c7d92da578bac44aa569e2987fa9c9d1b24754a153ad08"
+          },
+          {
+            "line_end": 481,
+            "line_start": 463,
+            "path": "core/cli/src/tai42_cli/api_gate.py",
+            "role": "commit_point",
+            "source_sha256": "03090e19ee7b0c3585c7d92da578bac44aa569e2987fa9c9d1b24754a153ad08"
+          },
+          {
+            "line_end": 537,
+            "line_start": 525,
+            "path": "core/cli/src/tai42_cli/api_gate.py",
+            "role": "commit_point",
+            "source_sha256": "03090e19ee7b0c3585c7d92da578bac44aa569e2987fa9c9d1b24754a153ad08"
+          }
+        ],
+        "forbidden_condition": "A release carrying breaking public-API surface changes shipping under a bump class outside the mode- and new-major-dependent allowed set (e.g. a >=1.0 package slipping a breaking change through a mislabelled minor or patch bump); or the gate passing after a tooling failure \u2014 an unknown mode must reach _fail (api_gate.py:105), never a pass.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The body of _fail (reviewer-asserted SystemExit/non-zero exit) is not in the supplied view; only its call sites at api_gate.py:105 and 537 are visible.",
+          "The fail-closed paths for unreadable config and unloadable module are reviewer-asserted; the corresponding code is outside the supplied ranges.",
+          "The consumer of the gate's exit status (the publish step) is not in the supplied source."
+        ],
+        "protected_operation": "Running the release/publish step for a package version, gated by the tai42-api-gate console-script run that compares the pushed tag's public API against the previous released tag.",
+        "protected_resource": "The published package versions' public API surface (honesty of the version bump relative to the API diff).",
+        "protection_obligation": "The registered tai42-api-gate console script (entry point tai42_cli.api_gate:main) must fail the release/publish whenever the package's public-API diff against its previous released tag classifies as breaking while the actual bump class falls outside the allowed set computed from the configured mode ('label-honesty' or 'strict') and the NEW version's major component (strict: major only for every version; label-honesty: major for >=1.0, minor or major for 0.x; a patch never carries a breaking change), and it must fail closed on tooling failures such as an unnamed config mode.",
+        "scope_limits": [
+          "Purely a developer/CI release gate over repo packaging; the supplied source nowhere binds it to an agent tool, agent lifecycle hook, or agent-generated input, so it is outside agent scope unless such a binding is supplied.",
+          "The CI/job wiring that makes an actual publish depend on the gate's exit status is not in the supplied source.",
+          "Supplied api_gate.py lines cover only 1-21, 96-105, 463-481 and 525-537; config reading, module loading, and the griffe diff (lines 22-95, 106-462, 482-524) are not visible.",
+          "Reviewer's 'print ::error::' detail is not visible in the supplied lines."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "base.py:106-107 \u2014 'policy = self._require_policy(); effective_spec = self._enforce_policy(spec, policy)' executing immediately before 'await self._create_session_resources(effective_spec)' at base.py:109; ledger registration follows only on success.",
+        "contract_id": "ecological-contract:f7bd417bdf37309988f26accab52c7ef",
+        "declared_mechanism": "SandboxPolicy bound at provider registration via bind_policy (per the RuntimeError text); _require_policy failing closed with RuntimeError when unbound (base.py:129-138); _enforce_policy raising SandboxSpecRejectedError (ErrorKind.BAD_INPUT) per violation and returning an effective spec with the floor isolation and standard labels baked in (base.py:140-174); errors.py declares the single rejection family that never silently downgrades.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 109,
+            "line_start": 95,
+            "path": "core/kit/src/tai42_kit/sandbox/base.py",
+            "role": "commit_point",
+            "source_sha256": "5d01d023759eaf30df4324607247bdc0c81bef39c93417e47d9306005e41e44b"
+          },
+          {
+            "line_end": 138,
+            "line_start": 129,
+            "path": "core/kit/src/tai42_kit/sandbox/base.py",
+            "role": "guard_registration",
+            "source_sha256": "5d01d023759eaf30df4324607247bdc0c81bef39c93417e47d9306005e41e44b"
+          },
+          {
+            "line_end": 174,
+            "line_start": 140,
+            "path": "core/kit/src/tai42_kit/sandbox/base.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5d01d023759eaf30df4324607247bdc0c81bef39c93417e47d9306005e41e44b"
+          },
+          {
+            "line_end": 55,
+            "line_start": 41,
+            "path": "core/contract/src/tai42_contract/sandbox/policy.py",
+            "role": "guard_registration",
+            "source_sha256": "ffbedf1277918c2bd819d065d799db0bfedde756cec142b2c8a7b46d575513b2"
+          },
+          {
+            "line_end": 75,
+            "line_start": 63,
+            "path": "core/contract/src/tai42_contract/sandbox/errors.py",
+            "role": "guard_registration",
+            "source_sha256": "633802a3d08d7b85a7daaaccfc8c92237dc211cc67ff1b4c40e1d0eec95114c6"
+          }
+        ],
+        "forbidden_condition": "Creating a sandbox session whose spec violates policy: network_openness(spec.network) > network_openness(policy.egress); isolation_strength(spec.isolation) < isolation_strength(policy.isolation) (an unset isolation inherits the floor); durability == 'persistent' with policy.durable false; any spec label key under the reserved namespace; or calling create_session with no policy bound.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Where the skeleton binds SandboxPolicy at provider registration (bind_policy) is not in the supplied view.",
+          "Definitions of network_openness, isolation_strength, and the LABEL_SANDBOX constant value are not in the supplied ranges.",
+          "No agent tool, lifecycle hook, or agent-input dataflow reaches create_session in the supplied source."
+        ],
+        "protected_operation": "Sandbox session creation via ManagedSandbox.create_session and the provider's _create_session_resources primitive it drives.",
+        "protected_resource": "Provider-managed sandbox session resources and the operator's SandboxPolicy envelope (egress ceiling, isolation floor, durable gate, reserved label namespace).",
+        "protection_obligation": "ManagedSandbox.create_session must enforce the bound SandboxPolicy at the kit session-create chokepoint and refuse with SandboxSpecRejectedError \u2014 before the provider's _create_session_resources primitive runs \u2014 any spec whose network is looser than the egress ceiling, whose isolation sits below the policy floor, which requests persistent durability while durable is disabled, or which carries consumer labels in the reserved tai42.sandbox namespace; creating with no policy bound must be a loud RuntimeError, never a silent clamp or downgrade.",
+        "scope_limits": [
+          "The concrete provider effect of _create_session_resources (container/process/file/other) is not in the supplied source; stratum recorded as other_external pending confirmation.",
+          "Platform infrastructure policy; no supplied source binds session creation to an agent tool, agent lifecycle hook, or agent-generated spec.",
+          "The bind_policy registration call site is not in the supplied ranges; it is known only from the RuntimeError message text.",
+          "scrub_transcript is explicitly consumer-side and not a create-time gate (policy.py:47-48)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Access control HTTP edge: AuthAdapter consumption site, settings.authenticated_always_allowed_paths contents, and whether any protected route is agent-facing are not supplied; access_control/middleware.py lines 143-177 are outside the supplied view.",
+      "No supplied source binds the accounts users routes, the hooks verifier-binding doors, or the channel webhook doors to an agent tool, agent lifecycle hook, or agent-generated input; whether bridged Slack/WhatsApp messages reach agent execution is not shown in the cited views.",
+      "No supplied source states that any MCP caller is an AI agent; the direct_tool determinations rest solely on the MCP tool-dispatch/registration surface (middleware on_call_tool, project_operations tool registration, and the storage module's explicit MCP-edge statement).",
+      "Projection: decorators for create_schedule, submit_run, and any caller_context-flagged operations, and the boot/reload call site invoking project_operations, are not supplied.",
+      "Reviewer-cited fenced-tool artifacts outside the supplied view ranges: ToolBinding._client_runnable enforcement (~binding.py:908) and the tier= parameter of @app.tools.tool (~binding.py:1038-1039); only the run_tool seam and ToolTierFenceMiddleware are evidenced.",
+      "Sandbox kit: the bind_policy call site, LABEL_SANDBOX value, and network_openness/isolation_strength definitions are not supplied; the concrete provider effect of _create_session_resources is unshown.",
+      "Storage: stat_resource and delete_resource bodies and the filesystem provider's path handling are not supplied.",
+      "The implementation of register_operation_route and the access-control layer that resolves action='fenced' (and 'write') into caller-tier checks is absent from the supplied views; the admin-only character of the verifier-binding doors rests on the route registrations plus module-contract text (routers/hooks.py:29-39), not visible enforcement code.",
+      "The sandbox provider behind tai42_app.sandboxes.require_sandbox() and the durable-volume mount/reap/persistence semantics are outside the supplied views; the workspace-volume non-idempotence premise rests on the park-lease module docstring.",
+      "Token-free gate: ExecutionKeyScan.assert_usable, the register/create doors (manager.register / put_route), the background-fire evaluation path, and the _OWNER_REFERENCE / OWNER_USER_ID_CLAIM values are not supplied.",
+      "Tool edge: AuthzMiddleware installation site on MCP-serving FastMCP instances, synthesize_path, _own_route, resolve_caller_identity, resolve_dispatch, and the scope/owner second-pass assembly inside _authorize_pinned_route beyond check.py:278 are not supplied.",
+      "Turn lease: the checkpoint/outcome write inside _complete_turn, the _release Lua body, the heartbeat refresher body, and caps.run_reserved are not supplied.",
+      "Unsupplied ranges of core/skeleton/src/tai42_skeleton/routers/hooks.py (~80-129 and ~231-449) hide the hooks operation handlers (_set_topic_verifier_op, _delete_topic_verifier_op), the binding store, and _verify_ingress; the binding mutation and terminal-response mechanics are evidenced only by call sites and docstrings.",
+      "Whether any tools besides sandbox_exec register 'fenced'/'secret' tiers is not visible in the supplied views.",
+      "api_gate.py: _fail body (asserted SystemExit/non-zero), config reading, module loading, the griffe diff, _bump_class/_parse_version/_version_class, and the publish pipeline consuming the gate's exit status are outside the supplied ranges.",
+      "operations._authority.resolve_caller semantics \u2014 including 'returns an admin with access control off' and bound-execution-identity resolution for background/hook/schedule fires \u2014 are asserted in tier.py docstrings; the implementation is not supplied."
+    ],
+    "repository": "tai42ai/tai42",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:3043065f3d84da80ea774bae42a5e422"
+  },
+  "request_sha256": "315404ca2553e57d932c20f605f55229865c2c0f797a5527f293b4538ecf9b18",
+  "response_sha256": "b9eab58a10a9f33aa6cbb3a9b259870532331ae53bed454b7517591df777ac03",
+  "shard_provenance": [
+    {
+      "attempt": 0,
+      "request_sha256": "868b04ce407939f3626f67f4eb1bf23a59c3e4dab6fcd130fbf924cc96ca5efd",
+      "response_sha256": "b90e7c155838311d6ed450b49853a5d3d628d2882687ef542ba8c9e6d90186b8",
+      "result_sha256": "d1249a1c4a078e898ae4d8cf07edb42a5fca3cc698ef6cd75cddd1911a6fbc7b",
+      "tokens": 54550,
+      "unit": "v24-screen:3043065f3d84da80ea774bae42a5e422-p000"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "6b358fa0992c24de9413b7a4905ace8d73152101909bd7edf6f5cc61334ec2f4",
+      "response_sha256": "070366e9c67327c04d450852f7cc407aabc4a102392e0dbb0bba417777325144",
+      "result_sha256": "5cdc3187dbc916e491992c678f16c70b1aade25c7f7b11f59c1e8a15b3a7a9a8",
+      "tokens": 71793,
+      "unit": "v24-screen:3043065f3d84da80ea774bae42a5e422-p001"
+    }
+  ],
+  "state": "completed",
+  "tokens": 126343,
+  "unit": "v24-screen:3043065f3d84da80ea774bae42a5e422"
+}

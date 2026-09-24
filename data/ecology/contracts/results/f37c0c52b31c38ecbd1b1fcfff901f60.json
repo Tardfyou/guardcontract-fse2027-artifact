@@ -1,0 +1,94 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The Runner.run(self.assistant_agent, message, ...) call inside chat_with_form_data (services/agent_service.py:730-738), where the registered input guardrail executes and InputGuardrailTripwireTriggered aborts the run; the exception handler at lines 740-750 commits the safe redaction response in place of any agent output.",
+        "contract_id": "ecological-contract:c0f772464a0640cf410016c708c94383",
+        "declared_mechanism": "confidentiality_guardrail, declared with @input_guardrail(run_in_parallel=False) (services/agent_service.py:615-641), which runs the guardrail_agent ('Confidentiality Guardrail', output_type=ConfidentialityCheck) over the input text extracted by _extract_input_text and returns GuardrailFunctionOutput with tripwire_triggered=review.is_confidential; attached to the production assistant agent via input_guardrails=[confidentiality_guardrail] (line 687); the resulting InputGuardrailTripwireTriggered is caught in chat_with_form_data and converted to the guardrail's safe_response or a generic redaction request (lines 740-750).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 641,
+            "line_start": 615,
+            "path": "services/agent_service.py",
+            "role": "guard_registration",
+            "source_sha256": "008b293f7bca4360580b9535026f30b376091af08038e7264768dc2f59df03ab"
+          },
+          {
+            "line_end": 689,
+            "line_start": 682,
+            "path": "services/agent_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "008b293f7bca4360580b9535026f30b376091af08038e7264768dc2f59df03ab"
+          },
+          {
+            "line_end": 555,
+            "line_start": 546,
+            "path": "services/agent_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "008b293f7bca4360580b9535026f30b376091af08038e7264768dc2f59df03ab"
+          },
+          {
+            "line_end": 738,
+            "line_start": 730,
+            "path": "services/agent_service.py",
+            "role": "protected_operation",
+            "source_sha256": "008b293f7bca4360580b9535026f30b376091af08038e7264768dc2f59df03ab"
+          },
+          {
+            "line_end": 750,
+            "line_start": 730,
+            "path": "services/agent_service.py",
+            "role": "commit_point",
+            "source_sha256": "008b293f7bca4360580b9535026f30b376091af08038e7264768dc2f59df03ab"
+          },
+          {
+            "line_end": 263,
+            "line_start": 251,
+            "path": "api/routes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "89bbb10b0b2e2534564583b84fe0ae4718ac07b83052b419cdac62c2af5537ed"
+          }
+        ],
+        "forbidden_condition": "The assistant agent's LLM run processing (forwarding to the external LLM) user input that contains clearly sensitive material \u2014 passwords, API keys, private keys, tokens, secrets, SSNs, financial account numbers, or similarly regulated identifiers \u2014 i.e., the condition under which the guardrail's ConfidentialityCheck yields is_confidential=true and tripwire_triggered=true (services/agent_service.py:640).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether input guardrails registered on assistant_agent execute before the first outbound LLM request inside Runner.run \u2014 SDK internals are not in the supplied source.",
+          "Whether form_data embedded in dynamic instructions (services/agent_service.py:537-542) or replayed session history from GeminiSafeSession.get_items is ever evaluated by confidentiality_guardrail.",
+          "Whether the guardrail's own Runner.run over guardrail_agent (services/agent_service.py:628-633) transmits the user input to the review model regardless of the main run outcome, and whether any constraint covers that transmission.",
+          "Whether any entry point other than POST /chat/message invokes chat/chat_with_form_data in the deployed service.",
+          "Whether safe_response can be empty such that only the fallback generic redaction message (lines 745-750) is returned, and whether that fallback satisfies the obligation in all trip cases."
+        ],
+        "protected_operation": "Runner.run execution of the assistant_agent ('IT Security Analyst Assistant') on the user-supplied message inside AgentService.chat_with_form_data, reached from POST /chat/message via _chat_with_agent (services/agent_service.py:730-738; api/routes.py:251-263).",
+        "protected_resource": "User-supplied chat message content on the /chat/message conversational path and its confidentiality as input to the assistant agent's external LLM run.",
+        "protection_obligation": "User input containing secrets or regulated identifiers (passwords, API keys, private keys, tokens, secrets, SSNs, financial account numbers) routed through the production POST /chat/message endpoint must not be processed by the assistant agent's LLM run; the confidentiality_guardrail registered as an input guardrail on the assistant agent must trip at the Runner.run commit point in chat_with_form_data, and the caller must receive a safe redaction request instead of the agent's processing of the sensitive content.",
+        "scope_limits": [
+          "Applies only to the /chat/message -> _chat_with_agent -> chat_with_form_data agent path; the non-agent POST /chat evaluation pipeline (api/routes.py:220-248) is outside this contract.",
+          "The guardrail inspects only the agent_input passed to Runner.run via _extract_input_text; form data rendered into dynamic instructions (_assistant_instructions, lines 537-542) and session history served by GeminiSafeSession are not shown to pass through the guardrail's input check.",
+          "No claim is made about detection efficacy: the trip decision is itself produced by an LLM classification run (guardrail_agent over the review model), so false negatives/positives are not assessed.",
+          "No claim is made about the enforcement ordering inside the Agents SDK (whether input guardrails run before the first outbound model request); only the registration and the trip handling visible in supplied source are asserted.",
+          "Ordinary web authentication, CORS configuration (api/routes.py:47-59), and the RAG/scoring pipeline are outside scope."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied source shows Agents SDK internals, so the ordering of input guardrails relative to the first outbound LLM request within Runner.run cannot be verified from line-numbered source.",
+      "The supplied views do not show whether confidentiality_guardrail evaluates form_data embedded in dynamic instructions or session history items; only the agent_input argument is visible as the guardrail's check target.",
+      "The supplied views do not show whether the guardrail_agent's own Runner.run (services/agent_service.py:628-633) sends the user input to the review model before the main run can be blocked, nor any guard on that transmission.",
+      "Behavior labels and runtime/deployment information are unavailable per the stated scope; violation status, safety, and prevalence are not decided here.",
+      "Callers of AgentService.chat / chat_with_form_data other than the /chat/message route are not enumerated in the supplied views."
+    ],
+    "repository": "Tommy-Parisi/Exemption-Request-Classifier",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:f37c0c52b31c38ecbd1b1fcfff901f60"
+  },
+  "request_sha256": "4e52072ac0d0188365a7b13c4ac9ccf60c3a485123d4063e9b59819fcffae375",
+  "response_sha256": "66259ffcf248ed6735d86d9d9be5e8200c8e2e750936329313c8a9421745bc4a",
+  "state": "completed",
+  "tokens": 22463,
+  "unit": "v24-screen:f37c0c52b31c38ecbd1b1fcfff901f60"
+}

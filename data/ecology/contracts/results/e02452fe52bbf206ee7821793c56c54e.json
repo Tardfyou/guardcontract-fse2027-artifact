@@ -1,0 +1,672 @@
+{
+  "attempt": 2,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "open(file_path, 'w', encoding='utf-8') followed by f.write(updated_content) at files_tools.py lines 166-167, where the modified content is committed to disk.",
+        "contract_id": "ecological-contract:107ee855ddf6073908f86144ccf2df88",
+        "declared_mechanism": "In-tool path confinement at tool entry: file_abs_path = os.path.abspath(file_path) compared via startswith against reports_abs_path = os.path.abspath('generated/reports'); refusal returns a structured failure dict before any file access (files_tools.py lines 120-131, including a fail-closed except branch at 130-131). Preceded by a per-file call-quota hard limit (lines 110-119) and followed by a content-length safety valve (lines 133-143) before the write.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 14,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 80,
+            "line_start": 79,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 131,
+            "line_start": 120,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 128,
+            "line_start": 121,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 90,
+            "line_start": 80,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 167,
+            "line_start": 145,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 167,
+            "line_start": 166,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          }
+        ],
+        "forbidden_condition": "Invocation of replace_specific_text with a file_path for which os.path.abspath(file_path) does not start with os.path.abspath('generated/reports') \u2014 i.e., any read-then-rewrite modification of a file outside the generated/reports tree. On detection the tool must return {'success': False, 'error': 'Security Violation: Access denied. Can only modify files in reports...'} (or 'Path validation failed') instead of performing the write (files_tools.py lines 121-131).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The allowed root is working-directory-relative (os.path.abspath('generated/reports')); the deployment's process CWD is not shown, so the absolute protected root cannot be pinned.",
+          "The concrete agent-run toolset configuration binding replace_specific_text into an agent's tool list is not shown in supplied source; only the @tool registration is evidenced."
+        ],
+        "protected_operation": "Agent invocation of the replace_specific_text tool to modify file contents: read the target file, replace old_text with new_text, and rewrite the file in place.",
+        "protected_resource": "Files under the 'generated/reports' directory as resolved by os.path.abspath at tool-call time (relative to the tool process working directory).",
+        "protection_obligation": "The agent-callable LangChain tool replace_specific_text (backend/tox_core/utils/files_tools.py) must refuse to modify any file whose resolved absolute path lies outside its configured allowed directory 'generated/reports'; the path-confinement check must execute at tool entry, before the open-for-write commit point. (Merged phase-1/phase-2 reviewer obligation; note this tool's active code allowlists 'generated/reports' only, not the reviewers' union of 'reports' or 'outlines'.)",
+        "scope_limits": [
+          "This tool's active code enforces only the 'generated/reports' allowlist; a dual-directory ('reports' or 'outlines') variant of this check exists only in commented-out code (files_tools.py lines 569-599), so the reviewers' union phrasing exceeds what this tool implements.",
+          "The confinement uses a startswith prefix comparison without an explicit path-separator boundary check; exact strictness against sibling-prefix directory names cannot be determined from the supplied source.",
+          "Confinement is enforced only inside the tool body; supplied source shows no centralized/external path firewall.",
+          "Other @tool-registered file-writing functions in the same module (create_new_file lines 813-866, insert_content_at_placeholder lines 277-335, insert_content_after_section lines 338-401, replace_content_between_placeholders lines 404-492, replace_section_content lines 495-566) contain no path-confinement check; whether they are exposed to the same agents is not shown in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "open(file_path, 'w', encoding='utf-8') followed by f.writelines(lines) at files_tools.py lines 784-785.",
+        "contract_id": "ecological-contract:2a804be316d501c1c983b1fafc1ef088",
+        "declared_mechanism": "Assert-based confinement: assert os.path.abspath(file_path).startswith(os.path.abspath('generated/reports')) at tool entry (files_tools.py lines 762-764); failure raises AssertionError before the read/rewrite.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 14,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 751,
+            "line_start": 750,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 764,
+            "line_start": 762,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 764,
+            "line_start": 762,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 757,
+            "line_start": 751,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 785,
+            "line_start": 784,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          }
+        ],
+        "forbidden_condition": "Invocation with a file_path for which os.path.abspath(file_path).startswith(os.path.abspath('generated/reports')) is false \u2014 line insertion and file rewrite outside generated/reports. The assert fails with 'For security reasons, insert_at_line_number can only modify files under the generated/reports directory...' (files_tools.py lines 762-764).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether deployment strips asserts (python -O) is not shown.",
+          "Agent-run toolset wiring is not shown; only the @tool registration is evidenced.",
+          "Deployment CWD fixing the abspath('generated/reports') root is not shown."
+        ],
+        "protected_operation": "Agent invocation of insert_at_line_number to insert content at a specified line number and rewrite the file.",
+        "protected_resource": "Files under the 'generated/reports' directory as resolved by os.path.abspath at tool-call time.",
+        "protection_obligation": "The agent-callable LangChain tool insert_at_line_number (backend/tox_core/utils/files_tools.py) must refuse to insert content into any file whose resolved absolute path lies outside the allowed 'generated/reports' directory; the assert-based startswith confinement must execute at tool entry before the read-modify-write commit point. (Source-supported instance of the 'assert-based restrictions' guard form cited in the phase-2 review rationale.)",
+        "scope_limits": [
+          "Not named in the reviewers' parenthetical tool enumeration; included via the rationale's assert-based-restrictions reference.",
+          "Allowlist is 'generated/reports' only.",
+          "The guard raises AssertionError rather than returning a structured error result."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "open(file_path, 'w', encoding='utf-8') followed by f.writelines(remaining_lines) at files_tools.py lines 1127-1128.",
+        "contract_id": "ecological-contract:4c3374189cea190969b524180db20292",
+        "declared_mechanism": "Assert-based confinement: assert os.path.abspath(file_path).startswith(os.path.abspath('generated/reports')) at tool entry (files_tools.py lines 1088-1090); failure raises AssertionError before the read/rewrite.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 14,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1077,
+            "line_start": 1076,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1090,
+            "line_start": 1088,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1090,
+            "line_start": 1088,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1084,
+            "line_start": 1077,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1128,
+            "line_start": 1127,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          }
+        ],
+        "forbidden_condition": "Invocation with a file_path for which os.path.abspath(file_path).startswith(os.path.abspath('generated/reports')) is false \u2014 pattern-based line deletion and file rewrite outside generated/reports. The assert fails with 'For security reasons, delete_line_by_content can only modify files under the generated/reports directory...' (files_tools.py lines 1088-1090).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether deployment strips asserts (python -O) is not shown.",
+          "Agent-run toolset wiring is not shown; only the @tool registration is evidenced.",
+          "Deployment CWD fixing the abspath('generated/reports') root is not shown."
+        ],
+        "protected_operation": "Agent invocation of delete_line_by_content to delete all lines containing a content pattern and rewrite the file.",
+        "protected_resource": "Files under the 'generated/reports' directory as resolved by os.path.abspath at tool-call time.",
+        "protection_obligation": "The agent-callable LangChain tool delete_line_by_content (backend/tox_core/utils/files_tools.py) must refuse to delete lines from any file whose resolved absolute path lies outside the allowed 'generated/reports' directory; the assert-based startswith confinement must execute at tool entry before the read-modify-write commit point. (Source-supported instance of the 'assert-based restrictions' guard form cited in the phase-2 review rationale.)",
+        "scope_limits": [
+          "Not named in the reviewers' parenthetical tool enumeration; included via the rationale's assert-based-restrictions reference.",
+          "Allowlist is 'generated/reports' only.",
+          "The guard raises AssertionError rather than returning a structured error result."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "os.makedirs(dir_path, exist_ok=True) at files_tools.py lines 898-901 (parent-directory mutation) and open(target_path, 'w', encoding='utf-8') + f.write(content) at lines 912-914 (file creation), both executed only after the containment check passes.",
+        "contract_id": "ecological-contract:5fb220dbfaa4b26e4fef63db585aac9b",
+        "declared_mechanism": "os.path.commonpath containment check: base_dir = os.path.abspath('generated/reports'), target_path = os.path.abspath(file_path); refusal returns a structured Security Violation failure before any filesystem mutation (files_tools.py lines 881-895).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 14,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 870,
+            "line_start": 869,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 895,
+            "line_start": 881,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 895,
+            "line_start": 891,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 876,
+            "line_start": 870,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 901,
+            "line_start": 898,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 914,
+            "line_start": 912,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          }
+        ],
+        "forbidden_condition": "Invocation with a file_path for which os.path.commonpath([os.path.abspath('generated/reports'), os.path.abspath(file_path)]) != os.path.abspath('generated/reports') \u2014 creation of files (or parent directories) outside generated/reports, including via '..' or relative paths (handled by resolving to abspath, per in-code comments lines 886-890). On detection the tool must return {'success': False, 'error': 'Security Violation: Access denied. Files can ONLY be created in reports/ directory...'} (files_tools.py lines 891-895).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The allowed root is working-directory-relative (os.path.abspath('generated/reports')); deployment CWD is not shown.",
+          "Agent-run toolset wiring that binds create_new_file_in_reports to an agent is not shown; only the @tool registration is evidenced."
+        ],
+        "protected_operation": "Agent invocation of create_new_file_in_reports to create a new file (with optional overwrite) in the reports area and write content to it.",
+        "protected_resource": "Files and subdirectories under the 'generated/reports' directory as resolved by os.path.abspath at tool-call time.",
+        "protection_obligation": "The agent-callable LangChain tool create_new_file_in_reports (backend/tox_core/utils/files_tools.py) must refuse to create or overwrite any file whose resolved absolute path lies outside the allowed 'generated/reports' directory; an os.path.commonpath containment check must execute at tool entry before both the directory-creation and file-creation commit points. (Merged phase-1/phase-2 reviewer obligation.)",
+        "scope_limits": [
+          "Allowlist is 'generated/reports' only; 'generated/outlines' confinement is provided by the separate create_new_file_in_templates tool.",
+          "Containment is enforced inside the tool body only; no external enforcement layer is shown.",
+          "Other @tool-registered writers in the module (e.g., create_new_file lines 813-866) have no confinement check; their toolset exposure is not shown in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "open(file_path, 'w', encoding='utf-8') followed by f.write(new_content) at files_tools.py lines 232-233.",
+        "contract_id": "ecological-contract:91310868b90b3b0593175a94733a2500",
+        "declared_mechanism": "In-tool startswith confinement at tool entry: abspath(file_path) compared against abspath('generated/reports'), returning a structured Security Violation failure before the write (files_tools.py lines 222-228), preceded by a per-file call-quota hard limit (lines 214-220).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 14,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 206,
+            "line_start": 205,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 228,
+            "line_start": 222,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 226,
+            "line_start": 224,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 213,
+            "line_start": 206,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 233,
+            "line_start": 230,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 233,
+            "line_start": 232,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          }
+        ],
+        "forbidden_condition": "Invocation of overwrite_working_file with a file_path for which os.path.abspath(file_path) does not start with os.path.abspath('generated/reports') \u2014 a full-file overwrite of any file outside the generated/reports tree. On detection the tool must return {'success': False, 'error': \"Security Violation: Access denied. Can only modify files in 'reports'.\"} (files_tools.py lines 224-228).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The allowed root is working-directory-relative (os.path.abspath('generated/reports')); deployment CWD is not shown.",
+          "Agent-run toolset wiring that binds overwrite_working_file to an agent is not shown; only the @tool registration is evidenced."
+        ],
+        "protected_operation": "Agent invocation of overwrite_working_file to overwrite the entire working file with the fully generated report content (new_content).",
+        "protected_resource": "Files under the 'generated/reports' directory as resolved by os.path.abspath at tool-call time.",
+        "protection_obligation": "The agent-callable LangChain tool overwrite_working_file (backend/tox_core/utils/files_tools.py) must refuse to overwrite any file whose resolved absolute path lies outside the allowed 'generated/reports' directory; the path-confinement check must execute at tool entry, before the open-for-write commit point. (Merged phase-1/phase-2 reviewer obligation; this tool's active code allowlists 'generated/reports' only.)",
+        "scope_limits": [
+          "startswith prefix comparison without explicit path-separator boundary handling; strictness against sibling-prefix paths is not determinable from source.",
+          "Allowlist is 'generated/reports' only for this tool; no 'generated/outlines' branch exists in its active code.",
+          "Confinement is enforced inside the tool body only; no external enforcement layer is shown in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "open(file_path, 'w', encoding='utf-8') followed by f.writelines(lines) at files_tools.py lines 1203-1204.",
+        "contract_id": "ecological-contract:afc0f63f63e414fcfb3cdf708bba27e4",
+        "declared_mechanism": "Assert-based confinement: assert os.path.abspath(file_path).startswith(os.path.abspath('generated/reports')) at tool entry (files_tools.py lines 1168-1170); failure raises AssertionError before the read/rewrite.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 14,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1158,
+            "line_start": 1157,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1170,
+            "line_start": 1168,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1170,
+            "line_start": 1168,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1164,
+            "line_start": 1158,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1204,
+            "line_start": 1203,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          }
+        ],
+        "forbidden_condition": "Invocation with a file_path for which os.path.abspath(file_path).startswith(os.path.abspath('generated/reports')) is false \u2014 line-number-based deletion and file rewrite outside generated/reports. The assert fails with 'For security reasons, delete_line_by_number can only modify files under the generated/reports directory...' (files_tools.py lines 1168-1170).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether deployment strips asserts (python -O) is not shown.",
+          "Agent-run toolset wiring is not shown; only the @tool registration is evidenced.",
+          "Deployment CWD fixing the abspath('generated/reports') root is not shown."
+        ],
+        "protected_operation": "Agent invocation of delete_line_by_number to delete content at specified line numbers and rewrite the file.",
+        "protected_resource": "Files under the 'generated/reports' directory as resolved by os.path.abspath at tool-call time.",
+        "protection_obligation": "The agent-callable LangChain tool delete_line_by_number (backend/tox_core/utils/files_tools.py) must refuse to delete lines from any file whose resolved absolute path lies outside the allowed 'generated/reports' directory; the assert-based startswith confinement must execute at tool entry before the read-modify-write commit point. (Source-supported instance of the 'assert-based restrictions' guard form cited in the phase-2 review rationale.)",
+        "scope_limits": [
+          "Not named in the reviewers' parenthetical tool enumeration; included via the rationale's assert-based-restrictions reference.",
+          "Allowlist is 'generated/reports' only.",
+          "The guard raises AssertionError rather than returning a structured error result."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "open(file_path, 'w', encoding='utf-8') followed by f.write(updated_content) at files_tools.py lines 714-715.",
+        "contract_id": "ecological-contract:cc5d59bf3d20318917e912172d60ef9a",
+        "declared_mechanism": "Assert-based confinement: assert os.path.abspath(file_path).startswith(os.path.abspath('generated/reports')) at tool entry (files_tools.py lines 687-689); failure raises AssertionError before the read/modify/write sequence.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 14,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 677,
+            "line_start": 676,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 689,
+            "line_start": 687,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 689,
+            "line_start": 687,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 686,
+            "line_start": 677,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 715,
+            "line_start": 714,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          }
+        ],
+        "forbidden_condition": "Invocation with a file_path for which os.path.abspath(file_path).startswith(os.path.abspath('generated/reports')) is false \u2014 text deletion and file rewrite outside generated/reports. The assert fails with 'For security reasons, delete_specific_text can only modify files under the generated/reports directory...' (files_tools.py lines 687-689), aborting before the read/rewrite.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Assert statements are stripped if CPython runs with optimization (-O); whether deployment uses -O is not shown in supplied source.",
+          "Agent-run toolset wiring binding delete_specific_text to an agent is not shown; only the @tool registration is evidenced.",
+          "Deployment CWD (which fixes the abspath('generated/reports') root) is not shown."
+        ],
+        "protected_operation": "Agent invocation of delete_specific_text to remove all occurrences of text_to_delete from a file and rewrite the file.",
+        "protected_resource": "Files under the 'generated/reports' directory as resolved by os.path.abspath at tool-call time.",
+        "protection_obligation": "The agent-callable LangChain tool delete_specific_text (backend/tox_core/utils/files_tools.py) must refuse to delete text from any file whose resolved absolute path lies outside the allowed 'generated/reports' directory; the assert-based startswith confinement must execute at tool entry before the read-modify-write commit point. (Source-supported instance of the 'assert-based restrictions' guard form cited in the phase-2 review rationale; this tool is not in the reviewers' parenthetical enumeration.)",
+        "scope_limits": [
+          "Not named in the reviewers' parenthetical tool enumeration; included because the phase-2 rationale explicitly cites assert-based restrictions among the registered guards.",
+          "Allowlist is 'generated/reports' only; no 'generated/outlines' branch.",
+          "startswith prefix comparison without explicit path-separator boundary handling.",
+          "The guard raises AssertionError (uncaught in supplied source) rather than returning a structured error result."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "open(file_path, 'w', encoding='utf-8') followed by f.write(cleaned_content) at files_tools.py lines 1510-1511.",
+        "contract_id": "ecological-contract:f13157aa796012634b546445441ff935",
+        "declared_mechanism": "Assert-based confinement: assert os.path.abspath(file_path).startswith(os.path.abspath('generated/reports')) at tool entry (files_tools.py lines 1376-1378); failure raises AssertionError before the read/rewrite.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 14,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1363,
+            "line_start": 1362,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1378,
+            "line_start": 1376,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1378,
+            "line_start": 1376,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1374,
+            "line_start": 1363,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 1511,
+            "line_start": 1510,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          }
+        ],
+        "forbidden_condition": "Invocation with a file_path for which os.path.abspath(file_path).startswith(os.path.abspath('generated/reports')) is false \u2014 placeholder removal and file rewrite outside generated/reports. The assert fails with 'For security reasons, remove_placeholders can only modify files under the generated/reports directory...' (files_tools.py lines 1376-1378).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether deployment strips asserts (python -O) is not shown.",
+          "Agent-run toolset wiring is not shown; only the @tool registration is evidenced.",
+          "Deployment CWD fixing the abspath('generated/reports') root is not shown."
+        ],
+        "protected_operation": "Agent invocation of remove_placeholders to detect and remove placeholder lines from a report file and rewrite the file.",
+        "protected_resource": "Files under the 'generated/reports' directory as resolved by os.path.abspath at tool-call time.",
+        "protection_obligation": "The agent-callable LangChain tool remove_placeholders (backend/tox_core/utils/files_tools.py) must refuse to modify any file whose resolved absolute path lies outside the allowed 'generated/reports' directory; the assert-based startswith confinement must execute at tool entry before the read-modify-write commit point. (Source-supported instance of the 'assert-based restrictions' guard form cited in the phase-2 review rationale.)",
+        "scope_limits": [
+          "Not named in the reviewers' parenthetical tool enumeration; included via the rationale's assert-based-restrictions reference.",
+          "Allowlist is 'generated/reports' only.",
+          "The guard raises AssertionError rather than returning a structured error result."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "os.makedirs(dir_path, exist_ok=True) at files_tools.py lines 971-974 (parent-directory mutation) and open(target_path, 'w', encoding='utf-8') + f.write(content) at lines 985-987 (file creation), both executed only after the containment check passes.",
+        "contract_id": "ecological-contract:f3c5f7a52739eb1fa528ce0be6bfd4d4",
+        "declared_mechanism": "os.path.commonpath containment check: base_dir = os.path.abspath('generated/outlines'), target_path = os.path.abspath(file_path); refusal returns a structured Security Violation failure before any filesystem mutation (files_tools.py lines 952-968).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 14,
+            "line_start": 14,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 941,
+            "line_start": 940,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 968,
+            "line_start": 952,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 968,
+            "line_start": 959,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 947,
+            "line_start": 941,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 974,
+            "line_start": 971,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 987,
+            "line_start": 985,
+            "path": "backend/tox_core/utils/files_tools.py",
+            "role": "commit_point",
+            "source_sha256": "b34151f5d5056fc3a9c6b22396ba3a50366165d17c3c7011571a5cc8e7de5391"
+          },
+          {
+            "line_end": 96,
+            "line_start": 94,
+            "path": "backend/routers/outline.py",
+            "role": "protected_operation",
+            "source_sha256": "25921c2c9ebd9c54e6eaf2fcab0380c2684bc370bd6e0a29f3bf7eeed01c1dda"
+          },
+          {
+            "line_end": 108,
+            "line_start": 99,
+            "path": "backend/routers/outline.py",
+            "role": "protected_operation",
+            "source_sha256": "25921c2c9ebd9c54e6eaf2fcab0380c2684bc370bd6e0a29f3bf7eeed01c1dda"
+          }
+        ],
+        "forbidden_condition": "Invocation with a file_path for which os.path.commonpath([os.path.abspath('generated/outlines'), os.path.abspath(file_path)]) != os.path.abspath('generated/outlines') \u2014 creation of files (or parent directories) outside generated/outlines, including via '..' or relative paths. On detection the tool must return {'success': False, 'error': 'Security Violation: Access denied. Files can ONLY be created in templates/ directory...'} (files_tools.py lines 963-968).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The allowed root is working-directory-relative (os.path.abspath('generated/outlines')); deployment CWD is not shown.",
+          "Agent-run toolset wiring that binds create_new_file_in_templates to an agent is not shown; only the @tool registration and the router-side output_dir configuration are evidenced.",
+          "The concrete dataflow from generate_toxicity_template's output_dir to the tool's file_path argument is inside an unsupplied module."
+        ],
+        "protected_operation": "Agent invocation of create_new_file_in_templates to create a new outline/outline-draft file (with optional overwrite) and write content to it; callers such as the outline-generation route satisfy the check by passing an output_dir under generated/outlines (backend/routers/outline.py lines 94-96, 99-108).",
+        "protected_resource": "Files and subdirectories under the 'generated/outlines' directory as resolved by os.path.abspath at tool-call time.",
+        "protection_obligation": "The agent-callable LangChain tool create_new_file_in_templates (backend/tox_core/utils/files_tools.py) must refuse to create or overwrite any file whose resolved absolute path lies outside the allowed 'generated/outlines' directory; an os.path.commonpath containment check must execute at tool entry before both the directory-creation and file-creation commit points. Web callers (e.g., the outline-generation route) must configure output paths to conform to this check. (Merged phase-1/phase-2 reviewer obligation.)",
+        "scope_limits": [
+          "Allowlist is 'generated/outlines' only; 'generated/reports' confinement is provided by the other reviewed tools.",
+          "The route in backend/routers/outline.py invokes generate_toxicity_template (module not supplied in the source views), so the exact dataflow from output_dir to this tool's file_path parameter is not verifiable from supplied source.",
+          "Containment is enforced inside the tool body only; no external enforcement layer is shown."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No single tool enforces the reviewers' union allowlist ('generated/reports' OR 'generated/outlines'); each reviewed tool enforces exactly one directory, and the dual-directory variant of replace_specific_text exists only in commented-out code (files_tools.py lines 569-599).",
+      "Agent run/toolset wiring: supplied source shows @tool registrations (langchain.tools.tool, imported at files_tools.py line 14) but no concrete agent construction or tool-list assignment binding these tools to a running agent; direct_tool mediation rests on the decorator registration plus the module docstring (lines 5-8: 'tool functions for agents').",
+      "Working-directory baseline: os.path.abspath('generated/reports') and os.path.abspath('generated/outlines') resolve relative to the tool process CWD; the deployment's CWD is not shown, so the absolute protected roots cannot be pinned from supplied source.",
+      "Ungated sibling write tools: create_new_file (lines 813-866), insert_content_at_placeholder (lines 277-335), insert_content_after_section (lines 338-401), replace_content_between_placeholders (lines 404-492), and replace_section_content (lines 495-566) are @tool-registered file writers with no path-confinement check; whether they are exposed to the same agents as the confined tools is not shown in supplied source.",
+      "Non-tool confined writers: clean_empty_lines (lines 1233-1291) and add_disclaimer (lines 1547-1614) perform assert-confined file writes but lack @tool registration, so agent mediation is not established from supplied source; count_words_in_file (lines 1617-1685) carries a similar assert but is read-only.",
+      "change_txt_to_md (lines 1688-1724) performs os.rename (a file-stratum mutation) with only a .txt-extension check and no directory confinement; it is not @tool-registered, so agent mediation is not established.",
+      "list_directory_contents (lines 1294-1359) carries an assert confinement to 'generated/reports' but performs a read-only listing, which falls outside the reviewed write/modify obligation.",
+      "generate_toxicity_template, invoked by backend/routers/outline.py lines 99-108 with output_dir set to '<root>/generated/outlines', is not included in the supplied source views; the dataflow from output_dir to the outline file tools' file_path arguments is unverified.",
+      "Whether the deployment runs CPython with optimizations (-O), which would strip the assert-based confinements, is not shown in supplied source.",
+      "No runtime logs, tests, or behavioral evidence of enforcement are supplied (scope note: behavior labels unavailable; repository enumeration incomplete)."
+    ],
+    "repository": "Our-Stars/AutoToxReporter",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:e02452fe52bbf206ee7821793c56c54e"
+  },
+  "request_sha256": "0185cdc245ace33868f3f59ffbbd7452476edfcb2ede6acaf76908254e899094",
+  "response_sha256": "c4c92b9ca9b6e5f6f0700d833f319a696eb89275fb4d43b4cf40bc51289db235",
+  "state": "completed",
+  "tokens": 45960,
+  "unit": "v24-screen:e02452fe52bbf206ee7821793c56c54e"
+}

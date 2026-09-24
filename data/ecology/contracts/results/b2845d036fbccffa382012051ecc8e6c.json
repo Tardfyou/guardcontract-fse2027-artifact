@@ -1,0 +1,120 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file_path.write_bytes(content) at app/api/file.py:66.",
+        "contract_id": "ecological-contract:124f347bd1167799a12ea41955d7201d",
+        "declared_mechanism": "Inline per-request guard chain in upload_file: empty-filename rejection (HTTP 400, lines 34-35); _sanitize_filename replacement of spaces and the characters \\ / : * ? \" < > | with underscores (line 38, implemented at lines 147-162); extension whitelist check against ALLOWED_EXTENSIONS raising HTTP 400 (lines 41-46); MAX_FILE_SIZE 10MB check on the read content raising HTTP 400 (lines 62-64). All checks execute upstream of the write commit at line 66.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 18,
+            "line_start": 14,
+            "path": "app/api/file.py",
+            "role": "guard_registration",
+            "source_sha256": "6420dd459ecb5bff240d4076449cd47158ef2d3abe684835684b412dcfb9e2d4"
+          },
+          {
+            "line_end": 46,
+            "line_start": 34,
+            "path": "app/api/file.py",
+            "role": "guard_registration",
+            "source_sha256": "6420dd459ecb5bff240d4076449cd47158ef2d3abe684835684b412dcfb9e2d4"
+          },
+          {
+            "line_end": 64,
+            "line_start": 62,
+            "path": "app/api/file.py",
+            "role": "guard_registration",
+            "source_sha256": "6420dd459ecb5bff240d4076449cd47158ef2d3abe684835684b412dcfb9e2d4"
+          },
+          {
+            "line_end": 162,
+            "line_start": 147,
+            "path": "app/api/file.py",
+            "role": "guard_registration",
+            "source_sha256": "6420dd459ecb5bff240d4076449cd47158ef2d3abe684835684b412dcfb9e2d4"
+          },
+          {
+            "line_end": 161,
+            "line_start": 160,
+            "path": "app/api/file.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6420dd459ecb5bff240d4076449cd47158ef2d3abe684835684b412dcfb9e2d4"
+          },
+          {
+            "line_end": 45,
+            "line_start": 42,
+            "path": "app/api/file.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6420dd459ecb5bff240d4076449cd47158ef2d3abe684835684b412dcfb9e2d4"
+          },
+          {
+            "line_end": 64,
+            "line_start": 63,
+            "path": "app/api/file.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6420dd459ecb5bff240d4076449cd47158ef2d3abe684835684b412dcfb9e2d4"
+          },
+          {
+            "line_end": 22,
+            "line_start": 21,
+            "path": "app/api/file.py",
+            "role": "protected_operation",
+            "source_sha256": "6420dd459ecb5bff240d4076449cd47158ef2d3abe684835684b412dcfb9e2d4"
+          },
+          {
+            "line_end": 52,
+            "line_start": 51,
+            "path": "app/api/file.py",
+            "role": "protected_operation",
+            "source_sha256": "6420dd459ecb5bff240d4076449cd47158ef2d3abe684835684b412dcfb9e2d4"
+          },
+          {
+            "line_end": 66,
+            "line_start": 66,
+            "path": "app/api/file.py",
+            "role": "commit_point",
+            "source_sha256": "6420dd459ecb5bff240d4076449cd47158ef2d3abe684835684b412dcfb9e2d4"
+          }
+        ],
+        "forbidden_condition": "A commit at file_path.write_bytes(content) where the composed filename retains path separators or characters '\\', '/', ':', '*', '?', '\"', '<', '>', '|' (i.e., was not passed through _sanitize_filename), or where the lowercased extension is not in ALLOWED_EXTENSIONS ['txt', 'md'], or where len(content) > MAX_FILE_SIZE (10 * 1024 * 1024 bytes).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source shows the APIRouter being mounted into an application or exposes any agent tool registry, tool dispatch, lifecycle hook, or dataflow binding the /upload handler to an AI-agent runtime; whether an agent can reach this operation is unresolved.",
+          "Whether the UploadFile filename/content can constitute agent-generated input reaching the guarded write (vs. direct human HTTP clients) is unsupported in the provided view."
+        ],
+        "protected_operation": "Persistence of an uploaded file's bytes to the ./uploads directory via the upload_file handler of the POST /upload route.",
+        "protected_resource": "Filesystem paths under UPLOAD_DIR = Path(\"./uploads\") written by the upload handler.",
+        "protection_obligation": "The POST /api/upload handler must refuse to persist user-supplied upload bytes to disk unless the filename has been sanitized of path separators and illegal characters (preventing writes outside ./uploads), the extension is whitelisted to {txt, md}, and the content is at most 10MB; disk persistence may occur only after all three guards pass, at file_path.write_bytes(content). (Merges the phase-one and phase-two reviewer wordings, which declare the same guard set and commit point.)",
+        "scope_limits": [
+          "Covers only the write_bytes commit point at app/api/file.py:66; the overwrite deletion file_path.unlink() (lines 55-57) executes after sanitization and extension checks but before the size check, so the 10MB guard does not gate that unlink effect.",
+          "Does not cover the POST /index_directory endpoint (lines 100-128), which passes a caller-supplied directory_path to vector_index_service.index_directory with no guard declared in the supplied source.",
+          "The upload directory is fixed to UPLOAD_DIR = Path(\"./uploads\") (line 14); writes to any other filesystem sink are outside this contract.",
+          "The vector-index side effect (line 73) is non-blocking on upload success (lines 75-77) and is not part of this contract.",
+          "Guards are evaluated inline per request; no claim is made about concurrent-write races or TOCTOU between check and commit.",
+          "Ordinary HTTP handling (status codes, router mechanics) is context only; no web-authentication or CORS obligation is asserted."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Agent entry binding: the supplied source contains no decorator, tool registration, callback wiring, tool dispatch, or concrete dataflow tying upload_file to an agent runtime; agent_mediation is recorded as not_established and no agent_entry_binding evidence is cited.",
+      "Application/server wiring of the router (how POST /upload is exposed, and to which client population) lies outside the supplied line range and is unsupported.",
+      "Repository-wide agent tooling or lifecycle configuration (if any) is not present in the supplied views; presence or absence of agent mediation elsewhere cannot be assessed from this unit."
+    ],
+    "repository": "baifantuan/FanViewer-Oncall",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b2845d036fbccffa382012051ecc8e6c"
+  },
+  "request_sha256": "4c3d4dbc9e3fc9c140af914a3d92e08176f036396e1e22f801aff9d3d42e8944",
+  "response_sha256": "125f7da21e1d0132f5298de400f028a26bb01f5c18dfcef58ae8e86962b508b9",
+  "state": "completed",
+  "tokens": 9826,
+  "unit": "v24-screen:b2845d036fbccffa382012051ecc8e6c"
+}

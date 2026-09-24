@@ -1,0 +1,100 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file_path.write_bytes(content) at src/web/api/app.py line 564, where uploaded bytes read at line 563 are persisted to the filesystem.",
+        "contract_id": "ecological-contract:864f3de86198f12f722d16668b303746",
+        "declared_mechanism": "Resolve-then-prefix-containment guard sequence registered inside the upload handler, all executed before the write: (1) dest = (UPLOAD_BASE / target_dir).resolve() with str(dest).startswith(str(UPLOAD_BASE)) check raising HTTP 400 'Invalid upload directory' (lines 551-553); (2) filename = Path(file.filename).name rejecting empty or dot-prefixed names with HTTP 400 'Invalid file name' (lines 556-558); (3) str(file_path.resolve()).startswith(str(dest)) check raising HTTP 400 'Invalid file path' (lines 559-561); the write itself is file_path.write_bytes(content) at line 564.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 553,
+            "line_start": 546,
+            "path": "src/web/api/app.py",
+            "role": "guard_registration",
+            "source_sha256": "7aae122600bb4b937f05b3b1479c99f5af7c4022a4c5a94f6a5181b4b1906b0b"
+          },
+          {
+            "line_end": 561,
+            "line_start": 556,
+            "path": "src/web/api/app.py",
+            "role": "guard_registration",
+            "source_sha256": "7aae122600bb4b937f05b3b1479c99f5af7c4022a4c5a94f6a5181b4b1906b0b"
+          },
+          {
+            "line_end": 553,
+            "line_start": 552,
+            "path": "src/web/api/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7aae122600bb4b937f05b3b1479c99f5af7c4022a4c5a94f6a5181b4b1906b0b"
+          },
+          {
+            "line_end": 558,
+            "line_start": 557,
+            "path": "src/web/api/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7aae122600bb4b937f05b3b1479c99f5af7c4022a4c5a94f6a5181b4b1906b0b"
+          },
+          {
+            "line_end": 561,
+            "line_start": 560,
+            "path": "src/web/api/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7aae122600bb4b937f05b3b1479c99f5af7c4022a4c5a94f6a5181b4b1906b0b"
+          },
+          {
+            "line_end": 550,
+            "line_start": 549,
+            "path": "src/web/api/app.py",
+            "role": "protected_operation",
+            "source_sha256": "7aae122600bb4b937f05b3b1479c99f5af7c4022a4c5a94f6a5181b4b1906b0b"
+          },
+          {
+            "line_end": 564,
+            "line_start": 563,
+            "path": "src/web/api/app.py",
+            "role": "commit_point",
+            "source_sha256": "7aae122600bb4b937f05b3b1479c99f5af7c4022a4c5a94f6a5181b4b1906b0b"
+          }
+        ],
+        "forbidden_condition": "Any of the following occurring before the write commit: (a) a target_dir whose resolved path (dest) escapes UPLOAD_BASE (path traversal); (b) a filename whose resolved final file path escapes the resolved destination directory (path traversal); (c) an empty or dot-prefixed (hidden) filename.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether /documents/upload is registered as an agent tool or dispatched through any agent tool registry in unsupplied repository sources.",
+          "Whether any agent lifecycle hook or agent runtime path can supply target_dir or file.filename to this endpoint, making the input agent-generated.",
+          "Whether files written by this endpoint are subsequently bound into agent creation or agent tool effects (e.g., the docs_path passed to orch.create_agent at lines 168-169) via a dataflow shown in unsupplied sources.",
+          "Whether the declared prefix-containment mechanism (startswith on string paths, lines 552 and 560) is intended to cover sibling-prefix escapes (e.g., an 'uploads2' sibling of 'uploads') or symlink cases beyond what Path.resolve() provides; sufficiency is not assessed in this unit."
+        ],
+        "protected_operation": "Receiving and persisting uploaded file content via POST /documents/upload (UploadFile bytes plus client-supplied target_dir form field) to a server-side filesystem path.",
+        "protected_resource": "Server filesystem locations outside the resolved uploads base directory UPLOAD_BASE = Path('./uploads').resolve() (src/web/api/app.py:546); confinement of all upload writes to that resolved base directory.",
+        "protection_obligation": "Before POST /documents/upload commits uploaded bytes to the filesystem at file_path.write_bytes(content), the handler must reject with HTTP 400 any request whose resolved destination directory escapes the resolved uploads base directory (UPLOAD_BASE), whose resolved final file path escapes the resolved destination directory, or whose filename is empty or hidden (dot-prefixed); uploaded writes must be confined to the resolved upload base directory. (Merged from both reviewer opinions, which describe the same guard sequence and commit point.)",
+        "scope_limits": [
+          "Applies only to the POST /documents/upload file-write flow in src/web/api/app.py lines 546-565; no obligation is asserted for other filesystem-mutating endpoints in the same file (e.g., config write at lines 128-129, custom-tool config writes at lines 246 and 259, delete_agent shutil.rmtree at line 294, exported server's history_file write at line 418).",
+          "Compiled as a source-declared protection-contract hypothesis only; no determination is made about whether the guard is effective, bypassable, or exercised at runtime.",
+          "Agent mediation is not established in the supplied view: the endpoint is an ordinary HTTP handler with no agent-tool decorator, agent lifecycle hook, or agent-generated input dataflow shown binding it to the guarded write.",
+          "dest.mkdir(parents=True, exist_ok=True) at line 554 is an additional filesystem mutation in the flow that neither reviewer treated as a distinct commit point; it is covered only by the first containment check and is not asserted as a separate contract.",
+          "Only the supplied line-numbered view of src/web/api/app.py was used; the remainder of the repository was not enumerated, and behavior labels are unavailable."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source establishes an agent entry binding (tool registration, lifecycle hook wiring, or concrete agent-generated dataflow) for the /documents/upload endpoint; agent_entry_binding evidence is therefore omitted and agent_mediation is not_established.",
+      "Behavior labels and runtime prevalence data are unavailable per the unit scope; runtime enforcement of the declared guards cannot be confirmed from the supplied view.",
+      "No supplied source shows how uploaded files relate to downstream agent operations (e.g., whether the returned path from /documents/upload feeds orch.create_agent's docs_path), so any agent-relevance of the guarded write is unresolved."
+    ],
+    "repository": "szzhangkkk/agent-factory",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:bebfc40d4ec7a3fced4284d11eadf753"
+  },
+  "request_sha256": "6f784a167c2df56ab57e24e45c5d2290d9678f072360b44dec22dec0c8211100",
+  "response_sha256": "5a128345ddee901cd3a294b27668430c0906cb3a45e539748a26207153a6b05b",
+  "state": "completed",
+  "tokens": 14288,
+  "unit": "v24-screen:bebfc40d4ec7a3fced4284d11eadf753"
+}

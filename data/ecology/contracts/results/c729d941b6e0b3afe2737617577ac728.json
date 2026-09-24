@@ -1,0 +1,132 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "backend/utils/middleware.py:71 \u2014 `response = await call_next(request)` is the point at which the validated request is committed to endpoint handlers; rejection is committed instead by returning JSONResponse at middleware.py:59-62 (401 path) or middleware.py:65-68 (unexpected-error path) without invoking call_next.",
+        "contract_id": "ecological-contract:f767b943591679a57425dafdbf22a6cc",
+        "declared_mechanism": "Starlette-style HTTP middleware created by create_middleware(app) and registered on the production app at backend/app_t.py:136; the inner global_handler (decorated with @app.middleware(\"http\"), middleware.py:48-49) short-circuits whitelisted paths (middleware.py:50-52), otherwise calls validate_token_and_refresh(request) (middleware.py:56), which reads the X-Token and X-User-Id headers (middleware.py:20-21), obtains app.state.cache (the Redis client initialized in lifespan at app_t.py:48-55), fetches users:{user_id} and rejects on mismatch with HTTPException(401) (middleware.py:36-39), renews the TTL with state.cache.expire(f\"users:{user_id}\", Config.EXPIRE_TIME=3600) on success (middleware.py:42), and global_handler converts failures into JSONResponse error responses (middleware.py:57-68) and only reaches call_next after successful validation (middleware.py:71).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 136,
+            "line_start": 135,
+            "path": "backend/app_t.py",
+            "role": "guard_registration",
+            "source_sha256": "8434f22fbd19ba102246bcfe0bf551239392a5c2cb4d5ae27fabd62f5dcb5ff6"
+          },
+          {
+            "line_end": 56,
+            "line_start": 46,
+            "path": "backend/utils/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "66c0eceb7fe68bc9fc0844c844a77fc19b83f0b6ded8c0bca6d3462f0769fc65"
+          },
+          {
+            "line_end": 43,
+            "line_start": 19,
+            "path": "backend/utils/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "66c0eceb7fe68bc9fc0844c844a77fc19b83f0b6ded8c0bca6d3462f0769fc65"
+          },
+          {
+            "line_end": 28,
+            "line_start": 26,
+            "path": "backend/utils/config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4841a4868c4ed70cfc4d3d7647592fbc8b52b9c045ee7cbb71ae52564ad827c8"
+          },
+          {
+            "line_end": 72,
+            "line_start": 70,
+            "path": "backend/utils/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "66c0eceb7fe68bc9fc0844c844a77fc19b83f0b6ded8c0bca6d3462f0769fc65"
+          },
+          {
+            "line_end": 196,
+            "line_start": 188,
+            "path": "backend/app_t.py",
+            "role": "protected_operation",
+            "source_sha256": "8434f22fbd19ba102246bcfe0bf551239392a5c2cb4d5ae27fabd62f5dcb5ff6"
+          },
+          {
+            "line_end": 346,
+            "line_start": 318,
+            "path": "backend/app_t.py",
+            "role": "protected_operation",
+            "source_sha256": "8434f22fbd19ba102246bcfe0bf551239392a5c2cb4d5ae27fabd62f5dcb5ff6"
+          },
+          {
+            "line_end": 380,
+            "line_start": 351,
+            "path": "backend/app_t.py",
+            "role": "protected_operation",
+            "source_sha256": "8434f22fbd19ba102246bcfe0bf551239392a5c2cb4d5ae27fabd62f5dcb5ff6"
+          },
+          {
+            "line_end": 411,
+            "line_start": 383,
+            "path": "backend/app_t.py",
+            "role": "protected_operation",
+            "source_sha256": "8434f22fbd19ba102246bcfe0bf551239392a5c2cb4d5ae27fabd62f5dcb5ff6"
+          },
+          {
+            "line_end": 467,
+            "line_start": 440,
+            "path": "backend/app_t.py",
+            "role": "protected_operation",
+            "source_sha256": "8434f22fbd19ba102246bcfe0bf551239392a5c2cb4d5ae27fabd62f5dcb5ff6"
+          },
+          {
+            "line_end": 496,
+            "line_start": 470,
+            "path": "backend/app_t.py",
+            "role": "protected_operation",
+            "source_sha256": "8434f22fbd19ba102246bcfe0bf551239392a5c2cb4d5ae27fabd62f5dcb5ff6"
+          }
+        ],
+        "forbidden_condition": "A request with a missing X-Token header, a missing X-User-Id header, or an X-Token value that does not equal the Redis value fetched from users:{user_id} (including an absent or expired stored token) being forwarded past the middleware to a non-whitelisted endpoint handler via call_next \u2014 i.e., unauthenticated or invalidly authenticated dispatch to handlers such as /api/chat, /api/files, or /api/sessions.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source line explicitly binds the guarded operations to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; confirm whether agent-mediated operations (e.g., the agent invocation chain behind POST /api/chat or any agent tool effect) are reachable exclusively through this guarded surface \u2014 otherwise the obligation remains ordinary web authentication and is out of DEC scope.",
+          "backend/api/login.py is not supplied; the reviewer-asserted issuance side (login storing the token at Redis key users:{user_id}) cannot be confirmed from source.",
+          "backend/api/user.py is not supplied; the set of non-whitelisted /api/user endpoints covered by the guard cannot be enumerated.",
+          "tools/core_tools.py and any other agent tool modules are not supplied; no dataflow from agent tool execution to the guarded effects can be verified.",
+          "Whether any downstream handler re-validates the authenticated X-User-Id against user identifiers in bodies/queries (e.g., chat user_id, sessions user_id) is not shown in the supplied views."
+        ],
+        "protected_operation": "Dispatch of HTTP requests to all non-whitelisted endpoint handlers registered on the app (e.g., POST /api/chat agent invocation, GET/POST /api/files, POST/GET/DELETE /api/sessions and /api/sessions/{id}/rename, /api/history/{session_id}, /api/skills/list, and non-register user endpoints behind user_router) via await call_next(request) inside the registered HTTP middleware.",
+        "protected_resource": "The non-whitelisted HTTP API surface of backend/app_t.py \u2014 every route except the Config.WHITE_LIST entries (/api/login, /api/user/register, /docs, /openapi., /redoc).",
+        "protection_obligation": "Every HTTP request reaching the FastAPI application in backend/app_t.py whose path is not in Config.WHITE_LIST must present an X-Token header (Config.TOKEN_HEADER_KEY) together with an X-User-Id header, where X-Token matches the Redis-cached token stored at key users:{X-User-Id} in app.state.cache, as validated by validate_token_and_refresh; the middleware must reject failing requests with 401 (or 500 for unexpected validation errors) via JSONResponse before invoking call_next, so that no endpoint handler executes for unauthenticated requests. (Merged contract: the first-phase and second-phase reviewer obligations describe the same middleware-enforced token gate with a single commit point at call_next.)",
+        "scope_limits": [
+          "Whitelisted paths (Config.WHITE_LIST: /api/login, /api/user/register, /docs, /openapi., /redoc) bypass token validation entirely (middleware.py:50-52; config.py:28).",
+          "The guard is generic web authentication applied uniformly to every non-whitelisted HTTP path; the supplied source contains no decorator, registration, callback wiring, tool dispatch, or concrete dataflow binding these guarded operations to an agent tool, agent lifecycle hook, or agent-generated input, so absent such a binding the obligation is ordinary HTTP authentication outside DEC scope.",
+          "The gate acts only at the HTTP request boundary: file writes (app_t.py:373-376), database deletes/inserts/updates (app_t.py:399-402, 430-433, 459-462), and agent invocations (app_t.py:215-219, 259) occur downstream of call_next and are not separately gated by per-operation checks in this middleware.",
+          "The middleware validates only the X-Token/X-User-Id headers; it does not cross-check user identifiers supplied in endpoint bodies or query parameters (e.g., chat body user_id at app_t.py:191, sessions query user_id at app_t.py:471).",
+          "CORS middleware configuration (app_t.py:127-133) is a separate mechanism and outside this contract.",
+          "Analysis is limited to the supplied views backend/app_t.py, backend/utils/middleware.py, and backend/utils/config.py; repository enumeration is incomplete."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "backend/api/login.py is not in the supplied source; the token issuance and Redis write of users:{user_id} asserted in reviewer rationale are unverified from source.",
+      "backend/api/user.py is not in the supplied source; the non-whitelisted user endpoints behind user_router cannot be enumerated from source.",
+      "tools/core_tools.py and any agent tool implementations are not in the supplied source; no agent tool, lifecycle hook, or agent-generated-input binding to the guarded effect is visible, so agent mediation is recorded as not_established rather than inferred from the repository's LangChain/agent topic.",
+      "No supplied evidence shows that the Redis cache (app.state.cache, initialized at backend/app_t.py:48-55) is populated by a login/registration flow within the provided views; only the read and expiry-renewal side (middleware.py:36-42) is visible.",
+      "Whether any downstream handler or agent component re-validates the X-User-Id identity against per-user resources (sessions, files) is not determinable from the supplied views."
+    ],
+    "repository": "jerry-166/mini-openclew",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:c729d941b6e0b3afe2737617577ac728"
+  },
+  "request_sha256": "1c23380ccf92ba917ded5b86986683e9c463e372d7bfa8739ce8000a506b3f98",
+  "response_sha256": "1cd9b0411096a2457aa44add2bdf490a240a7184d95599d94fb784985cc83c2a",
+  "state": "completed",
+  "tokens": 20542,
+  "unit": "v24-screen:c729d941b6e0b3afe2737617577ac728"
+}

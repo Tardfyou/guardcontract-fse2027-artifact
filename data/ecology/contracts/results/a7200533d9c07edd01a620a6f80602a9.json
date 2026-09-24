@@ -1,0 +1,114 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "await api.create_ticket(...) inside the create_ticket tool body (tickets.py lines 65\u201371) \u2014 the agent tool-call execution that commits the external ticket-creation request to the HR API.",
+        "contract_id": "ecological-contract:00260d9521ffe2d3346c424203ef1307",
+        "declared_mechanism": "HumanInTheLoopMiddleware(interrupt_on={\"create_ticket\": {\"allowed_decisions\": [\"approve\", \"reject\"]}}, description_prefix=\"\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u0437\u0430\u044f\u0432\u043a\u0438\") is registered in build_scenario_executor's middleware list (executor.py lines 168\u2013171) and wired into the agent via create_agent(tools=list(tools), middleware=middleware, ...) (executor.py lines 173\u2013181), interrupting the create_ticket tool call before execution. EpisodeManager.resume, for episodes with status \"waiting_approval\", resumes the executor with Command(resume={\"decisions\": [{\"type\": \"approve\"}] or [{\"type\": \"reject\", ...}]}) (episodes.py lines 186\u2013189). The tool passes idempotency_key=f\"{thread_id}:{runtime.tool_call_id}\" (tickets.py line 70) and the HRApi Protocol declares idempotency_key mandatory because the interrupt node re-runs on resume (api.py lines 67\u201368). Executor runs use durability=\"sync\" so the checkpoint containing the employee decision is persisted before the create_ticket side effect (episodes.py lines 239\u2013243).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 172,
+            "line_start": 168,
+            "path": "hr_harness/hr_harness/scenario/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "c252953b1545e92085c9f28177f1ae732cd9c38bfefde72ef9b38628e6dcf51b"
+          },
+          {
+            "line_end": 181,
+            "line_start": 173,
+            "path": "hr_harness/hr_harness/scenario/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c252953b1545e92085c9f28177f1ae732cd9c38bfefde72ef9b38628e6dcf51b"
+          },
+          {
+            "line_end": 11,
+            "line_start": 1,
+            "path": "hr_harness/hr_harness/scenario/tools/tickets.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ccc247fde1bf0d725db73d3b7db27dae8081c8708ebe87ef3163a1ee2b79f136"
+          },
+          {
+            "line_end": 63,
+            "line_start": 60,
+            "path": "hr_harness/hr_harness/scenario/tools/tickets.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ccc247fde1bf0d725db73d3b7db27dae8081c8708ebe87ef3163a1ee2b79f136"
+          },
+          {
+            "line_end": 74,
+            "line_start": 58,
+            "path": "hr_harness/hr_harness/scenario/tools/tickets.py",
+            "role": "protected_operation",
+            "source_sha256": "ccc247fde1bf0d725db73d3b7db27dae8081c8708ebe87ef3163a1ee2b79f136"
+          },
+          {
+            "line_end": 72,
+            "line_start": 64,
+            "path": "hr_harness/hr_harness/scenario/tools/tickets.py",
+            "role": "commit_point",
+            "source_sha256": "ccc247fde1bf0d725db73d3b7db27dae8081c8708ebe87ef3163a1ee2b79f136"
+          },
+          {
+            "line_end": 68,
+            "line_start": 67,
+            "path": "hr_harness/hr_harness/scenario/tools/api.py",
+            "role": "protected_operation",
+            "source_sha256": "dddd74b7046d66af83b00a6c10dce61272e8aaad105cda4abaa746d7ea57e1a7"
+          },
+          {
+            "line_end": 189,
+            "line_start": 186,
+            "path": "hr_harness/hr_harness/graph/episodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7b46e18e90f18e90d4151b0cfdd8f2f9f07a46dbfe247bbe2504f55799c318ca"
+          },
+          {
+            "line_end": 243,
+            "line_start": 236,
+            "path": "hr_harness/hr_harness/graph/episodes.py",
+            "role": "guard_registration",
+            "source_sha256": "7b46e18e90f18e90d4151b0cfdd8f2f9f07a46dbfe247bbe2504f55799c318ca"
+          }
+        ],
+        "forbidden_condition": "api.create_ticket executing \u2014 and a support ticket being created \u2014 without a prior explicit employee decision carried through the HITL interrupt/resume path; equivalently, the effect committing on any path other than interrupt \u2192 Command(resume={\"decisions\": [{\"type\": \"approve\"}|{\"type\": \"reject\"}]}) \u2192 tool re-execution. Secondary forbidden condition: on the post-resume re-execution of the tools node, creating a second ticket for the same tool call (idempotency_key not supplied or not honored).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which supplied-source component maps UI approval buttons to EpisodeManager.resume(approved=True/False); reviewer wording references mapper.py (action_name=\"approval\" \u2192 approval:<eid>:yes|no), but mapper.py is not among the supplied views.",
+          "Whether any other construction site builds the executor or reaches api.create_ticket without the HITL middleware registration.",
+          "Confirmation from middleware/framework source that allowed_decisions=[\"approve\", \"reject\"] fully constrains the decision space and that a reject decision deterministically prevents execution of api.create_ticket.",
+          "Production-side enforcement of the idempotency_key contract by the real HR API adapter."
+        ],
+        "protected_operation": "Execution of the create_ticket agent tool \u2014 specifically the awaited api.create_ticket(group=..., tab_num=..., message=..., conv_thread_id=..., idempotency_key=...) call inside the tool body, which commits creation of an HR support ticket returning {ticket_id, url}.",
+        "protected_resource": "The HR support-ticket system reached through HRApi.create_ticket; the supplied source contains only the HRApi Protocol declaration (api.py lines 67\u201368) and the MockHRApi test double (api.py lines 180\u2013186), not the production adapter.",
+        "protection_obligation": "The external ticket-creation effect of the agent tool create_ticket (its awaited call to api.create_ticket) must not commit without an explicit employee approve/reject decision obtained through the HumanInTheLoopMiddleware interrupt and delivered back via Command(resume={\"decisions\": [...] }); additionally, when the tools node re-executes after resume, the same tool call must not create a duplicate ticket (idempotency_key is mandatory). Merges the two duplicate reviewer wordings (Russian first-phase and English second-phase) of the same obligation.",
+        "scope_limits": [
+          "Covers only the create_ticket path within the scenario-executor graph built by build_scenario_executor; the ask_employee interrupt and all lookup/other tools are outside this contract.",
+          "The production HRApi adapter implementing create_ticket is not among the supplied views; only the HRApi Protocol and MockHRApi are supplied, so the concrete HTTP effect implementation is unobserved.",
+          "MockHRApi's in-memory idempotency loop (api.py lines 180\u2013186) is test-double behavior and does not evidence production idempotency enforcement.",
+          "Exact interception semantics of HumanInTheLoopMiddleware (framework-internal behavior, e.g., that reject never reaches the tool body) are not present in the supplied source; the contract records the declared registration only.",
+          "Repository enumeration is incomplete and behavior labels are unavailable; no claim is made about runtime prevalence, DEC violation status, or safety."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "mapper.py (or equivalent UI/callback wiring) that maps employee approval button presses to EpisodeManager.resume(approved=...) is not among the supplied sources; the reviewer cites it but it cannot be verified here.",
+      "The production HRApi adapter implementing create_ticket (network client / repository) is not supplied; only the HRApi Protocol and MockHRApi test double are available.",
+      "The langchain HumanInTheLoopMiddleware implementation is not supplied, so the exact interrupt/resume semantics (interception point relative to tool execution, handling of decisions outside allowed_decisions) are unsupported by source.",
+      "tools/__init__ defining ALWAYS_ON, INTERRUPT_TOOLS, and NON_CACHEABLE_TOOLS (imported in executor.py line 46) is not supplied, so the tool-set membership of create_ticket for those wrappers is unsupported.",
+      "The orchestrator/bot handler that invokes EpisodeManager.resume with the approved flag is not among the supplied views."
+    ],
+    "repository": "LuchnikKek/pcp-harness",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a7200533d9c07edd01a620a6f80602a9"
+  },
+  "request_sha256": "aca03fd1bd28c3c04e69857bab8e9ad0864685f40e6964142d91a8e18d4641a0",
+  "response_sha256": "1a4f114c405a91d9625f8bd664eb5f85c34849185c9afa0e8a4efc56fce59cef",
+  "state": "completed",
+  "tokens": 23409,
+  "unit": "v24-screen:a7200533d9c07edd01a620a6f80602a9"
+}

@@ -1,0 +1,314 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Declared as 'before storing in local competency vectors' (guardrail_tools.py:62-71; the tool returns scrubbed text with 'Proceed to storage' at guardrail_tools.py:74-76); the concrete database write call site is not in supplied source (CompetencyEvidenceTool implementation unsupplied).",
+        "contract_id": "ecological-contract:0a578e1267bab99c63d1ac23d42850c3",
+        "declared_mechanism": "PIIScrubberTool (guardrail_tools.py:60-76) registered on competency_tracker (crew.py:85), delegating to guard.scrub_pii_for_storage (guard.py:143-166): Presidio AnonymizerEngine when available, otherwise SENSITIVE_PATTERNS regex replacement with '[REDACTED]' (guard.py:160-164).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 88,
+            "line_start": 79,
+            "path": "src/sovereign_system/crew.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7b1cc3ba585be897bb9b5b3468a6b6ab8cd870b85a32c1a195a41407665610ce"
+          },
+          {
+            "line_end": 76,
+            "line_start": 57,
+            "path": "src/sovereign_system/tools/guardrail_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "0b9f7a386a9462aa169566d5a999d68ff98ebe18edd8f247e98d8172ee3375d4"
+          },
+          {
+            "line_end": 166,
+            "line_start": 143,
+            "path": "src/sovereign_system/security/guard.py",
+            "role": "guard_registration",
+            "source_sha256": "cf308dc443ad9bab05aa319070f06fc75afecc9131fd0a22cfd44c4f8adb1da5"
+          },
+          {
+            "line_end": 71,
+            "line_start": 60,
+            "path": "src/sovereign_system/tools/guardrail_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0b9f7a386a9462aa169566d5a999d68ff98ebe18edd8f247e98d8172ee3375d4"
+          },
+          {
+            "line_end": 76,
+            "line_start": 74,
+            "path": "src/sovereign_system/tools/guardrail_tools.py",
+            "role": "commit_point",
+            "source_sha256": "0b9f7a386a9462aa169566d5a999d68ff98ebe18edd8f247e98d8172ee3375d4"
+          }
+        ],
+        "forbidden_condition": "PII (Presidio-detected entities or SENSITIVE_PATTERNS matches such as SSN, credit card, email; patterns.py:73-78) present in text stored in local competency vectors / ChromaDB (declared vulnerability: guardrail_tools.py:60-71; guard.py:143-149).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Concrete storage call/dataflow writing competency text to ChromaDB.",
+          "Whether any path writes competency vectors without passing through pii_scrubber."
+        ],
+        "protected_operation": "Storage of competency evidence text into the local competency vector store (ChromaDB) via the competency_tracker agent's storage tooling (CompetencyEvidenceTool and PIIScrubberTool registered crew.py:79-88; tool text 'Removes or anonymizes PII from text before storing in local ChromaDB' guardrail_tools.py:67-71).",
+        "protected_resource": "Local competency vector store (ChromaDB) holding learning-evidence / competency data.",
+        "protection_obligation": "Text persisted to local competency vector storage (ChromaDB) must be PII-scrubbed via PIIScrubberTool (guard.scrub_pii_for_storage), registered on the competency_tracker agent, before storage.",
+        "scope_limits": [
+          "Scrubbing is advisory to the agent ('Proceed to storage', guardrail_tools.py:76); no supplied code enforces that stored text passed through the scrubber.",
+          "The storage sink (CompetencyEvidenceTool / ChromaDB client) is unsupplied; whether the sink independently enforces scrubbing is unknown.",
+          "Without presidio installed, coverage falls back to the narrow SENSITIVE_PATTERNS list (guard.py:160-164).",
+          "Task configs that might bind storage behavior (competency_logging_task, data_sovereignty_task, crew.py:142-148) are unsupplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The sanitized text returned into the trust_enforcer agent loop with the instruction 'STOP using this tool. Use this output as your Final Answer.' (guardrail_tools.py:52-54); the actual user-facing delivery commit is not located in supplied source.",
+        "contract_id": "ecological-contract:21f21f338a1c172065f0fb15c12a4b8c",
+        "declared_mechanism": "OutputSanitizerTool (guardrail_tools.py:38-54) registered on trust_enforcer (crew.py:101), delegating to guard.sanitize_output regex stripping (guard.py:106-129) over cot_patterns and internal markers.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 104,
+            "line_start": 95,
+            "path": "src/sovereign_system/crew.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7b1cc3ba585be897bb9b5b3468a6b6ab8cd870b85a32c1a195a41407665610ce"
+          },
+          {
+            "line_end": 54,
+            "line_start": 38,
+            "path": "src/sovereign_system/tools/guardrail_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "0b9f7a386a9462aa169566d5a999d68ff98ebe18edd8f247e98d8172ee3375d4"
+          },
+          {
+            "line_end": 129,
+            "line_start": 106,
+            "path": "src/sovereign_system/security/guard.py",
+            "role": "guard_registration",
+            "source_sha256": "cf308dc443ad9bab05aa319070f06fc75afecc9131fd0a22cfd44c4f8adb1da5"
+          },
+          {
+            "line_end": 40,
+            "line_start": 28,
+            "path": "src/sovereign_system/security/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cf308dc443ad9bab05aa319070f06fc75afecc9131fd0a22cfd44c4f8adb1da5"
+          },
+          {
+            "line_end": 49,
+            "line_start": 39,
+            "path": "src/sovereign_system/tools/guardrail_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0b9f7a386a9462aa169566d5a999d68ff98ebe18edd8f247e98d8172ee3375d4"
+          },
+          {
+            "line_end": 54,
+            "line_start": 52,
+            "path": "src/sovereign_system/tools/guardrail_tools.py",
+            "role": "commit_point",
+            "source_sha256": "0b9f7a386a9462aa169566d5a999d68ff98ebe18edd8f247e98d8172ee3375d4"
+          }
+        ],
+        "forbidden_condition": "Chain-of-thought artifacts and internal markers (cot_patterns such as 'Let me think', 'Step N:', '[THINKING:...]', '<thinking>...</thinking>', guard.py:29-40; markers '[Agent:...]', '[Step N]', '---internal---...---end internal---', guard.py:119-122) present in output delivered as the final answer to the user (declared vulnerability: guardrail_tools.py:39-49).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The delivery path from the trust_enforcer final answer to the user (no delivery code in supplied source).",
+          "Whether outputs of other agents also require sanitization or only the trust_enforcer's."
+        ],
+        "protected_operation": "Presentation of trust_enforcer output to the user as the final answer (OutputSanitizerTool description 'before presenting to the user', guardrail_tools.py:45-49; tool registered on the trust_enforcer agent crew.py:95-104).",
+        "protected_resource": "User-facing agent responses; the system's internal reasoning/CoT artifacts and agent metadata.",
+        "protection_obligation": "Agent output presented as the final answer must first be stripped of chain-of-thought artifacts and internal reasoning markers via OutputSanitizerTool (guard.sanitize_output), registered on the trust_enforcer agent, to prevent CoT/internal-processing leakage to the user.",
+        "scope_limits": [
+          "Regex-based stripping only; effectiveness depends on pattern coverage (guard.py:29-40) and on the agent adopting the returned text as its final answer.",
+          "Tool-based: sanitization occurs only if the agent invokes output_sanitizer; no lifecycle-level output filter appears in supplied source.",
+          "No supplied code shows where the final answer is delivered to the user, so the delivery-side commit cannot be verified."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The kickoff call at src/sovereign_system/main.py:32; the gate commits by returning from run() at main.py:30 when is_safe is False, so kickoff is never reached for flagged queries.",
+        "contract_id": "ecological-contract:5c29fe82f3b523e4f6e6a279d23e2337",
+        "declared_mechanism": "guard.validate_input (SovereignGuard singleton at guard.py:169) invoked inline at main.py:24-25: regex scan of the query against JAILBREAK_PATTERNS sets is_safe=False on any match (guard.py:50-55) and returns the rejection verdict (guard.py:65-66), which triggers the blocking return at main.py:27-30.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 25,
+            "line_start": 24,
+            "path": "src/sovereign_system/main.py",
+            "role": "guard_registration",
+            "source_sha256": "cce7f7232d19934ea22de74363b70619e58a5bce5f67c842228520b63de1dc91"
+          },
+          {
+            "line_end": 68,
+            "line_start": 42,
+            "path": "src/sovereign_system/security/guard.py",
+            "role": "guard_registration",
+            "source_sha256": "cf308dc443ad9bab05aa319070f06fc75afecc9131fd0a22cfd44c4f8adb1da5"
+          },
+          {
+            "line_end": 71,
+            "line_start": 1,
+            "path": "src/sovereign_system/security/patterns.py",
+            "role": "forbidden_condition",
+            "source_sha256": "70ca343482c173f5dde4d9bd1052bc9b21c87df36c08b22027805a6f9b37600a"
+          },
+          {
+            "line_end": 32,
+            "line_start": 27,
+            "path": "src/sovereign_system/main.py",
+            "role": "commit_point",
+            "source_sha256": "cce7f7232d19934ea22de74363b70619e58a5bce5f67c842228520b63de1dc91"
+          },
+          {
+            "line_end": 32,
+            "line_start": 32,
+            "path": "src/sovereign_system/main.py",
+            "role": "protected_operation",
+            "source_sha256": "cce7f7232d19934ea22de74363b70619e58a5bce5f67c842228520b63de1dc91"
+          },
+          {
+            "line_end": 34,
+            "line_start": 28,
+            "path": "src/sovereign_system/crew.py",
+            "role": "protected_operation",
+            "source_sha256": "7b1cc3ba585be897bb9b5b3468a6b6ab8cd870b85a32c1a195a41407665610ce"
+          },
+          {
+            "line_end": 93,
+            "line_start": 90,
+            "path": "src/sovereign_system/crew.py",
+            "role": "protected_operation",
+            "source_sha256": "7b1cc3ba585be897bb9b5b3468a6b6ab8cd870b85a32c1a195a41407665610ce"
+          },
+          {
+            "line_end": 213,
+            "line_start": 205,
+            "path": "src/sovereign_system/crew.py",
+            "role": "protected_operation",
+            "source_sha256": "7b1cc3ba585be897bb9b5b3468a6b6ab8cd870b85a32c1a195a41407665610ce"
+          }
+        ],
+        "forbidden_condition": "A query matching any JAILBREAK_PATTERNS regex (instruction-override, roleplay/persona manipulation, mode-switching, compliance manipulation, security-bypass, privacy-specific, information-extraction, zone-manipulation, or CoT-extraction patterns; src/sovereign_system/security/patterns.py:1-71) reaching SovereignSystem().crew().kickoff() without rejection.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether this gate should be treated as agent-mediated: it is an inline pre-flight call in run(), not a registered agent tool, CrewAI lifecycle hook, or callback (crew.py:212 task_callback is tracing-only), and the query is the initial user input rather than agent-generated.",
+          "Which downstream effects of kickoff (cloud vs local LLM dispatch, tool executions) the obligation is intended to cover, given the crew's task/agent YAML configs are unsupplied."
+        ],
+        "protected_operation": "Crew kickoff: SovereignSystem().crew().kickoff(inputs=inputs) at src/sovereign_system/main.py:32, the entry into the CrewAI agent pipeline (Crew assembly crew.py:205-213) that dispatches query content to agents and LLM endpoints.",
+        "protected_resource": "The SovereignSystem agent crew execution and the LLM dispatch it performs (cloud_llm at base_url https://api.groq.com/openai/v1, crew.py:28-34; cloud_researcher agent bound to cloud_llm, crew.py:90-93; local Ollama LLMs at http://localhost:11434, crew.py:14-26).",
+        "protection_obligation": "Before SovereignSystem().crew().kickoff() executes (which dispatches the query into the agent crew, including cloud LLM dispatch at src/sovereign_system/crew.py:28-34, 90-93), the user query must pass guard.validate_input; on any JAILBREAK_PATTERNS match the run() entrypoint must block execution by returning before kickoff (merged wording of both reviewer obligations covering the pre-flight gate).",
+        "scope_limits": [
+          "The gate inspects only the top-level inputs['query'] string (main.py:17-20, 25); agent-generated intermediate content, tool arguments, and downstream task inputs are not re-validated by this gate in supplied source.",
+          "Only JAILBREAK_PATTERNS matches block (guard.py:50-55, 65-66); SENSITIVE_PATTERNS matches (SSN/credit-card/email) append non-blocking warnings (guard.py:57-63).",
+          "Single pre-flight check: no supplied source re-runs validation inside the crew loop or on agent outputs.",
+          "kickoff fans out to multiple effect strata (local/cloud LLM HTTP calls, tool executions); this contract covers the entry gate, not each downstream effect individually.",
+          "The reviewer claim that run() is registered as a packaged 'sovereign_system' script is unsupported by supplied source, which shows only the run() function in main.py."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The validation verdict returned into the sovereign_manager agent's tool loop at guardrail_tools.py:26-32 ('ZONE VALIDATION FAILED ... Suggested Action: Try a different zone.'). This is advisory text only; supplied source contains no hard blocking point for a misclassification or for the subsequent dispatch.",
+        "contract_id": "ecological-contract:5d1f0202eac90c7d52cf88286458cd90",
+        "declared_mechanism": "ZoneValidationTool (guardrail_tools.py:10-32) registered on the sovereign_manager agent (crew.py:36-45, tools=[ZoneValidationTool()] at line 42), delegating to guard.validate_zone_classification (guard.py:70-104), which derives max_allowed_zone from Presidio PII and sensitive-keyword detections and rejects proposals exceeding it.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 45,
+            "line_start": 36,
+            "path": "src/sovereign_system/crew.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7b1cc3ba585be897bb9b5b3468a6b6ab8cd870b85a32c1a195a41407665610ce"
+          },
+          {
+            "line_end": 32,
+            "line_start": 10,
+            "path": "src/sovereign_system/tools/guardrail_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "0b9f7a386a9462aa169566d5a999d68ff98ebe18edd8f247e98d8172ee3375d4"
+          },
+          {
+            "line_end": 104,
+            "line_start": 70,
+            "path": "src/sovereign_system/security/guard.py",
+            "role": "guard_registration",
+            "source_sha256": "cf308dc443ad9bab05aa319070f06fc75afecc9131fd0a22cfd44c4f8adb1da5"
+          },
+          {
+            "line_end": 102,
+            "line_start": 98,
+            "path": "src/sovereign_system/security/guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cf308dc443ad9bab05aa319070f06fc75afecc9131fd0a22cfd44c4f8adb1da5"
+          },
+          {
+            "line_end": 32,
+            "line_start": 26,
+            "path": "src/sovereign_system/tools/guardrail_tools.py",
+            "role": "commit_point",
+            "source_sha256": "0b9f7a386a9462aa169566d5a999d68ff98ebe18edd8f247e98d8172ee3375d4"
+          },
+          {
+            "line_end": 120,
+            "line_start": 118,
+            "path": "src/sovereign_system/crew.py",
+            "role": "protected_operation",
+            "source_sha256": "7b1cc3ba585be897bb9b5b3468a6b6ab8cd870b85a32c1a195a41407665610ce"
+          },
+          {
+            "line_end": 93,
+            "line_start": 90,
+            "path": "src/sovereign_system/crew.py",
+            "role": "protected_operation",
+            "source_sha256": "7b1cc3ba585be897bb9b5b3468a6b6ab8cd870b85a32c1a195a41407665610ce"
+          }
+        ],
+        "forbidden_condition": "A query with detected PII entities or sensitive-keyword matches (guard.py:77-99) being assigned a zone above its max_allowed_zone (proposed_zone > max_allowed_zone, e.g., Zone 3 for sensitive content; guard.py:99-102), e.g., via roleplay/jailbreak manipulation of the router.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Concrete dataflow from the manager's zone decision to cloud LLM dispatch (routing_task and cloud_knowledge_task definitions in config/tasks.yaml are unsupplied).",
+          "Manager prompt/tool-usage instructions compelling zone_validator invocation before finalizing classification (config/agents.yaml unsupplied).",
+          "Whether any framework-level mechanism converts the tool's FAILED verdict into a hard constraint on routing."
+        ],
+        "protected_operation": "Privacy-zone classification decisioning by the sovereign_manager agent prior to finalizing any classification (routing_task crew.py:118-120; ZoneValidationTool description 'Use this tool before finalizing any classification' guardrail_tools.py:19-23); per the declared design this gates whether query content is routed to the direct cloud LLM (cloud_researcher, crew.py:90-93).",
+        "protected_resource": "The privacy-zone routing decision for queries (zone taxonomy 0-3, guardrail_tools.py:8; guard.py:99-104) and, downstream per declared design, the cloud LLM dispatch path (cloud_llm crew.py:28-34; cloud_researcher crew.py:90-93).",
+        "protection_obligation": "The sovereign_manager agent must run ZoneValidationTool (guard.validate_zone_classification) on proposed privacy-zone classifications before finalizing them; queries with detected PII or sensitive keywords must not be classified into Zone 3 (max allowed zone is 1 for sensitive content), preventing roleplay attacks from forcing Zone 3.",
+        "scope_limits": [
+          "Enforcement is advisory: the tool returns a text verdict to the agent; no supplied code path hard-blocks a Zone 3 classification or the ensuing dispatch (guardrail_tools.py:29-32).",
+          "The success verdict's 'FINAL ANSWER' instruction (guardrail_tools.py:32) relies on agent compliance, not code enforcement.",
+          "Presidio-dependent PII detection degrades to keyword-only matching when presidio-analyzer is not installed (guard.py:22-26, 79-83).",
+          "Numeric zone-to-effect semantics (which zone means direct cloud dispatch) are defined in unsupplied config; supplied source binds cloud dispatch to the cloud_researcher agent (crew.py:90-93) without a zone number.",
+          "This contract covers the in-source tool-verdict commit; the downstream Zone-3-to-cloud-dispatch effect (http) and its commit point are not locatable in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Entry-point/packaging registration of main.py run() (e.g., a 'sovereign_system' console script) is not in supplied source; only the run() function definition is visible.",
+      "config/agents.yaml and config/tasks.yaml are unsupplied: agent prompts, numeric zone taxonomy semantics, tool-usage instructions, and task definitions (routing_task, cloud_knowledge_task, competency_logging_task, data_sovereignty_task) cannot be inspected.",
+      "Implementations of CompetencyEvidenceTool, PresidioScanTool (sovereign_system.tools.presidio_tools), PrivacyScanTool, SemanticGeneralizationTool, and RecontextualizationTool are not supplied; any protection obligations they may enforce cannot be compiled from supplied source.",
+      "No supplied source wires guard.validate_input or the guardrail tools into a CrewAI lifecycle hook or callback; the task_callback registered at crew.py:212 performs tracing only.",
+      "ChromaDB client and write path are unsupplied; the database commit point for competency vector storage cannot be located.",
+      "Runtime behavior labels (whether the registered guards actually block at runtime) are unavailable per the stated scope; this compilation asserts only source-declared mechanisms, not runtime outcomes."
+    ],
+    "repository": "madusankapremaratne/sovereign-learner",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:0d516910ac0b8a5db541f83ab1108761"
+  },
+  "request_sha256": "77f1728f86e67149333859150ba865eada60aea18a4078b27e3deb7b3a029f5b",
+  "response_sha256": "1148514fe70d3163e37f644540213230a2d8b7716e038b92abd76ed45cf3f093",
+  "state": "completed",
+  "tokens": 37993,
+  "unit": "v24-screen:0d516910ac0b8a5db541f83ab1108761"
+}

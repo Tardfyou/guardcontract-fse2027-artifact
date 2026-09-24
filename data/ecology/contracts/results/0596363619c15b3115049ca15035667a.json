@@ -1,0 +1,91 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Runner.run(agent, chat_history) at app.py:19 \u2014 the registered input guardrail executes within the run; a trip raises InputGuardrailTripwireTriggered before the agent produces output, caught at app.py:26, which pops the queued user message (app.py:27) and returns the block message (app.py:28-30) instead of the agent response.",
+        "contract_id": "ecological-contract:2f901276586fbe5e23c91c8d93a2c500",
+        "declared_mechanism": "The @input_guardrail-decorated input_guardrail function (agent.py:60-71) runs guardrail_agent (scope policy at agent.py:55, structured guardrail_output) and returns GuardrailFunctionOutput with tripwire_triggered = not result.final_output.is_correct_input; it is attached via input_guardrails=[input_guardrail] (agent.py:80), and a trip raises InputGuardrailTripwireTriggered which the chat handler catches to reject the request (app.py:26-30).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 71,
+            "line_start": 60,
+            "path": "agent.py",
+            "role": "guard_registration",
+            "source_sha256": "539d2707feb7ba3e0dd9ca10c0c28d4583a61eaf4674d3214c83033e5cb86d04"
+          },
+          {
+            "line_end": 58,
+            "line_start": 53,
+            "path": "agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "539d2707feb7ba3e0dd9ca10c0c28d4583a61eaf4674d3214c83033e5cb86d04"
+          },
+          {
+            "line_end": 81,
+            "line_start": 74,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "539d2707feb7ba3e0dd9ca10c0c28d4583a61eaf4674d3214c83033e5cb86d04"
+          },
+          {
+            "line_end": 30,
+            "line_start": 18,
+            "path": "app.py",
+            "role": "commit_point",
+            "source_sha256": "6b1d647965170c38778cd300344032732c44befdb3e56e8228c9148a052fcc25"
+          },
+          {
+            "line_end": 24,
+            "line_start": 11,
+            "path": "app.py",
+            "role": "protected_operation",
+            "source_sha256": "6b1d647965170c38778cd300344032732c44befdb3e56e8228c9148a052fcc25"
+          },
+          {
+            "line_end": 56,
+            "line_start": 36,
+            "path": "tools.py",
+            "role": "protected_operation",
+            "source_sha256": "150a29d3611dbaca469b6116b048103449db50ec6890f23b737da9e400da9fc9"
+          }
+        ],
+        "forbidden_condition": "A user prompt requesting personal or family details about employees \u2014 i.e., a prompt outside the allowed scope of math, date/time, or professional/workplace employee information \u2014 reaching the Research Assistant agent run without being blocked by the input guardrail tripwire.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the OpenAI Agents SDK ordering guarantees the registered input guardrail executes before any main-agent model call or tool invocation inside Runner.run is not shown in supplied source (SDK internals absent).",
+          "Whether search_knowledge_base's raw employee-record results (tools.py:72-84) fall within the 'professional/workplace information' allowance defined at agent.py:55 is not resolved by the policy text.",
+          "Which downstream stratum (file read, in-process eval, chat-history state, user-facing response) is the intended primary protected effect is not declared in source; only the run-level gate is explicit."
+        ],
+        "protected_operation": "The Research Assistant agent run invoked via Runner.run(agent, chat_history) in the chat handler, including the agent-invoked get_employee_info lookups against employees. that are reachable only through that guarded run.",
+        "protected_resource": "The Research Assistant agent execution path (agent.py:74-81) and the employee information surfaced through the get_employee_info tool (tools.py:36-56).",
+        "protection_obligation": "User prompts submitted to the Research Assistant agent must pass the registered input guardrail before agent execution; the guardrail must trip (raise InputGuardrailTripwireTriggered) to block prompts outside the allowed scope \u2014 math equations, current date/time, or strictly professional/workplace employee information, never personal or family details \u2014 thereby gating the Runner.run agent run and its get_employee_info access to employees. (Merges the phase-one and phase-two reviewer wordings of the same obligation.)",
+        "scope_limits": [
+          "The scope classification is LLM-decided: tripwire_triggered derives from guardrail_output.is_correct_input produced by guardrail_agent on local_model (agent.py:53-58, 67-70); no deterministic validation of the allowed/forbidden boundary is present in source.",
+          "The guardrail gates agent-run entry only; get_employee_info and search_knowledge_base (which also reads employees. at tools.py:66-67) carry no independent guard, so any tool execution occurring after a pass is unguarded per supplied source.",
+          "On a trip the handler only pops the last user message from the module-level in-memory chat_history (app.py:8, 27); no persistence or enforcement beyond the returned block message is shown.",
+          "The guarded run transitively spans multiple strata (LLM network calls via AsyncOpenAI, in-process eval at tools.py:15, employees. reads at tools.py:43-45 and 66-67, chat_history mutation); the source declares only the run-level gate, so tool_execution is used for the gated invocation itself.",
+          "Scope limited to supplied line-numbered views; no determination of DEC violation, safety, runtime behavior, or prevalence is made here."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "employees. contents are not supplied, so the concrete personal/family fields covered by the forbidden condition cannot be enumerated.",
+      "The OpenAI Agents SDK's execution ordering for input_guardrails within Runner.run (whether the guardrail runs before the main agent's model call and tool dispatch) is not present in supplied source.",
+      "The logger module imported at app.py:4 is not supplied; whether guardrail blocks are enforced or monitored anywhere beyond the chat handler cannot be determined.",
+      "No source shows whether InputGuardrailTripwireTriggered can also be raised for the guardrail_agent's own Runner.run at agent.py:67 or how such a failure would surface."
+    ],
+    "repository": "AinaFatima4/agentic_ai_practice",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:0596363619c15b3115049ca15035667a"
+  },
+  "request_sha256": "b1e8b3328086ccd86a396d6400259485091840481b3cac64d0602a708ea5ce9b",
+  "response_sha256": "8cd1ece8feaaf0829b7da4e5e18779599d75c215739a618101128b4109ec3181",
+  "state": "completed",
+  "tokens": 11331,
+  "unit": "v24-screen:0596363619c15b3115049ca15035667a"
+}

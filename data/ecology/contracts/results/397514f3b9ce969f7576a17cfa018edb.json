@@ -1,0 +1,114 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The per-hop curl_cffi request issuance on the pinned guarded AsyncSession in HttpClient._request_with_policy (http_client.py:189-204; dependency-injected-client fallback 208-217), gated post-connect by the primary-IP verification at 219-223 that must pass before the response is returned (line 226) or the next redirect hop is resolved.",
+        "contract_id": "ecological-contract:2afd12c9a9f1f083607fcb421b9664bf",
+        "declared_mechanism": "PublicUrlGuard wired as HttpClient's default guard (http_client.py:65); per-hop PublicUrlGuard.resolve() performing URL parsing/IDNA validation (HTTP/HTTPS only, no credentials, valid port), DNS resolution via getaddrinfo, and admission of only globally-routable addresses (url_guard.py:38-70, 101-115); a dedicated per-hop AsyncSession with trust_env=False, allow_redirects=False, and CurlOpt.RESOLVE pinned to the vetted address set (http_client.py:183-204); post-connect PublicUrlGuard.ensure_public_ip plus a membership check of response.primary_ip against resolved.addresses (http_client.py:219-223; url_guard.py:91-99); a manual redirect loop that re-resolves each Location with a 5-hop cap (http_client.py:225-240).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 69,
+            "line_start": 55,
+            "path": "src/deepsearch_agent/tools/transport/http_client.py",
+            "role": "guard_registration",
+            "source_sha256": "03a39f70fdac8b4502acc72657f89d9fed471354f0e123f3bfa953ad9b945ebc"
+          },
+          {
+            "line_end": 194,
+            "line_start": 183,
+            "path": "src/deepsearch_agent/tools/transport/http_client.py",
+            "role": "guard_registration",
+            "source_sha256": "03a39f70fdac8b4502acc72657f89d9fed471354f0e123f3bfa953ad9b945ebc"
+          },
+          {
+            "line_end": 58,
+            "line_start": 47,
+            "path": "src/deepsearch_agent/tools/transport/url_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e8b82166b0b15174943a3fee54a3f6fb14ee797146f543bcce6d699bc44c8f34"
+          },
+          {
+            "line_end": 115,
+            "line_start": 101,
+            "path": "src/deepsearch_agent/tools/transport/url_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e8b82166b0b15174943a3fee54a3f6fb14ee797146f543bcce6d699bc44c8f34"
+          },
+          {
+            "line_end": 99,
+            "line_start": 91,
+            "path": "src/deepsearch_agent/tools/transport/url_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e8b82166b0b15174943a3fee54a3f6fb14ee797146f543bcce6d699bc44c8f34"
+          },
+          {
+            "line_end": 223,
+            "line_start": 219,
+            "path": "src/deepsearch_agent/tools/transport/http_client.py",
+            "role": "forbidden_condition",
+            "source_sha256": "03a39f70fdac8b4502acc72657f89d9fed471354f0e123f3bfa953ad9b945ebc"
+          },
+          {
+            "line_end": 240,
+            "line_start": 225,
+            "path": "src/deepsearch_agent/tools/transport/http_client.py",
+            "role": "forbidden_condition",
+            "source_sha256": "03a39f70fdac8b4502acc72657f89d9fed471354f0e123f3bfa953ad9b945ebc"
+          },
+          {
+            "line_end": 112,
+            "line_start": 104,
+            "path": "src/deepsearch_agent/tools/sources/fetcher.py",
+            "role": "protected_operation",
+            "source_sha256": "94804ce928be08cdb7ddc49c055cb52a24eb62a8b5cd9248c19ab7cb2d19d9dc"
+          },
+          {
+            "line_end": 204,
+            "line_start": 189,
+            "path": "src/deepsearch_agent/tools/transport/http_client.py",
+            "role": "commit_point",
+            "source_sha256": "03a39f70fdac8b4502acc72657f89d9fed471354f0e123f3bfa953ad9b945ebc"
+          }
+        ],
+        "forbidden_condition": "Issuing or completing a source-fetch request that targets (or redirects into) a loopback/private/reserved/non-global address, a host with no globally-routable DNS address, a non-HTTP(S) scheme, a URL embedding username/password credentials, a connection whose primary_ip is not in the guard-vetted address set (DNS rebinding), or a redirect chain exceeding the 5-hop cap (SSRF).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source shows WebFetcher.afetch or HttpClient.arequest(request_kind='fetch') being invoked from an agent tool, tool dispatcher, decorator, lifecycle hook, or other agent-runtime wiring, so the agent entry binding for this obligation is unresolved.",
+          "The origin of the fetched URL (agent-generated input vs. pipeline-internal constant) is not shown in the supplied source.",
+          "Whether externally influenced requests also travel under request_kind values other than 'fetch' (which bypass the guard entirely) cannot be determined from the supplied views."
+        ],
+        "protected_operation": "The outbound source-fetch HTTP GET request performed by WebFetcher via HttpClient.arequest(request_kind='fetch'), including each hop of its manually managed redirect chain.",
+        "protected_resource": "Host and internal-network address space (loopback, private, link-local, reserved ranges) reachable through the fetch path, and the fetch response surfaced back to the caller.",
+        "protection_obligation": "Every outbound source-fetch HTTP request issued with request_kind='fetch' (and every manual redirect hop of such a request) must be resolved and admitted by PublicUrlGuard before connection, must connect only to the guard-approved globally-routable public address set via CURLOPT_RESOLVE pinning, and must have its connected primary IP re-verified as public and consistent with the vetted set before the response is returned or the redirect is followed. (Merged from both reviewer wordings, which describe the same resolve-admit/pin/re-verify obligation.)",
+        "scope_limits": [
+          "The guard runs only on the request_kind='fetch' branch; every other request_kind returns via _request_once with allow_redirects=True and no URL guard (http_client.py:167-177).",
+          "CURLOPT_RESOLVE pinning and trust_env=False apply only when HttpClient owns its AsyncSession (_owns_client); dependency-injected clients still receive per-hop resolution, normalized URLs, manual redirect policy, and post-connect IP verification, but no RESOLVE pinning (http_client.py:185-217).",
+          "Post-connect verification is skipped when response.primary_ip is empty/absent (http_client.py:219-221).",
+          "Dual-stack admission policy: a host is admitted if at least one resolved address is global and the connection is pinned to the global subset; only an all-non-global resolution is rejected (url_guard.py:51-58).",
+          "Redirect chains are capped at _MAX_PUBLIC_REDIRECTS = 5; exceeding the cap raises ToolRequestError (http_client.py:29, 230-231, 240).",
+          "WebFetcher.afetch cache hits return without any network request, so the guard gates only cache-miss fetches (fetcher.py:79-92)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source binds the fetch path to an agent tool registration, tool dispatch, lifecycle hook, or concrete agent-generated dataflow; agent_mediation is therefore not_established and no agent_entry_binding evidence can be cited.",
+      "Callers of WebFetcher.afetch and of HttpClient.arequest with request_kind values other than 'fetch' are outside the supplied views, so the population of unguarded generic outbound requests cannot be assessed.",
+      "Definitions of SearchConfig, ToolRequestError, and UnsafeUrlError are not supplied beyond their usage shown here, so exact error typing/config-dependent behavior (e.g., max_concurrent_fetches) cannot be confirmed."
+    ],
+    "repository": "Zi-Lan-Cui/DeepResearcher",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:397514f3b9ce969f7576a17cfa018edb"
+  },
+  "request_sha256": "fe839e11163330e1bf752c8852d08ae13baeaa9fd62ec10ac43361f8b48048de",
+  "response_sha256": "d33ea5159f815071d8fd1b0658f81ef63dd82dfe99c8d13473c3cf5e03edb9cd",
+  "state": "completed",
+  "tokens": 17855,
+  "unit": "v24-screen:397514f3b9ce969f7576a17cfa018edb"
+}

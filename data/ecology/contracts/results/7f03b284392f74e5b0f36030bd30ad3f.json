@@ -1,0 +1,267 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Guard commits at FastAPI dependency resolution before handler execution (lines 449-477, 502-506); the guarded HTTP response effect commits when handlers return query results fed by ryumem.db.get_episodes (lines 1564-1572, response assembled at lines 1618-1623) and ryumem.search (lines 1649-1659, response assembled at lines 1715-1722).",
+        "contract_id": "ecological-contract:31e043b9143a5b1ec3b0a2dbf73c409a",
+        "declared_mechanism": "Same FastAPI dependency chain: get_current_customer (lines 449-477) validates Bearer token or X-API-Key against the AuthManager store and raises HTTP 401 otherwise (lines 474-477); it is chained into read handlers via get_ryumem (lines 481-499) and get_write_ryumem (lines 502-506).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 477,
+            "line_start": 449,
+            "path": "server/main.py",
+            "role": "guard_registration",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 477,
+            "line_start": 474,
+            "path": "server/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 1537,
+            "line_start": 1527,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 1635,
+            "line_start": 1631,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 1572,
+            "line_start": 1564,
+            "path": "server/main.py",
+            "role": "commit_point",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 1659,
+            "line_start": 1649,
+            "path": "server/main.py",
+            "role": "commit_point",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          }
+        ],
+        "forbidden_condition": "An unauthenticated request (no valid Bearer token or X-API-Key resolvable by get_current_customer) to a guarded read endpoint must be rejected at dependency resolution with HTTP 401 and must not produce a data-bearing response.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No agent tool registration, lifecycle hook, or agent-generated-input dataflow to these read handlers appears in the supplied source; agent mediation recorded as not_established."
+        ],
+        "protected_operation": "GET /episodes (Depends(get_ryumem)) and POST /search (Depends(get_write_ryumem)) returning per-customer episodes, entities, and relationships.",
+        "protected_resource": "Per-customer memory data returned in HTTP responses (episode records, entity/edge search results).",
+        "protection_obligation": "Authenticated read/query operations over per-customer memory (episode listing/retrieval and knowledge-graph search) must reject unauthenticated requests with HTTP 401 via the same get_current_customer dependency before any handler returns data-bearing responses (reviewer-one 'search' and read side of 'episode CRUD'; separated into its own contract because the guarded commit point is an HTTP response rather than a database mutation).",
+        "scope_limits": [
+          "Ordinary web API authentication protecting read responses; outside DEC scope absent an explicit agent-binding in supplied source.",
+          "Only the reviewer-cited read endpoints (GET /episodes, POST /search) are contracted; other read endpoints gated by the same dependency are noted but not separately contracted.",
+          "Authentication scopes responses to the resolved customer's instance; it does not re-authorize user_id parameters within that instance."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Guard commit occurs at FastAPI dependency resolution before handler execution (lines 449-477, 502-506); the guarded database mutations commit inside handlers at ryumem.db.delete_episode (line 1503), ryumem.db.execute(request.query, request.params) (line 1520), ConfigService.update_multiple_configs (line 2966, and line 3059 for reset-defaults), and ryumem.db.reset() (line 3112).",
+        "contract_id": "ecological-contract:97b26564d0c48c46bdf5ad09a5a6b355",
+        "declared_mechanism": "FastAPI dependency injection: get_current_customer (lines 449-477) validates the Authorization Bearer token via _auth_manager.validate_github_token (line 464) or falls back to the X-API-Key header via _auth_manager.validate_key (line 470) against the AuthManager master auth database, raising HTTP 401 otherwise (lines 474-477); get_ryumem (lines 481-499) and get_write_ryumem (lines 502-506) chain Depends(get_current_customer) into every guarded handler, so the guard executes during dependency resolution before any handler code.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 477,
+            "line_start": 449,
+            "path": "server/main.py",
+            "role": "guard_registration",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 506,
+            "line_start": 480,
+            "path": "server/main.py",
+            "role": "guard_registration",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 477,
+            "line_start": 474,
+            "path": "server/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 1341,
+            "line_start": 1337,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 1498,
+            "line_start": 1494,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 1514,
+            "line_start": 1510,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 2937,
+            "line_start": 2928,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 3035,
+            "line_start": 3028,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 3098,
+            "line_start": 3094,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 1507,
+            "line_start": 1502,
+            "path": "server/main.py",
+            "role": "commit_point",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 1524,
+            "line_start": 1519,
+            "path": "server/main.py",
+            "role": "commit_point",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 2969,
+            "line_start": 2965,
+            "path": "server/main.py",
+            "role": "commit_point",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 3112,
+            "line_start": 3108,
+            "path": "server/main.py",
+            "role": "commit_point",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          }
+        ],
+        "forbidden_condition": "An HTTP request to a guarded mutation endpoint for which neither a valid Bearer token (validated via AuthManager.validate_github_token) nor a valid X-API-Key (validated via AuthManager.validate_key) resolves a customer_id; such a request must not pass dependency resolution (401 raised) and must not reach the handler's database mutation.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source registers these HTTP endpoints as agent tools, agent lifecycle hooks, or routes agent-generated input into the guarded handlers; agent mediation is recorded as not_established pending other source views.",
+          "Topic-level references to agent consumers (agent_type default 'google_adk' at line 2252, google_adk.py client comment at line 2294, 'MCP server' docstring at lines 1045-1046, agent-instruction management endpoints at lines 2321-2563) are repository metadata and cannot establish mediation; confirm whether an actual agent integration invokes these endpoints such that agent-generated input reaches the guarded effects."
+        ],
+        "protected_operation": "Authenticated per-customer memory mutations via Depends(get_write_ryumem) or direct Depends(get_current_customer): POST /episodes, PATCH /episodes/{episode_uuid}/metadata, DELETE /episodes/{episode_uuid}, POST /cypher/execute, PUT /api/settings, POST /api/settings/reset-defaults, DELETE /database/reset.",
+        "protected_resource": "Per-customer RyugraphDB graph database (./data/{customer_id}.db reached through the cached per-customer Ryumem instance) and persisted server configuration records.",
+        "protection_obligation": "Per-customer memory mutation operations exposed over the Ryumem HTTP API (episode add/metadata-update/delete, raw Cypher execution, settings update and reset-to-defaults, full database reset) must reject unauthenticated requests with HTTP 401 unless a valid X-API-Key header or OAuth Bearer token resolves a customer_id through the get_current_customer FastAPI dependency, with the guard evaluated at dependency resolution before handler execution (merged wording of both reviewer phases; the second phase adds the commit-at-dependency-resolution detail).",
+        "scope_limits": [
+          "Ordinary web API authentication; outside DEC scope unless other supplied source explicitly binds these handlers to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect.",
+          "Reviewer-one wording 'All Ryumem API operations require authentication' is not fully supported by the supplied source: GET / and GET /health (lines 1271-1290) and the GitHub OAuth endpoints (lines 934-1198) carry no auth dependency; this contract covers only handlers wired to get_current_customer via get_ryumem/get_write_ryumem or direct Depends.",
+          "The guard enforces authentication only, not object-level authorization: any valid customer credential scopes the request to that customer's Ryumem instance, but user_id parameters inside a customer's instance are not re-validated against the authenticated customer.",
+          "CORS middleware configuration (lines 539-545) is out of scope.",
+          "The same dependency also gates /auth/me, /auth/api-key, /customer/me, /config, /stats, /graph/data, /entities/*, /relationships/list, /tools*, /agent-instructions*, /embeddings, /llm/generate, /prune, and /augmented-queries; those endpoints are not separately contracted here."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "_auth_manager.create_customer(request.customer_id) at line 919, which inserts the Customer node into master_auth.db (AuthManager.create_customer, lines 116-145; node creation at lines 131-144).",
+        "contract_id": "ecological-contract:ebbc8437d51f778218b2812daad3ef0e",
+        "declared_mechanism": "Required FastAPI Header parameter alias='X-Admin-Key' (line 902) compared against os.getenv('ADMIN_API_KEY'): HTTP 500 when unset (lines 908-910) and HTTP 401 on mismatch (lines 912-913), evaluated before _auth_manager.create_customer(request.customer_id) at line 919.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 913,
+            "line_start": 899,
+            "path": "server/main.py",
+            "role": "guard_registration",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 913,
+            "line_start": 908,
+            "path": "server/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 903,
+            "line_start": 899,
+            "path": "server/main.py",
+            "role": "protected_operation",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 924,
+            "line_start": 915,
+            "path": "server/main.py",
+            "role": "commit_point",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          },
+          {
+            "line_end": 145,
+            "line_start": 116,
+            "path": "server/main.py",
+            "role": "commit_point",
+            "source_sha256": "eaa7d17f3a9b5f1fdf68a53d95a88fb2ffaa6e898817056a49763a2a8d99f281"
+          }
+        ],
+        "forbidden_condition": "A POST /register request whose X-Admin-Key header does not exactly equal os.getenv('ADMIN_API_KEY') (or when ADMIN_API_KEY is unset, rejected with 500) must not proceed to customer/API-key creation.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No agent pathway for POST /register appears in the supplied source; registration appears to be an operator/admin action. Confirm whether any agent tool or lifecycle hook invokes it (none is registered in the supplied view)."
+        ],
+        "protected_operation": "POST /register creation of a new customer and issuance of its API key via AuthManager.create_customer.",
+        "protected_resource": "Master auth store (./data/master_auth.db Customer records) and API-key credential issuance.",
+        "protection_obligation": "Customer registration (POST /register) must additionally require an X-Admin-Key header whose value exactly matches the configured ADMIN_API_KEY environment value before _auth_manager.create_customer is invoked; a mismatched key is rejected with HTTP 401 and an unconfigured ADMIN_API_KEY yields HTTP 500 (merged across both reviewer phases; the second phase specifies 'matching ADMIN_API_KEY before create_customer is invoked').",
+        "scope_limits": [
+          "Ordinary administrative web authentication on a registration endpoint; outside DEC scope absent an explicit agent-binding in supplied source.",
+          "Only the exact-match check at lines 908-913 is claimed as the declared mechanism; storage or comparison hardening properties are not asserted by the source.",
+          "Registration is distinct from the per-customer memory auth obligation and uses a separate admin credential rather than get_current_customer."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Agent mediation is not established for any contract: the supplied source contains no decorator, registration, callback wiring, tool dispatch, or concrete dataflow binding these HTTP endpoints to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effects; only topic-level references exist (agent_type 'google_adk' default at line 2252, google_adk.py comment at line 2294, 'MCP server' docstring at lines 1045-1046, and agent-instruction management endpoints at lines 2321-2563, which store instruction text but do not dispatch agent tools).",
+      "Repository enumeration is not complete and behavior labels are unavailable; whether additional source (e.g., an MCP/agent client outside the supplied server/main.py view) invokes these endpoints with agent-generated inputs is unknown.",
+      "The complete set of guarded endpoints beyond those wired to get_ryumem/get_write_ryumem/get_current_customer in the supplied view cannot be verified, and reviewer-one's 'all API operations' claim is contradicted by unauthenticated endpoints (GET / and GET /health at lines 1271-1290; GitHub OAuth endpoints at lines 934-1198)."
+    ],
+    "repository": "predictable-labs/ryumem",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7f03b284392f74e5b0f36030bd30ad3f"
+  },
+  "request_sha256": "17a0663d7cd252eaa2cad41f6c56daac2deb915c7b646a75665399fc203c023a",
+  "response_sha256": "ef2d825645c5a856d0bbfbfbb2b4ef0ec2cc53a1cd1cf613a55dccc4ff7dd17b",
+  "state": "completed",
+  "tokens": 54798,
+  "unit": "v24-screen:7f03b284392f74e5b0f36030bd30ad3f"
+}

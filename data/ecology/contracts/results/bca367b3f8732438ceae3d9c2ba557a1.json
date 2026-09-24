@@ -1,0 +1,914 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "wake_word.py:117-119 self._voice_service.start_recording(explicit_approval=explicit_approval).",
+        "contract_id": "ecological-contract:13134e4d8b63e166678c12986a82cd42",
+        "declared_mechanism": "VoicePermissionError raised in enable() for privacy mode, quiet mode, or missing explicit approval; test_trigger re-checks enabled state, privacy mode, and quiet mode before invoking start_recording(explicit_approval=explicit_approval).",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 91,
+            "line_start": 74,
+            "path": "src/openjarvis/voice/wake_word.py",
+            "role": "guard_registration",
+            "source_sha256": "499da851bc215787e077a623b43192b7720384cfd59f783de978177289f0b23e"
+          },
+          {
+            "line_end": 83,
+            "line_start": 76,
+            "path": "src/openjarvis/voice/wake_word.py",
+            "role": "forbidden_condition",
+            "source_sha256": "499da851bc215787e077a623b43192b7720384cfd59f783de978177289f0b23e"
+          },
+          {
+            "line_end": 88,
+            "line_start": 85,
+            "path": "src/openjarvis/voice/wake_word.py",
+            "role": "forbidden_condition",
+            "source_sha256": "499da851bc215787e077a623b43192b7720384cfd59f783de978177289f0b23e"
+          },
+          {
+            "line_end": 119,
+            "line_start": 112,
+            "path": "src/openjarvis/voice/wake_word.py",
+            "role": "protected_operation",
+            "source_sha256": "499da851bc215787e077a623b43192b7720384cfd59f783de978177289f0b23e"
+          },
+          {
+            "line_end": 119,
+            "line_start": 117,
+            "path": "src/openjarvis/voice/wake_word.py",
+            "role": "commit_point",
+            "source_sha256": "499da851bc215787e077a623b43192b7720384cfd59f783de978177289f0b23e"
+          }
+        ],
+        "forbidden_condition": "Enabling wake word detection or starting microphone recording when Privacy Mode or Quiet Mode is active or explicit_approval is false.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The wake-detection runtime path that would trigger recording outside test_trigger is not present in the supplied sources."
+        ],
+        "protected_operation": "WakeWordService.enable activation and test_trigger \u2192 voice_service.start_recording.",
+        "protected_resource": "Microphone capture reached via wake-word trigger.",
+        "protection_obligation": "Wake-word activation must require explicit approval outside Privacy and Quiet modes: WakeWordService.enable must raise VoicePermissionError otherwise, and test_trigger must not start microphone recording unless the service is enabled, the mode checks pass, and approval is present (phase 1 reviewer wording).",
+        "scope_limits": [
+          "enable() commits only an in-process enabled flag (wake_word.py:90); the microphone effect is reached via test_trigger or a wake-detection path not shown in supplied sources.",
+          "The start_recording implementation (VoicePushToTalkService) is not supplied and may apply its own approval checks.",
+          "status() force-disables the service in privacy/quiet modes (wake_word.py:63-64)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "serve.py:504-506 uvicorn.run(app, host=bind_host, port=bind_port).",
+        "contract_id": "ecological-contract:16f51b2276068c2dbcee77e525c9831d",
+        "declared_mechanism": "check_bind_safety(bind_host, api_key=api_key) invoked after API-key resolution from OPENJARVIS_API_KEY env or config.toml (serve.py:403-415) and before uvicorn.run.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 415,
+            "line_start": 403,
+            "path": "src/openjarvis/cli/serve.py",
+            "role": "guard_registration",
+            "source_sha256": "56e213a52e6340f02a0dbd31fb7cf92a379d17b617b82107c545733804c49c87"
+          },
+          {
+            "line_end": 419,
+            "line_start": 417,
+            "path": "src/openjarvis/cli/serve.py",
+            "role": "guard_registration",
+            "source_sha256": "56e213a52e6340f02a0dbd31fb7cf92a379d17b617b82107c545733804c49c87"
+          },
+          {
+            "line_end": 479,
+            "line_start": 463,
+            "path": "src/openjarvis/cli/serve.py",
+            "role": "protected_operation",
+            "source_sha256": "56e213a52e6340f02a0dbd31fb7cf92a379d17b617b82107c545733804c49c87"
+          },
+          {
+            "line_end": 506,
+            "line_start": 504,
+            "path": "src/openjarvis/cli/serve.py",
+            "role": "commit_point",
+            "source_sha256": "56e213a52e6340f02a0dbd31fb7cf92a379d17b617b82107c545733804c49c87"
+          }
+        ],
+        "forbidden_condition": "Binding the API server to a non-loopback address without an API key (per check_bind_safety) reaching the serving commit point.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Exact refusal behavior and the definition of 'non-loopback' inside check_bind_safety."
+        ],
+        "protected_operation": "Starting the OpenAI-compatible API server on the resolved bind_host/bind_port.",
+        "protected_resource": "Network exposure of the `jarvis serve` API server.",
+        "protection_obligation": "The `jarvis serve` bind address must pass check_bind_safety with the resolved API key before uvicorn.run serves the OpenAI-compatible API; a non-loopback bind without an API key must not reach the serving commit point (merged reviewer wording, phases 1 and 2).",
+        "scope_limits": [
+          "check_bind_safety implementation (server/auth_middleware.py) is not supplied; the non-loopback/API-key rule is verifiable only at its call site.",
+          "This is a server bind-infrastructure gate; supplied source does not bind it to an agent tool, agent lifecycle hook, or agent-generated input, so it is retained with mediation not established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "native_react.py:241 self._executor.execute(tool_call); orchestrator.py:347 (sequential) and orchestrator.py:298 (parallel) self._executor.execute \u2014 each reached only when check_call did not return blocked.",
+        "contract_id": "ecological-contract:1c01c4684228d376e703fafe7eacdd67",
+        "declared_mechanism": "LoopGuard.check_call verdict gate, constructed per ToolUsingAgent from a default-enabled LoopGuardConfig, enforced immediately before each _executor.execute call; blocked verdicts substitute a failed ToolResult and skip execution (warn_before_block downgrades the first detection of a cycle to a warning).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 355,
+            "line_start": 343,
+            "path": "src/openjarvis/agents/_stubs.py",
+            "role": "guard_registration",
+            "source_sha256": "c9d7c461b96ee8682fd27d72ae1b8a4798480a9623e89688abd29c67ef938505"
+          },
+          {
+            "line_end": 22,
+            "line_start": 13,
+            "path": "src/openjarvis/agents/loop_guard.py",
+            "role": "guard_registration",
+            "source_sha256": "7da5ec256535d9687c2668e93e4f54a148119e10b073924ca4275612f027d60b"
+          },
+          {
+            "line_end": 132,
+            "line_start": 94,
+            "path": "src/openjarvis/agents/loop_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7da5ec256535d9687c2668e93e4f54a148119e10b073924ca4275612f027d60b"
+          },
+          {
+            "line_end": 241,
+            "line_start": 215,
+            "path": "src/openjarvis/agents/native_react.py",
+            "role": "protected_operation",
+            "source_sha256": "c94875b3534cc0a590828a38c8009cd733b0df96dc79f127fea7e5d2366b5ad5"
+          },
+          {
+            "line_end": 241,
+            "line_start": 241,
+            "path": "src/openjarvis/agents/native_react.py",
+            "role": "commit_point",
+            "source_sha256": "c94875b3534cc0a590828a38c8009cd733b0df96dc79f127fea7e5d2366b5ad5"
+          },
+          {
+            "line_end": 298,
+            "line_start": 286,
+            "path": "src/openjarvis/agents/orchestrator.py",
+            "role": "commit_point",
+            "source_sha256": "22b7868fa533387036fa939931e896d922a6d62af67b7ba0c5c5c5b8875af2c7"
+          },
+          {
+            "line_end": 347,
+            "line_start": 323,
+            "path": "src/openjarvis/agents/orchestrator.py",
+            "role": "commit_point",
+            "source_sha256": "22b7868fa533387036fa939931e896d922a6d62af67b7ba0c5c5c5b8875af2c7"
+          },
+          {
+            "line_end": 222,
+            "line_start": 218,
+            "path": "src/openjarvis/agents/native_react.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c94875b3534cc0a590828a38c8009cd733b0df96dc79f127fea7e5d2366b5ad5"
+          },
+          {
+            "line_end": 272,
+            "line_start": 264,
+            "path": "src/openjarvis/agents/orchestrator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "22b7868fa533387036fa939931e896d922a6d62af67b7ba0c5c5c5b8875af2c7"
+          }
+        ],
+        "forbidden_condition": "An agent tool call whose (tool_name, arguments) hash has repeated more than max_identical_calls (3) times, whose tool has exceeded poll_tool_budget (5) calls, or whose tool-name sequence matches a ping-pong cycle (window 6) proceeding into ToolExecutor.execute.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "Agent-loop tool dispatch: model-output-derived ToolCall objects executed via ToolExecutor.execute inside NativeReActAgent.run and OrchestratorAgent._run_function_calling.",
+        "protected_resource": "Agent tool-execution loop for native_react and orchestrator agents.",
+        "protection_obligation": "Agent-loop tool invocations in NativeReActAgent and OrchestratorAgent must be blocked by LoopGuard.check_call when the same (tool_name, arguments) pair repeats beyond max_identical_calls (3), a tool exceeds its poll budget (5 calls), or a ping-pong cycling pattern is detected, before ToolExecutor.execute commits the tool call (merged reviewer wording, phases 1).",
+        "scope_limits": [
+          "warn_before_block=True (loop_guard.py:22, 87-92) downgrades the first block of a cycle to a warned, non-blocked verdict.",
+          "The guard is constructed only when LoopGuardConfig.enabled and the loop_guard import succeeds; ImportError is silently swallowed (agents/_stubs.py:344-355).",
+          "OrchestratorAgent._run_structured executes tool calls at orchestrator.py:145 without any loop-guard check in the supplied source.",
+          "A Rust backend may compute the verdict (loop_guard.py:73-82); only the Python fallback checks are visible in supplied source.",
+          "Reviewer-cited LoopGuard call sites in monitor_operative.py and deep_research.py are not present in the supplied sources."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "service.py:106 session_store.record_project(project), followed by the conditional memory write via _record_memory (service.py:107-108, implemented at 143-160).",
+        "contract_id": "ecological-contract:4f20e31f31b890c7ee151b773bebb2c7",
+        "declared_mechanism": "Entry-point guard raising PermissionError('engineering projects must be opened by a user') for non-user requesters before any side effect.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 99,
+            "line_start": 98,
+            "path": "src/openjarvis/engineering/service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8b0a9177aec49da5d099d9ac156c2a38451a5d4a6aaae99c8cd3f95fff40f3d5"
+          },
+          {
+            "line_end": 27,
+            "line_start": 22,
+            "path": "src/openjarvis/engineering/service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8b0a9177aec49da5d099d9ac156c2a38451a5d4a6aaae99c8cd3f95fff40f3d5"
+          },
+          {
+            "line_end": 97,
+            "line_start": 91,
+            "path": "src/openjarvis/engineering/service.py",
+            "role": "protected_operation",
+            "source_sha256": "8b0a9177aec49da5d099d9ac156c2a38451a5d4a6aaae99c8cd3f95fff40f3d5"
+          },
+          {
+            "line_end": 108,
+            "line_start": 106,
+            "path": "src/openjarvis/engineering/service.py",
+            "role": "commit_point",
+            "source_sha256": "8b0a9177aec49da5d099d9ac156c2a38451a5d4a6aaae99c8cd3f95fff40f3d5"
+          },
+          {
+            "line_end": 160,
+            "line_start": 143,
+            "path": "src/openjarvis/engineering/service.py",
+            "role": "commit_point",
+            "source_sha256": "8b0a9177aec49da5d099d9ac156c2a38451a5d4a6aaae99c8cd3f95fff40f3d5"
+          }
+        ],
+        "forbidden_condition": "open_project invoked with requested_by != 'user' reaching project-open side effects (session recording or memory write); per class policy, any CAD edit, autonomous action, or model-data upload.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "Concrete callers of open_project and whether any agent tool dispatch ever reaches it."
+        ],
+        "protected_operation": "EngineeringService.open_project project-open flow.",
+        "protected_resource": "Engineering workspace session state and engineering-project memory records.",
+        "protection_obligation": "EngineeringService.open_project must reject any project-open request whose requested_by is not 'user' (PermissionError) before session state is recorded or memory is written, enforcing the service's documented passive-only, user-initiated engineering workspace policy (no CAD edits, no autonomous actions, no uploads) (merged reviewer wording, phases 1 and 2).",
+        "scope_limits": [
+          "The memory write is skipped in privacy_mode (service.py:107-108); the backing stores of EngineeringSessionStore and memory_service are not supplied, so the memory-write stratum (state vs database) is unverified; state was selected for the first committed effect (session recording).",
+          "Agent-facing engineering tools registered in defaults.py (engineering_status, engineering_project_summary, engineering_recent_files) do not include open_project; no agent call path for open_project appears in the supplied sources."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "agent_manager_routes.py:1311-1329 gate invocation per streamed tool call; execution sites at 1332-1336 (MCP adapter execute) and 1347-1363 (ToolRegistry tool run through ToolExecutor.execute).",
+        "contract_id": "ecological-contract:564b1f1cbf7effa7dc00d87182a9da2c",
+        "declared_mechanism": "_check_server_tool_permission: workspace_registry.validate_tool_request deny return (agent_manager_routes.py:629-645); PermissionMiddleware.check (647-672); dry-run and denied returns; requires_confirmation enqueues ApprovalQueue and refuses execution (697-720); a failed gate raises PermissionError that aborts the call before execution.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 621,
+            "line_start": 603,
+            "path": "src/openjarvis/server/agent_manager_routes.py",
+            "role": "guard_registration",
+            "source_sha256": "481e430724da56b68bea32fe52e93c342b6ee6541084830296ace0c12cb2d1f5"
+          },
+          {
+            "line_end": 645,
+            "line_start": 629,
+            "path": "src/openjarvis/server/agent_manager_routes.py",
+            "role": "forbidden_condition",
+            "source_sha256": "481e430724da56b68bea32fe52e93c342b6ee6541084830296ace0c12cb2d1f5"
+          },
+          {
+            "line_end": 720,
+            "line_start": 681,
+            "path": "src/openjarvis/server/agent_manager_routes.py",
+            "role": "forbidden_condition",
+            "source_sha256": "481e430724da56b68bea32fe52e93c342b6ee6541084830296ace0c12cb2d1f5"
+          },
+          {
+            "line_end": 1363,
+            "line_start": 1331,
+            "path": "src/openjarvis/server/agent_manager_routes.py",
+            "role": "protected_operation",
+            "source_sha256": "481e430724da56b68bea32fe52e93c342b6ee6541084830296ace0c12cb2d1f5"
+          },
+          {
+            "line_end": 1329,
+            "line_start": 1311,
+            "path": "src/openjarvis/server/agent_manager_routes.py",
+            "role": "commit_point",
+            "source_sha256": "481e430724da56b68bea32fe52e93c342b6ee6541084830296ace0c12cb2d1f5"
+          },
+          {
+            "line_end": 1232,
+            "line_start": 1227,
+            "path": "src/openjarvis/server/agent_manager_routes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "481e430724da56b68bea32fe52e93c342b6ee6541084830296ace0c12cb2d1f5"
+          },
+          {
+            "line_end": 1277,
+            "line_start": 1256,
+            "path": "src/openjarvis/server/agent_manager_routes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "481e430724da56b68bea32fe52e93c342b6ee6541084830296ace0c12cb2d1f5"
+          }
+        ],
+        "forbidden_condition": "A server-streamed tool call reaching MCP adapter execution or ToolRegistry/ToolExecutor execution when the workspace allowlist rejects it, the PermissionMiddleware decision is dry-run or denied, or confirmation is required without explicit approval.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "Managed-agent SSE streaming loop tool execution (agent_manager_routes._stream_managed_agent).",
+        "protected_resource": "Server-executed tools: MCP adapters and ToolRegistry tools.",
+        "protection_obligation": "Server-streaming managed-agent tool calls must be gated by _check_server_tool_permission \u2014 workspace validate_tool_request plus PermissionMiddleware.check with deny/dry-run/approval-queue outcomes \u2014 before MCP adapter or ToolRegistry tool execution occurs (merged reviewer wording, phases 1 and 2).",
+        "scope_limits": [
+          "The gate covers the function-calling SSE streaming path; the deep_research branch (agent_manager_routes.py:830-1103) executes tools through the agent's own ToolExecutor, relying on that executor's internal permission gate.",
+          "Workspace checks apply only when app_state.agent_workspace_registry is present (agent_manager_routes.py:614-628).",
+          "Failure to enqueue an approval is logged and the call is still refused (agent_manager_routes.py:710-711)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "agent_manager_routes.py:629-645 (deny returned inside _check_server_tool_permission before any tool execution) and workflows/runner.py:156-164 (workflow step blocked before the permission decision).",
+        "contract_id": "ecological-contract:64f9c3d9cf62a8f5d4b20bc811b2ea09",
+        "declared_mechanism": "AgentWorkspaceRegistry.validate_tool_request / tool_is_allowed (registry-level allow-list check 'before permission classification') and apply_to_permission_request annotating request.permission_ceiling and agent_allowed_tools metadata before the middleware check.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 127,
+            "line_start": 123,
+            "path": "src/openjarvis/agent_workspace/registry.py",
+            "role": "guard_registration",
+            "source_sha256": "063105816ace615b9e5813dfc9bc1fd9841389f1ade278a87b295f97de25e631"
+          },
+          {
+            "line_end": 121,
+            "line_start": 108,
+            "path": "src/openjarvis/agent_workspace/registry.py",
+            "role": "guard_registration",
+            "source_sha256": "063105816ace615b9e5813dfc9bc1fd9841389f1ade278a87b295f97de25e631"
+          },
+          {
+            "line_end": 60,
+            "line_start": 47,
+            "path": "src/openjarvis/agent_workspace/models.py",
+            "role": "guard_registration",
+            "source_sha256": "46dd5e3cea6718f7954089c669a9e0ee9ad57bab50d4b1646d1c8c1a9bbb7001"
+          },
+          {
+            "line_end": 245,
+            "line_start": 229,
+            "path": "src/openjarvis/agent_workspace/defaults.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c563f4ee167beda1e9fd2888740afa95249118bf04db552c8beaa61ec85324bb"
+          },
+          {
+            "line_end": 52,
+            "line_start": 41,
+            "path": "README.md",
+            "role": "forbidden_condition",
+            "source_sha256": "7192423de33474473e986fc7e83e6eebd9929cdf1e8bb68692a7b09c82cd9b62"
+          },
+          {
+            "line_end": 633,
+            "line_start": 614,
+            "path": "src/openjarvis/server/agent_manager_routes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "481e430724da56b68bea32fe52e93c342b6ee6541084830296ace0c12cb2d1f5"
+          },
+          {
+            "line_end": 1320,
+            "line_start": 1285,
+            "path": "src/openjarvis/server/agent_manager_routes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "481e430724da56b68bea32fe52e93c342b6ee6541084830296ace0c12cb2d1f5"
+          },
+          {
+            "line_end": 645,
+            "line_start": 629,
+            "path": "src/openjarvis/server/agent_manager_routes.py",
+            "role": "commit_point",
+            "source_sha256": "481e430724da56b68bea32fe52e93c342b6ee6541084830296ace0c12cb2d1f5"
+          },
+          {
+            "line_end": 164,
+            "line_start": 156,
+            "path": "src/openjarvis/workflows/runner.py",
+            "role": "commit_point",
+            "source_sha256": "1b27783db2f400a886da2895c57d5fb35d20e49b9f429398fa29500d89596222"
+          }
+        ],
+        "forbidden_condition": "A workspace agent tool request naming a tool outside the agent's allowed_tools list (or a request that would classify above the agent's permission ceiling) proceeding to approval or execution.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Confirmation that PermissionMiddleware treats the annotated ceiling as an enforcement bound; README.md:52 declares 'Destructive commands are blocked unless explicit confirmation is provided' declaratively, but middleware internals are absent."
+        ],
+        "protected_operation": "Workspace agent tool requests validated against the registry before permission classification and execution.",
+        "protected_resource": "Per-agent tool allowlists and permission ceilings in DEFAULT_AGENT_CONFIGS (e.g., terminal agent: shell_exec allowed, permission_ceiling CONFIRMED_EXECUTION).",
+        "protection_obligation": "Workspace agents must be blocked from invoking tools outside their registered per-agent allowed_tools list and from permission requests exceeding their registered permission ceiling (e.g., Terminal/Coding agents' shell_exec capped at CONFIRMED_EXECUTION requiring explicit confirmation), enforced via AgentWorkspaceRegistry.validate_tool_request and apply_to_permission_request before permission classification (phase 2 reviewer wording).",
+        "scope_limits": [
+          "tool_is_allowed permits '*' wildcard allowlists (registry.py:104-106).",
+          "How PermissionMiddleware enforces the annotated permission_ceiling is not shown (security/permissions.py not supplied).",
+          "Registry contents are declarative defaults with a TOML override path (registry.py:52-59).",
+          "The workflow-step enforcement site (runner.py:156-164) runs on user-triggered workflow requests, not model-generated tool calls; the agent-mediation determination rests on the server-gate site."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "SQLite cursor.execute(query) at db_query.py:234 (after the mode=ro connect at db_query.py:211-224) and PostgreSQL cursor.execute(query) at db_query.py:318 (after the readonly session at db_query.py:305-314); persistence commit occurs only when not read_only (db_query.py:246-247).",
+        "contract_id": "ecological-contract:65ceee77148aab47dfcd862a22c7a582",
+        "declared_mechanism": "_WRITE_KEYWORDS plus _is_read_only_query prefix/CTE validation enforced at the top of execute() (read_only defaults to True in params and spec), anchored by connection-level controls: SQLite URI with mode=ro (sqlite3.connect(uri=True)) and psycopg2 conn.set_session(readonly=True, autocommit=True).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 99,
+            "line_start": 95,
+            "path": "src/openjarvis/tools/db_query.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "46c34b135873fe9217364dc8e5ae0e87fcea0a7614da31c8fe0deb083b76e8ef"
+          },
+          {
+            "line_end": 56,
+            "line_start": 22,
+            "path": "src/openjarvis/tools/db_query.py",
+            "role": "guard_registration",
+            "source_sha256": "46c34b135873fe9217364dc8e5ae0e87fcea0a7614da31c8fe0deb083b76e8ef"
+          },
+          {
+            "line_end": 135,
+            "line_start": 130,
+            "path": "src/openjarvis/tools/db_query.py",
+            "role": "guard_registration",
+            "source_sha256": "46c34b135873fe9217364dc8e5ae0e87fcea0a7614da31c8fe0deb083b76e8ef"
+          },
+          {
+            "line_end": 175,
+            "line_start": 165,
+            "path": "src/openjarvis/tools/db_query.py",
+            "role": "forbidden_condition",
+            "source_sha256": "46c34b135873fe9217364dc8e5ae0e87fcea0a7614da31c8fe0deb083b76e8ef"
+          },
+          {
+            "line_end": 185,
+            "line_start": 151,
+            "path": "src/openjarvis/tools/db_query.py",
+            "role": "protected_operation",
+            "source_sha256": "46c34b135873fe9217364dc8e5ae0e87fcea0a7614da31c8fe0deb083b76e8ef"
+          },
+          {
+            "line_end": 224,
+            "line_start": 211,
+            "path": "src/openjarvis/tools/db_query.py",
+            "role": "commit_point",
+            "source_sha256": "46c34b135873fe9217364dc8e5ae0e87fcea0a7614da31c8fe0deb083b76e8ef"
+          },
+          {
+            "line_end": 234,
+            "line_start": 232,
+            "path": "src/openjarvis/tools/db_query.py",
+            "role": "commit_point",
+            "source_sha256": "46c34b135873fe9217364dc8e5ae0e87fcea0a7614da31c8fe0deb083b76e8ef"
+          },
+          {
+            "line_end": 318,
+            "line_start": 305,
+            "path": "src/openjarvis/tools/db_query.py",
+            "role": "commit_point",
+            "source_sha256": "46c34b135873fe9217364dc8e5ae0e87fcea0a7614da31c8fe0deb083b76e8ef"
+          }
+        ],
+        "forbidden_condition": "Execution of write SQL (DROP, DELETE, INSERT, UPDATE, ALTER, CREATE, TRUNCATE, or any statement without an allowed read-only prefix or WITH...SELECT form) when read_only=True (the default) reaching the database backend.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "DatabaseQueryTool.execute SQL dispatch to the SQLite and PostgreSQL backends.",
+        "protected_resource": "Target databases addressed via db_path (SQLite file or in-memory) or db_url (PostgreSQL).",
+        "protection_obligation": "When read_only=True (the default), write statements (DROP/DELETE/INSERT/UPDATE/ALTER/CREATE/TRUNCATE and any statement lacking a SELECT, EXPLAIN, PRAGMA, DESCRIBE, SHOW, or WITH...SELECT prefix) are forbidden on the DatabaseQueryTool SQL execution path: _is_read_only_query must reject them in execute() before backend dispatch, with enforcement anchored at the commit point by the SQLite mode=ro connection and the PostgreSQL readonly session before cursor.execute (phase 2 reviewer wording).",
+        "scope_limits": [
+          "With read_only=False the tool intentionally permits writes (default True per spec description and params.get default).",
+          "A sensitive-file policy additionally restricts SQLite db_path (db_query.py:199-208).",
+          "The guard is lexical (prefix/keyword matching); supplied source shows no parser-level guarantees beyond the WITH...SELECT check."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "workflows/runner.py:198-217 \u2014 the step is blocked or approval-enqueued before any execution; surviving steps produce only safe local output (runner.py:219-225), and the module never executes approval-gated operations (runner.py:1-6).",
+        "contract_id": "ecological-contract:73a42b9f874679a3dfcb1a075135dd2b",
+        "declared_mechanism": "validate_runtime_request / validate_workflow_definition (agent, mode, privacy, external-sync, local-only checks); per-step registry validate_tool_request for non-passive, non-approval steps; PermissionRequest built per step, workspace ceiling applied via apply_to_permission_request, PermissionMiddleware.check; deny\u2192blocked; approval_required or requires_confirmation\u2192ApprovalQueue enqueue with status waiting_approval.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 191,
+            "line_start": 168,
+            "path": "src/openjarvis/workflows/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "1b27783db2f400a886da2895c57d5fb35d20e49b9f429398fa29500d89596222"
+          },
+          {
+            "line_end": 164,
+            "line_start": 147,
+            "path": "src/openjarvis/workflows/runner.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b27783db2f400a886da2895c57d5fb35d20e49b9f429398fa29500d89596222"
+          },
+          {
+            "line_end": 77,
+            "line_start": 55,
+            "path": "src/openjarvis/workflows/validation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3483a42865827529f9314d1901c18d34a003171ccaea5329f4ebc177f84f16eb"
+          },
+          {
+            "line_end": 101,
+            "line_start": 70,
+            "path": "src/openjarvis/workflows/definitions.py",
+            "role": "protected_operation",
+            "source_sha256": "07944725a7805fbcee1827d6cfbc3711896cb040a86de50cada7f564e7f713b7"
+          },
+          {
+            "line_end": 219,
+            "line_start": 191,
+            "path": "src/openjarvis/workflows/definitions.py",
+            "role": "protected_operation",
+            "source_sha256": "07944725a7805fbcee1827d6cfbc3711896cb040a86de50cada7f564e7f713b7"
+          },
+          {
+            "line_end": 128,
+            "line_start": 97,
+            "path": "src/openjarvis/workflows/runner.py",
+            "role": "protected_operation",
+            "source_sha256": "1b27783db2f400a886da2895c57d5fb35d20e49b9f429398fa29500d89596222"
+          },
+          {
+            "line_end": 217,
+            "line_start": 198,
+            "path": "src/openjarvis/workflows/runner.py",
+            "role": "commit_point",
+            "source_sha256": "1b27783db2f400a886da2895c57d5fb35d20e49b9f429398fa29500d89596222"
+          }
+        ],
+        "forbidden_condition": "A workflow step executing when PermissionMiddleware denies it, or when it requires approval/confirmation without explicit approval; workflows with external sync, non-local steps, or out-of-allowlist agents/modes passing validation.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Where queued workflow approvals are executed after user approval, needed to bind the commit point of the underlying shell/file effects."
+        ],
+        "protected_operation": "WorkflowRunner step execution for user-triggered workflows on workspace agents.",
+        "protected_resource": "Workflow-declared operations: shell command execution (run_tests pytest step), file writes (backup_notes write step), and memory writes (summarize_repo memory step) declared approval_required in the builtin definitions.",
+        "protection_obligation": "Workflow step execution must be permission-gated: each step is classified by PermissionMiddleware with the workspace ceiling applied, denied steps are blocked, confirmation-required steps (e.g. the run_tests 'python -m pytest -q' shell_exec command and the backup_notes file_write) are queued for explicit approval before any execution, and static/runtime validation must forbid external sync, non-local steps, and unallowed agents/modes (phase 1 reviewer wording).",
+        "scope_limits": [
+          "The runner itself never dispatches the gated tools; the post-approval execution site is not in the supplied sources, so the downstream process/file strata are unbound.",
+          "Passive-only steps skip the workspace tool allowlist check (runner.py:156-164 gates only non-passive, non-approval steps).",
+          "Step arguments come from static definitions, not model output."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "service.py:78-81 (set_enabled plus _sync_listener_policy) and the listener start inside _sync_listener_policy (service.py:209-211), which starts the pynput keyboard.Listener (listener.py:48-52).",
+        "contract_id": "ecological-contract:742c9cf0e4f7dd7e961fcdcc9d65cd36",
+        "declared_mechanism": "HotkeyPermissionGate.check_enable constructs a permission request with tool_name='voice_global_hotkey_listener', action='enable', calls PermissionMiddleware.check, and raises HotkeyPermissionError on decision.denied or requires_confirmation without explicit_approval; _sync_listener_policy stops the listener when disabled or in Privacy Mode before allowing it to start.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 83,
+            "line_start": 59,
+            "path": "src/openjarvis/hotkeys/permissions.py",
+            "role": "guard_registration",
+            "source_sha256": "b69b1c37aa9b6006b6328ac733341c6e1b66d34cd6232058632342589941fbce"
+          },
+          {
+            "line_end": 88,
+            "line_start": 84,
+            "path": "src/openjarvis/hotkeys/permissions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b69b1c37aa9b6006b6328ac733341c6e1b66d34cd6232058632342589941fbce"
+          },
+          {
+            "line_end": 82,
+            "line_start": 64,
+            "path": "src/openjarvis/hotkeys/service.py",
+            "role": "protected_operation",
+            "source_sha256": "4bdd684b38dc515cea8b36ead00f7133a262ed4677e1d3bdc4fbbcedc6b3eb66"
+          },
+          {
+            "line_end": 222,
+            "line_start": 203,
+            "path": "src/openjarvis/hotkeys/service.py",
+            "role": "commit_point",
+            "source_sha256": "4bdd684b38dc515cea8b36ead00f7133a262ed4677e1d3bdc4fbbcedc6b3eb66"
+          },
+          {
+            "line_end": 52,
+            "line_start": 38,
+            "path": "src/openjarvis/hotkeys/listener.py",
+            "role": "commit_point",
+            "source_sha256": "26064de40c07f350251de67bbbedf63b40ac97e36cd8ee1f063611a495d3d6c7"
+          }
+        ],
+        "forbidden_condition": "Enabling the global voice hotkey listener when PermissionMiddleware denies the 'voice_global_hotkey_listener' enable request or requires confirmation without explicit approval; starting the global keyboard listener while disabled or in Privacy Mode.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the config-driven auto-enable path (construction plus first status call) reaches listener start without a fresh permission decision."
+        ],
+        "protected_operation": "GlobalVoiceHotkeyService.enable(): binding update, set_enabled(True), and listener start via _sync_listener_policy.",
+        "protected_resource": "Global OS keyboard listener (pynput keyboard.Listener) for voice push-to-talk.",
+        "protection_obligation": "Enabling the global voice hotkey listener must not proceed without an allow decision from PermissionMiddleware for the 'voice_global_hotkey_listener' enable action (denied or confirmation-required-without-explicit-approval raises HotkeyPermissionError), enforced before set_enabled/listener start in GlobalVoiceHotkeyService.enable(), with _sync_listener_policy stopping the listener when disabled or in Privacy Mode (merged reviewer wording, phases 1 and 2).",
+        "scope_limits": [
+          "The trigger source is a physical hotkey callback (listener.py:70-79, wired at service.py:50-54), not an agent tool dispatch or agent-generated input; PermissionMiddleware is applied via the gate but no agent binding is shown in supplied source.",
+          "PermissionMiddleware.check internals are not supplied.",
+          "The constructor sets enabled state from config.speech.global_voice_trigger_enabled without a gate (service.py:55-62), and status() invokes _sync_listener_policy (service.py:96), which starts the listener whenever enabled and not in privacy mode, including for config-derived enabled state."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "runner.py:197 validated_mounts = self._validate_mounts(mounts), before _build_docker_args (runner.py:214-218) and subprocess.run(args) (runner.py:220-227).",
+        "contract_id": "ecological-contract:99ee7563b911fa1506ff35cddba3c3d9",
+        "declared_mechanism": "ContainerRunner._validate_mounts raising ValueError('Dangerous host mount rejected') via _is_dangerous_host_mount, then mount_security.validate_mounts raising ValueError for blocked-pattern or non-allowlisted mounts; the allowlist (with DEFAULT_BLOCKED_PATTERNS) is loaded at runner construction.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 135,
+            "line_start": 106,
+            "path": "src/openjarvis/sandbox/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "dc8750fc68b16eb02c6a44aa311b8f5c2ccdc79f70f40cfdab3ade933fc95330"
+          },
+          {
+            "line_end": 185,
+            "line_start": 169,
+            "path": "src/openjarvis/sandbox/mount_security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0fa2f92adc782e733c0fcfd0bc832ab857602745da4345a13e22157f0e8cd651"
+          },
+          {
+            "line_end": 44,
+            "line_start": 22,
+            "path": "src/openjarvis/sandbox/mount_security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0fa2f92adc782e733c0fcfd0bc832ab857602745da4345a13e22157f0e8cd651"
+          },
+          {
+            "line_end": 40,
+            "line_start": 28,
+            "path": "src/openjarvis/sandbox/runner.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dc8750fc68b16eb02c6a44aa311b8f5c2ccdc79f70f40cfdab3ade933fc95330"
+          },
+          {
+            "line_end": 197,
+            "line_start": 168,
+            "path": "src/openjarvis/sandbox/runner.py",
+            "role": "protected_operation",
+            "source_sha256": "dc8750fc68b16eb02c6a44aa311b8f5c2ccdc79f70f40cfdab3ade933fc95330"
+          },
+          {
+            "line_end": 197,
+            "line_start": 197,
+            "path": "src/openjarvis/sandbox/runner.py",
+            "role": "commit_point",
+            "source_sha256": "dc8750fc68b16eb02c6a44aa311b8f5c2ccdc79f70f40cfdab3ade933fc95330"
+          },
+          {
+            "line_end": 227,
+            "line_start": 214,
+            "path": "src/openjarvis/sandbox/runner.py",
+            "role": "commit_point",
+            "source_sha256": "dc8750fc68b16eb02c6a44aa311b8f5c2ccdc79f70f40cfdab3ade933fc95330"
+          },
+          {
+            "line_end": 383,
+            "line_start": 363,
+            "path": "src/openjarvis/sandbox/runner.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "dc8750fc68b16eb02c6a44aa311b8f5c2ccdc79f70f40cfdab3ade933fc95330"
+          }
+        ],
+        "forbidden_condition": "A container launch whose bind mounts include a dangerous-root path, a blocked-pattern path, or a path outside the configured allowlist roots.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether SandboxedAgent is instantiated or registered anywhere (deployment wiring absent from supplied sources).",
+          "Whether any agent tool or server route passes agent-generated mount paths into ContainerRunner.run; the only supplied call site passes constructor-configured mounts."
+        ],
+        "protected_operation": "ContainerRunner.run launching the container runtime subprocess with host bind mounts.",
+        "protected_resource": "Host filesystem exposure via container bind mounts (docker/podman).",
+        "protection_obligation": "Sandbox container launches must never expose sensitive host files: any bind mount resolving to a dangerous root (/, /bin, /dev, /etc, /proc, /run, /sbin, /sys, /System, /usr, /var, or the user home) or matching a blocked sensitive pattern (.ssh, .gnupg, .env, credentials, id_rsa, id_ed25519, .aws, cloud configs, *.pem, *.key, *.p12, *.pfx, .git/config, shadow, passwd, token, secret, .docker/config., .kube/config, .npmrc, .pypirc), or falling outside the configured allowlist, must be rejected with ValueError before the docker/podman launch subprocess executes (merged reviewer wording, phases 1 and 2).",
+        "scope_limits": [
+          "The default MountAllowlist has no roots; with no roots configured the allowlist check allows all non-blocked paths (mount_security.py:128-129), leaving the blocked-pattern and dangerous-root checks as the active limits.",
+          "Validated mounts are forced read-only in docker args (runner.py:158-159) and the container network is 'none' (runner.py:153-154).",
+          "No construction or AgentRegistry registration site for SandboxedAgent appears in the supplied sources; the agent binding rests on the class's run() delegation (runner.py:363-383) alone.",
+          "config.sandbox.mount_allowlist_path defaults to empty (config.py:1229)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "tools/_stubs.py:308-314, ThreadPoolExecutor submit of tool.execute (timeout-bounded).",
+        "contract_id": "ecological-contract:9af43f050fa33f17c9faff4153324306",
+        "declared_mechanism": "PermissionMiddleware.check on a PermissionRequest(tool_name, arguments, agent_id, dry_run) at the top of execute(), returning refusal ToolResults for dry-run/denied/unconfirmed outcomes before any dispatch; optional boundary guard, RBAC capability checks, and taint checks also precede dispatch.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 158,
+            "line_start": 147,
+            "path": "src/openjarvis/tools/_stubs.py",
+            "role": "guard_registration",
+            "source_sha256": "fba3ac934b4d6b6427b267cfd4b08d6b18563f1b24bd00a3fd1df0823943d73d"
+          },
+          {
+            "line_end": 211,
+            "line_start": 167,
+            "path": "src/openjarvis/tools/_stubs.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fba3ac934b4d6b6427b267cfd4b08d6b18563f1b24bd00a3fd1df0823943d73d"
+          },
+          {
+            "line_end": 145,
+            "line_start": 127,
+            "path": "src/openjarvis/tools/_stubs.py",
+            "role": "protected_operation",
+            "source_sha256": "fba3ac934b4d6b6427b267cfd4b08d6b18563f1b24bd00a3fd1df0823943d73d"
+          },
+          {
+            "line_end": 314,
+            "line_start": 308,
+            "path": "src/openjarvis/tools/_stubs.py",
+            "role": "commit_point",
+            "source_sha256": "fba3ac934b4d6b6427b267cfd4b08d6b18563f1b24bd00a3fd1df0823943d73d"
+          },
+          {
+            "line_end": 332,
+            "line_start": 318,
+            "path": "src/openjarvis/agents/_stubs.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c9d7c461b96ee8682fd27d72ae1b8a4798480a9623e89688abd29c67ef938505"
+          }
+        ],
+        "forbidden_condition": "A tool call reaching execution when the PermissionMiddleware decision is dry-run, denied, or requires_confirmation without an available/explicit user confirmation; likewise tools with spec.requires_confirmation executing without confirmation.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "ToolExecutor.execute dispatch of tool calls to BaseTool.execute.",
+        "protected_resource": "All tools registered in a ToolExecutor used by agents (the shared agent tool-dispatch path).",
+        "protection_obligation": "Every tool call dispatched through ToolExecutor.execute must pass a PermissionMiddleware decision \u2014 deny, dry-run, or explicit confirmation is refused \u2014 before the tool actually runs at the thread-pool submit commit point (merged reviewer wording, phases 1 and 2).",
+        "scope_limits": [
+          "Confirmation requires interactive=True and a confirm_callback; without them, confirmation-required calls are refused rather than executed (tools/_stubs.py:188-199).",
+          "Tools whose spec lacks requires_confirmation execute on an allow decision without user confirmation.",
+          "PermissionMiddleware internals are not supplied."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "serve.py:504-506 uvicorn.run(app, host=bind_host, port=bind_port), after create_app (serve.py:463-479) receives the guarded engine.",
+        "contract_id": "ecological-contract:cd87aa180c136bb4bbabb840d8ecfb3b",
+        "declared_mechanism": "setup_security(config, engine, bus) returns a guarded engine (sec.engine) that replaces the engine before app creation, and yields sec.capability_policy injected into agent kwargs; SecurityConfig dataclass declares the guardrail defaults.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 104,
+            "line_start": 100,
+            "path": "src/openjarvis/cli/serve.py",
+            "role": "guard_registration",
+            "source_sha256": "56e213a52e6340f02a0dbd31fb7cf92a379d17b617b82107c545733804c49c87"
+          },
+          {
+            "line_end": 185,
+            "line_start": 183,
+            "path": "src/openjarvis/cli/serve.py",
+            "role": "guard_registration",
+            "source_sha256": "56e213a52e6340f02a0dbd31fb7cf92a379d17b617b82107c545733804c49c87"
+          },
+          {
+            "line_end": 1141,
+            "line_start": 1120,
+            "path": "src/openjarvis/core/config.py",
+            "role": "guard_registration",
+            "source_sha256": "c2fb16df44b0b1d5bee3b7c2f2e892ff1fd95cdfc1261d02bd6fead459d87505"
+          },
+          {
+            "line_end": 479,
+            "line_start": 463,
+            "path": "src/openjarvis/cli/serve.py",
+            "role": "protected_operation",
+            "source_sha256": "56e213a52e6340f02a0dbd31fb7cf92a379d17b617b82107c545733804c49c87"
+          },
+          {
+            "line_end": 506,
+            "line_start": 504,
+            "path": "src/openjarvis/cli/serve.py",
+            "role": "commit_point",
+            "source_sha256": "56e213a52e6340f02a0dbd31fb7cf92a379d17b617b82107c545733804c49c87"
+          }
+        ],
+        "forbidden_condition": "The resolved inference engine being exposed through the OpenAI-compatible API server without setup_security guardrails applied (SecurityConfig defaults: enabled=true, scan_input, scan_output, mode=redact, secret_scanner, pii_scanner, enforce_tool_confirmation, ssrf_protection, rate limiting).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Does any served endpoint deliver agent-generated input (conversation or tool calls) through the guarded engine? The create_app implementation is not supplied.",
+          "What sec.capability_policy enforcement does inside agents is not shown (capability policy implementation absent)."
+        ],
+        "protected_operation": "Exposing the inference engine through the served OpenAI-compatible API (create_app plus uvicorn.run), with agents constructed against the guarded engine and sec.capability_policy.",
+        "protected_resource": "Inference engine instance served by `jarvis serve`.",
+        "protection_obligation": "When `jarvis serve` starts the OpenAI-compatible API server, the resolved inference engine must be wrapped with security guardrails via setup_security per SecurityConfig (input/output scanning, secret/PII redaction, SSRF protection, rate limiting, enforce_tool_confirmation) and the resulting capability_policy injected into constructed agents, before the guarded engine is exposed through the served app (merged reviewer wording, phases 1 and 2).",
+        "scope_limits": [
+          "setup_security internals are not in the supplied sources; only the call site, its sec.engine/sec.capability_policy results, and SecurityConfig defaults are visible.",
+          "Whether served request traffic routes through agents or the guarded engine is not shown (create_app and server app routes are absent).",
+          "MultiEngine cloud wrapping (serve.py:117-133) and InstrumentedEngine telemetry wrapping (serve.py:136-154) occur after setup_security, placing the guardrail wrapper inside the engine stack; supplied source does not show whether wrappers preserve guardrail enforcement."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "service.py:145-148 self._voice().start_recording(explicit_approval=True, agent_id=...), executed only after check_trigger passes (service.py:140-144).",
+        "contract_id": "ecological-contract:fc7b255687820644c9f3e98afd964d54",
+        "declared_mechanism": "HotkeyPermissionGate.check_trigger (action='trigger') raises HotkeyPermissionError before start_recording; blocked presses are recorded as blocked trigger events.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 46,
+            "line_start": 40,
+            "path": "src/openjarvis/hotkeys/service.py",
+            "role": "guard_registration",
+            "source_sha256": "4bdd684b38dc515cea8b36ead00f7133a262ed4677e1d3bdc4fbbcedc6b3eb66"
+          },
+          {
+            "line_end": 57,
+            "line_start": 44,
+            "path": "src/openjarvis/hotkeys/permissions.py",
+            "role": "guard_registration",
+            "source_sha256": "b69b1c37aa9b6006b6328ac733341c6e1b66d34cd6232058632342589941fbce"
+          },
+          {
+            "line_end": 88,
+            "line_start": 84,
+            "path": "src/openjarvis/hotkeys/permissions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b69b1c37aa9b6006b6328ac733341c6e1b66d34cd6232058632342589941fbce"
+          },
+          {
+            "line_end": 148,
+            "line_start": 134,
+            "path": "src/openjarvis/hotkeys/service.py",
+            "role": "protected_operation",
+            "source_sha256": "4bdd684b38dc515cea8b36ead00f7133a262ed4677e1d3bdc4fbbcedc6b3eb66"
+          },
+          {
+            "line_end": 148,
+            "line_start": 145,
+            "path": "src/openjarvis/hotkeys/service.py",
+            "role": "commit_point",
+            "source_sha256": "4bdd684b38dc515cea8b36ead00f7133a262ed4677e1d3bdc4fbbcedc6b3eb66"
+          }
+        ],
+        "forbidden_condition": "Starting microphone capture on a hotkey press when PermissionMiddleware denies the 'voice_global_hotkey_listener' trigger request or requires confirmation without explicit approval.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether start_recording independently enforces explicit approval (voice service source not supplied)."
+        ],
+        "protected_operation": "GlobalVoiceHotkeyService.handle_press \u2192 voice push-to-talk start_recording.",
+        "protected_resource": "Microphone capture (VoicePushToTalkService.start_recording) triggered by the global hotkey.",
+        "protection_obligation": "Hotkey-press voice capture must not begin without an allow decision from PermissionMiddleware for the 'voice_global_hotkey_listener' trigger action; GlobalVoiceHotkeyService.handle_press must raise HotkeyPermissionError on denial or unconfirmed approval before voice_service.start_recording opens the microphone (merged reviewer wording, phases 1 and 2).",
+        "scope_limits": [
+          "The gate runs only when effective_enabled is true and no capture is already active (service.py:136-137).",
+          "Exceptions, including HotkeyPermissionError, are recorded and swallowed (service.py:149-161); non-permission errors likewise abort capture.",
+          "The start_recording implementation is not supplied; microphone-access internals are unverifiable."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "verify_commit_pin (src/openjarvis/evals/comparison/third_party.py:127-173) raises CommitDriftError on pinned-commit drift unless JARVIS_ALLOW_COMMIT_DRIFT=1, but no supplied source shows its callers or the guarded effect that follows (e.g., foreign-framework subprocess spawn), so no contract commit point can be named for it.",
+      "The openjarvis.security package internals (setup_security guardrail stack, PermissionMiddleware, PermissionLevel/ceiling enforcement, ApprovalQueue) are not supplied; how decisions, permission levels, and annotated agent permission ceilings are enforced inside middleware.check is unverifiable from the supplied views.",
+      "src/openjarvis/server/auth_middleware.py (check_bind_safety) is not supplied; the non-loopback/API-key rule is visible only at its call site (src/openjarvis/cli/serve.py:417-419).",
+      "Reviewer-cited guards absent from the supplied sources, for which no contracts were emitted: MultiEngine silent-fallback ValueError (engine/multi.py), RLM REPL security_check before exec, SSRF check (tools/http_request.py), path-policy checks (tools/file_write.py), dangerous-command blocking (tools/shell_exec.py), and LoopGuard call sites in agents/monitor_operative.py and agents/deep_research.py.",
+      "src/openjarvis/server/context_routes.py:194-205 applies PermissionMiddleware to the vision_screenshot_capture HTTP endpoint, but the supplied source binds it to a direct client request rather than an agent tool, agent lifecycle hook, or agent-generated input; no contract was emitted under the agent-mediation scope rule.",
+      "The backing stores of EngineeringSessionStore and memory_service (src/openjarvis/engineering/service.py) are not supplied, so the stratum of the open_project memory write (state vs database) is unverified.",
+      "The VoicePushToTalkService.start_recording implementation is not supplied, so whether voice capture independently enforces approval is unverifiable.",
+      "The create_app implementation and served app routes are not supplied, so the dataflow from served requests through agents or the guarded engine cannot be established for the serve.py security contracts."
+    ],
+    "repository": "lucabonne/Siri",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:bca367b3f8732438ceae3d9c2ba557a1"
+  },
+  "request_sha256": "36ec4a8e3ba2ec40831bfab994faf27223a6f1f71e44018a2c0efb092af2d79e",
+  "response_sha256": "04accfb242cfa25aeb124d2ad649f6d83fdecf43990738eacdfccf291b41377c",
+  "state": "completed",
+  "tokens": 160245,
+  "unit": "v24-screen:bca367b3f8732438ceae3d9c2ba557a1"
+}

@@ -1,0 +1,266 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "time.sleep(delay) executed inside before_model_callback (callbacks.py:64-70) before the model request is allowed to proceed.",
+        "contract_id": "ecological-contract:82b63af816182e438d8c67089f8a2099",
+        "declared_mechanism": "rate_limit_callback registered as before_model_callback on root_agent (agent.py:69); it tracks timer_start/request_count in callback state and, when over quota, sleeps for the remaining window before resetting counters (callbacks.py:24-74).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 69,
+            "line_start": 69,
+            "path": "customer_service/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "f381b0bcf16909ffa7da77cfacba6a5cd64c404bdecbdcd1e809220987d56ed6"
+          },
+          {
+            "line_end": 69,
+            "line_start": 69,
+            "path": "customer_service/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f381b0bcf16909ffa7da77cfacba6a5cd64c404bdecbdcd1e809220987d56ed6"
+          },
+          {
+            "line_end": 49,
+            "line_start": 45,
+            "path": "customer_service/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "f381b0bcf16909ffa7da77cfacba6a5cd64c404bdecbdcd1e809220987d56ed6"
+          },
+          {
+            "line_end": 70,
+            "line_start": 64,
+            "path": "customer_service/shared_libraries/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "30cef44cc1da702ace08da1cf8fc20c2f8d6307922ca7a4a5d53435e458f638c"
+          },
+          {
+            "line_end": 68,
+            "line_start": 65,
+            "path": "customer_service/shared_libraries/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "30cef44cc1da702ace08da1cf8fc20c2f8d6307922ca7a4a5d53435e458f638c"
+          }
+        ],
+        "forbidden_condition": "A model request arriving when request_count has exceeded RPM_QUOTA within the RATE_LIMIT_SECS window (request_count > 10 before counter reset).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The model request transport/endpoint is framework-internal and not shown in supplied source, so the http classification of the guarded effect is provisional.",
+          "Whether this rate limiter is intended as a safety protection contract or purely an operational quota mechanism."
+        ],
+        "protected_operation": "Dispatch of the LLM/model request for root_agent that the before_model_callback precedes.",
+        "protected_resource": "Upstream model/quota capacity for root_agent sessions.",
+        "protection_obligation": "Model requests issued by root_agent must pass through the registered before_model_callback rate limiter, which throttles bursts exceeding RPM_QUOTA (10) within RATE_LIMIT_SECS (60) by delaying before the request proceeds.",
+        "scope_limits": [
+          "The throttle delays rather than rejects: after sleeping, the request proceeds and the counters reset (callbacks.py:64-70).",
+          "Quota state is per callback_context/session state; there is no shared global quota.",
+          "The empty-text-part padding at callbacks.py:34-37 is separate normalization, not part of the quota check."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The early rejected-status return at tools.py:48-52, which preempts the approval return at tools.py:53-56.",
+        "contract_id": "ecological-contract:8d1f886a7bdf3dfe42ebd33b45746a0b",
+        "declared_mechanism": "In-tool guardrail: early return of {\"status\": \"rejected\", \"message\": \"discount too large. Must be 10 or less.\"} when value > 10 (tools.py:48-52).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 56,
+            "line_start": 32,
+            "path": "customer_service/tools/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "fc1848dd20f15d1a0c38d4fefa4f97338bbd77f1e773e26a56bf3ebaf1e6cbf5"
+          },
+          {
+            "line_end": 52,
+            "line_start": 48,
+            "path": "customer_service/tools/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fc1848dd20f15d1a0c38d4fefa4f97338bbd77f1e773e26a56bf3ebaf1e6cbf5"
+          },
+          {
+            "line_end": 56,
+            "line_start": 48,
+            "path": "customer_service/tools/tools.py",
+            "role": "commit_point",
+            "source_sha256": "fc1848dd20f15d1a0c38d4fefa4f97338bbd77f1e773e26a56bf3ebaf1e6cbf5"
+          },
+          {
+            "line_end": 65,
+            "line_start": 50,
+            "path": "customer_service/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f381b0bcf16909ffa7da77cfacba6a5cd64c404bdecbdcd1e809220987d56ed6"
+          }
+        ],
+        "forbidden_condition": "approve_discount invoked with value > 10 (for either discount_type).",
+        "missing_evidence_roles": [
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "The downstream effect of an approved discount is not implemented: after_tool logs 'Applying discount to the cart' but the mutation is a comment stub (callbacks.py:157-165).",
+          "Whether 10 is the intended production ceiling (no configuration source supplied)."
+        ],
+        "protected_operation": "Discount approval by the approve_discount tool (the return of status 'ok').",
+        "protected_resource": "Discount approval decision for customer discounts (flat or percentage).",
+        "protection_obligation": "The approve_discount tool must enforce a discount value ceiling before any approval is returned: requests with value greater than 10 must be rejected rather than approved (defense-in-depth against model/user circumvention of instructions).",
+        "scope_limits": [
+          "Ceiling is a flat 10 for both discount types; no type-specific distinction is made in approve_discount.",
+          "The guard lives inside the mock tool body; approve_discount only returns a status dict and performs no external approval effect.",
+          "The companion tool sync_ask_for_approval performs no value check at all (tools.py:58-80), and before_tool auto-approves it for amounts <= 10 (callbacks.py:134-140)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The early return of the refusal string at tools.py:383-387, which preempts the QR generation and success return at tools.py:389-403.",
+        "contract_id": "ecological-contract:cf580c815129464a4ab31708a2f64c3e",
+        "declared_mechanism": "In-tool guardrail checks at tools.py:380-387 (source comments explicitly label them guardrails/defense-in-depth against prompt circumvention) that return a refusal string before any generation occurs.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 387,
+            "line_start": 380,
+            "path": "customer_service/tools/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fc1848dd20f15d1a0c38d4fefa4f97338bbd77f1e773e26a56bf3ebaf1e6cbf5"
+          },
+          {
+            "line_end": 382,
+            "line_start": 380,
+            "path": "customer_service/tools/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "fc1848dd20f15d1a0c38d4fefa4f97338bbd77f1e773e26a56bf3ebaf1e6cbf5"
+          },
+          {
+            "line_end": 387,
+            "line_start": 383,
+            "path": "customer_service/tools/tools.py",
+            "role": "commit_point",
+            "source_sha256": "fc1848dd20f15d1a0c38d4fefa4f97338bbd77f1e773e26a56bf3ebaf1e6cbf5"
+          },
+          {
+            "line_end": 403,
+            "line_start": 357,
+            "path": "customer_service/tools/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "fc1848dd20f15d1a0c38d4fefa4f97338bbd77f1e773e26a56bf3ebaf1e6cbf5"
+          },
+          {
+            "line_end": 65,
+            "line_start": 50,
+            "path": "customer_service/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f381b0bcf16909ffa7da77cfacba6a5cd64c404bdecbdcd1e809220987d56ed6"
+          }
+        ],
+        "forbidden_condition": "generate_qr_code invoked with (discount_type == '' or discount_type == 'percentage') and discount_value > 10, or with discount_type == 'fixed' and discount_value > 20.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether discount_type values outside {'', 'percentage', 'fixed'} can reach the tool given the agent instruction/schema constraints (prompts.py not supplied).",
+          "The external system that would consume a generated QR code (redemption effect) is not in supplied source."
+        ],
+        "protected_operation": "Generation of a discount QR code (the return of the success payload containing qr_code_data).",
+        "protected_resource": "Customer discount QR code artifact for the given customer_id.",
+        "protection_obligation": "The generate_qr_code tool must refuse QR code generation for discount values above the auto-approval ceilings: greater than 10 when discount_type is '' or 'percentage', and greater than 20 when discount_type is 'fixed', as explicit defense-in-depth against malicious prompts that could circumvent system instructions to obtain arbitrary discounts.",
+        "scope_limits": [
+          "Ceilings are enforced only for discount_type values '', 'percentage', and 'fixed'; any other discount_type string matches neither branch and skips both value checks per supplied source.",
+          "The lowercase_value(args) call in before_tool discards its result (callbacks.py:121-122), so discount_type casing is not normalized before these string comparisons.",
+          "The QR payload is mock data ('MOCK_QR_CODE_DATA'); no real QR generation or delivery effect is implemented."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "before_tool returns the validation error string (callbacks.py:127-130) before the tool function body executes.",
+        "contract_id": "ecological-contract:f6ba0393cb18a45062649b94f98254d8",
+        "declared_mechanism": "before_tool callback registered as before_tool_callback on root_agent (agent.py:66); when 'customer_id' is present in args it calls validate_customer_id(args['customer_id'], tool_context.state) and, on failure, returns the error string so the call is not executed (callbacks.py:117-130), with validation logic in validate_customer_id (callbacks.py:76-101).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 69,
+            "line_start": 66,
+            "path": "customer_service/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "f381b0bcf16909ffa7da77cfacba6a5cd64c404bdecbdcd1e809220987d56ed6"
+          },
+          {
+            "line_end": 69,
+            "line_start": 66,
+            "path": "customer_service/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f381b0bcf16909ffa7da77cfacba6a5cd64c404bdecbdcd1e809220987d56ed6"
+          },
+          {
+            "line_end": 65,
+            "line_start": 50,
+            "path": "customer_service/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "f381b0bcf16909ffa7da77cfacba6a5cd64c404bdecbdcd1e809220987d56ed6"
+          },
+          {
+            "line_end": 130,
+            "line_start": 117,
+            "path": "customer_service/shared_libraries/callbacks.py",
+            "role": "guard_registration",
+            "source_sha256": "30cef44cc1da702ace08da1cf8fc20c2f8d6307922ca7a4a5d53435e458f638c"
+          },
+          {
+            "line_end": 101,
+            "line_start": 76,
+            "path": "customer_service/shared_libraries/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "30cef44cc1da702ace08da1cf8fc20c2f8d6307922ca7a4a5d53435e458f638c"
+          },
+          {
+            "line_end": 130,
+            "line_start": 127,
+            "path": "customer_service/shared_libraries/callbacks.py",
+            "role": "commit_point",
+            "source_sha256": "30cef44cc1da702ace08da1cf8fc20c2f8d6307922ca7a4a5d53435e458f638c"
+          }
+        ],
+        "forbidden_condition": "A tool call whose args include a customer_id that fails validate_customer_id: no 'customer_profile' present in session state, a customer_profile that fails JSON validation, or a customer_id that differs from the customer_id in the session-state profile.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Framework semantics: whether returning a string from before_tool_callback fully suppresses tool execution and feeds the string back to the model (ADK runtime behavior not shown in supplied source).",
+          "Whether before_tool_callback on root_agent also covers tool calls made inside the AgentTool-wrapped sub-agents (academic_websearch_agent, librarian_agent).",
+          "How customer_profile is populated in production sessions (before_agent only seeds a hardcoded '123' default; session-creation code is not in supplied source).",
+          "Which de-mocked tools will carry real external effects reached by agent-supplied customer_id."
+        ],
+        "protected_operation": "Execution of any root_agent tool invocation whose arguments include customer_id (e.g., update_salesforce_crm, access_cart_information, modify_cart, get_book_recommendations, schedule_reading_consultation, send_reading_recommendations, generate_qr_code).",
+        "protected_resource": "Customer-scoped tool effects keyed by customer_id (cart data and modification, CRM updates, scheduling, communications, discount QR generation).",
+        "protection_obligation": "Tool invocations on root_agent that pass a customer_id argument must be intercepted by the registered before_tool callback and rejected before tool execution unless the customer_id matches the customer profile held in session state (merged from both reviewer opinions).",
+        "scope_limits": [
+          "The gate applies only when 'customer_id' is present in tool args; tools without that parameter are not covered.",
+          "Validation compares against session-state 'customer_profile', which the before_agent callback seeds with a hardcoded default customer '123' when absent (callbacks.py:170-176).",
+          "lowercase_value(args) at callbacks.py:121-122 discards its result, so no case normalization is actually applied to tool args before the comparison.",
+          "The sync_ask_for_approval auto-approve (amount <= 10) and modify_cart short-circuit branches in before_tool (callbacks.py:132-148) are separate business-rule overrides, not part of the customer_id gate.",
+          "Tool bodies in tools.py are mock stubs ('Replace with actual API call'); the concrete downstream effects this gate would protect are not implemented in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Framework semantics of before_tool_callback/after_tool_callback return values (whether a returned string fully suppresses tool execution) are ADK runtime behavior not shown in supplied source.",
+      "Production loading of session-state 'customer_profile' is not in supplied source; before_agent only seeds a hardcoded default customer '123' (callbacks.py:170-176).",
+      "All tool bodies in tools.py are mock stubs ('Replace with actual API call'), so the real external effects guarded by these contracts (CRM updates, cart mutations, communications, scheduling, QR delivery) are not implemented in supplied source; the after_tool cart-mutation code is a comment stub (callbacks.py:157-165).",
+      "Coverage of the root before_tool_callback over tool calls made inside AgentTool-wrapped sub-agents (academic_websearch_agent, librarian_agent) is not determinable from supplied source.",
+      "The model request transport for the rate-limited effect is framework-internal and not shown, so its effect stratum classification is provisional.",
+      "Agent instructions (prompts.py) and Config that constrain tool arguments such as discount_type are not in supplied source."
+    ],
+    "repository": "Anubhob435/customer-service-agent-system",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:f0f5b5d55153b61c198718d6e5eda17e"
+  },
+  "request_sha256": "69e864997d76f0346cf295fe4fe06da9185f40f00138e3f33c778f697b69c362",
+  "response_sha256": "973b843577e4966fa7bfb7d9eaf72b75b395e0de3e6873f721b59bb17adff6bf",
+  "state": "completed",
+  "tokens": 23002,
+  "unit": "v24-screen:f0f5b5d55153b61c198718d6e5eda17e"
+}

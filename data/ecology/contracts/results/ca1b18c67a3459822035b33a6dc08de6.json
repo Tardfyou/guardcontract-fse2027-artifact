@@ -1,0 +1,222 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The next agent step that would be streamed after the break \u2014 the agent.stream iteration at agent.py:588-601; the break at agent.py:619 prevents any subsequent streamed state and the model/tool effects it would carry.",
+        "contract_id": "ecological-contract:1302ecac6db85428b7833d8127e0b49e",
+        "declared_mechanism": "Per-iteration count of messages of type 'tool' in the latest streamed state (agent.py:607-615) combined with an early break out of the agent.stream loop when tool_calls >= max_steps, setting hit_tool_limit=True (agent.py:617-619); the flag only annotates the final summary (agent.py:506-512, 626-630) and does not itself stop effects.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 553,
+            "line_start": 546,
+            "path": "agent.py",
+            "role": "protected_operation",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 601,
+            "line_start": 588,
+            "path": "agent.py",
+            "role": "commit_point",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 619,
+            "line_start": 607,
+            "path": "agent.py",
+            "role": "guard_registration",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 619,
+            "line_start": 617,
+            "path": "agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 615,
+            "line_start": 607,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          }
+        ],
+        "forbidden_condition": "Continuing the agent run beyond the step cap: iterating further agent.stream states once tool_calls >= max_steps, i.e., permitting more than max_steps (default 10) tool-message-producing steps in one investigation run (condition encoded at agent.py:617-619).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the underlying agent execution halts immediately when the consumer breaks out of agent.stream, or may run further steps internally, depends on langgraph/langchain stream semantics not supplied in the source views."
+        ],
+        "protected_operation": "Subsequent agent run steps streamed by agent.stream after the cap is reached, including further ChatGroq model invocations and further guarded GitHub tool executions (agent.py:588-619).",
+        "protected_resource": "The agent run stream consumed in investigate_issue, bounded by the max_steps parameter (default 10, agent.py:551).",
+        "protection_obligation": "The investigate_issue run loop must stop consuming the agent stream once the accumulated number of tool messages in the latest state reaches max_steps (default 10), so that no further agent steps \u2014 and with them no further model invocations or tool-executed GitHub API calls \u2014 proceed after the cap.",
+        "scope_limits": [
+          "The break stops the caller from consuming further stream values (agent.py:619); it does not unregister tools or otherwise alter agent configuration.",
+          "Only messages of type 'tool' in the latest state are counted (agent.py:607-615); tool calls issued but not yet executed are not counted.",
+          "The max_steps=10 default (agent.py:551) is independent of the middleware's 15-model-call cap; either limit can trigger first in a run."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The github.<method>() call inside each tool body, which resolves to GitHubClient._get and its self.session.get(url, params=params, timeout=30) network request (github_tools.py:18-28); interception happens at the preceding `if repeated(...)` branch (e.g., agent.py:63-65 before the github.get_issue dispatch at 66-69).",
+        "contract_id": "ecological-contract:85b226291a59763668f25469c4d1b4a0",
+        "declared_mechanism": "Per-run deduplication closure in build_tools: seen_calls set, repeated(tool_name, args) keyed on (tool_name, .dumps(args, sort_keys=True)), and repeat_warning(tool_name) JSON warning string; the `if repeated(...)` check is inlined immediately before every github.* dispatch in each @tool function (agent.py:31-53; checks at 63-64, 79-85, 102-105, 124-127, 145-151, 168-174, 193-199, 218-224).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 53,
+            "line_start": 31,
+            "path": "agent.py",
+            "role": "guard_registration",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 44,
+            "line_start": 34,
+            "path": "agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 69,
+            "line_start": 55,
+            "path": "agent.py",
+            "role": "protected_operation",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 35,
+            "line_start": 30,
+            "path": "github_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "54c70d78c867aecd8ee6a134f3f91274429da856416bbdf1b09c8c651fa09ff2"
+          },
+          {
+            "line_end": 28,
+            "line_start": 18,
+            "path": "github_tools.py",
+            "role": "commit_point",
+            "source_sha256": "54c70d78c867aecd8ee6a134f3f91274429da856416bbdf1b09c8c651fa09ff2"
+          },
+          {
+            "line_end": 56,
+            "line_start": 55,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 563,
+            "line_start": 561,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          }
+        ],
+        "forbidden_condition": "A duplicate GitHub tool execution: repeated(tool_name, args) returns True because the (tool_name, .dumps(args, sort_keys=True)) key is already in seen_calls (agent.py:40-41), and execution would proceed to re-dispatch github.<method>(...), producing a repeat HTTP request to api.github.com.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The langchain @tool decorator and create_agent(tools=...) tool-dispatch internals are external to the supplied source; the guard is confirmed at tool-body level, but the framework's exact tool execution path is unverified.",
+          "Whether any code path other than the eight guarded tools can reach GitHubClient in a deployed run depends on entrypoint wiring not present in the supplied views."
+        ],
+        "protected_operation": "Dispatch of the guarded tool bodies to GitHubClient \u2014 e.g., github.get_issue(issue_number) (agent.py:66-69) and the parallel github.get_issue_comments / search_code / read_file / get_file_commits / get_workflow_runs / get_workflow_jobs / get_job_log dispatches (agent.py:87-92, 107-110, 129-135, 153-156, 176-181, 201-206, 226-231) \u2014 each issued from within an agent tool.",
+        "protected_resource": "The GitHub REST API base https://api.github.com accessed through GitHubClient._get and its requests.Session.get call (github_tools.py:8, 18-28).",
+        "protection_obligation": "Every agent tool invocation on the eight read-only GitHub tools registered in build_tools must be checked against the per-run seen-set before the underlying github.<method>() GitHub API call is dispatched; an invocation whose (tool_name, canonicalized-args) key was already recorded must be intercepted and answered with a repeat warning instead of re-executing the external API call. (Merges reviewer opinion 1's duplicate-interception clause with opinion 2's identical wording.)",
+        "scope_limits": [
+          "Only the eight tools whose bodies inline the repeated() check are guarded; the tool list returned from build_tools (agent.py:233-242) defines the covered surface.",
+          "Deduplication is exact-match after canonical JSON serialization with sorted keys; semantically equivalent calls whose serialized arguments differ are not intercepted.",
+          "seen_calls is created inside a single build_tools(github) call (agent.py:31-32), which investigate_issue invokes once per run (agent.py:553); the seen-set is not persisted across runs.",
+          "A call is marked seen before dispatch (seen_calls.add at agent.py:43), so the duplicate guard triggers even if the first underlying API call failed.",
+          "On interception the guard substitutes the repeat_warning JSON string as the tool result (agent.py:46-53, 64); it does not raise, retry, or terminate the run.",
+          "Guarded effects are read-only; GitHubClient performs only GET requests via _get (github_tools.py:18-28)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The model invocation dispatched inside the agent run driven by agent.stream (agent.py:588-601); the middleware wraps the model bound into create_agent (agent.py:561-571). The precise internal dispatch of the LLM request is framework-internal and not line-visible in the supplied source.",
+        "contract_id": "ecological-contract:ba1f2960fadd4534aab90bf9515efd64",
+        "declared_mechanism": "ModelCallLimitMiddleware from langchain.agents.middleware (imported at agent.py:9-11) configured with run_limit=15 and exit_behavior='error' and registered in the middleware list passed to create_agent (agent.py:565-570).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 11,
+            "line_start": 9,
+            "path": "agent.py",
+            "role": "guard_registration",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 571,
+            "line_start": 561,
+            "path": "agent.py",
+            "role": "guard_registration",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 570,
+            "line_start": 565,
+            "path": "agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 563,
+            "line_start": 555,
+            "path": "agent.py",
+            "role": "protected_operation",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 601,
+            "line_start": 588,
+            "path": "agent.py",
+            "role": "commit_point",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          },
+          {
+            "line_end": 570,
+            "line_start": 565,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4b1c1c635ffa246ada9f18a29d82ef4f6b87da3193a1508b81d10c5f90e6bc7a"
+          }
+        ],
+        "forbidden_condition": "A model invocation proceeding once 15 model calls have already occurred in the run \u2014 the agent loop issuing a further LLM call after run_limit is exhausted instead of terminating with exit_behavior='error' (threshold and behavior declared by the middleware parameters at agent.py:566-569).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether ModelCallLimitMiddleware intercepts strictly before the LLM request is sent (pre-commit) and what a counted 'model call' comprises are unverified without the langchain library source.",
+          "The outcome shape of exit_behavior='error' (raised exception vs. terminal message) and its interaction with the caller's stream loop is not shown in supplied source."
+        ],
+        "protected_operation": "Model (LLM) invocations performed by the agent during agent.stream, using the ChatGroq model constructed at agent.py:555-559 and bound as model=model in create_agent (agent.py:562).",
+        "protected_resource": "The ChatGroq LLM invocation channel of a single investigate_issue agent run (the run's model-call budget).",
+        "protection_obligation": "The RepoScout agent run must enforce a hard cap of 15 model invocations per run: ModelCallLimitMiddleware(run_limit=15, exit_behavior='error') must intercept the agent loop before any model call beyond the 15th is dispatched to the ChatGroq model.",
+        "scope_limits": [
+          "The cap is per agent run created in investigate_issue; the direct model.invoke calls in structure_investigation and finish_investigation (agent.py:442, 542) occur outside the agent loop and are not covered by the middleware.",
+          "Middleware counting semantics and the concrete exit_behavior='error' behavior are defined by the external langchain library, not by supplied repository source.",
+          "The recursion_limit=50 stream configuration (agent.py:597-599) is a separate framework limit and is not the declared 15-call guard."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The langchain create_agent and ModelCallLimitMiddleware implementations are not among the supplied sources; their interception semantics (counting basis, pre- vs. post-commit interception, exit_behavior='error' effect) cannot be verified from repository source.",
+      "No entrypoint (CLI/main) source is supplied showing GitHubClient instantiation and its binding into investigate_issue(github, ...); GitHubClient behavior is known only from github_tools.py and reaches the tools by parameter at agent.py:553.",
+      "Runtime/behavior labels are unavailable (per scope), so there is no dynamic evidence that the repeated() guard, the middleware cap, or the max_steps break intercept effects as declared.",
+      "finish_investigation and structure_investigation invoke ChatGroq directly (agent.py:442, 542) with no declared guard; whether these out-of-loop model calls belong under any run-level cap is not determined by supplied source."
+    ],
+    "repository": "neelkumar01/repoScout",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:ca1b18c67a3459822035b33a6dc08de6"
+  },
+  "request_sha256": "54aeaa410886fc0a466abafc30db941462e15d013c91dd37fccaf5051b1ecfa2",
+  "response_sha256": "549d79dab4b1dbf7db509f1220e6c1268cc0ab46d247b9f339fdba3a46eca499",
+  "state": "completed",
+  "tokens": 28463,
+  "unit": "v24-screen:ca1b18c67a3459822035b33a6dc08de6"
+}

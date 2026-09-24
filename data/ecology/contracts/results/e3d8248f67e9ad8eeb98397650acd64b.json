@@ -1,0 +1,98 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The return value of verification_gate inside ADK's pre-tool dispatch: per guards.py:34-38, returning a dict skips the tool and substitutes the refusal dict as the tool response, so the denial commits before the tool executes; returning None admits the tool to run.",
+        "contract_id": "ecological-contract:ddc73f8a0ec5e04ccdbb8fc01ec127da",
+        "declared_mechanism": "Default-deny lifecycle gate: verification_gate (guards.py:31-44) whitelists PUBLIC_TOOLS = {\"find_patient\"} (guards.py:19-20), returns None to admit whitelisted or verified invocations, checks is_verified(tool_context.state) reading PATIENT_VERIFIED (session_state.py:17-19), and otherwise returns dict(_REFUSAL) (guards.py:22-28, 39-44); the guard is bound to the agent via before_tool_callback=verification_gate in build_recognition_agent (root_agent.py:91).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 91,
+            "line_start": 91,
+            "path": "backend/src/agent/agent/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "580ad25954d2f90fd438a0cf5574e3f31f8aebc808b166f0678e87f955a9fde9"
+          },
+          {
+            "line_end": 92,
+            "line_start": 64,
+            "path": "backend/src/agent/agent/root_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "580ad25954d2f90fd438a0cf5574e3f31f8aebc808b166f0678e87f955a9fde9"
+          },
+          {
+            "line_end": 28,
+            "line_start": 19,
+            "path": "backend/src/agent/tools/guards.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d5633e29a9c3f27e8005122246fdb55ba864cc1da68ef32f8f3dafd738f9fe54"
+          },
+          {
+            "line_end": 44,
+            "line_start": 39,
+            "path": "backend/src/agent/tools/guards.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d5633e29a9c3f27e8005122246fdb55ba864cc1da68ef32f8f3dafd738f9fe54"
+          },
+          {
+            "line_end": 19,
+            "line_start": 17,
+            "path": "backend/src/agent/agent/session_state.py",
+            "role": "forbidden_condition",
+            "source_sha256": "af86355941f9d3ff6084f1b48c55dc79b6b42d9c69415e5e4ed7ba7273d44db7"
+          },
+          {
+            "line_end": 90,
+            "line_start": 77,
+            "path": "backend/src/agent/agent/root_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "580ad25954d2f90fd438a0cf5574e3f31f8aebc808b166f0678e87f955a9fde9"
+          },
+          {
+            "line_end": 38,
+            "line_start": 34,
+            "path": "backend/src/agent/tools/guards.py",
+            "role": "commit_point",
+            "source_sha256": "d5633e29a9c3f27e8005122246fdb55ba864cc1da68ef32f8f3dafd738f9fe54"
+          }
+        ],
+        "forbidden_condition": "Invocation of any tool whose name is not in PUBLIC_TOOLS while is_verified(tool_context.state) is false \u2014 i.e., executing a personalized patient-data tool for a session in which patient_verified has not been set.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Supplied source does not show where session_state.set_verified (session_state.py:45-49) is invoked, so the flow that flips patient_verified to true (presumably find_patient) is unbound.",
+          "The before_tool_callback short-circuit semantics (dict return skips the tool) are asserted only by the guards.py docstring (lines 34-38); the google.adk source establishing those semantics is not supplied.",
+          "Whether every production entry path uses the agent built by build_recognition_agent (root_agent.py:57-97) \u2014 i.e., whether any second Agent or direct tool call site bypasses the gate \u2014 is not established by the supplied source.",
+          "The per-tool downstream effect strata (database reads/writes via Beanie, pharmacist notification) cannot be enumerated from the supplied source; this contract binds only the tool_execution stratum at the pre-dispatch commit point."
+        ],
+        "protected_operation": "ADK tool invocation on the recognition agent's registered tools (root_agent.py:77-90), intercepted by the agent's before_tool_callback before the tool function body runs.",
+        "protected_resource": "The personalized patient-data tools registered on recognition_agent (get_my_plan, answer_recovery_question, get_medications, get_next_dose, flag_pharmacist, list_follow_up_slots, book_follow_up_slot, get_follow_up_booking, reschedule_follow_up, triage_symptom, recovery_trends) \u2014 every registered tool except the whitelisted find_patient \u2014 together with the per-session ADK state key patient_verified that gates them.",
+        "protection_obligation": "On the recognition agent, no ADK tool other than find_patient may execute until the per-session state marks the patient verified (patient_verified truthy): the verification_gate before_tool_callback must deny every unverified, non-public tool invocation by returning the refusal dict at the pre-tool commit point, so unverified callers cannot invoke any personalized patient-data tool (plan, recovery, medication, pharmacist flag, appointment listing/booking/lookup/reschedule, symptom triage, trends).",
+        "scope_limits": [
+          "Coverage is limited to tool invocations dispatched through the recognition_agent's before_tool_callback; any call path reaching the underlying tool functions outside this agent's tool dispatch is not gated by the supplied source.",
+          "find_patient is explicitly exempted via PUBLIC_TOOLS (guards.py:19-20, 39-40) and may run before verification.",
+          "Only the supplied views (root_agent.py, session_state.py, guards.py) are in scope; tool implementations and google.adk library internals are not supplied, and library behavior is taken only from the supplied docstring assertion.",
+          "The gate commits at the tool_execution stratum (invocation-only); downstream effects of individual tools (e.g., the Beanie queries mentioned in root_agent.py:4-5) are not separately enumerated or gated by a distinct commit point in the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Implementations of the protected tools (patient_tools, medication_tools, appointment_tools, symptom_tools, trends_tools, recovery_tools) are not supplied, so their downstream effect strata and the absence of pre-gate side effects cannot be confirmed from source.",
+      "No supplied source shows the caller of set_verified or the verification flow that sets patient_verified=true.",
+      "google.adk library source defining before_tool_callback semantics is not supplied; the dict-return-skips-tool behavior is asserted only in guards.py:34-38.",
+      "No supplied source enumerates other agents, HTTP routes, or call sites that could reach these tool functions without passing through the recognition agent's before_tool_callback, so gate coverage across entry points cannot be assessed."
+    ],
+    "repository": "mahimairaja/rapid-agent-hackathon",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:e3d8248f67e9ad8eeb98397650acd64b"
+  },
+  "request_sha256": "af51db08261452f7eefa46b29199073de56487a0203de69b565df505812ae2f0",
+  "response_sha256": "6013a8eef17feeaa22a2e240266e443e0f055464f74bbc03a2a5537a7c02605e",
+  "state": "completed",
+  "tokens": 10544,
+  "unit": "v24-screen:e3d8248f67e9ad8eeb98397650acd64b"
+}

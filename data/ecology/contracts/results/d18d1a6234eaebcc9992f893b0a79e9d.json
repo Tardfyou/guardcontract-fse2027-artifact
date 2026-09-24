@@ -1,0 +1,110 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "conn.execute(sql, params).fetchall() inside ReadDb.query (db.py:185), where the supplied SQL is handed to SQLite; the read-only mode that defeats writes is registered earlier at sqlite3.connect in ReadDb.open (db.py:163-165).",
+        "contract_id": "ecological-contract:ce4336fb554c113d8647508cd5d0ff52",
+        "declared_mechanism": "ReadDb.open creates the connection with SQLite URI 'file:{path}?mode=ro' (db.py:163-165); that handle is the only database access wired to the agent (AgentDeps(db=db), __init__.py:158). ReadDb.query additionally appends 'LIMIT MAX_QUERY_ROWS' (100, db.py:17) when the stripped, uppercased, semicolon-trimmed SQL lacks the literal 'LIMIT' (db.py:182-184) before handing the statement to conn.execute (db.py:185). sqlite3.DatabaseError raised for rejected statements is converted to ModelRetry in the tool (tools.py:138-139).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 167,
+            "line_start": 160,
+            "path": "src/pike_agent/db.py",
+            "role": "guard_registration",
+            "source_sha256": "110f9467012abd140bc516416a38b55a6bd4b0f90ba3fa0ca132f9f737fd4de8"
+          },
+          {
+            "line_end": 17,
+            "line_start": 17,
+            "path": "src/pike_agent/db.py",
+            "role": "guard_registration",
+            "source_sha256": "110f9467012abd140bc516416a38b55a6bd4b0f90ba3fa0ca132f9f737fd4de8"
+          },
+          {
+            "line_end": 99,
+            "line_start": 97,
+            "path": "src/pike_agent/agent/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0db1dec8b62cde45d6c52673bcb8adcf4101d35063b603eee61a85792302c6c8"
+          },
+          {
+            "line_end": 140,
+            "line_start": 139,
+            "path": "src/pike_agent/db.py",
+            "role": "forbidden_condition",
+            "source_sha256": "110f9467012abd140bc516416a38b55a6bd4b0f90ba3fa0ca132f9f737fd4de8"
+          },
+          {
+            "line_end": 138,
+            "line_start": 136,
+            "path": "src/pike_agent/agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "0db1dec8b62cde45d6c52673bcb8adcf4101d35063b603eee61a85792302c6c8"
+          },
+          {
+            "line_end": 185,
+            "line_start": 180,
+            "path": "src/pike_agent/db.py",
+            "role": "commit_point",
+            "source_sha256": "110f9467012abd140bc516416a38b55a6bd4b0f90ba3fa0ca132f9f737fd4de8"
+          },
+          {
+            "line_end": 96,
+            "line_start": 95,
+            "path": "src/pike_agent/agent/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0db1dec8b62cde45d6c52673bcb8adcf4101d35063b603eee61a85792302c6c8"
+          },
+          {
+            "line_end": 137,
+            "line_start": 137,
+            "path": "src/pike_agent/agent/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0db1dec8b62cde45d6c52673bcb8adcf4101d35063b603eee61a85792302c6c8"
+          },
+          {
+            "line_end": 158,
+            "line_start": 156,
+            "path": "src/pike_agent/agent/__init__.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ea3730147e2113782f27b4b453acfceb26175b9119e0e4ae85c974271eeea418"
+          }
+        ],
+        "forbidden_condition": "Agent-supplied SQL executed via db_query producing any write/DDL mutation of the trace database file (the strace-derived pike-agent-*.db) during an agent session.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "First-phase wording placed the commit point at sqlite3.connect in ReadDb.open (db.py:163-165); the merged contract records connect-time mode=ro as guard registration and resolves the effect commit point to conn.execute at db.py:185 per the second-phase wording.",
+          "Confirm that AgentDeps.db is the only database handle reachable from registered tools in the full repository (supplied views show only ctx.deps.db.query for database access).",
+          "Confirm that chat() is the only entry point constructing the agent with a ReadDb-bound AgentDeps (only this wiring appears in the supplied views)."
+        ],
+        "protected_operation": "Execution of model-supplied SQL by the db_query tool, routed as ctx.deps.db.query(sql) onto the shared read-only ReadDb connection.",
+        "protected_resource": "The trace SQLite database opened by ReadDb.open(db_path) in chat() and bound into AgentDeps.",
+        "protection_obligation": "The agent-registered db_query tool must never modify the trace SQLite database: SQL supplied by the model is executed only through the ReadDb connection opened in SQLite read-only mode (mode=ro), with an automatic 100-row LIMIT safety net bounding unbounded reads, so any write/DDL statement supplied by the agent fails instead of mutating the trace database. (Merged first- and second-phase reviewer wording; both describe the same obligation.)",
+        "scope_limits": [
+          "The read-only guard covers only SQL executed through the ReadDb connection bound into AgentDeps; WriteDb (db.py:74-136) is a separate writable handle and the supplied views show no agent-reachable path to it.",
+          "The automatic LIMIT injection bounds result size only; it is skipped whenever the literal 'LIMIT' appears anywhere in the stripped, uppercased SQL (db.py:182-184) and is not itself a write guard.",
+          "How SQLite enforces mode=ro for specific statement forms, and whether the LIMIT substring check can be evaded, are runtime-behavior questions not decided from source.",
+          "Only the supplied line-numbered views were used; repository enumeration is incomplete, so other entry points or database handles outside these views are out of scope."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied view shows additional callers of ReadDb.query or other statements executed on the read-only connection during an agent session beyond ReadDb.schema() (db.py:173-178) and the db_query tool path, so completeness of the mode=ro guard across all agent-session database access cannot be confirmed from these views alone.",
+      "Behavior labels and runtime traces are unavailable per the stated scope, so the actual runtime failure mode of write/DDL statements under the mode=ro connection is not established by the supplied source.",
+      "Whether any other component mutates the trace database file (e.g., an out-of-process writer) during an agent session is not determinable from the supplied views."
+    ],
+    "repository": "synacktiv/pike-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d18d1a6234eaebcc9992f893b0a79e9d"
+  },
+  "request_sha256": "87e42b18ebb7461bb66bba90b4151be449d6aa3f8b1db12eda56594eaf0bfba5",
+  "response_sha256": "9371122e3e3dc7890ae1fbdace2861a9c4eaebb5a57f34a8c01b8e07e6cd9e68",
+  "state": "completed",
+  "tokens": 18467,
+  "unit": "v24-screen:d18d1a6234eaebcc9992f893b0a79e9d"
+}

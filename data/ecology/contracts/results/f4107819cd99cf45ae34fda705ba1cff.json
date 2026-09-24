@@ -1,0 +1,121 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Runner.run_sync(NBA_AGENT, prompt, session=session) at python/opentelemetry-llm-demo/app/agent_service.py line 48 \u2014 the point at which the guarded agent turn (outbound model API request) would commit; a tripped guardrail aborts before/during this call and commits instead as an HTTP 400 from the handler at main.py lines 20-32.",
+        "contract_id": "ecological-contract:e016947d988356cc663b88173c13b5f5",
+        "declared_mechanism": "nba_content_guardrail, declared with the @input_guardrail() decorator (guardrails.py lines 4-9) and registered on NBA_AGENT via input_guardrails=[nba_content_guardrail] (agent_service.py line 20); it keyword-scans the run input and trips for off-topic queries. The raised InputGuardrailTripwireTriggered is converted by the FastAPI exception handler @app.exception_handler(InputGuardrailTripwireTriggered), which records the exception on the current span and returns JSONResponse(status_code=400) with the guardrail output_info (main.py lines 20-32).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 9,
+            "line_start": 4,
+            "path": "python/opentelemetry-llm-demo/app/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "2b6012b9a01c2fc7fe9056fd57050f47e5e6a744f52e545b932e45d6877ba32f"
+          },
+          {
+            "line_end": 22,
+            "line_start": 16,
+            "path": "python/opentelemetry-llm-demo/app/agent_service.py",
+            "role": "guard_registration",
+            "source_sha256": "ab138695f4f2f26fd00d9969eda2b8f54b25ce155757d286fe68a3c71050fcbe"
+          },
+          {
+            "line_end": 34,
+            "line_start": 12,
+            "path": "python/opentelemetry-llm-demo/app/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2b6012b9a01c2fc7fe9056fd57050f47e5e6a744f52e545b932e45d6877ba32f"
+          },
+          {
+            "line_end": 60,
+            "line_start": 36,
+            "path": "python/opentelemetry-llm-demo/app/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2b6012b9a01c2fc7fe9056fd57050f47e5e6a744f52e545b932e45d6877ba32f"
+          },
+          {
+            "line_end": 48,
+            "line_start": 37,
+            "path": "python/opentelemetry-llm-demo/app/agent_service.py",
+            "role": "protected_operation",
+            "source_sha256": "ab138695f4f2f26fd00d9969eda2b8f54b25ce155757d286fe68a3c71050fcbe"
+          },
+          {
+            "line_end": 42,
+            "line_start": 40,
+            "path": "python/opentelemetry-llm-demo/app/main.py",
+            "role": "protected_operation",
+            "source_sha256": "5c0ea3ae6823534232706cb4535ac383ec3dd07abe1040f7b5eb27830a520725"
+          },
+          {
+            "line_end": 48,
+            "line_start": 45,
+            "path": "python/opentelemetry-llm-demo/app/agent_service.py",
+            "role": "commit_point",
+            "source_sha256": "ab138695f4f2f26fd00d9969eda2b8f54b25ce155757d286fe68a3c71050fcbe"
+          },
+          {
+            "line_end": 9,
+            "line_start": 4,
+            "path": "python/opentelemetry-llm-demo/app/guardrails.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2b6012b9a01c2fc7fe9056fd57050f47e5e6a744f52e545b932e45d6877ba32f"
+          },
+          {
+            "line_end": 22,
+            "line_start": 16,
+            "path": "python/opentelemetry-llm-demo/app/agent_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ab138695f4f2f26fd00d9969eda2b8f54b25ce155757d286fe68a3c71050fcbe"
+          },
+          {
+            "line_end": 32,
+            "line_start": 20,
+            "path": "python/opentelemetry-llm-demo/app/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5c0ea3ae6823534232706cb4535ac383ec3dd07abe1040f7b5eb27830a520725"
+          }
+        ],
+        "forbidden_condition": "The guardrail input for the run \u2014 the latest user-role message when input_data is a list, or the raw string otherwise \u2014 lowercased, with length >= 5, contains none of the configured NBA/basketball keywords (guardrails.py lines 12-34, 49-52), causing nba_content_guardrail to return GuardrailFunctionOutput(tripwire_triggered=True) and abort the run with InputGuardrailTripwireTriggered.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Supplied source does not include the OpenAI Agents SDK implementation, so the ordering guarantee that input guardrails execute before the model request inside Runner.run_sync is library behavior, not source-established.",
+          "The exact text reaching the guardrail as input_data is not established: run_agent_turn passes a prompt built by build_nba_turn_prompt (agent_service.py line 43), and the contents of app/prompts.py, NBA_INTERACTIVE_PROMPT, and NBA_TOPIC_MAPPING are not in supplied views; whether NBA scaffolding in the composed prompt would satisfy the keyword check and defeat off-topic detection is unverified.",
+          "app/models.py (AgentTurnRequest schema) is not supplied, so whether req.message may be empty/None and how that interacts with the <5-character bypass in the guardrail is unverified.",
+          "app/tools.py (calculate_win_percentage) is not supplied, so tool-level effects of the guarded run are not characterized."
+        ],
+        "protected_operation": "Execution of the NBA_Reporter agent turn: run_agent_turn composing the turn prompt and invoking Runner.run_sync(NBA_AGENT, prompt, session=session), which issues model API requests (and may drive WebSearchTool) during the agent run.",
+        "protected_resource": "NBA_AGENT (OpenAI Agents SDK agent named \"NBA_Reporter\", backed by OPENAI_MODEL with WebSearchTool and calculate_win_percentage) and its guarded LLM turn reached via the POST /agent/turn endpoint.",
+        "protection_obligation": "Off-topic (non-NBA/basketball) user input must be blocked by the registered input guardrail on NBA_AGENT before the agent's LLM turn executes at Runner.run_sync, with the tripwire surfaced as an HTTP 400 response instead of an agent/web-search run.",
+        "scope_limits": [
+          "The guardrail is a keyword substring heuristic: inputs shorter than 5 characters always pass (guardrails.py lines 52-53), and off-topic text containing any listed keyword (e.g., 'game', 'score', 'report', 'news') passes; it is not a semantic topical classifier.",
+          "The guardrail screens agent-run input only; it does not inspect tool results or the agent's final message (sanitize_agent_message at agent_service.py line 50 is output formatting, not topical screening).",
+          "The separate _validate_topic HTTPException (agent_service.py lines 25-34) is ordinary application-level topic validation and is outside this contract.",
+          "Blocking is established only for the FastAPI request path; handling of InputGuardrailTripwireTriggered in other runtimes or entry points is not established.",
+          "The contract asserts the guardrail gates the run-level agent turn; whether a tripwire aborts already-started WebSearchTool or model effects (versus preventing their start) is not established from supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Contents of app/prompts.py (build_nba_turn_prompt) and app/config.py (NBA_INTERACTIVE_PROMPT, NBA_TOPIC_MAPPING, OPENAI_MODEL) are absent from the supplied views, so the exact guardrail input text and topical scaffolding cannot be confirmed.",
+      "The OpenAI Agents SDK ('agents' package) internals for Runner.run_sync and input-guardrail execution ordering are not supplied; the guardrail-before-model-request ordering is asserted only from reviewer wording and library conventions.",
+      "app/models.py (AgentTurnRequest/AgentTurnResponse schemas) is not supplied, so request field constraints relevant to the guardrail bypass path are unverified.",
+      "app/tools.py (calculate_win_percentage) is not supplied, so non-network tool effects inside the guarded run are not characterized.",
+      "Behavior labels and runtime execution traces are unavailable per the stated scope; violation status and prevalence are not decided here."
+    ],
+    "repository": "SigNoz/examples",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:f4107819cd99cf45ae34fda705ba1cff"
+  },
+  "request_sha256": "51645b293e9c1d8be9eb527cb00dd5677945d5ec6c410f99732b44ef8939dc4e",
+  "response_sha256": "05a861dc5df94dde637289b894d83f63adfb6e27bc447d525e9323daa9394b3b",
+  "state": "completed",
+  "tokens": 9698,
+  "unit": "v24-screen:f4107819cd99cf45ae34fda705ba1cff"
+}

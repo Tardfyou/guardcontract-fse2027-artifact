@@ -1,0 +1,87 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Container entrypoint startup of the externally bound HTTP server: ENTRYPOINT [\"b00t-mcp\"] plus CMD [\"--http\", \"--host\", \"0.0.0.0\", \"--port\", \"8080\"] commits the network-facing serving configuration under the ENV-mandated auth layer. Per-request commitment (auth check before serving each non-/health request) is asserted only by the ENV setting and comments; no handler/middleware source is supplied to confirm it.",
+        "contract_id": "ecological-contract:4ae8dcfea6976727dc0b1b8b19f9fac0",
+        "declared_mechanism": "Image-level mandatory auth configuration: ENV B00T_MCP_REQUIRE_AUTH=1 together with B00T_IDENTITY_URL=https://b00t.promptexecution.com, documented in the Containerfile as the SP4-07 identity layer verifying the forwarded SP1 JWT against the identity worker's JWKS, with /health declared outside the identity middleware; the configuration is baked into the runtime image (USER b00t, EXPOSE 8080, ENTRYPOINT/CMD).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 50,
+            "line_start": 46,
+            "path": "containers/b00t-mcp-remote/Containerfile",
+            "role": "guard_registration",
+            "source_sha256": "dfa462c6f67ae756ac9472ed135121be8d2ace85720e389778dce3b509efe1ad"
+          },
+          {
+            "line_end": 5,
+            "line_start": 3,
+            "path": "containers/b00t-mcp-remote/Containerfile",
+            "role": "guard_registration",
+            "source_sha256": "dfa462c6f67ae756ac9472ed135121be8d2ace85720e389778dce3b509efe1ad"
+          },
+          {
+            "line_end": 47,
+            "line_start": 46,
+            "path": "containers/b00t-mcp-remote/Containerfile",
+            "role": "forbidden_condition",
+            "source_sha256": "dfa462c6f67ae756ac9472ed135121be8d2ace85720e389778dce3b509efe1ad"
+          },
+          {
+            "line_end": 56,
+            "line_start": 52,
+            "path": "containers/b00t-mcp-remote/Containerfile",
+            "role": "protected_operation",
+            "source_sha256": "dfa462c6f67ae756ac9472ed135121be8d2ace85720e389778dce3b509efe1ad"
+          },
+          {
+            "line_end": 59,
+            "line_start": 58,
+            "path": "containers/b00t-mcp-remote/Containerfile",
+            "role": "commit_point",
+            "source_sha256": "dfa462c6f67ae756ac9472ed135121be8d2ace85720e389778dce3b509efe1ad"
+          }
+        ],
+        "forbidden_condition": "Unauthenticated/anonymous access to the network-exposed b00t-mcp HTTP backend \u2014 i.e., serving any non-/health operation without the SP4-07 JWT/JWKS verification, equivalently a network-exposed backend (bind 0.0.0.0:8080) running without B00T_MCP_REQUIRE_AUTH=1 enforced.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Does the b00t-mcp --http request path dispatch agent tool executions, consume agent-generated input, or run inside an agent lifecycle hook such that the guarded HTTP effect is agent-mediated (decorator, registration, callback wiring, tool-dispatch, or concrete dataflow evidence required)?",
+          "Where is the SP4-07 identity middleware registered in main.rs, and does it wrap all non-/health routes exactly as the Containerfile comment asserts?",
+          "Is there a startup path where B00T_MCP_REQUIRE_AUTH is unset/0 or where the server starts without the guard, and can that path be reached in agent deployments?",
+          "Do non---http entry modes (e.g., stdio or other transports) exist that bypass the HTTP auth surface, and are they in scope for this unit?"
+        ],
+        "protected_operation": "Serving non-/health operations over the b00t-mcp HTTP interface bound to 0.0.0.0:8080, started via ENTRYPOINT [\"b00t-mcp\"] with CMD [\"--http\", \"--host\", \"0.0.0.0\", \"--port\", \"8080\"].",
+        "protected_resource": "The b00t-mcp HTTP backend listening on 0.0.0.0:8080 (all routes except the explicitly public /health endpoint).",
+        "protection_obligation": "The network-exposed b00t-mcp HTTP backend must not serve any non-/health operation without the mandatory SP4-07 identity-verification layer: the image-declared configuration requires B00T_MCP_REQUIRE_AUTH=1 so that the forwarded SP1 JWT is verified against the identity worker's JWKS before requests other than the public /health readiness probe are served on 0.0.0.0:8080. (Merged from the two reviewer opinions, which state the same obligation with the same guard and commit point.)",
+        "scope_limits": [
+          "Judgment is limited to the supplied Containerfile view; the main.rs SP4-08 route/middleware source referenced at line 54 is not supplied, so middleware coverage is configuration-asserted only.",
+          "The /health endpoint is explicitly public and outside the identity middleware (lines 4-5, 54-56); the 127.0.0.1:8080/health readiness HEALTHCHECK lies outside the guarded surface.",
+          "This is ordinary web authentication (JWT/JWKS) on an HTTP service; the supplied source does not explicitly bind the guarded HTTP effect to an agent tool, agent lifecycle hook, or agent-generated input, so absent such binding evidence it remains outside the agent-DEC scope.",
+          "The 'MCP' naming of the image/binary is framework/topic metadata and under the study rules cannot be used to infer agent mediation.",
+          "No determination of DEC violation, safety, runtime behavior, or prevalence is made; build configuration (lines 19-31) and non-root hardening (lines 36-44) support no distinct protection obligation."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source explicitly binds the protected HTTP operation to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; agent mediation is therefore recorded as not_established and no agent_entry_binding evidence role is cited.",
+      "main.rs (referenced at Containerfile line 54 for the SP4-08 /health exemption) and all route/middleware registration source are absent, so JWT/JWKS verification behavior and middleware coverage cannot be confirmed from code.",
+      "No source shows runtime behavior when B00T_MCP_REQUIRE_AUTH is unset or 0, nor whether alternative entry modes start the backend without the guard.",
+      "The identity worker's JWKS endpoint behavior at B00T_IDENTITY_URL=https://b00t.promptexecution.com is not supplied."
+    ],
+    "repository": "elasticdotventures/_b00t_",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:66c91ee1918bd1aebd2dd00e92e7609e"
+  },
+  "request_sha256": "151420405eab0ded5863a9810abfab260614b164704697d751f22a5b87e7c93e",
+  "response_sha256": "1bc544cc4dace4c6414134f7ce5461d186065b77cdd1c0b38f8f94d454db24c7",
+  "state": "completed",
+  "tokens": 10495,
+  "unit": "v24-screen:66c91ee1918bd1aebd2dd00e92e7609e"
+}

@@ -1,0 +1,463 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "execute_step's tool dispatch (executor.py:684) reaching _github_request(\"PUT\", f\"/repos/{repo}/pulls/{pr_number}/merge\", _body=body) (agent/skills/github/skill.py:511-513).",
+        "contract_id": "ecological-contract:0958c931aa122213fcf3f18eb18df758",
+        "declared_mechanism": "register_tool(high_risk=True) adds the tool to _high_risk_tools (executor.py:67-76); needs_approval() returns True for high-risk tools in 'always' mode (executor.py:291-293) and for 'other high-risk tools' in 'smart' mode (executor.py:336-337); execute_step enforces the gate with request_approval()/wait_for_approval() and converts denial/timeout into a failed step before dispatch (executor.py:599-637).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 76,
+            "line_start": 67,
+            "path": "agent/core/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 340,
+            "line_start": 336,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 637,
+            "line_start": 599,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 507,
+            "line_start": 503,
+            "path": "agent/skills/github/skill.py",
+            "role": "protected_operation",
+            "source_sha256": "b540e1fd3e6c4beab86d85aa18f302199efc3fd8e03868754b137031b2da7c47"
+          },
+          {
+            "line_end": 503,
+            "line_start": 503,
+            "path": "agent/skills/github/skill.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b540e1fd3e6c4beab86d85aa18f302199efc3fd8e03868754b137031b2da7c47"
+          },
+          {
+            "line_end": 597,
+            "line_start": 586,
+            "path": "agent/core/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 684,
+            "line_start": 684,
+            "path": "agent/core/executor.py",
+            "role": "commit_point",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 525,
+            "line_start": 508,
+            "path": "agent/skills/github/skill.py",
+            "role": "commit_point",
+            "source_sha256": "b540e1fd3e6c4beab86d85aa18f302199efc3fd8e03868754b137031b2da7c47"
+          }
+        ],
+        "forbidden_condition": "Dispatching github_merge_pr while needs_approval returns True without a granted human approval \u2014 i.e., merging a pull request via PUT /repos/{repo}/pulls/{pr_number}/merge without human approval.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Configured production value of settings.approval_mode (agent/config source not supplied).",
+          "Whether any code path invokes get_tool('github_merge_pr') outside execute_step (other than the known inner call from github_apply_decisions).",
+          "Approval resolution callers (dashboard/Telegram wiring) not in supplied source."
+        ],
+        "protected_operation": "Agent-initiated github_merge_pr tool call (repo, pr_number, commit_title) dispatched through the executor tool registry on a TaskStep.",
+        "protected_resource": "Remote GitHub repository pull-request state (merge of the PR via the GitHub REST API authenticated with the configured GITHUB_TOKEN).",
+        "protection_obligation": "Agent tool invocation of github_merge_pr must not execute until a human grants approval: it is registered via @register_tool(\"github_merge_pr\", high_risk=True), which places it in _high_risk_tools; needs_approval() asks for every high-risk tool in 'always' mode and treats other high-risk tools as always-ask in 'smart' mode; execute_step blocks on request_approval/wait_for_approval before dispatching, and denial or timeout aborts the step before the PUT merge request is sent.",
+        "scope_limits": [
+          "github_apply_decisions invokes github_merge_pr directly (skill.py:769), bypassing any per-call approval for merge_pr in that flow \u2014 only the outer github_apply_decisions gate applies there.",
+          "github_review_pr produces recommendations only and performs no mutation (skill.py:450-497); the approval gate protects the action tools, not the review step.",
+          "approval_mode 'never' auto-approves every call (executor.py:288-289); per-task trust auto-approves subsequent risky steps after one grant (executor.py:60-64, 427-446, 605-613).",
+          "Gate is evaluated once per execute_step; self-correction tool/arg switching mid-retry is not re-gated (executor.py:703-725).",
+          "wait_for_approval fails open to True if no pending record exists (executor.py:451-452)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "execute_step's tool dispatch `await asyncio.wait_for(tool(**current_args), timeout=120)` (executor.py:684), which for execute_code writes the script (executor.py:1028-1029) and reaches asyncio.create_subprocess_exec (executor.py:1031-1037).",
+        "contract_id": "ecological-contract:742e42b8790af198b8a62df7e881bf10",
+        "declared_mechanism": "High-risk registration (executor.py:36-48 plus register_tool(high_risk=True)) + per-call needs_approval() code screening (is_dangerous_code and pathlib-scaffold/read-only auto-approval carve-outs, executor.py:313-334), enforced by execute_step's request_approval()/wait_for_approval() gate; not granted \u2192 step FAILED with 'Denied by human' or 'Approval timed out' before any dispatch (executor.py:599-637).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 48,
+            "line_start": 36,
+            "path": "agent/core/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 340,
+            "line_start": 274,
+            "path": "agent/core/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 196,
+            "line_start": 182,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 334,
+            "line_start": 313,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 637,
+            "line_start": 599,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 1010,
+            "line_start": 1004,
+            "path": "agent/core/executor.py",
+            "role": "protected_operation",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 1004,
+            "line_start": 1004,
+            "path": "agent/core/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 597,
+            "line_start": 586,
+            "path": "agent/core/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 684,
+            "line_start": 684,
+            "path": "agent/core/executor.py",
+            "role": "commit_point",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 1037,
+            "line_start": 1028,
+            "path": "agent/core/executor.py",
+            "role": "commit_point",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          }
+        ],
+        "forbidden_condition": "Dispatching execute_code while needs_approval(step.tool_name, step.tool_args) returns True and no human approval has been granted \u2014 including code matching dangerous patterns (os.system, subprocess, shutil.rmtree, eval/exec, file writes, __import__) that always requires approval.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Configured production value of settings.approval_mode (agent/config source not supplied).",
+          "Whether any code path invokes get_tool('execute_code') outside execute_step.",
+          "Approval resolution callers (dashboard/Telegram wiring) not in supplied source."
+        ],
+        "protected_operation": "Agent-initiated execute_code tool call carrying arbitrary Python source (step.tool_args['code']) dispatched through the executor tool registry on a TaskStep.",
+        "protected_resource": "Sandboxed child Python interpreter spawned via asyncio.create_subprocess_exec(sys.executable, script), including its environment merged with the project .env; the code is first written to a scratch script file (executor.py:1028-1029).",
+        "protection_obligation": "Agent tool invocation of execute_code must not reach execution until a human grants approval whenever needs_approval classifies the call as requiring approval: execute_code is declared high-risk (_high_risk_tools and @register_tool(\"execute_code\", high_risk=True)), needs_approval() screens the submitted code against _DANGEROUS_CODE_PATTERNS and read-only/scaffold heuristics in smart mode (always asks in always mode), and execute_step blocks on request_approval/wait_for_approval before dispatching; denial or timeout aborts the step before the code runs in a subprocess.",
+        "scope_limits": [
+          "approval_mode 'never' auto-approves every call (executor.py:288-289); deployed default unverified.",
+          "Per-task trust: one granted approval auto-approves remaining risky steps of the same task (executor.py:60-64, 427-446, 605-613).",
+          "pathlib-based scaffolds referencing projects/ or output/ without traversal or dangerous ops are auto-approved (executor.py:318-328), and simple read-only code is auto-approved (executor.py:329-332) \u2014 resulting filesystem writes under those roots occur without human approval by design.",
+          "The tool itself writes the submitted code to a scratch file before spawning (executor.py:1028-1029); that file mutation is covered only by the single tool-level gate, not a separate approval.",
+          "Gate is evaluated once per execute_step; self-correction may switch tools/args mid-retry without re-gating (executor.py:703-725).",
+          "wait_for_approval fails open to True if no pending record exists (executor.py:451-452)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "execute_step's tool dispatch `await asyncio.wait_for(tool(**current_args), timeout=120)` (executor.py:684), which for run_command reaches asyncio.create_subprocess_shell(command, ...) (executor.py:1174-1179); the approval gate at executor.py:599-637 must resolve before this point.",
+        "contract_id": "ecological-contract:8c457dd6d4fc0526093ef522ca732a5f",
+        "declared_mechanism": "High-risk registration (executor.py:36-48 plus register_tool(high_risk=True), executor.py:67-76) + per-call needs_approval() policy (mode 'always' asks for every high-risk tool, executor.py:291-293; mode 'smart' uses is_dangerous_command/is_safe_command and defaults unknown commands to ask, executor.py:296-310), enforced at the top of execute_step via request_approval() + wait_for_approval(); not granted \u2192 step FAILED with 'Denied by human' or 'Approval timed out' and the tool is never invoked (executor.py:599-637).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 48,
+            "line_start": 36,
+            "path": "agent/core/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 340,
+            "line_start": 274,
+            "path": "agent/core/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 173,
+            "line_start": 141,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 637,
+            "line_start": 599,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 1126,
+            "line_start": 1119,
+            "path": "agent/core/executor.py",
+            "role": "protected_operation",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 1119,
+            "line_start": 1119,
+            "path": "agent/core/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 597,
+            "line_start": 586,
+            "path": "agent/core/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 684,
+            "line_start": 684,
+            "path": "agent/core/executor.py",
+            "role": "commit_point",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 1179,
+            "line_start": 1174,
+            "path": "agent/core/executor.py",
+            "role": "commit_point",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          }
+        ],
+        "forbidden_condition": "Dispatching run_command (and thereby spawning its shell command) while needs_approval(step.tool_name, step.tool_args) returns True and the corresponding human approval has not been granted \u2014 including dangerous-pattern commands (rm -rf, pipe-to-bash, sudo, dd, etc.) that always require approval.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Configured production value of settings.approval_mode (agent/config source not supplied).",
+          "Whether any repository code path invokes get_tool('run_command') outside execute_step, bypassing the gate.",
+          "Wiring of approval resolution callers (dashboard API endpoints / agent.telegram handlers invoking resolve_approval) \u2014 not in supplied source."
+        ],
+        "protected_operation": "Agent-initiated run_command tool call carrying an arbitrary shell command string (step.tool_args['command']) dispatched through the executor tool registry on a TaskStep.",
+        "protected_resource": "Host OS shell/subprocess spawned from the agent-supplied command (asyncio.create_subprocess_shell), including the child environment seeded from os.environ plus the project .env.",
+        "protection_obligation": "Agent tool invocation of run_command must not reach execution until a human grants approval whenever needs_approval classifies the call as requiring approval: run_command is declared high-risk (_high_risk_tools and @register_tool(\"run_command\", high_risk=True)), needs_approval() screens each call in always/smart modes against _DANGEROUS_PATTERNS/_SAFE_COMMANDS (unknown commands default to ask), and execute_step blocks on request_approval/wait_for_approval before dispatching; denial or timeout aborts the step before the shell command runs.",
+        "scope_limits": [
+          "approval_mode 'never' auto-approves every call (executor.py:288-289); the deployed default of settings.approval_mode is not in supplied source (normalize falls back to 'smart', executor.py:264-271).",
+          "Per-task trust: a single granted approval auto-approves all remaining risky steps of the same task (executor.py:60-64, 427-446, 605-613).",
+          "Pure mkdir restricted to projects/ or output/ is auto-approved by is_safe_command (executor.py:203-227) and executes via the in-tool pathlib fast path (Path(p).mkdir, executor.py:1139-1167) \u2014 a filesystem mutation that by design bypasses human approval.",
+          "The gate is evaluated once per execute_step call; the self-correction retry loop may switch tools or mutate args (executor.py:703-725) without re-running needs_approval.",
+          "wait_for_approval returns True (fail-open) if no pending approval record exists (executor.py:451-452) and defaults to a 300s timeout that fails the step (executor.py:449-463, 631-635).",
+          "If Telegram is not configured, approval requests fall back to dashboard-only delivery (executor.py:384-416); the step still blocks until resolution or timeout."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "execute_step's tool dispatch (executor.py:684) reaching the comment POST (skill.py:532-536) and the state-change PATCH _github_request(\"PATCH\", f\"/repos/{repo}/pulls/{pr_number}\", _body={\"state\": \"closed\"}) (skill.py:539-541).",
+        "contract_id": "ecological-contract:bd1289cc6aafd29707103e4f87663c06",
+        "declared_mechanism": "register_tool(high_risk=True) adds the tool to _high_risk_tools (executor.py:67-76); needs_approval() asks for high-risk tools in 'always' mode (executor.py:291-293) and for other high-risk tools in 'smart' mode (executor.py:336-337); execute_step's request_approval()/wait_for_approval() gate fails the step on denial or timeout before any dispatch (executor.py:599-637).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 76,
+            "line_start": 67,
+            "path": "agent/core/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 340,
+            "line_start": 336,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 637,
+            "line_start": 599,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 530,
+            "line_start": 528,
+            "path": "agent/skills/github/skill.py",
+            "role": "protected_operation",
+            "source_sha256": "b540e1fd3e6c4beab86d85aa18f302199efc3fd8e03868754b137031b2da7c47"
+          },
+          {
+            "line_end": 528,
+            "line_start": 528,
+            "path": "agent/skills/github/skill.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b540e1fd3e6c4beab86d85aa18f302199efc3fd8e03868754b137031b2da7c47"
+          },
+          {
+            "line_end": 597,
+            "line_start": 586,
+            "path": "agent/core/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 684,
+            "line_start": 684,
+            "path": "agent/core/executor.py",
+            "role": "commit_point",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 545,
+            "line_start": 531,
+            "path": "agent/skills/github/skill.py",
+            "role": "commit_point",
+            "source_sha256": "b540e1fd3e6c4beab86d85aa18f302199efc3fd8e03868754b137031b2da7c47"
+          }
+        ],
+        "forbidden_condition": "Dispatching github_close_pr while needs_approval returns True without a granted human approval \u2014 i.e., rejecting a pull request (optionally posting a comment via POST /repos/{repo}/issues/{n}/comments and closing via PATCH /repos/{repo}/pulls/{n} state=closed) without human approval.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Configured production value of settings.approval_mode (agent/config source not supplied).",
+          "Whether any code path invokes get_tool('github_close_pr') outside execute_step (other than the known inner call from github_apply_decisions).",
+          "Approval resolution callers (dashboard/Telegram wiring) not in supplied source."
+        ],
+        "protected_operation": "Agent-initiated github_close_pr tool call (repo, pr_number, comment) dispatched through the executor tool registry on a TaskStep.",
+        "protected_resource": "Remote GitHub repository pull-request state (PR closure and any posted rejection comment, via the GitHub REST API with the configured GITHUB_TOKEN).",
+        "protection_obligation": "Agent tool invocation of github_close_pr must not execute until a human grants approval: it is registered via @register_tool(\"github_close_pr\", high_risk=True) into _high_risk_tools; needs_approval() requires approval for high-risk tools in 'always' mode and always asks for other high-risk tools in 'smart' mode; execute_step blocks on request_approval/wait_for_approval before dispatching, and denial or timeout aborts the step before the comment POST and close PATCH are sent.",
+        "scope_limits": [
+          "github_apply_decisions invokes github_close_pr directly (skill.py:772), bypassing any per-call approval for close_pr in that flow \u2014 only the outer github_apply_decisions gate applies there.",
+          "The optional comment POST occurs before the close PATCH within a single approved tool call; both share the one outer approval.",
+          "approval_mode 'never' auto-approves every call (executor.py:288-289); per-task trust auto-approves subsequent risky steps after one grant (executor.py:60-64, 427-446, 605-613).",
+          "Gate is evaluated once per execute_step; self-correction tool/arg switching mid-retry is not re-gated (executor.py:703-725).",
+          "wait_for_approval fails open to True if no pending record exists (executor.py:451-452)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "execute_step's tool dispatch (executor.py:684) reaching the per-decision mutation loop where github_merge_pr / github_close_pr are invoked (skill.py:768-772), each driving GitHub API PUT/PATCH requests.",
+        "contract_id": "ecological-contract:e07d52fa8b192b30aba87ce6a78b48e0",
+        "declared_mechanism": "register_tool(high_risk=True) adds the tool to _high_risk_tools (executor.py:67-76); needs_approval() asks for high-risk tools in 'always' mode (executor.py:291-293) and for other high-risk tools in 'smart' mode (executor.py:336-337); execute_step's request_approval()/wait_for_approval() gate fails the step on denial or timeout before dispatch (executor.py:599-637).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 76,
+            "line_start": 67,
+            "path": "agent/core/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 340,
+            "line_start": 336,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 637,
+            "line_start": 599,
+            "path": "agent/core/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 726,
+            "line_start": 712,
+            "path": "agent/skills/github/skill.py",
+            "role": "protected_operation",
+            "source_sha256": "b540e1fd3e6c4beab86d85aa18f302199efc3fd8e03868754b137031b2da7c47"
+          },
+          {
+            "line_end": 712,
+            "line_start": 712,
+            "path": "agent/skills/github/skill.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b540e1fd3e6c4beab86d85aa18f302199efc3fd8e03868754b137031b2da7c47"
+          },
+          {
+            "line_end": 597,
+            "line_start": 586,
+            "path": "agent/core/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 684,
+            "line_start": 684,
+            "path": "agent/core/executor.py",
+            "role": "commit_point",
+            "source_sha256": "9e1978d767816f978bfb6f8534a691a63a0e0c005ae93d82bff5277c6c7ab6ab"
+          },
+          {
+            "line_end": 775,
+            "line_start": 768,
+            "path": "agent/skills/github/skill.py",
+            "role": "commit_point",
+            "source_sha256": "b540e1fd3e6c4beab86d85aa18f302199efc3fd8e03868754b137031b2da7c47"
+          }
+        ],
+        "forbidden_condition": "Dispatching github_apply_decisions while needs_approval returns True without a granted human approval \u2014 i.e., bulk-executing review verdicts (merging 'merge' PRs and closing 'reject' PRs per the decisions JSON) without human approval in non-dry-run mode.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Configured production value of settings.approval_mode (agent/config source not supplied).",
+          "Whether any code path invokes get_tool('github_apply_decisions') outside execute_step.",
+          "Approval resolution callers (dashboard/Telegram wiring) not in supplied source."
+        ],
+        "protected_operation": "Agent-initiated github_apply_decisions tool call (repo, decisions JSON, dry_run, verify_locally) dispatched through the executor tool registry on a TaskStep.",
+        "protected_resource": "Multiple remote GitHub pull requests in the target repository (batch merges via github_merge_pr and closures via github_close_pr against the GitHub REST API).",
+        "protection_obligation": "Agent tool invocation of github_apply_decisions must not execute until a human grants approval: it is registered via @register_tool(\"github_apply_decisions\", high_risk=True) into _high_risk_tools; needs_approval() requires approval for high-risk tools in 'always' mode and always asks for other high-risk tools in 'smart' mode; execute_step blocks on request_approval/wait_for_approval before dispatching, and denial or timeout aborts the step before any bulk merge/close API mutation is performed.",
+        "scope_limits": [
+          "dry_run=true reports intended actions without executing them (skill.py:747-749); low-confidence rejections (<0.5) are skipped (skill.py:744-746).",
+          "Inner github_merge_pr/github_close_pr calls (skill.py:769, 772) bypass their own per-tool approval; the single outer github_apply_decisions approval covers the entire batch.",
+          "With verify_locally=true, local verification spawns git/test subprocesses via github_verify_pr_locally (skill.py:752-766) under the same single outer approval.",
+          "approval_mode 'never' auto-approves every call (executor.py:288-289); per-task trust auto-approves subsequent risky steps after one grant (executor.py:60-64, 427-446, 605-613).",
+          "Gate is evaluated once per execute_step; self-correction tool/arg switching mid-retry is not re-gated (executor.py:703-725).",
+          "wait_for_approval fails open to True if no pending record exists (executor.py:451-452)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The tools send_email, slack_send_message, slack_reply_thread, discord_send_message, jira_transition_issue, jira_comment_issue, gitlab_merge_mr, deploy, and transfer_funds appear only as names in _high_risk_tools (executor.py:36-48); their registering decorators, implementations, concrete effects, and effect strata are not in the supplied source, so no per-tool contracts are emitted for them.",
+      "agent/core/agent_loop.py (run_adaptive_loop, decide_next_step) and the planner that produces TaskStep.tool_name/tool_args are not supplied; the upstream agent/LLM origin of tool arguments is only partially evidenced (template resolution and alias normalization at executor.py:640-668, and the task sub-agent wiring at executor.py:850-859).",
+      "agent/config settings source is not supplied; needs_approval reads settings.approval_mode (executor.py:283-285) but the deployed default mode and any timeout configuration are unverified.",
+      "Callers of resolve_approval \u2014 dashboard API endpoints and agent.telegram approval handlers \u2014 are not in supplied source; the human-side approval resolution path is unverified.",
+      "Repository enumeration is incomplete; whether any other code path dispatches registry tools via get_tool() without passing through execute_step's approval gate cannot be determined from the supplied views.",
+      "Behavior labels and runtime prevalence data are unavailable; no claim is made about how often the gate triggers or is bypassed in practice."
+    ],
+    "repository": "tamimlabs/nexusmind-ai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:dca9cfc331480f26c096bdb0d50b2183"
+  },
+  "request_sha256": "7a0139c31451bef69bc5fe0382b95a43f86a88fd5aa87ded5b1df49096c46524",
+  "response_sha256": "46eb5141e618af1b7c3a069f8af2021d9bad033e8b626e6cd68752cc6ae5ddad",
+  "state": "completed",
+  "tokens": 45870,
+  "unit": "v24-screen:dca9cfc331480f26c096bdb0d50b2183"
+}

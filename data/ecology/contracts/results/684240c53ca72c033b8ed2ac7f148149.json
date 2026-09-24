@@ -1,0 +1,354 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Request-body parse/validation of ChatCompletionRequest.mcp_servers (the model validator runs at Pydantic parse), which completes before MCPClientPool.__aenter__/_connect open any streamablehttp_client session for the tool loop.",
+        "contract_id": "ecological-contract:01b113f88e12a8f89f98ba88590b88e2",
+        "declared_mechanism": "Pydantic model_validator(mode='after') McpServerConfig._check_url_safety invoking validate_mcp_url(self.url, has_authorization_token=bool(self.authorization_token)) at request-body parse; environment gates OTARI_MCP_ALLOW_LOOPBACK (loopback allowed by default) and OTARI_MCP_ALLOW_PRIVATE_HOSTS (checks on by default).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 35,
+            "line_start": 29,
+            "path": "otari/src/gateway/models/mcp.py",
+            "role": "guard_registration",
+            "source_sha256": "6eaac7d7c0a76206a898c8a96fd041badff466de33e6df5b3e12edd163297915"
+          },
+          {
+            "line_end": 21,
+            "line_start": 14,
+            "path": "otari/src/gateway/models/mcp.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6eaac7d7c0a76206a898c8a96fd041badff466de33e6df5b3e12edd163297915"
+          },
+          {
+            "line_end": 107,
+            "line_start": 60,
+            "path": "otari/src/gateway/services/url_safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2bb8d1defc4f89093aeea6bd392d3f0104c8405471841156b4efaa86d725e189"
+          },
+          {
+            "line_end": 125,
+            "line_start": 110,
+            "path": "otari/src/gateway/services/url_safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2bb8d1defc4f89093aeea6bd392d3f0104c8405471841156b4efaa86d725e189"
+          },
+          {
+            "line_end": 81,
+            "line_start": 61,
+            "path": "otari/src/gateway/services/mcp_client.py",
+            "role": "protected_operation",
+            "source_sha256": "f1b617dc56c0f4033e09812cabd9d808be0b2082f9d00b7a5d646c2b79f6c2a4"
+          },
+          {
+            "line_end": 81,
+            "line_start": 73,
+            "path": "otari/src/gateway/services/mcp_client.py",
+            "role": "commit_point",
+            "source_sha256": "f1b617dc56c0f4033e09812cabd9d808be0b2082f9d00b7a5d646c2b79f6c2a4"
+          },
+          {
+            "line_end": 961,
+            "line_start": 958,
+            "path": "otari/src/gateway/api/routes/_pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f9a3451d57c9d41357048d4a82cd5f523a33ae700d0ca75ff26e889674592f34"
+          },
+          {
+            "line_end": 192,
+            "line_start": 175,
+            "path": "otari/src/gateway/api/routes/chat.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6d20e389785d17a720022dd210c2be18d8681f993b3f4eec759e701cef51a360"
+          },
+          {
+            "line_end": 131,
+            "line_start": 118,
+            "path": "otari/src/gateway/services/mcp_client.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f1b617dc56c0f4033e09812cabd9d808be0b2082f9d00b7a5d646c2b79f6c2a4"
+          }
+        ],
+        "forbidden_condition": "A McpServerConfig.url that (a) does not use http/https; (b) uses plain http while authorization_token is set; (c) is a literal IP or resolves to any address that is unspecified, loopback with OTARI_MCP_ALLOW_LOOPBACK disabled, link-local, multicast, in a private range (RFC 1918/ULA), or in a reserved range; or (d) has a hostname that fails to resolve at validation time (default-deny against DNS rebinding) \u2014 except when OTARI_MCP_ALLOW_PRIVATE_HOSTS short-circuits the check entirely.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether McpServerConfig instances produced by _resolve_platform_mcp_servers for hybrid-mode mcp_server_ids are constructed through the same validated model (construction code not supplied).",
+          "gateway.services.mcp_loop internals are not supplied; model-tool-call dispatch to pool.call_tool is evidenced by adapter wiring and protocol docstrings rather than loop source."
+        ],
+        "protected_operation": "Opening outbound MCP client sessions (streamablehttp_client connections in MCPClientPool._connect) to caller-configured MCP server URLs, over which model tool calls are dispatched during the request's tool loop.",
+        "protected_resource": "The gateway's outbound network position and the internal/link-local/reserved IP ranges reachable from the gateway host via MCP server connections.",
+        "protection_obligation": "MCP server URL SSRF/TLS guard (merges duplicate reviewer wording on caller-supplied MCP URLs): the gateway must refuse to open outbound MCP sessions to caller-supplied server URLs whose hosts resolve to loopback (when loopback is disabled), unspecified, link-local, multicast, private (RFC 1918/ULA), or reserved IP ranges, whose scheme is not http/https, or that would carry an authorization token over plain http; the check is enforced at request-body parse time, before any MCP session is opened for model tool dispatch.",
+        "scope_limits": [
+          "Loopback is allowed by default (same-host sidecar/dev deployments); only OTARI_MCP_ALLOW_LOOPBACK=false blocks loopback targets.",
+          "Setting OTARI_MCP_ALLOW_PRIVATE_HOSTS disables all private/loopback/reserved checks.",
+          "Source acknowledges DNS rebinding can defeat host-based validation between check time and fetch time and recommends network-layer egress enforcement (url_safety.py:18-20).",
+          "The guard covers inline request-body mcp_servers; validation of hybrid-mode platform-resolved servers (mcp_server_ids) is not shown in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Each httpx client.stream GET issued in _fetch_capped for the current hop URL, reached only after validate_outbound_fetch_url accepts that URL.",
+        "contract_id": "ecological-contract:4064455c02499a0bc6fc07245aebf7da",
+        "declared_mechanism": "validate_outbound_fetch_url invoked before any network round trip for each result URL (web_search_backend.py:296-303) and again on each redirect Location, with follow_redirects=False and the redirect walk bounded at _FETCH_MAX_REDIRECTS=5; env gate WEB_SEARCH_ALLOW_PRIVATE_HOSTS (default false).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 303,
+            "line_start": 289,
+            "path": "otari/src/gateway/services/web_search_backend.py",
+            "role": "guard_registration",
+            "source_sha256": "fa1be6d92066492cd3131960e45cf4d04a7c30cd21de9b71883c291fd3394059"
+          },
+          {
+            "line_end": 66,
+            "line_start": 62,
+            "path": "otari/src/gateway/services/web_search_backend.py",
+            "role": "guard_registration",
+            "source_sha256": "fa1be6d92066492cd3131960e45cf4d04a7c30cd21de9b71883c291fd3394059"
+          },
+          {
+            "line_end": 368,
+            "line_start": 352,
+            "path": "otari/src/gateway/services/web_search_backend.py",
+            "role": "guard_registration",
+            "source_sha256": "fa1be6d92066492cd3131960e45cf4d04a7c30cd21de9b71883c291fd3394059"
+          },
+          {
+            "line_end": 191,
+            "line_start": 152,
+            "path": "otari/src/gateway/services/url_safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2bb8d1defc4f89093aeea6bd392d3f0104c8405471841156b4efaa86d725e189"
+          },
+          {
+            "line_end": 125,
+            "line_start": 110,
+            "path": "otari/src/gateway/services/url_safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2bb8d1defc4f89093aeea6bd392d3f0104c8405471841156b4efaa86d725e189"
+          },
+          {
+            "line_end": 214,
+            "line_start": 195,
+            "path": "otari/src/gateway/services/web_search_backend.py",
+            "role": "protected_operation",
+            "source_sha256": "fa1be6d92066492cd3131960e45cf4d04a7c30cd21de9b71883c291fd3394059"
+          },
+          {
+            "line_end": 351,
+            "line_start": 344,
+            "path": "otari/src/gateway/services/web_search_backend.py",
+            "role": "commit_point",
+            "source_sha256": "fa1be6d92066492cd3131960e45cf4d04a7c30cd21de9b71883c291fd3394059"
+          },
+          {
+            "line_end": 193,
+            "line_start": 162,
+            "path": "otari/src/gateway/services/web_search_backend.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fa1be6d92066492cd3131960e45cf4d04a7c30cd21de9b71883c291fd3394059"
+          },
+          {
+            "line_end": 26,
+            "line_start": 23,
+            "path": "otari/src/gateway/services/web_search_backend.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fa1be6d92066492cd3131960e45cf4d04a7c30cd21de9b71883c291fd3394059"
+          },
+          {
+            "line_end": 981,
+            "line_start": 975,
+            "path": "otari/src/gateway/api/routes/_pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f9a3451d57c9d41357048d4a82cd5f523a33ae700d0ca75ff26e889674592f34"
+          }
+        ],
+        "forbidden_condition": "A fetched result URL or redirect Location whose scheme is not http/https, whose hostname is missing or unresolvable at validation (default-deny against DNS rebinding), or any of whose resolved addresses is unspecified, loopback, link-local, multicast, private, or reserved \u2014 unless OTARI_WEB_SEARCH_ALLOW_PRIVATE_HOSTS is enabled.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "gateway.services.mcp_loop source is not supplied; model-driven dispatch of web_search calls to WebSearchBackend.call_tool is evidenced by the duck-typed pool protocol and adapter wiring rather than loop internals."
+        ],
+        "protected_operation": "Outbound HTTP page fetches performed by WebSearchBackend while executing the web_search tool (_fetch_and_extract / _fetch_capped), including each manually followed redirect hop.",
+        "protected_resource": "Internal and link-local network ranges reachable from the gateway, including cloud-metadata endpoints (source comments cite 169.254.169.254 / loopback / RFC1918 as the threat).",
+        "protection_obligation": "Web-search outbound fetch SSRF guard: during model-invoked web_search tool execution the gateway must not issue outbound page fetches \u2014 including any redirect hop \u2014 to URLs that resolve to loopback, unspecified, link-local, multicast, private (RFC 1918/ULA), or reserved IP addresses, use a non-http(s) scheme, or whose host fails to resolve; every redirect Location must be re-validated before the gateway issues the request for that hop.",
+        "scope_limits": [
+          "Blocked fetches degrade silently: _fetch_and_extract returns None and the search still succeeds with the engine-supplied snippet; the guard refuses the fetch but does not fail the tool call.",
+          "Validation is resolution-time only; source acknowledges DNS rebinding can defeat host-based checks and recommends network-layer egress policy (url_safety.py:18-20).",
+          "The operator-configured search backend base URL (OTARI_WEB_SEARCH_URL) is operator-controlled and is not covered by this caller/model-influenced-URL guard."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Request-body parse/validation of the guardrails field (the model validator), which completes before the guardrail evaluation fetch initiated at apply_input_guardrails (the run_input_guardrails call) and before provider dispatch.",
+        "contract_id": "ecological-contract:d2d2cc1e4f41f369676dfdd1ff6130a4",
+        "declared_mechanism": "Pydantic model_validator(mode='after') GuardrailConfig._check_url_safety invoking validate_mcp_url(self.url, has_authorization_token=False) at request-body parse (same SSRF guard as MCP URLs, per the class docstring).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 69,
+            "line_start": 62,
+            "path": "otari/src/gateway/models/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "6a3796dc0cc17ea1d359d9f0dbfc4b2090adb82207967df79a7fbaf75b85f2b6"
+          },
+          {
+            "line_end": 105,
+            "line_start": 105,
+            "path": "otari/src/gateway/api/routes/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "6d20e389785d17a720022dd210c2be18d8681f993b3f4eec759e701cef51a360"
+          },
+          {
+            "line_end": 39,
+            "line_start": 33,
+            "path": "otari/src/gateway/models/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6a3796dc0cc17ea1d359d9f0dbfc4b2090adb82207967df79a7fbaf75b85f2b6"
+          },
+          {
+            "line_end": 107,
+            "line_start": 60,
+            "path": "otari/src/gateway/services/url_safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2bb8d1defc4f89093aeea6bd392d3f0104c8405471841156b4efaa86d725e189"
+          },
+          {
+            "line_end": 13,
+            "line_start": 10,
+            "path": "otari/src/gateway/models/guardrails.py",
+            "role": "protected_operation",
+            "source_sha256": "6a3796dc0cc17ea1d359d9f0dbfc4b2090adb82207967df79a7fbaf75b85f2b6"
+          },
+          {
+            "line_end": 166,
+            "line_start": 156,
+            "path": "otari/src/gateway/api/routes/_helpers.py",
+            "role": "commit_point",
+            "source_sha256": "43f7076d2de458783e5fa0315132b57e6515665f4f92f8be51e6e09cdbda10f0"
+          }
+        ],
+        "forbidden_condition": "A GuardrailConfig.url whose scheme is not http/https, whose host is missing or unresolvable at validation time (default-deny against DNS rebinding), or any of whose resolved addresses is unspecified, loopback with OTARI_MCP_ALLOW_LOOPBACK disabled, link-local, multicast, private (RFC 1918/ULA), or reserved \u2014 except when OTARI_MCP_ALLOW_PRIVATE_HOSTS short-circuits the check; validated with has_authorization_token=False.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "gateway.services.guardrails.run_input_guardrails (the actual outbound fetch to the guardrail URL, including client, redirect, and TLS behavior) is not among supplied sources; the fetch effect is evidenced by the call site and model docstring only.",
+          "Whether guardrail evaluation constitutes an agent lifecycle step for mediation purposes is not established by supplied source."
+        ],
+        "protected_operation": "The gateway's outbound request to the caller-overridden guardrails service URL during input-guardrail evaluation (run_input_guardrails with the per-request url or the operator OTARI_GUARDRAILS_URL default), executed before provider dispatch.",
+        "protected_resource": "Internal/link-local network ranges reachable from the gateway via the guardrails-service fetch.",
+        "protection_obligation": "Guardrail-service URL SSRF guard: caller-supplied per-request guardrail service URLs (GuardrailConfig.url) must be rejected at request-body parse time when they resolve to private, loopback (unless allowed), link-local, multicast, or reserved IP addresses, use a non-http(s) scheme, or fail to resolve, before the gateway contacts the guardrails service during input-guardrail evaluation.",
+        "scope_limits": [
+          "Only requests supplying a per-request url are guarded here; the operator-set OTARI_GUARDRAILS_URL default is not caller-influenced.",
+          "Loopback is allowed by default via the shared validate_mcp_url gates (OTARI_MCP_ALLOW_LOOPBACK / OTARI_MCP_ALLOW_PRIVATE_HOSTS)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The first upstream provider request issued after prepare_gateway_tools returns (dispatch_non_stream's adapter.call_provider / open_stream's open_provider_stream); the guard executes earlier in the same request pipeline (chat.py:299-310 precedes all dispatch branches).",
+        "contract_id": "ecological-contract:d60ea0c8cf16c6b23d063058419f38a6",
+        "declared_mechanism": "apply_input_guardrails (raises 403 on a blocked verdict, 502 on unreachable block guardrail, annotates X-Otari-Guardrails for non-blocking verdicts) invoked at the top of prepare_gateway_tools on the shared chat/messages/responses pipeline; guardrails registered as a caller-supplied field on the completion request schemas (ChatCompletionRequest.guardrails, max_length=8).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 698,
+            "line_start": 667,
+            "path": "otari/src/gateway/api/routes/_pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "f9a3451d57c9d41357048d4a82cd5f523a33ae700d0ca75ff26e889674592f34"
+          },
+          {
+            "line_end": 310,
+            "line_start": 299,
+            "path": "otari/src/gateway/api/routes/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "6d20e389785d17a720022dd210c2be18d8681f993b3f4eec759e701cef51a360"
+          },
+          {
+            "line_end": 105,
+            "line_start": 105,
+            "path": "otari/src/gateway/api/routes/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "6d20e389785d17a720022dd210c2be18d8681f993b3f4eec759e701cef51a360"
+          },
+          {
+            "line_end": 163,
+            "line_start": 126,
+            "path": "otari/src/gateway/api/routes/_helpers.py",
+            "role": "guard_registration",
+            "source_sha256": "43f7076d2de458783e5fa0315132b57e6515665f4f92f8be51e6e09cdbda10f0"
+          },
+          {
+            "line_end": 181,
+            "line_start": 165,
+            "path": "otari/src/gateway/api/routes/_helpers.py",
+            "role": "forbidden_condition",
+            "source_sha256": "43f7076d2de458783e5fa0315132b57e6515665f4f92f8be51e6e09cdbda10f0"
+          },
+          {
+            "line_end": 56,
+            "line_start": 52,
+            "path": "otari/src/gateway/models/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6a3796dc0cc17ea1d359d9f0dbfc4b2090adb82207967df79a7fbaf75b85f2b6"
+          },
+          {
+            "line_end": 168,
+            "line_start": 164,
+            "path": "otari/src/gateway/api/routes/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "6d20e389785d17a720022dd210c2be18d8681f993b3f4eec759e701cef51a360"
+          },
+          {
+            "line_end": 956,
+            "line_start": 944,
+            "path": "otari/src/gateway/api/routes/_pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "f9a3451d57c9d41357048d4a82cd5f523a33ae700d0ca75ff26e889674592f34"
+          }
+        ],
+        "forbidden_condition": "Proceeding to provider dispatch when run_input_guardrails returns verdict.blocked for a block-mode guardrail (must instead raise 403), or when a block-mode guardrail service is unreachable (GuardrailsNotReachableError) without failing closed (502).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Supplied source does not establish that completion requests originate from agent runtimes; the guard is wired ahead of provider/tool-loop dispatch, but agent mediation of the guarded dispatch itself is not shown.",
+          "gateway.services.guardrails.run_input_guardrails implementation is not supplied; block/fail-closed semantics are taken from _helpers.py docstrings and the call site."
+        ],
+        "protected_operation": "Upstream LLM provider dispatch for the completion request (adapter.call_provider / open_provider_stream via acompletion), together with the gateway tool-loop dispatch paths that prepare_gateway_tools precedes.",
+        "protected_resource": "The upstream LLM provider call for the request.",
+        "protection_obligation": "Input-guardrail blocking gate: block-mode guardrails attached to a completion request must be evaluated via apply_input_guardrails inside prepare_gateway_tools before any upstream LLM provider or gateway tool-loop dispatch; a flagged request must be rejected with HTTP 403 so the provider call is never committed, and a block-mode guardrail that cannot be evaluated must fail closed with 502.",
+        "scope_limits": [
+          "Monitor-mode verdicts do not block; the request proceeds with an X-Otari-Guardrails header annotation.",
+          "For streaming responses the monitor annotation is not propagated; block still applies before any bytes stream.",
+          "Guardrails run once per request on the latest user text before the first provider call; model-driven tool-loop iterations within the request are not re-guarded.",
+          "Only flattened textual content is checked; non-text content parts are ignored."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Reviewer obligation 1 (verify_master_key on /v1/budgets CRUD) is supported by source (budgets.py:52,77,90,108,142; deps.py:176-202), but no supplied source binds Budget create/read/update/delete to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; as ordinary web API authentication it is out of scope and no contract was compiled.",
+      "gateway.services.guardrails.run_input_guardrails source is not supplied: guardrail-service fetch mechanics (HTTP client, redirects, TLS, use of the per-request url versus OTARI_GUARDRAILS_URL) are unverified.",
+      "gateway.services.mcp_loop source is not supplied: model-tool-call dispatch into pool.call_tool / WebSearchBackend.call_tool is evidenced by adapter wiring (chat.py:175-204) and protocol docstrings rather than loop internals.",
+      "gateway.api.routes._platform._resolve_platform_mcp_servers source is not supplied: whether hybrid-mode platform-resolved McpServerConfig instances pass the parse-time URL validator is unknown.",
+      "Whether clients of /v1/chat/completions are agent runtimes is not established by supplied source; agent mediation for the provider-dispatch and guardrail-service effects is therefore marked not_established."
+    ],
+    "repository": "kunalhonde03/mozilla.ai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:684240c53ca72c033b8ed2ac7f148149"
+  },
+  "request_sha256": "fa35665ebd507de9f04f51bf9a66d570529706eaf428eda82fb9ed90591c56aa",
+  "response_sha256": "23bfb83d02321e2d9d04add6cb89629381e99b0460c37bdb8b251a89453a8a50",
+  "state": "completed",
+  "tokens": 79242,
+  "unit": "v24-screen:684240c53ca72c033b8ed2ac7f148149"
+}

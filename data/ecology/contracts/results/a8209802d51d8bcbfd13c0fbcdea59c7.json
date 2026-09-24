@@ -1,0 +1,370 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "subprocess.run(['git','clone','--depth','1',remote_url,str(clone_path)]) at clone.py:89-99; the preceding git ls-remote subprocess.run at clone.py:83-87 likewise runs only after the guard.",
+        "contract_id": "ecological-contract:18f487466f34ce372db554f30f7f9a7a",
+        "declared_mechanism": "verify_repository (clone.py:52-66) issues GET https://api.github.com/repos/{owner}/{repo} and raises Exception('Private repositories are not supported.') when data['private'] is truthy; clone_repo calls verify_repository at clone.py:72 before computing remote_url and clone_path and before both subprocess.run calls, so the exception aborts clone_repo prior to any subprocess.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 66,
+            "line_start": 52,
+            "path": "Crawlit-Backend/backend/clone.py",
+            "role": "guard_registration",
+            "source_sha256": "368bfc37700b092501f9c985f8d1072e2fc0f85752e1153d2d31ab26c54e41b2"
+          },
+          {
+            "line_end": 66,
+            "line_start": 65,
+            "path": "Crawlit-Backend/backend/clone.py",
+            "role": "forbidden_condition",
+            "source_sha256": "368bfc37700b092501f9c985f8d1072e2fc0f85752e1153d2d31ab26c54e41b2"
+          },
+          {
+            "line_end": 81,
+            "line_start": 69,
+            "path": "Crawlit-Backend/backend/clone.py",
+            "role": "protected_operation",
+            "source_sha256": "368bfc37700b092501f9c985f8d1072e2fc0f85752e1153d2d31ab26c54e41b2"
+          },
+          {
+            "line_end": 99,
+            "line_start": 83,
+            "path": "Crawlit-Backend/backend/clone.py",
+            "role": "commit_point",
+            "source_sha256": "368bfc37700b092501f9c985f8d1072e2fc0f85752e1153d2d31ab26c54e41b2"
+          },
+          {
+            "line_end": 36,
+            "line_start": 32,
+            "path": "Crawlit-Backend/backend/core.py",
+            "role": "protected_operation",
+            "source_sha256": "e9c905fffc72656adfda8dd851b04b151b16a14802255c1abbf023b29dbf1b18"
+          }
+        ],
+        "forbidden_condition": "clone_repo proceeds past verify_repository for a repository whose GitHub API payload has data['private'] truthy, so that git ls-remote / git clone subprocesses execute against a private repository.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent framework registers clone_repo or process_repo as a tool, or reaches them through an agent lifecycle hook.",
+          "Whether callers of POST /index (whose repoOwner/repoName enqueue jobs that reach the clone stage) can be agent-controlled."
+        ],
+        "protected_operation": "Execution of clone_repo: parsing the repository, verifying it against the GitHub API, and spawning the git ls-remote and git clone subprocesses (invoked in the worker pipeline via asyncio.to_thread(clone_repo, repo_url)).",
+        "protected_resource": "Host subprocess execution and the clone destination backend/repos/<owner>/<repo> (REPOS_DIR tree).",
+        "protection_obligation": "A repository reported private by the GitHub repository lookup must never be cloned; the private-repository rejection must fire before any git subprocess for that repository is spawned.",
+        "scope_limits": [
+          "Within the only supplied call path, repo_url is always https://github.com/{owner}/{repoName} built in process_repo (core.py:32); behavior for arbitrary URLs (SSH form, non-GitHub hosts) is not exercised by supplied callers.",
+          "Guard outcome depends on GitHub API responses; non-404 failures raise a generic Exception, and adequacy of that handling is not assessed.",
+          "Previously cloned repositories still pass through verification, because the check at clone.py:72 precedes the '.git exists' early return at clone.py:79-81.",
+          "No agent tool dispatch, agent lifecycle hook, or agent-generated input channel reaching clone_repo or process_repo appears in supplied source; mediation is unresolved, and this contract is retained as an external-effect guard rather than as generic request validation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.commit() at jobs.py:190, following the UPDATE that sets status='running' / current_stage='Cloning' (jobs.py:182-189).",
+        "contract_id": "ecological-contract:acb8e36e8d782150a05c7d005c6c9db0",
+        "declared_mechanism": "claim_next_job opens BEGIN IMMEDIATE (jobs.py:163) and its candidate SELECT filters 'status = queued AND cancelled = 0' (jobs.py:168-169); only a row returned under that filter receives the UPDATE to RUNNING, all within the same transaction committed at jobs.py:190.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 175,
+            "line_start": 161,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "guard_registration",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          },
+          {
+            "line_end": 425,
+            "line_start": 418,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "forbidden_condition",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          },
+          {
+            "line_end": 25,
+            "line_start": 20,
+            "path": "Crawlit-Backend/backend/workers/worker.py",
+            "role": "protected_operation",
+            "source_sha256": "29cb9410c96b71a51a8f10b91bf8328db61d0c985b3a6d85902d0f3c5b33769c"
+          },
+          {
+            "line_end": 190,
+            "line_start": 182,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "commit_point",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          }
+        ],
+        "forbidden_condition": "claim_next_job selects and marks RUNNING a job whose cancellation is recorded (status='cancelled' or cancelled=1), committing that claim.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool dispatch or lifecycle hook creates jobs (POST /index) whose claims this guard protects."
+        ],
+        "protected_operation": "Worker claim admission: JobWorker.run's repeated acquisition of the next queued job via JobRepository.claim_next_job.",
+        "protected_resource": "jobs table row (status, current_stage, cancelled) of the candidate job in the SQLite jobs database.",
+        "protection_obligation": "A cancelled job must never be claimed by the worker: claim admission must exclude jobs with cancelled=1 or cancelled status before the claim transaction commits.",
+        "scope_limits": [
+          "Guard covers claim admission only; cancellation after a claim is handled by separate stage and completion guards.",
+          "Serialization relies on BEGIN IMMEDIATE write-transaction behavior; concurrent runtime adequacy is not assessed.",
+          "No agent binding exists in supplied source; whether jobs ever originate from agent tool calls is unestablished."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.commit() at jobs.py:393, covering either the retry re-queue UPDATE plus repositories upsert (jobs.py:324-357) or the FAILED UPDATE plus upsert (jobs.py:358-391).",
+        "contract_id": "ecological-contract:b92e78a02bf64ca774c7bb36010b30ea",
+        "declared_mechanism": "record_job_failure opens BEGIN IMMEDIATE (jobs.py:299), re-reads retry_count/status/cancelled (jobs.py:300-308), and returns without mutation when status=='cancelled' or cancelled (jobs.py:314-316); the retry re-queue or FAILED updates and their upserts execute only after the check.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 313,
+            "line_start": 297,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "guard_registration",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          },
+          {
+            "line_end": 316,
+            "line_start": 314,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "forbidden_condition",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          },
+          {
+            "line_end": 54,
+            "line_start": 49,
+            "path": "Crawlit-Backend/backend/workers/worker.py",
+            "role": "protected_operation",
+            "source_sha256": "29cb9410c96b71a51a8f10b91bf8328db61d0c985b3a6d85902d0f3c5b33769c"
+          },
+          {
+            "line_end": 393,
+            "line_start": 318,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "commit_point",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          }
+        ],
+        "forbidden_condition": "record_job_failure commits a retry re-queue (status='queued' with incremented retry_count and next_attempt_at) or a terminal FAILED update, plus its repositories upsert, for a job whose status is 'cancelled' or whose cancelled flag is set.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent-mediated path invokes the unguarded update_status/update_progress/fail_job helpers on jobs."
+        ],
+        "protected_operation": "Worker failure handling: the generic exception path in JobWorker.run invoking JobRepository.record_job_failure.",
+        "protected_resource": "jobs table row (status, retry_count, next_attempt_at, error) and the repositories table row for the job.",
+        "protection_obligation": "A cancelled job must never be retried or transitioned by failure handling: record_job_failure must refuse both the retry re-queue and the terminal FAILED write for cancelled jobs before commit.",
+        "scope_limits": [
+          "Guard covers only the record_job_failure path; the unguarded update_status/update_progress/fail_job helpers exist (jobs.py:449-501) but no supplied caller invokes them in the worker pipeline.",
+          "No agent binding exists in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.commit() at jobs.py:240, following the stage/progress UPDATE (jobs.py:232-239).",
+        "contract_id": "ecological-contract:bb0a93d52d689c86e57f1aa84ab570cd",
+        "declared_mechanism": "set_job_phase opens BEGIN IMMEDIATE (jobs.py:213), re-reads status/cancelled inside the transaction (jobs.py:214-222), and returns after a no-op commit when the row is terminal or cancelled (jobs.py:228-230); the UPDATE executes only after the check passes (jobs.py:232-239).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 227,
+            "line_start": 211,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "guard_registration",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          },
+          {
+            "line_end": 230,
+            "line_start": 228,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "forbidden_condition",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          },
+          {
+            "line_end": 28,
+            "line_start": 27,
+            "path": "Crawlit-Backend/backend/workers/worker.py",
+            "role": "protected_operation",
+            "source_sha256": "29cb9410c96b71a51a8f10b91bf8328db61d0c985b3a6d85902d0f3c5b33769c"
+          },
+          {
+            "line_end": 240,
+            "line_start": 232,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "commit_point",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          }
+        ],
+        "forbidden_condition": "set_job_phase persists a current_stage/progress UPDATE for a job whose status is completed, failed, or cancelled, or whose cancelled flag is set.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent-mediated lifecycle hook or tool invocation drives progress callbacks for jobs."
+        ],
+        "protected_operation": "Worker progress reporting: JobWorker.update_phase delegating to JobRepository.set_job_phase as the processor's progress_callback during pipeline stages.",
+        "protected_resource": "jobs table row (current_stage, progress, updated_at) for the job.",
+        "protection_obligation": "A cancelled (or otherwise terminal) job must never have its stage/progress state mutated: set_job_phase must refuse the update before its commit.",
+        "scope_limits": [
+          "Check is evaluated inside the same BEGIN IMMEDIATE transaction as the mutation; runtime concurrency adequacy is not assessed.",
+          "No agent binding exists in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "asyncio.to_thread(clone_repo, repo_url) at core.py:36, leading to subprocess.run('git clone' ...) at clone.py:89-99.",
+        "contract_id": "ecological-contract:c039814af319a6d5e911dd8487c5c0e5",
+        "declared_mechanism": "Worker wires ensure_not_cancelled \u2014 which re-reads the job and raises JobCancelledError when status==CANCELLED (worker.py:30-33) \u2014 into the processor as cancel_check (worker.py:36-41); process_repo's ensure_not_cancelled delegates to cancel_check (core.py:28-30) and is awaited immediately before the clone dispatch (core.py:34); a raised JobCancelledError is caught by the worker, which records the cancellation via cancel_job (worker.py:44-48).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 33,
+            "line_start": 30,
+            "path": "Crawlit-Backend/backend/workers/worker.py",
+            "role": "guard_registration",
+            "source_sha256": "29cb9410c96b71a51a8f10b91bf8328db61d0c985b3a6d85902d0f3c5b33769c"
+          },
+          {
+            "line_end": 41,
+            "line_start": 36,
+            "path": "Crawlit-Backend/backend/workers/worker.py",
+            "role": "guard_registration",
+            "source_sha256": "29cb9410c96b71a51a8f10b91bf8328db61d0c985b3a6d85902d0f3c5b33769c"
+          },
+          {
+            "line_end": 34,
+            "line_start": 28,
+            "path": "Crawlit-Backend/backend/core.py",
+            "role": "guard_registration",
+            "source_sha256": "e9c905fffc72656adfda8dd851b04b151b16a14802255c1abbf023b29dbf1b18"
+          },
+          {
+            "line_end": 33,
+            "line_start": 32,
+            "path": "Crawlit-Backend/backend/workers/worker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "29cb9410c96b71a51a8f10b91bf8328db61d0c985b3a6d85902d0f3c5b33769c"
+          },
+          {
+            "line_end": 36,
+            "line_start": 32,
+            "path": "Crawlit-Backend/backend/core.py",
+            "role": "protected_operation",
+            "source_sha256": "e9c905fffc72656adfda8dd851b04b151b16a14802255c1abbf023b29dbf1b18"
+          },
+          {
+            "line_end": 36,
+            "line_start": 36,
+            "path": "Crawlit-Backend/backend/core.py",
+            "role": "commit_point",
+            "source_sha256": "e9c905fffc72656adfda8dd851b04b151b16a14802255c1abbf023b29dbf1b18"
+          },
+          {
+            "line_end": 99,
+            "line_start": 89,
+            "path": "Crawlit-Backend/backend/clone.py",
+            "role": "commit_point",
+            "source_sha256": "368bfc37700b092501f9c985f8d1072e2fc0f85752e1153d2d31ab26c54e41b2"
+          }
+        ],
+        "forbidden_condition": "process_repo dispatches asyncio.to_thread(clone_repo, repo_url) \u2014 and thereby spawns git subprocesses \u2014 for a job whose current database status is CANCELLED.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent framework registers process_repo or the job pipeline as a tool or invokes it from an agent lifecycle hook.",
+          "Whether job inputs (repoOwner/repoName) that reach this guarded stage can originate from agent-generated input."
+        ],
+        "protected_operation": "Pipeline clone stage: core.process_repo's clone invocation (core.py:36) as driven by JobWorker.run, which passes cancel_check=ensure_not_cancelled into the processor.",
+        "protected_resource": "git ls-remote / git clone subprocess execution for https://github.com/{owner}/{repo} and the backend/repos clone destination.",
+        "protection_obligation": "Once a job's cancellation is recorded, the worker pipeline must abort before the clone stage: the cancel gate must raise JobCancelledError before clone_repo is dispatched to a thread.",
+        "scope_limits": [
+          "The gate is point-in-time: cancellation occurring after the check at core.py:34 and before subprocess commit is not intercepted (no re-check inside clone_repo); runtime adequacy is not assessed.",
+          "Analogous gates exist before run_doc_generator (core.py:38) and ingestion_pipeline (core.py:47-54), but their downstream commit points and strata are outside supplied source (see missing_information); those stages are not separately contracted here.",
+          "This contract complements, and does not replace, the private-repository verification inside clone_repo (separate contract).",
+          "No agent tool dispatch, lifecycle hook, or agent-generated input channel to process_repo appears in supplied source; mediation is unresolved."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.commit() at jobs.py:294, covering the job UPDATE to COMPLETED (jobs.py:264-271) and the repositories upsert (jobs.py:272-293).",
+        "contract_id": "ecological-contract:c2e63990de56f18091d3e9f3eef61bf5",
+        "declared_mechanism": "complete_job opens BEGIN IMMEDIATE (jobs.py:245), re-reads status/cancelled (jobs.py:246-254), and returns without mutation when status=='cancelled' or cancelled (jobs.py:260-262); the job UPDATE and the repositories indexed=1 upsert execute only after the check.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 259,
+            "line_start": 243,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "guard_registration",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          },
+          {
+            "line_end": 262,
+            "line_start": 260,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "forbidden_condition",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          },
+          {
+            "line_end": 43,
+            "line_start": 42,
+            "path": "Crawlit-Backend/backend/workers/worker.py",
+            "role": "protected_operation",
+            "source_sha256": "29cb9410c96b71a51a8f10b91bf8328db61d0c985b3a6d85902d0f3c5b33769c"
+          },
+          {
+            "line_end": 294,
+            "line_start": 264,
+            "path": "Crawlit-Backend/backend/db/jobs.py",
+            "role": "commit_point",
+            "source_sha256": "319df975b1c6a04607d2b00efcd4c19ea8214a5d124f172df42086020094fe7d"
+          }
+        ],
+        "forbidden_condition": "complete_job commits status='completed' and the repositories upsert setting indexed=1 for a job whose status is 'cancelled' or whose cancelled flag is set.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether job completion is ever triggered through an agent tool or lifecycle hook rather than the worker loop."
+        ],
+        "protected_operation": "Worker completion path: JobWorker.run invoking JobRepository.complete_job after the processor returns and a final cancel re-check.",
+        "protected_resource": "jobs table row (status, current_stage, progress, cancelled) and the repositories table row (indexed, job_id, status) for the job's owner/repo.",
+        "protection_obligation": "A cancelled job must never be marked completed, nor have its repository recorded as indexed: complete_job must refuse the completion commit for cancelled jobs.",
+        "scope_limits": [
+          "Guard is a pre-commit status/cancelled re-check within the claim-to-completion window; runtime adequacy not assessed.",
+          "No agent binding exists in supplied source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The first-phase reviewer's CORS obligation (origins list at api.py:19-21; app.add_middleware(CORSMiddleware, ...) at api.py:43-49) is excluded from scope: it is CORS policy, and supplied source contains no binding of the guarded HTTP effects to an agent tool, agent lifecycle hook, or agent-generated input; no contract is emitted for it.",
+      "Stage-abort guards before run_doc_generator (core.py:38-45; cancel_check threaded at core.py:44) and before ingestion_pipeline (core.py:47-54; cancel_check threaded at core.py:53) are supported by source, but the internal effect commit points and effect strata of those stages (e.g., any file writes, or the external vector-store writes the reviewer labels 'Pinecone ingestion') are not present in supplied source; separate contracts for those stages are deferred until that source is supplied.",
+      "No agent tool registration, agent framework lifecycle hook, or agent-generated-input dataflow appears anywhere in the supplied source; consequently every contract carries agent_mediation='not_established' and no agent_entry_binding evidence exists. Whether the FastAPI endpoints' callers are agents is undeterminable from the supplied views.",
+      "POST /index (api.py:104-114) supplies repoOwner/repoName that flow through create_job and the worker to the clone stage; whether those inputs can originate from an agent is unestablished in supplied source.",
+      "Runtime adequacy, prevalence, and behavior labels are unavailable per the stated scope; all contracts describe declared source mechanisms only, and no DEC violation, safety, or behavioral determination is made."
+    ],
+    "repository": "ansh-vaish/CrawlIt",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a8209802d51d8bcbfd13c0fbcdea59c7"
+  },
+  "request_sha256": "f335a79f566e4fd7bf5af525add3b118cfd029a0163daaafedc1fb3ed1742beb",
+  "response_sha256": "5cf1641bd217fc572dbb35179130aec4f92b36fb75910e9d0b30e3261ed7a51b",
+  "state": "completed",
+  "tokens": 32456,
+  "unit": "v24-screen:a8209802d51d8bcbfd13c0fbcdea59c7"
+}

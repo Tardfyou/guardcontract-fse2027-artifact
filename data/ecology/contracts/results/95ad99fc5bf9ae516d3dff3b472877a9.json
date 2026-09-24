@@ -1,0 +1,313 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guardrail_before_tool_call return decision for gmail_draft (guardrails.py lines 171-180), which occurs before the gmail_draft function executes against the Gmail API; a returned dict skips tool execution entirely (guardrails.py lines 4-6).",
+        "contract_id": "ecological-contract:612a2e52b2abf2cd019626fb85ea5f71",
+        "declared_mechanism": "before_tool_callback=guardrail_before_tool_call on the executor; for tool.name == 'gmail_draft' the callback runs _check_gmail_draft(args, tool_context) and returns a blocking dict on the first failing check, otherwise returns None to allow execution and increments the per-session counter via _record_draft_created; policy decisions and tool-selection metrics are recorded either way.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 168,
+            "line_start": 168,
+            "path": "services/agents/agents/root.py",
+            "role": "guard_registration",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 180,
+            "line_start": 171,
+            "path": "services/agents/guardrails/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "50ca9c250761116ba4e02a93ab73103f7443b757001ce4b895e6b89cf8700cf2"
+          },
+          {
+            "line_end": 6,
+            "line_start": 4,
+            "path": "services/agents/guardrails/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "50ca9c250761116ba4e02a93ab73103f7443b757001ce4b895e6b89cf8700cf2"
+          },
+          {
+            "line_end": 269,
+            "line_start": 194,
+            "path": "services/agents/guardrails/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50ca9c250761116ba4e02a93ab73103f7443b757001ce4b895e6b89cf8700cf2"
+          },
+          {
+            "line_end": 77,
+            "line_start": 76,
+            "path": "services/agents/guardrails/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50ca9c250761116ba4e02a93ab73103f7443b757001ce4b895e6b89cf8700cf2"
+          },
+          {
+            "line_end": 99,
+            "line_start": 98,
+            "path": "services/agents/guardrails/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50ca9c250761116ba4e02a93ab73103f7443b757001ce4b895e6b89cf8700cf2"
+          },
+          {
+            "line_end": 116,
+            "line_start": 103,
+            "path": "services/agents/guardrails/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50ca9c250761116ba4e02a93ab73103f7443b757001ce4b895e6b89cf8700cf2"
+          },
+          {
+            "line_end": 150,
+            "line_start": 121,
+            "path": "services/agents/guardrails/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50ca9c250761116ba4e02a93ab73103f7443b757001ce4b895e6b89cf8700cf2"
+          },
+          {
+            "line_end": 36,
+            "line_start": 32,
+            "path": "services/agents/agents/root.py",
+            "role": "protected_operation",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 161,
+            "line_start": 154,
+            "path": "services/agents/agents/root.py",
+            "role": "protected_operation",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 167,
+            "line_start": 163,
+            "path": "services/agents/agents/root.py",
+            "role": "protected_operation",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 166,
+            "line_start": 166,
+            "path": "services/agents/agents/root.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          }
+        ],
+        "forbidden_condition": "A gmail_draft call whose arguments trigger any _check_gmail_draft failure: malformed recipient, recipient count > MAX_DRAFT_RECIPIENTS (3), recipient not on GUARDRAIL_DRAFT_RECIPIENT_ALLOWLIST when configured, body length > MAX_DRAFT_BODY_CHARS (5000), PII pattern match, prompt-injection phrase match, phishing phrase match, suspicious URL match, or _draft_rate_limit_exceeded (>= 10 drafts created this session); the first failing check wins and a blocking dict is returned.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The ordering of guardrail_before_tool_call relative to ADK's require_confirmation pause inside FunctionTool.run_async is not established by the supplied source (i.e., whether a guardrail-allowed draft that is subsequently denied by the human confirmation still consumes rate-limit quota).",
+          "Deployment values of GUARDRAIL_DRAFT_RECIPIENT_ALLOWLIST and GUARDRAIL_MAX_DRAFTS_PER_SESSION are not supplied; code shows defaults of an empty allowlist and a cap of 10 (guardrails.py lines 83-86, 92-98).",
+          "The concrete gmail_draft implementation and its Gmail API call in agents/tools/gmail.py are not supplied, so the exact external commit inside the guarded tool cannot be inspected."
+        ],
+        "protected_operation": "gmail_draft tool invocation by the executor agent, creating a draft against the real Gmail API under the gmail.compose scope (root.py lines 32-36).",
+        "protected_resource": "The user's Gmail drafts store (external Gmail draft creation via the gmail_draft tool).",
+        "protection_obligation": "Every gmail_draft invocation by the executor agent must pass the gmail_draft branch of guardrail_before_tool_call before a draft is created; the draft must be blocked if any check fails: a malformed recipient address, more than 3 recipients, a recipient outside the optional configured allowlist, a body over 5000 characters, PII-shaped content in subject+body (credit-card/SSN/phone/IBAN/AWS key/Google API key/GitHub token/Slack token/OpenAI-shaped key/private-key block), a prompt-injection phrase, a phishing/social-engineering phrase, a suspicious URL (raw IP host or known link shortener), or a per-session count of already-created drafts at MAX_DRAFTS_PER_SESSION (10, tracked in ADK session state key 'guardrail:gmail_draft_count').",
+        "scope_limits": [
+          "Recipient allowlist enforcement is opt-in and off by default: an empty GUARDRAIL_DRAFT_RECIPIENT_ALLOWLIST means no address restriction (guardrails.py lines 79-86).",
+          "The rate limit depends on tool_context.state; when state is None (e.g., a direct call with no session context) the rate limit does not block (guardrails.py lines 303-309).",
+          "The draft counter is incremented at callback-allow time (guardrails.py lines 177, 312-316), before the tool's actual external effect completes; supplied source does not establish whether drafts later denied in the confirmation handshake are refunded.",
+          "Content checks are heuristic (regex-shape and case-insensitive substring matching) applied to subject+body only; recipients are checked for shape/count/allowlist but their local parts are not content-scanned.",
+          "The gmail_draft implementation itself (agents/tools/gmail.py) is not in the supplied views; the Gmail API interaction inside the tool is described only via root.py docstring/instruction."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guardrail_before_tool_call return decision at ADK's pre-tool-call hook: returning a dict instead of None suppresses execution of the tool function before any external effect occurs (guardrails.py lines 153-169 and 188-191; block semantics documented at guardrails.py lines 4-6 and root.py lines 38-45).",
+        "contract_id": "ecological-contract:7f98e6bfaf41c0f764ec2a77c465f7aa",
+        "declared_mechanism": "before_tool_callback=guardrail_before_tool_call registered on each tool-using LlmAgent; the callback checks tool.name.lower() against the forbidden patterns and returns a dict (which ADK treats as a replacement result that skips tool execution entirely), logging reason 'forbidden_pattern:<pattern>' and recording the policy decision.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 100,
+            "line_start": 100,
+            "path": "services/agents/agents/root.py",
+            "role": "guard_registration",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 115,
+            "line_start": 115,
+            "path": "services/agents/agents/root.py",
+            "role": "guard_registration",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 130,
+            "line_start": 130,
+            "path": "services/agents/agents/root.py",
+            "role": "guard_registration",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 168,
+            "line_start": 168,
+            "path": "services/agents/agents/root.py",
+            "role": "guard_registration",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 45,
+            "line_start": 38,
+            "path": "services/agents/agents/root.py",
+            "role": "guard_registration",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 74,
+            "line_start": 55,
+            "path": "services/agents/guardrails/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "50ca9c250761116ba4e02a93ab73103f7443b757001ce4b895e6b89cf8700cf2"
+          },
+          {
+            "line_end": 169,
+            "line_start": 153,
+            "path": "services/agents/guardrails/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "50ca9c250761116ba4e02a93ab73103f7443b757001ce4b895e6b89cf8700cf2"
+          },
+          {
+            "line_end": 6,
+            "line_start": 4,
+            "path": "services/agents/guardrails/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "50ca9c250761116ba4e02a93ab73103f7443b757001ce4b895e6b89cf8700cf2"
+          },
+          {
+            "line_end": 100,
+            "line_start": 99,
+            "path": "services/agents/agents/root.py",
+            "role": "protected_operation",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 115,
+            "line_start": 114,
+            "path": "services/agents/agents/root.py",
+            "role": "protected_operation",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 130,
+            "line_start": 129,
+            "path": "services/agents/agents/root.py",
+            "role": "protected_operation",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 168,
+            "line_start": 163,
+            "path": "services/agents/agents/root.py",
+            "role": "protected_operation",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 100,
+            "line_start": 99,
+            "path": "services/agents/agents/root.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 168,
+            "line_start": 163,
+            "path": "services/agents/agents/root.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          }
+        ],
+        "forbidden_condition": "Execution of any agent tool whose name matches one of FORBIDDEN_TOOL_NAME_PATTERNS (send/delete/remove/purge/wipe/destroy/trash/forward/share/transfer/pay), checked as a case-insensitive substring of tool.name before the tool function runs.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "If a forbidden-pattern-matching tool were ever registered, the effect_stratum of the external effect it would commit (e.g., communication for a send/forward-shaped tool) is not established by the supplied source; this contract is stated at the tool-invocation stratum, which is where the guard actually commits its block.",
+          "No runtime/behavioral evidence (behavior labels unavailable per unit scope) is supplied confirming the callback fires on every dispatch in the deployed runner; the obligation rests on the ADK before_tool_callback contract described in the supplied docstrings and the four registration lines."
+        ],
+        "protected_operation": "ADK tool dispatch (tool invocation) on the four tool-using LlmAgents: google_search, notes_search, calendar_read, gmail_search, gmail_draft, preload_memory, and any future tool added to those agents' tools lists.",
+        "protected_resource": "The agents' tool execution path in services/agents/agents/root.py (tools lists of web_research_agent, notes_rag_agent, calendar_lookup_agent, executor) and, downstream, the external effects those tools would commit.",
+        "protection_obligation": "Every tool invocation dispatched by the tool-using ADK agents (web_research_agent, notes_rag_agent, calendar_lookup_agent, executor) must pass through the registered before_tool_callback guardrail_before_tool_call before the tool executes, and any tool whose lowercased name contains a forbidden substring (send, delete, remove, purge, wipe, destroy, trash, forward, share, transfer, pay) must be blocked from executing outright, regardless of arguments.",
+        "scope_limits": [
+          "Name-only substring check: tool arguments and content are not inspected for non-gmail_draft tools at this layer.",
+          "Coverage is limited to agents with the callback registered: planner (root.py lines 77-87) has no tools and no callback, and SequentialAgent/ParallelAgent workflow agents have no tools of their own (root.py lines 2-5), so only web_research_agent, notes_rag_agent, calendar_lookup_agent, and executor are in scope.",
+          "No tool matching a forbidden pattern exists in the supplied source; per guardrails.py lines 55-61 this is a defensive class-level control against a future tool accidentally added to an agent's tools list, and the pattern set was checked against the project's real tool names to confirm no collision.",
+          "Supplied evidence is limited to the two sanitized source views; gmail.py, runner.py, api.py, and tests/test_no_gmail_send.py are referenced but not supplied."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Arrival of the matching confirmed FunctionResponse, before FunctionTool.run_async proceeds to actually create the Gmail draft (root.py lines 49-52).",
+        "contract_id": "ecological-contract:8e0c3aa5012c52a8c89ce84788a3800b",
+        "declared_mechanism": "ADK built-in tool confirmation via FunctionTool(gmail_draft, require_confirmation=True) in the executor's tools list; per the supplied root.py module docstring, ADK's FunctionTool.run_async pauses the call the first time it is attempted, emits an adk_request_confirmation event with the proposed args, and only actually creates the Gmail draft once a matching FunctionResponse with {\"confirmed\": true} arrives, driven by runner.py handlers and exposed over HTTP by api.py's FastAPI approval endpoint (root.py lines 47-54).",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 166,
+            "line_start": 166,
+            "path": "services/agents/agents/root.py",
+            "role": "guard_registration",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 54,
+            "line_start": 47,
+            "path": "services/agents/agents/root.py",
+            "role": "commit_point",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 167,
+            "line_start": 163,
+            "path": "services/agents/agents/root.py",
+            "role": "protected_operation",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          },
+          {
+            "line_end": 166,
+            "line_start": 166,
+            "path": "services/agents/agents/root.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a13dc9177399ab161fc74878bdab17d84c6f1ca4f21d1d49d27cc6d8b24bf1a3"
+          }
+        ],
+        "forbidden_condition": "Creation of a Gmail draft by gmail_draft without a prior matching human confirmation FunctionResponse carrying {\"confirmed\": true} for the proposed draft args.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "runner.py's handshake-detecting handlers and api.py's approval endpoint are not in the supplied views, so end-to-end enforcement of the human decision path cannot be verified from supplied source.",
+          "The ordering of this confirmation gate relative to guardrail_before_tool_call (contract above) is not established by the supplied source."
+        ],
+        "protected_operation": "gmail_draft draft creation on behalf of the executor agent (draft creation against the real Gmail API).",
+        "protected_resource": "The user's Gmail drafts store (external Gmail draft creation).",
+        "protection_obligation": "The gmail_draft tool must be registered on the executor with require_confirmation=True so that the first attempt to create a draft is paused: an adk_request_confirmation event carrying the proposed draft args is emitted, and the Gmail draft is only actually created after a matching FunctionResponse with {\"confirmed\": true} arrives -- a human-in-the-loop gate that is independent of the static guardrail callback.",
+        "scope_limits": [
+          "guardrails.py's module docstring (lines 7-11) explicitly treats this built-in ADK confirmation mechanism (BaseTool.check_require_confirmation / ToolContext.request_confirmation) as separate from the before_tool_callback guardrails and not used inside that module; the two layers are independent.",
+          "The human-side plumbing -- runner.py handlers that detect and drive the adk_request_confirmation handshake and api.py's FastAPI approval endpoint -- is referenced (root.py lines 52-54) but not included in the supplied views; only the registration and the docstring description are source-supported here.",
+          "Rejection, mismatch, and expiry semantics of the confirmation handshake are ADK internals not supplied in the source views."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "agents/tools/gmail.py (the gmail_draft/gmail_search implementation and the concrete Gmail API effect) is referenced at root.py lines 32-36 and 61-62 but is not included in the supplied views.",
+      "runner.py handlers that detect and drive the adk_request_confirmation handshake, and api.py's FastAPI approval endpoint, are referenced at root.py lines 52-54 but are not supplied.",
+      "tests/test_no_gmail_send.py is referenced at root.py lines 35 and 43 and guardrails.py lines 13-14 but is not supplied; the claimed no-send code-path guarantee is not evaluable from supplied source.",
+      "observability/metrics.py (GUARDRAIL_DECISIONS, record_policy_decision, record_tool_selection) is imported at guardrails.py lines 47-51 but is not supplied; metric emission behavior is not evaluable.",
+      "The Redis-backed session store (RedisSessionMemoryService) that persists the per-session draft counter, described at guardrails.py lines 30-34, is not supplied.",
+      "The ADK library internals (FunctionTool.run_async pause/confirmation sequencing and before_tool_callback invocation ordering) are not part of the supplied source; the callback and confirmation contracts rest on the docstring descriptions in the supplied views.",
+      "Behavior/runtime labels are unavailable per unit scope, so no runtime evidence of the guards firing in the deployed system is provided; the compiled obligations rest on static registration and implementation source only."
+    ],
+    "repository": "agnar3901/Personal_research-Ops-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:95ad99fc5bf9ae516d3dff3b472877a9"
+  },
+  "request_sha256": "52b93fbef93103229242056fb3ac72bb6b14589688eabaf49994c71000036354",
+  "response_sha256": "94cc5abe2bb1e1394de5878a99034f64522eda6db026566e12c31fe07582edcf",
+  "state": "completed",
+  "tokens": 23888,
+  "unit": "v24-screen:95ad99fc5bf9ae516d3dff3b472877a9"
+}

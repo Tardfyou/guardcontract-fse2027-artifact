@@ -1,0 +1,188 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await websocket.accept() at src/server/runner/websocket_server.py:117 - the connection-admission effect commits only after the guard passes.",
+        "contract_id": "ecological-contract:0f048e8211fe6573922d3d3a19fed47b",
+        "declared_mechanism": "JWT authentication gate in websocket_endpoint: token is a required query parameter (Query(...)); the handler calls get_user_from_token(db, token), which runs verify_jwt_token (HS256 decode against JWT_SECRET_KEY with explicit expiry check) plus a database lookup requiring an existing, active user; on failure or exception the handler calls websocket.close(code=4001) and returns before websocket.accept(). Startup environment validation additionally requires JWT_SECRET_KEY to be present and at least 32 characters.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 101,
+            "line_start": 100,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "guard_registration",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 114,
+            "line_start": 111,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 130,
+            "line_start": 127,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 117,
+            "line_start": 116,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "protected_operation",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 117,
+            "line_start": 117,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "commit_point",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 126,
+            "line_start": 94,
+            "path": "src/auth/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "a430a37682ab7d84fb933b08bf98f6702d213101ce64d19f24565b74728fb2c4"
+          },
+          {
+            "line_end": 229,
+            "line_start": 193,
+            "path": "src/auth/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "a430a37682ab7d84fb933b08bf98f6702d213101ce64d19f24565b74728fb2c4"
+          },
+          {
+            "line_end": 35,
+            "line_start": 23,
+            "path": "src/auth/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "a430a37682ab7d84fb933b08bf98f6702d213101ce64d19f24565b74728fb2c4"
+          },
+          {
+            "line_end": 94,
+            "line_start": 88,
+            "path": "src/server/__main__.py",
+            "role": "guard_registration",
+            "source_sha256": "026a4a8d65858524efb1e830d47b581de8045105669755f23b8cec4c6050caf2"
+          }
+        ],
+        "forbidden_condition": "websocket.accept() executing for a connection whose token fails verification - i.e., get_user_from_token returns None (invalid signature, expired token, missing user_id, user not found, or deactivated user) or the authentication block raises - instead of closing with code 4001 and returning before accept.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether WebSocket connection admission is an agent-mediated operation: supplied source shows no agent tool dispatch, agent lifecycle hook, or agent-generated input at the accept commit point; the token originates from the external client, not from an agent.",
+          "Whether framework-level middleware adds or replaces authentication for /ws cannot be determined from the supplied views (no middleware registration appears in supplied source)."
+        ],
+        "protected_operation": "Admission of an external client's WebSocket connection on the /ws endpoint (the WebSocket handshake handled by websocket_endpoint).",
+        "protected_resource": "The /ws WebSocket endpoint (per-client connection admission for Luna agent streaming sessions).",
+        "protection_obligation": "The /ws WebSocket endpoint must verify the client-supplied JWT via get_user_from_token and close the socket with code 4001 before admitting the connection, so that no WebSocket connection is accepted unless the token decodes to an existing, active user (merged from both reviewers; the second reviewer's accept-before-guard wording and the first reviewer's reject-before-connection wording describe the same obligation and commit point).",
+        "scope_limits": [
+          "The guard covers only the /ws handshake; the post-admission message loop (websocket_server.py:137-171) performs no further token verification, so this contract does not assert per-message authentication.",
+          "Does not cover the /mcp/{client_id}/{mcp_name} proxy (websocket_server.py:237-298), the HTTP auth routes (/auth/*), or the /, /health, /weather endpoints.",
+          "Reviewer claims that admission grants access to 'memory, workspace, browser, and reminder tool effects' are not verifiable from supplied source; this contract does not assert protection over any specific agent tool effect.",
+          "Behavior inside AgentRunner (src/server/runner/agent_runner.py) lies outside the supplied views and outside this contract's commit points."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self._register_client(client_id, websocket, user) at src/server/runner/websocket_server.py:123, executing the per-client state mutations in _register_client (websocket_server.py:58-68).",
+        "contract_id": "ecological-contract:5334287c1394ac7750e7a96cb7c94b5b",
+        "declared_mechanism": "Same JWT authentication gate in websocket_endpoint: get_user_from_token(db, token) (verify_jwt_token HS256 signature/expiry check plus database user lookup and active check) must return a user before websocket.accept() and the subsequent _generate_client_id()/_register_client() calls; on failure or exception the handler closes with code 4001 and returns, making registration unreachable without a verified token.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 101,
+            "line_start": 100,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "guard_registration",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 114,
+            "line_start": 111,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 130,
+            "line_start": 127,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 123,
+            "line_start": 119,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "protected_operation",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 123,
+            "line_start": 123,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "commit_point",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 68,
+            "line_start": 58,
+            "path": "src/server/runner/websocket_server.py",
+            "role": "commit_point",
+            "source_sha256": "c89039d1fc96eb79f9b2829c440c42f6b9bb4acb46d64f5a488e2875c43a3fb7"
+          },
+          {
+            "line_end": 229,
+            "line_start": 193,
+            "path": "src/auth/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "a430a37682ab7d84fb933b08bf98f6702d213101ce64d19f24565b74728fb2c4"
+          }
+        ],
+        "forbidden_condition": "Client registration executing for a principal that failed token verification - i.e., _register_client populating client_websockets/client_runners (including AgentRunner construction with a user context)/client_user_contexts/session maps/wake-word detector and set_websocket_connection for a connection where get_user_from_token returned None or raised - instead of closing with code 4001 and returning before registration.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether creating/initializing the per-client AgentRunner during registration constitutes an agent lifecycle hook or other agent mediation: _pre_initialize_agent calls agent_runner._initialize_voice() ('includes MCP warming', websocket_server.py:80-95), but the AgentRunner implementation is not in supplied source, so the binding cannot be confirmed.",
+          "Which downstream agent tools become reachable solely via registered sessions cannot be confirmed without the agent runner implementation."
+        ],
+        "protected_operation": "Registration of a client session: generation of a unique client_id and _register_client binding the authenticated user's context to the WebSocket and a per-client AgentRunner.",
+        "protected_resource": "Per-client server registries and agent runtime: client_websockets, client_runners, client_user_contexts, client_voice_sessions/client_text_sessions, client_wake_word_detectors, and the util websocket connection map.",
+        "protection_obligation": "The /ws WebSocket endpoint must reject (close with code 4001) any connection whose JWT fails verification before generating a client_id and registering the client, so that server per-client state (websocket map, AgentRunner, AgentUserContext, session maps, wake-word detector, util connection map) is never populated for an unauthenticated principal (merged from both reviewers' registration-side wording).",
+        "scope_limits": [
+          "The guard is evaluated once at connection setup; no re-authentication occurs before later state-mutating operations in the message loop.",
+          "Does not assert that AgentRunner construction itself performs external effects; agent_runner.py is not supplied.",
+          "Reviewer claims tying registration to memory/workspace/browser/reminder tool effects are not supported by supplied source.",
+          "Does not cover cleanup-side state mutation (_cleanup_client, websocket_server.py:641-690) or state access by the MCP proxy endpoint."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "src/server/runner/agent_runner.py is not supplied: the tools reachable via registered sessions (reviewers' claimed 'memory, workspace, browser, and reminder' tools) and the effects of _initialize_voice()/MCP warming cannot be verified; only 'filesystem' and 'google' MCP names appear in supplied source (websocket_server.py:243), and only in the separate /mcp proxy endpoint.",
+      "The /mcp/{client_id}/{mcp_name} proxy (websocket_server.py:237-298) forwards MCP requests to connected clients with no authentication check visible in supplied source; whether a guard exists outside the supplied views (middleware, deployment policy) is unknown.",
+      "The reviewer citation to src/auth/routes.py:150-183 (user registration and Notion waitlist check) does not bind or support the /ws guard; it was excluded from evidence, and no alternate routes.py range confirmable from supplied source supports the obligation.",
+      "No authentication middleware registration appears in the supplied source; whether framework-level authentication applies to /ws or /mcp outside these views cannot be determined."
+    ],
+    "repository": "LunaeAI/luna-ai-server",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7e72a283eb6f092e16a946b9eb4328d6"
+  },
+  "request_sha256": "874544039c233ef969d17a5b760774b34aedce6d3b289e05e3887753c928ca08",
+  "response_sha256": "af7ed140e391d9c841f64ef7d71d3175b7b38ada36ff1a1189ea02bb224988ba",
+  "state": "completed",
+  "tokens": 35261,
+  "unit": "v24-screen:7e72a283eb6f092e16a946b9eb4328d6"
+}

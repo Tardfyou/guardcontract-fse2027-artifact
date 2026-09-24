@@ -1,0 +1,174 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "http_requests.patch(f\"{AIRTABLE_URL}/{record_id}\", headers=AIRTABLE_HEADERS, ={\"fields\": fields}) inside patch_airtable_record (backend-airtable/main.py:728-739, request issued at 730-734).",
+        "contract_id": "ecological-contract:4ca6d8dd26c16a4d5cc7c1a3807e8ac5",
+        "declared_mechanism": "validate_client_patch_fields (backend-airtable/client_patch_fields.py:23-47): empty-fields rejection, unknown-field rejection against the combined whitelist, and delegation to validate_spouse_patch_fields / validate_education_patch_fields (coercion to 'Domestic'/'International' with EducationPatchValidationError otherwise, education_fields.py:20-31); the route invokes it before the write and maps ClientPatchValidationError to HTTP 422 (main.py:753-756).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 761,
+            "line_start": 750,
+            "path": "backend-airtable/main.py",
+            "role": "protected_operation",
+            "source_sha256": "1b2f514ef217ee9d44413c859ca5e7a3a760d6227575cf9c933de9dc619c9c9a"
+          },
+          {
+            "line_end": 758,
+            "line_start": 753,
+            "path": "backend-airtable/main.py",
+            "role": "guard_registration",
+            "source_sha256": "1b2f514ef217ee9d44413c859ca5e7a3a760d6227575cf9c933de9dc619c9c9a"
+          },
+          {
+            "line_end": 47,
+            "line_start": 23,
+            "path": "backend-airtable/client_patch_fields.py",
+            "role": "guard_registration",
+            "source_sha256": "d8569665afed00a683390149b6666ddad3695366d46fc174a9f02c3197da9fea"
+          },
+          {
+            "line_end": 31,
+            "line_start": 24,
+            "path": "backend-airtable/client_patch_fields.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d8569665afed00a683390149b6666ddad3695366d46fc174a9f02c3197da9fea"
+          },
+          {
+            "line_end": 13,
+            "line_start": 5,
+            "path": "backend-airtable/education_fields.py",
+            "role": "guard_registration",
+            "source_sha256": "9e8260aecbe0b66e52ef472986748c31b34e65e870d3317d0c31060e5d67a0ff"
+          },
+          {
+            "line_end": 31,
+            "line_start": 20,
+            "path": "backend-airtable/education_fields.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9e8260aecbe0b66e52ef472986748c31b34e65e870d3317d0c31060e5d67a0ff"
+          },
+          {
+            "line_end": 739,
+            "line_start": 728,
+            "path": "backend-airtable/main.py",
+            "role": "commit_point",
+            "source_sha256": "1b2f514ef217ee9d44413c859ca5e7a3a760d6227575cf9c933de9dc619c9c9a"
+          }
+        ],
+        "forbidden_condition": "A fields payload for PATCH /clients/{record_id} that is empty, contains any key outside CLIENT_PATCH_FIELDS, or contains an education-destination value that does not normalize to 'Domestic' or 'International'; also any write of such unvalidated fields reaching patch_airtable_record without passing validate_client_patch_fields.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether an agent tool, agent lifecycle hook, or agent-generated payload supplies body.fields to PATCH /clients/{record_id}; supplied source shows only a FastAPI HTTP endpoint with no agent wiring, so agent mediation is not established.",
+          "Whether patch_airtable_record has any caller that bypasses validate_client_patch_fields; the only caller in supplied source is main.py:758, but repository enumeration is incomplete.",
+          "Contents and semantics of spouse_fields.py (SPOUSE_AIRTABLE_FIELDS, SpousePatchValidationError, validate_spouse_patch_fields) needed to fully characterize the whitelist.",
+          "Whether AIRTABLE_TOKEN being absent (empty default at main.py:57) leaves the write path effectively disabled in deployments, which affects observability of the guard in practice."
+        ],
+        "protected_operation": "The patch_client_data route (PATCH /clients/{record_id}) mutating the external Airtable client record via patch_airtable_record(record_id, validated_fields) at backend-airtable/main.py:758.",
+        "protected_resource": "External Airtable client records at AIRTABLE_URL/{record_id} built from AIRTABLE_BASE_ID/AIRTABLE_TABLE (backend-airtable/main.py:55-62), written with Bearer-token headers (lines 59-62).",
+        "protection_obligation": "The PATCH /clients/{record_id} endpoint must reject any Airtable client-record write whose fields fall outside the whitelisted spouse/education-destination field set (CLIENT_PATCH_FIELDS = SPOUSE_AIRTABLE_FIELDS | EDUCATION_DESTINATION_FIELDS, with education destination values coerced/validated to 'Domestic' or 'International') before patch_airtable_record issues the HTTP PATCH to the external Airtable API; rejected payloads return HTTP 422 and never reach the write.",
+        "scope_limits": [
+          "The obligation covers only the PATCH /clients/{record_id} route and patch_airtable_record; all other Airtable interactions in supplied source are GET reads (fetch_all_airtable_records, fetch_airtable_record_fields, run_financial_plan record fetch).",
+          "Spouse whitelist contents (SPOUSE_AIRTABLE_FIELDS and validate_spouse_patch_fields in spouse_fields.py) are not present in supplied source, so spouse-field membership and spouse value rules cannot be verified from the given views.",
+          "The CORS middleware (backend-airtable/main.py:88-93) and the token-presence check _require_airtable_token (lines 714-716, invoked at 752) are outside this field-whitelist obligation.",
+          "record_id is interpolated directly into the request URL without additional validation in supplied source; any record-id constraint is separate from the stated whitelist obligation.",
+          "Request-scoped plan overrides (apply_plan_overrides, lines 650-687) explicitly never mutate Airtable and are outside this obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "requests.get(url, headers=_DEFAULT_HEADERS, timeout=timeout) followed by response.raise_for_status() at google_finance_fx.py:85-86, executed only after the guard passes.",
+        "contract_id": "ecological-contract:f03ac769dc780e2820d6255ca32c5ac9",
+        "declared_mechanism": "Exact-match URL guard inside fetch_usd_inr_from_google_finance: 'if url.rstrip(\"/\") != GOOGLE_FINANCE_USD_INR_URL.rstrip(\"/\"): raise ValueError(...)' (google_finance_fx.py:80-83), registered in the function that both production callers must pass through; the guard text declares 'USD/INR must be fetched only from ...'.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 79,
+            "line_start": 69,
+            "path": "Financial_Planning/RSU/google_finance_fx.py",
+            "role": "guard_registration",
+            "source_sha256": "66392af3be3b8f8107e6c6e8e6a17390221bc8fb6392d48e9e4ecbe600217ea5"
+          },
+          {
+            "line_end": 83,
+            "line_start": 80,
+            "path": "Financial_Planning/RSU/google_finance_fx.py",
+            "role": "forbidden_condition",
+            "source_sha256": "66392af3be3b8f8107e6c6e8e6a17390221bc8fb6392d48e9e4ecbe600217ea5"
+          },
+          {
+            "line_end": 17,
+            "line_start": 14,
+            "path": "Financial_Planning/RSU/google_finance_fx.py",
+            "role": "forbidden_condition",
+            "source_sha256": "66392af3be3b8f8107e6c6e8e6a17390221bc8fb6392d48e9e4ecbe600217ea5"
+          },
+          {
+            "line_end": 119,
+            "line_start": 109,
+            "path": "Financial_Planning/RSU/webscrapper.py",
+            "role": "protected_operation",
+            "source_sha256": "0256535713cd00f9dd6adc5321bffa4dd1a1e124c94f79b88d4c3783dee12b2e"
+          },
+          {
+            "line_end": 102,
+            "line_start": 87,
+            "path": "backend/rsu_market.py",
+            "role": "protected_operation",
+            "source_sha256": "c555dc9a9391d0e7df0e01487da5f0e52c71a5138335dd11de8d83d76779feef"
+          },
+          {
+            "line_end": 86,
+            "line_start": 85,
+            "path": "Financial_Planning/RSU/google_finance_fx.py",
+            "role": "commit_point",
+            "source_sha256": "66392af3be3b8f8107e6c6e8e6a17390221bc8fb6392d48e9e4ecbe600217ea5"
+          }
+        ],
+        "forbidden_condition": "An outbound USD/INR fetch to any URL other than the canonical GOOGLE_FINANCE_USD_INR_URL (compared after trailing-slash normalization), i.e., any call to fetch_usd_inr_from_google_finance whose url argument does not exactly match the canonical constant; the guard must raise ValueError before any network request is issued.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which agent runtime component (tool dispatch, lifecycle hook, or agent-generated parameter flow) invokes scrape_usd_to_inr_rate or fetch_usd_inr_from_google_finance, if any; the langgraph presence check in backend-airtable/main.py:66-78 wires nothing to this fetch.",
+          "Whether the cached-rate fallback in backend/rsu_market.py:95-99 is permitted when the live canonical fetch fails, i.e., whether the obligation demands a live canonical-source fetch on every refresh.",
+          "Whether the __main__ entry point generate_rsu_parquet (Financial_Planning/RSU/webscrapper.py:351-352) is ever triggered by an agent rather than manual/script execution.",
+          "Whether any unsupplied module calls fetch_usd_inr_from_google_finance with a non-default url argument (repository enumeration is incomplete)."
+        ],
+        "protected_operation": "Fetching the live USD/INR exchange rate via fetch_usd_inr_from_google_finance, as invoked by scrape_usd_to_inr_rate in Financial_Planning/RSU/webscrapper.py (line 117) and scrape_usd_to_inr_rate in backend/rsu_market.py (line 94, passing url=GOOGLE_FINANCE_USD_INR_URL).",
+        "protected_resource": "The outbound HTTP channel used for USD/INR retrieval, restricted to the single approved endpoint defined by GOOGLE_FINANCE_USD_INR_URL = https://www.google.com/finance/beta/quote/USD-INR (google_finance_fx.py line 14).",
+        "protection_obligation": "USD/INR exchange-rate fetches must target only the canonical Google Finance USD-INR URL: fetch_usd_inr_from_google_finance enforces an exact-match URL guard that raises ValueError for any other source before the outbound HTTP GET is issued. All supported callers (Financial_Planning/RSU/webscrapper.py scrape_usd_to_inr_rate and backend/rsu_market.py scrape_usd_to_inr_rate) route through this guarded function.",
+        "scope_limits": [
+          "The guard governs only fetch_usd_inr_from_google_finance; other outbound effects in supplied source (yf.download in webscrapper.py:141-148 and rsu_market.py:141-149, Airtable GETs in backend-airtable/main.py) are outside this obligation.",
+          "backend/rsu_market.py:93-99 falls back to a cached parquet rate (_cached_usd_to_inr_rate) when the live canonical fetch raises; the fallback is a local read with no HTTP effect, and its acceptability under the single-source policy is unresolved.",
+          "The url parameter is caller-suppliable (keyword argument with canonical default), so the guard check \u2014 not the function signature \u2014 is the sole enforcement of canonicality.",
+          "The in-range sanity check (_rate_in_range, USD_INR_MIN/MAX, lines 16-17, 29-30) is parse-output validation and is not part of this single-source egress obligation.",
+          "No agent tool registration, lifecycle hook, or agent-generated-input path to this fetch appears in the supplied source; the contract is recorded with the guard/commit-point evidence only."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No agent tool registration, decorator, tool dispatch, or agent lifecycle hook binding either guarded effect to an agent runtime appears in the supplied source; agent_mediation is not_established for both contracts and no agent_entry_binding evidence is cited.",
+      "spouse_fields.py is not supplied; SPOUSE_AIRTABLE_FIELDS membership and validate_spouse_patch_fields behavior cannot be verified, leaving part of the contract-2 whitelist unsupported.",
+      "financial_plan_runner.py and the agent/main.py referenced by comments/imports in backend-airtable/main.py are not supplied; any agent wiring that might reach Airtable writes or the USD/INR fetch cannot be assessed from the given views.",
+      "Repository enumeration is not complete; additional callers of fetch_usd_inr_from_google_finance, scrape_usd_to_inr_rate, or patch_airtable_record may exist outside the supplied views.",
+      "No source establishes who or what invokes the PATCH /clients/{record_id} endpoint or the RSU refresh pipeline (human client vs. agent), so agent-generated-input dataflow cannot be confirmed or excluded."
+    ],
+    "repository": "byteninjaa0/chatwithyourdata",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:85034e37351f989d89ca49d3d96db698"
+  },
+  "request_sha256": "3cd855adfbc2161f8ae356d211777424390e639955309062d94a4a0e78522979",
+  "response_sha256": "5b76833841f7f24a7572fb0c3b8fca86e2d90719f62bf8cdd077b60bb8cb8ef1",
+  "state": "completed",
+  "tokens": 36737,
+  "unit": "v24-screen:85034e37351f989d89ca49d3d96db698"
+}

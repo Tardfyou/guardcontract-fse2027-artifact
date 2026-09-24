@@ -1,0 +1,353 @@
+{
+  "attempt": 2,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "background_tasks.add_task(run_analysis_workflow, case_id=..., workflow_id=..., user_id=..., file_ids=...) at backend/app/api/agents.py:202-208, after which the second workflow is queued to run post-response; the 409 guard executes before this point.",
+        "contract_id": "ecological-contract:322f36ef0f544eb6e563ad007ae878bb",
+        "declared_mechanism": "The same status-based concurrency guard: 'if case.status == CaseStatus.PROCESSING: raise HTTPException(409)' at backend/app/api/agents.py:152-157, evaluated before workflow-id generation and task scheduling.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 157,
+            "line_start": 152,
+            "path": "backend/app/api/agents.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          },
+          {
+            "line_end": 208,
+            "line_start": 191,
+            "path": "backend/app/api/agents.py",
+            "role": "protected_operation",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          },
+          {
+            "line_end": 208,
+            "line_start": 202,
+            "path": "backend/app/api/agents.py",
+            "role": "commit_point",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          }
+        ],
+        "forbidden_condition": "case.status == CaseStatus.PROCESSING when start_analysis reaches the concurrency check, i.e., a second run_analysis_workflow background task being queued for a case that already has an analysis in progress.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "Determine whether scheduling the agent pipeline entry should count as agent-lifecycle binding for this guard; the supplied source does not show agent mediation of the check itself.",
+          "Whether BackgroundTasks scheduling can be dropped on process exit is a runtime property not decidable from the supplied source."
+        ],
+        "protected_operation": "Scheduling of the run_analysis_workflow background task from start_analysis via background_tasks.add_task with case_id, workflow_id, user_id, and file_ids.",
+        "protected_resource": "The background workflow execution slot for the case (the queued in-process run_analysis_workflow task).",
+        "protection_obligation": "Starting a second analysis workflow on a case whose status is already PROCESSING is forbidden: the start_analysis endpoint must reject with HTTP 409 before the background run_analysis_workflow task is scheduled for the case.",
+        "scope_limits": [
+          "Scheduling is in-process via FastAPI BackgroundTasks; no OS process or shell is spawned, so process stratum is not asserted.",
+          "Effects performed inside run_analysis_workflow (LLM calls, DB writes, SSE events) are downstream of this commit point and are governed by other contracts.",
+          "No agent tool dispatch, lifecycle hook, or agent-generated input reaches the guard itself in the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The HTTPException(404) raised when the ownership-filtered fetch returns None (e.g., agents.py:146-150 for start_analysis; cases.py:136-140 for get_case; agents.py:452-458 for execution detail), which aborts the handler before reads are returned or before delete/update/start mutations are committed.",
+        "contract_id": "ecological-contract:5ab04c9abbeadaff4338dc854fe0889b",
+        "declared_mechanism": "Ownership filter embedded in every case fetch: select(Case).where(Case.id == case_id, Case.user_id == user_id, Case.deleted_at.is_(None)) via _get_user_case (agents.py:83-96) and equivalent inline queries in cases.py; a miss raises HTTPException(404). get_execution_detail additionally resolves the execution's case_id and re-checks ownership before returning execution data.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 96,
+            "line_start": 83,
+            "path": "backend/app/api/agents.py",
+            "role": "guard_registration",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          },
+          {
+            "line_end": 150,
+            "line_start": 144,
+            "path": "backend/app/api/agents.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          },
+          {
+            "line_end": 458,
+            "line_start": 452,
+            "path": "backend/app/api/agents.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          },
+          {
+            "line_end": 140,
+            "line_start": 121,
+            "path": "backend/app/api/cases.py",
+            "role": "protected_operation",
+            "source_sha256": "c9b336b8afe630b83d4aaefdac1328224629e5ca31b9959e1895e473251a1ff4"
+          },
+          {
+            "line_end": 140,
+            "line_start": 136,
+            "path": "backend/app/api/cases.py",
+            "role": "commit_point",
+            "source_sha256": "c9b336b8afe630b83d4aaefdac1328224629e5ca31b9959e1895e473251a1ff4"
+          }
+        ],
+        "forbidden_condition": "A request whose case_id resolves to a Case row not matching Case.user_id == current_user.id with deleted_at IS NULL (another user's or soft-deleted case) being served or mutated; likewise an execution_id whose owning case is not owned by the requester.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Establish whether agent tools or agent-generated identifiers (case_id/execution_id) ever flow into these ownership checks from an agent context; no such dataflow appears in the supplied source."
+        ],
+        "protected_operation": "Case-scoped API operations: create/list/get/delete/update case, start_analysis, get_analysis_status, and get_execution_detail, each scoped through ownership-filtered fetches (via _get_user_case or inline where-clauses).",
+        "protected_resource": "User-owned Case rows and their dependent resources (CaseFile, AgentExecution) reachable via case_id or execution_id.",
+        "protection_obligation": "Case-scoped operations must be confined to the authenticated user's own, non-deleted cases: requests addressing another user's case (or an agent execution belonging to one) must be rejected with HTTP 404 before any data is returned or any mutation is applied.",
+        "scope_limits": [
+          "create_case assigns user_id at creation rather than filtering; list_cases filters the listing rather than returning 404.",
+          "For mutating endpoints (delete_case, update_case, start_analysis) the same guard precedes database commits; those downstream commit points are characterized separately in the concurrency contracts.",
+          "This is generic application authorization; the supplied source does not bind it to agent tool dispatch, agent lifecycle hooks, or agent-generated input, so it remains outside DEC scope absent such a binding."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "case.status = CaseStatus.PROCESSING and case.latest_workflow_id assignment persisted by 'await db.commit()' (backend/app/api/agents.py:197-199); the 409 guard at agents.py:152-157 executes before this persistence and before the rerun-reset and file-selection queries.",
+        "contract_id": "ecological-contract:79f085efb70155d599d5db6902a62314",
+        "declared_mechanism": "Status-based concurrency guard in start_analysis: after the ownership-filtered case fetch, 'if case.status == CaseStatus.PROCESSING: raise HTTPException(status_code=409, detail=\"Analysis already in progress for this case.\")'; the 409 outcome is also declared in the route's OpenAPI responses map.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 115,
+            "line_start": 104,
+            "path": "backend/app/api/agents.py",
+            "role": "guard_registration",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          },
+          {
+            "line_end": 157,
+            "line_start": 152,
+            "path": "backend/app/api/agents.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          },
+          {
+            "line_end": 122,
+            "line_start": 116,
+            "path": "backend/app/api/agents.py",
+            "role": "protected_operation",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          },
+          {
+            "line_end": 199,
+            "line_start": 197,
+            "path": "backend/app/api/agents.py",
+            "role": "commit_point",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          }
+        ],
+        "forbidden_condition": "case.status == CaseStatus.PROCESSING at the time start_analysis reaches the concurrency check (an analysis is already running for the case), i.e., a second workflow being persisted for the same case.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Determine whether guarding the endpoint that schedules run_analysis_workflow (the agent pipeline entry) should be treated as agent-lifecycle binding; the supplied source shows no agent tool dispatch, hook, or agent-generated input reaching the guard.",
+          "Confirm whether any database-level constraint or lock backs the status check under concurrent requests (none shown in supplied views)."
+        ],
+        "protected_operation": "Invocation of the start_analysis handler initiating a new analysis workflow for the requested case.",
+        "protected_resource": "Case workflow-start state: the case.status transition to PROCESSING together with the new latest_workflow_id for the requested case row.",
+        "protection_obligation": "Starting a second analysis workflow on a case whose status is already PROCESSING is forbidden: the start_analysis endpoint (POST /api/cases/{case_id}/analyze) must reject with HTTP 409 before case.status is set to PROCESSING with a new workflow id and committed to the database.",
+        "scope_limits": [
+          "The guard is a check-then-act read of case.status fetched earlier in the same request; no row lock, unique constraint, or conditional UPDATE backstop is shown, so behavior under truly concurrent requests is not asserted.",
+          "The guard operates at the HTTP endpoint layer; it does not itself police steps inside the running workflow, which are characterized by separate contracts.",
+          "No source binding ties the guard itself to an agent tool, agent lifecycle hook, or agent-generated input; that the scheduled downstream task executes agents does not by itself establish mediation of this check."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Invocation of run_domain_agents_parallel with the pruned routing plan (backend/app/services/pipeline.py:573-585); by this point rejected target_agents have been removed from routing_decisions and file_groups, so rejected deployments cannot be dispatched.",
+        "contract_id": "ecological-contract:af7d1bac370a057b532c82f8210f838b",
+        "declared_mechanism": "HITL confirmation gate in run_analysis_workflow: flagged low-confidence pairs trigger a plan-level request_confirmation (pipeline.py:436-457); if the plan is not approved, a single request_batch_confirmation covering all flagged items (pipeline.py:462-515); rejected pairs are removed from routing_decisions and empty file groups pruned (pipeline.py:516-548) before run_domain_agents_parallel is invoked.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 327,
+            "line_start": 319,
+            "path": "backend/app/services/pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0dc756623d3c2f34cafdab25d6f8d80310145d33675caaeb31aefab9291a1cb4"
+          },
+          {
+            "line_end": 433,
+            "line_start": 416,
+            "path": "backend/app/services/pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0dc756623d3c2f34cafdab25d6f8d80310145d33675caaeb31aefab9291a1cb4"
+          },
+          {
+            "line_end": 433,
+            "line_start": 424,
+            "path": "backend/app/services/pipeline.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0dc756623d3c2f34cafdab25d6f8d80310145d33675caaeb31aefab9291a1cb4"
+          },
+          {
+            "line_end": 414,
+            "line_start": 398,
+            "path": "backend/app/services/pipeline.py",
+            "role": "protected_operation",
+            "source_sha256": "0dc756623d3c2f34cafdab25d6f8d80310145d33675caaeb31aefab9291a1cb4"
+          },
+          {
+            "line_end": 457,
+            "line_start": 436,
+            "path": "backend/app/services/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "0dc756623d3c2f34cafdab25d6f8d80310145d33675caaeb31aefab9291a1cb4"
+          },
+          {
+            "line_end": 515,
+            "line_start": 462,
+            "path": "backend/app/services/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "0dc756623d3c2f34cafdab25d6f8d80310145d33675caaeb31aefab9291a1cb4"
+          },
+          {
+            "line_end": 548,
+            "line_start": 516,
+            "path": "backend/app/services/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "0dc756623d3c2f34cafdab25d6f8d80310145d33675caaeb31aefab9291a1cb4"
+          },
+          {
+            "line_end": 585,
+            "line_start": 573,
+            "path": "backend/app/services/pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "0dc756623d3c2f34cafdab25d6f8d80310145d33675caaeb31aefab9291a1cb4"
+          }
+        ],
+        "forbidden_condition": "Running a domain agent instance for a (file_id, agent_type) pair whose orchestrator routing_confidence is below settings.get_routing_hitl_threshold(agent_type) and whose confirmation was rejected (plan rejected and the item rejected in request_batch_confirmation), i.e., such a pair remaining in routing_decisions/file_groups at deployment time.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Obtain app/services/confirmation.py to verify how human approval is obtained and what the default outcome is when no response arrives.",
+          "Obtain app/agents/domain_runner.py to verify that compute_agent_tasks at pipeline.py:548 deploys exactly the pruned task set and how run_domain_agents_parallel dispatches agent runs."
+        ],
+        "protected_operation": "Deployment of domain agents via run_domain_agents_parallel over the agent task set computed by compute_agent_tasks from the (possibly pruned) orchestrator routing plan.",
+        "protected_resource": "Domain agent executions for the workflow: the (agent_type, file-group) tasks derived from orchestrator_output.routing_decisions and orchestrator_output.file_groups.",
+        "protection_obligation": "Domain agents must not be deployed on low-confidence routing assignments without human approval: routing decisions whose orchestrator routing_confidence falls below the per-agent HITL threshold require plan-level or per-agent batch confirmation, and (file, agent) pairs rejected through request_confirmation/request_batch_confirmation must be stripped from the routing plan before parallel domain agent execution is launched.",
+        "scope_limits": [
+          "Only pairs with a non-None routing_confidence below the per-agent threshold are gated; decisions with routing_confidence None bypass HITL entirely (pipeline.py:421-422 and 468-469).",
+          "If the plan-level confirmation is approved, per-agent review is skipped entirely (skip_per_agent_hitl, pipeline.py:457 and 462).",
+          "The gate covers domain agent deployment inside the pipeline; the LLM calls and database writes that deployed agents subsequently perform are downstream of this commit point.",
+          "The separate Stage 4 findings HITL (pipeline.py:661-708) awaits request_confirmation for low-confidence findings, but the supplied source shows rejection only logged; Stage 5 persistence is not visibly gated on that outcome (see missing_information).",
+          "Bodies of request_confirmation/request_batch_confirmation (approval channel, defaults, timeouts) are not in the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "_authenticate_user raising HTTPException(401) (invalid dev key auth.py:143-146; InvalidTokenError auth.py:160-165; missing sub auth.py:168-172; unknown user auth.py:177-181; missing credentials auth.py:186-190), which aborts dependency resolution before the route handler runs; on success the authenticated User is injected via the CurrentUser alias.",
+        "contract_id": "ecological-contract:db9389a75c06628ff6c9933312c20357",
+        "declared_mechanism": "FastAPI dependency get_current_user delegating to _authenticate_user: JWT validated with PyJWKClient against {settings.frontend_url}/api/auth/jwks (algorithms EdDSA/ES256/RS256, audience and issuer set to settings.frontend_url); dev API-key path enabled only when module-level _is_dev_auth_allowed() sees settings.debug and settings.dev_api_key, compared with secrets.compare_digest; every failure path raises HTTPException(HTTP_401_UNAUTHORIZED) during dependency resolution.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 62,
+            "line_start": 32,
+            "path": "backend/app/api/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "8f7c84816f988b452b8d43288a290d94639e9666309d2ceae5a2ef0f35983bb2"
+          },
+          {
+            "line_end": 87,
+            "line_start": 79,
+            "path": "backend/app/api/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "8f7c84816f988b452b8d43288a290d94639e9666309d2ceae5a2ef0f35983bb2"
+          },
+          {
+            "line_end": 227,
+            "line_start": 202,
+            "path": "backend/app/api/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "8f7c84816f988b452b8d43288a290d94639e9666309d2ceae5a2ef0f35983bb2"
+          },
+          {
+            "line_end": 190,
+            "line_start": 137,
+            "path": "backend/app/api/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8f7c84816f988b452b8d43288a290d94639e9666309d2ceae5a2ef0f35983bb2"
+          },
+          {
+            "line_end": 165,
+            "line_start": 160,
+            "path": "backend/app/api/auth.py",
+            "role": "commit_point",
+            "source_sha256": "8f7c84816f988b452b8d43288a290d94639e9666309d2ceae5a2ef0f35983bb2"
+          },
+          {
+            "line_end": 190,
+            "line_start": 186,
+            "path": "backend/app/api/auth.py",
+            "role": "commit_point",
+            "source_sha256": "8f7c84816f988b452b8d43288a290d94639e9666309d2ceae5a2ef0f35983bb2"
+          },
+          {
+            "line_end": 122,
+            "line_start": 104,
+            "path": "backend/app/api/agents.py",
+            "role": "protected_operation",
+            "source_sha256": "dcb583cdd1ffe567e71bc77e669feb2d072355f5381038bc5e849ecc049a64ee"
+          },
+          {
+            "line_end": 41,
+            "line_start": 26,
+            "path": "backend/app/api/cases.py",
+            "role": "protected_operation",
+            "source_sha256": "c9b336b8afe630b83d4aaefdac1328224629e5ca31b9959e1895e473251a1ff4"
+          }
+        ],
+        "forbidden_condition": "A request to a protected route that carries no Bearer token, an invalid/expired token, a token lacking the sub claim, an unknown user id, or (when dev auth is enabled) an incorrect X-Dev-API-Key value reaches handler execution instead of being answered with HTTP 401.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Establish whether any agent tool, plugin, or agent-framework callback dispatches HTTP requests through get_current_user; no such wiring appears in the supplied source.",
+          "Obtain app/config settings definitions to confirm deployment values of debug, dev_api_key, and frontend_url used by the guard."
+        ],
+        "protected_operation": "Execution of protected route handlers that declare the CurrentUser dependency: case CRUD (create_case, list_cases, get_case, delete_case, update_case), start_analysis, get_analysis_status, get_execution_detail, and GET /api/auth/me.",
+        "protected_resource": "Protected HTTP API routes under /api/cases, /api/agents, and /api/auth/me.",
+        "protection_obligation": "Unauthenticated access to protected API endpoints is forbidden and must be rejected with HTTP 401 before any handler logic executes: requests require a valid Better Auth JWT (verified via JWKS with audience and issuer checks) or, only when DEBUG=True and DEV_API_KEY is configured, an X-Dev-API-Key header matched via constant-time comparison, enforced by the CurrentUser Depends() guard declared on case and agent routes.",
+        "scope_limits": [
+          "This is ordinary web authentication; the supplied source does not bind it to any agent tool dispatch, agent lifecycle hook, or agent-generated input reaching the guard, so it remains outside DEC scope unless such a binding is established.",
+          "The claim that the guard covers 'all case/file/agent routes' is only partially supported: cases.py and agents.py views show CurrentUser usage; file-related routes are not present in the supplied views.",
+          "The dev API-key branch exists only if _is_dev_auth_allowed() was true at module import time; in the else branch only the JWT path is defined (auth.py:214-223).",
+          "Auth router endpoints other than GET /api/auth/me are not shown in the supplied views."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Reviewer 1's coverage claim that the auth guard is wired into 'all case/file/agent routes' cannot be fully verified: the supplied views cover only cases.py and agents.py; file-related routes are not supplied.",
+      "The bodies of app.services.confirmation.request_confirmation and request_batch_confirmation are not supplied; the human-approval channel, default outcome, and timeout semantics behind the routing HITL gate (pipeline.py:436-515) are unverified.",
+      "Reviewer 2's rationale claims HITL also blocks 'finding persistence': the supplied source shows rejected low-confidence findings are only logged (pipeline.py:698-708) and Stage 5 persists all domain findings via save_findings_from_output followed by db.commit() (pipeline.py:710-740) with no approval-keyed persistence gate visible, so no findings-persistence contract is compiled.",
+      "compute_agent_tasks and run_domain_agents_parallel bodies (app/agents/domain_runner.py) are not supplied; the exact deployed task set after pruning and the swallowing of exceptions noted at pipeline.py:642-644 are unverified.",
+      "app.config settings definitions (debug, dev_api_key, frontend_url, get_routing_hitl_threshold, confidence_threshold) are not supplied; default values and environment binding are unverified.",
+      "No agent tool registration, agent-framework callback wiring, or tool-dispatch table appears in the supplied views; agent_mediation is not_established for all HTTP-bound guards, and no agent_entry_binding evidence exists for them.",
+      "Beyond FastAPI BackgroundTasks.add_task, no task-queue or worker configuration for run_analysis_workflow is shown, so hosting/runtime semantics of the scheduled workflow are unverified.",
+      "Auth router endpoints other than GET /api/auth/me (e.g., login/session issuance via Better Auth) are not present in the supplied views."
+    ],
+    "repository": "Siddharth-Khattar/holmes",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:976c78cabf41e2dd252266f6a9deef18"
+  },
+  "request_sha256": "13a6ed10f72fbd54de5a96aaf02f429991d978ad6c4515d3c2603ec5f1d713e5",
+  "response_sha256": "3e30a0ace05675e9c385aa04c46e6c4329c0a1c3b7e90cafe5275f06ab4ce067",
+  "state": "completed",
+  "tokens": 46676,
+  "unit": "v24-screen:976c78cabf41e2dd252266f6a9deef18"
+}

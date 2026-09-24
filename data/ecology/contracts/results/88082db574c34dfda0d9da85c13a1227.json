@@ -1,0 +1,330 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "banking_tools.py:803-804 \u2014 txn_resp = requests.post(f\"{WALLET_BASE_URL}/transfer\", =payload, headers=headers, timeout=30), the funds-movement request whose payload is assembled at lines 790-801.",
+        "contract_id": "ecological-contract:4fb2579b36c5c4a40842f598da19e3fe",
+        "declared_mechanism": "Pre-commit authorization guard at the top of the tool body, annotated 'PIN verification (same guard pattern as balance_enquiry_tool)' (banking_tools.py:731): 'if not _verify_pin(...)' at line 732 calls _increment_pin_attempts, computes remaining = max(0, MAX_PIN_ATTEMPTS - attempts), and returns an 'Incorrect PIN' or 'account has been locked' message, so the transfer POST at line 803 is unreachable on failure; on success _reset_pin_attempts (line 742) clears the counter before the transfer sequence. _verify_pin (banking_tools.py:223-238) performs the SHA-256 pin_hash comparison against banking_customer_profile.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 723,
+            "line_start": 708,
+            "path": "banking_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 1113,
+            "line_start": 1100,
+            "path": "banking_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 714,
+            "line_start": 710,
+            "path": "banking_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 238,
+            "line_start": 223,
+            "path": "banking_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 87,
+            "line_start": 87,
+            "path": "banking_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 742,
+            "line_start": 730,
+            "path": "banking_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 740,
+            "line_start": 731,
+            "path": "banking_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 804,
+            "line_start": 790,
+            "path": "banking_tools.py",
+            "role": "commit_point",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          }
+        ],
+        "forbidden_condition": "Reaching the requests.post call to WALLET_BASE_URL/transfer when _verify_pin(db_uri, phone_number, pin) returns False for the supplied credentials \u2014 i.e., moving funds without PIN-verified authorization \u2014 including the remaining == 0 branch where the 5th (or later) consecutive failure must return the 'Your account has been locked' message instead of transferring.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Agent-loop registration in tools.py (referenced only by comment at banking_tools.py:1096-1100) and any dispatch-time wrapper checks are not supplied.",
+          "Whether failed_pin_attempts >= MAX_PIN_ATTEMPTS is checked anywhere before tool dispatch to enforce a hard lock is not shown."
+        ],
+        "protected_operation": "Funds transfer: debiting the customer's VFD wallet and crediting an external Nigerian bank account via the inter-bank /transfer POST inside the transfer_money_tool agent tool.",
+        "protected_resource": "The customer's VFD wallet funds (fromAccount balance resolved for phone_number) moved to the beneficiary to_account via WALLET_BASE_URL /transfer.",
+        "protection_obligation": "The VFD funds-transfer POST in transfer_money_tool must execute only after the customer-supplied 4-digit PIN verifies against the stored SHA-256 pin_hash for the requesting phone_number via _verify_pin, with each failure incrementing the persistent failed_pin_attempts counter and the account treated as locked at MAX_PIN_ATTEMPTS=5 consecutive failures; only a verified PIN (counter reset) may proceed to the funds-movement call. (Merges the first- and second-phase reviewer statements, which name the same transfer guard.)",
+        "scope_limits": [
+          "Constrains the funds-movement POST at banking_tools.py:803; the preceding VFD read calls after the guard (sender enquiry 747-753, bank list 756-757, recipient enquiry 769-774) execute post-verification but are read-only and are not the protected commit.",
+          "Lockout is counter-plus-messaging in source: no persistent locked flag exists and _verify_pin checks only pin_hash equality, so refusal of a later correct-PIN transfer once the counter reaches 5 is not established by the supplied view.",
+          "Beneficiary account/bank and amount are agent-supplied kwargs; this contract covers PIN-authorization gating of the transfer, not validation of transfer parameters.",
+          "The SHA-512 'signature' at banking_tools.py:788 is derived from account numbers, not from the PIN; it is not part of the PIN guard."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "banking_tools.py:940-948 \u2014 conn.execute(UPDATE banking_customer_profile SET pin_hash = :ph, failed_pin_attempts = 0 WHERE phone_number = :phone) followed by conn.commit() at line 948.",
+        "contract_id": "ecological-contract:b3ad131a50b6b5f3666cd787bd749284",
+        "declared_mechanism": "External verification guard inside the tool body: after new-PIN format/confirmation checks (banking_tools.py:916-920), requests.post to LIVENESS_API_URL with {phoneNumber, nin} (lines 922-926); only when liveness_data.get('status') == '00' does execution continue to hash the new PIN and commit the UPDATE; a non-'00' status returns the 'Liveness verification failed' message before any database write (lines 930-934).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 912,
+            "line_start": 899,
+            "path": "banking_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 1113,
+            "line_start": 1100,
+            "path": "banking_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 904,
+            "line_start": 901,
+            "path": "banking_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 934,
+            "line_start": 916,
+            "path": "banking_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 934,
+            "line_start": 930,
+            "path": "banking_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 948,
+            "line_start": 936,
+            "path": "banking_tools.py",
+            "role": "commit_point",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          }
+        ],
+        "forbidden_condition": "Committing 'UPDATE banking_customer_profile SET pin_hash = :ph, failed_pin_attempts = 0 WHERE phone_number = :phone' when the liveness verification has not returned status '00' (or before the new-PIN format/confirmation checks pass) \u2014 i.e., resetting the PIN credential without the NIN + liveness verification the tool declares.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Agent-loop registration in tools.py (referenced by comment at banking_tools.py:1096-1100) is not supplied.",
+          "What the LIVENESS_API_URL service actually verifies (liveness capture, NIN-to-record match) is not shown in supplied source."
+        ],
+        "protected_operation": "Forgot-PIN recovery: resetting the customer's banking PIN credential via the forgot_pin_tool agent tool after NIN + liveness verification.",
+        "protected_resource": "banking_customer_profile.pin_hash (with failed_pin_attempts reset) for the requesting phone_number \u2014 the credential re-enabled for all PIN-gated operations.",
+        "protection_obligation": "forgot_pin_tool must gate the commit of a reset PIN hash on successful identity verification: the liveness service (LIVENESS_API_URL) must be called with the supplied phone_number and nin and return status '00' before any UPDATE that replaces pin_hash (and resets failed_pin_attempts) for the phone_number is committed. (Distinct guard named in the second-phase reviewer rationale; source-supported in full.)",
+        "scope_limits": [
+          "Identity strength rests entirely on the external liveness service's response to the agent-supplied phone_number/nin; liveness semantics and NIN cross-checks are outside the supplied source.",
+          "This recovery path is guarded by liveness verification, not by PIN or password verification; it is the declared bypass for a forgotten PIN.",
+          "No persistent record of liveness success is stored in supplied source; the guard is enforced only by control flow within the tool invocation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "banking_tools.py:465-471 \u2014 requests.get(f\"{WALLET_BASE_URL}/account/enquiry\", params={\"accountNumber\": ...}) and response parse, after which the balance is formatted and returned to the invoking agent.",
+        "contract_id": "ecological-contract:c558b58387c00adb72a2a35d35cf4583",
+        "declared_mechanism": "Pre-commit authorization guard inside the tool body: 'if not _verify_pin(db_uri, phone_number, pin)' at banking_tools.py:451 triggers _increment_pin_attempts (persistent failed_pin_attempts counter, banking_tools.py:241-260), computes remaining = max(0, MAX_PIN_ATTEMPTS - attempts), and returns an 'Incorrect PIN' or 'account has been locked' message, so the requests.get at line 465 is unreachable on failure; on success _reset_pin_attempts (line 461) clears the counter before the balance call. _verify_pin (banking_tools.py:223-238) compares SHA-256(pin) against the stored pin_hash.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 446,
+            "line_start": 437,
+            "path": "banking_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 1113,
+            "line_start": 1100,
+            "path": "banking_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 441,
+            "line_start": 439,
+            "path": "banking_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 238,
+            "line_start": 223,
+            "path": "banking_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 87,
+            "line_start": 87,
+            "path": "banking_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 461,
+            "line_start": 450,
+            "path": "banking_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 459,
+            "line_start": 451,
+            "path": "banking_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 471,
+            "line_start": 465,
+            "path": "banking_tools.py",
+            "role": "commit_point",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          }
+        ],
+        "forbidden_condition": "Executing the requests.get call to WALLET_BASE_URL/account/enquiry for a phone_number when _verify_pin(db_uri, phone_number, pin) returns False, i.e. disclosing the wallet balance without a PIN-verified match \u2014 including the branch where the failed-attempt count has reached MAX_PIN_ATTEMPTS (remaining == 0) and the tool must return the 'account has been locked' message instead of the balance.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the runtime agent loop registers balance_enquiry_tool via tools.py (banking_tools.py:1096-1113 shows only the export list and a comment to append it) and whether any dispatch-time wrapper adds further checks around tool execution.",
+          "Whether any other code path enforces a hard lock when failed_pin_attempts >= MAX_PIN_ATTEMPTS (e.g., checking the counter before tool dispatch) is not shown in supplied source."
+        ],
+        "protected_operation": "Wallet balance enquiry: reading and returning the customer's VFD account balance via the GET /account/enquiry call inside the balance_enquiry_tool agent tool.",
+        "protected_resource": "The customer's wallet balance for the VFD account bound to phone_number in banking_customer_profile, fetched from WALLET_BASE_URL /account/enquiry.",
+        "protection_obligation": "balance_enquiry_tool must gate the external VFD balance-enquiry HTTP call on PIN verification: the 4-digit PIN supplied in the tool call must match the stored SHA-256 pin_hash for the requesting phone_number via _verify_pin, with failed-attempt counting toward MAX_PIN_ATTEMPTS=5 and lockout messaging, before the balance effect is executed and returned to the caller.",
+        "scope_limits": [
+          "Constrains only the PIN gate and the /account/enquiry call inside balance_enquiry_tool; it does not cover other balance-display paths elsewhere in the repository.",
+          "Lockout semantics in source are counter-plus-messaging: no persistent locked flag is set and _verify_pin checks only pin_hash equality (banking_tools.py:223-238), so whether a later attempt with the correct PIN is refused once the counter reaches 5 is not established by the supplied view.",
+          "phone_number and pin are agent-supplied tool kwargs; the guard binds to pin_hash equality for the given phone_number only, with no additional session or channel identity proof shown in source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "banking_tools.py:876-884 \u2014 conn.execute(UPDATE banking_customer_profile SET pin_hash = :ph, failed_pin_attempts = 0 WHERE phone_number = :phone) followed by conn.commit() at line 884, where the persistent credential mutation lands.",
+        "contract_id": "ecological-contract:f8b8d0010f6ae9700694bed16720dc3b",
+        "declared_mechanism": "Sequential pre-commit checks in the tool body: new-PIN format and confirmation checks (banking_tools.py:861-865), then 'if not _verify_pin(db_uri, phone_number, old_pin)' at line 867 with _increment_pin_attempts and an 'Incorrect current PIN ... attempt(s) remaining' return that precedes any database write; only after verification is the new SHA-256 hash computed and the UPDATE executed and committed (lines 872-884).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 856,
+            "line_start": 844,
+            "path": "banking_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 1113,
+            "line_start": 1100,
+            "path": "banking_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 849,
+            "line_start": 846,
+            "path": "banking_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 238,
+            "line_start": 223,
+            "path": "banking_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 87,
+            "line_start": 87,
+            "path": "banking_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 870,
+            "line_start": 861,
+            "path": "banking_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 870,
+            "line_start": 867,
+            "path": "banking_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          },
+          {
+            "line_end": 884,
+            "line_start": 872,
+            "path": "banking_tools.py",
+            "role": "commit_point",
+            "source_sha256": "77c96258af956cbd7d27f07ade82c3a240261632c86f4146e489644e6578ef63"
+          }
+        ],
+        "forbidden_condition": "Committing 'UPDATE banking_customer_profile SET pin_hash = :ph ... WHERE phone_number = :phone' when _verify_pin(db_uri, phone_number, old_pin) returns False \u2014 i.e., rotating the PIN credential without proof of the current PIN \u2014 or when the new-PIN format/confirmation checks (exactly 4 numeric digits, matching confirmation) have not passed.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Agent-loop registration in tools.py (referenced by comment at banking_tools.py:1096-1100) is not supplied.",
+          "Whether a reached-threshold (counter >= 5) state blocks this flow anywhere outside the supplied view is not shown."
+        ],
+        "protected_operation": "PIN change: replacing the customer's banking PIN credential (persisting a new SHA-256 pin_hash) via the change_pin_tool agent tool.",
+        "protected_resource": "banking_customer_profile.pin_hash (and the associated failed_pin_attempts reset) for the requesting phone_number \u2014 the credential record that authorizes all PIN-gated banking operations.",
+        "protection_obligation": "change_pin_tool must gate the commit of a new PIN hash on verification of the customer's current PIN: the old_pin supplied in the tool call must match the stored SHA-256 pin_hash via _verify_pin, with failed-attempt counting toward MAX_PIN_ATTEMPTS=5, before any UPDATE that replaces pin_hash for the phone_number is committed.",
+        "scope_limits": [
+          "The change_pin failure branch (banking_tools.py:868-870) reports remaining attempts but, unlike balance_enquiry_tool/transfer_money_tool, has no distinct remaining == 0 lockout branch in source; the return nonetheless precedes the UPDATE commit.",
+          "The new-PIN format and confirmation checks (861-865) are additional preconditions on the same commit; they are noted but are not the reviewer-stated current-PIN authorization guard.",
+          "The UPDATE is keyed solely by the agent-supplied phone_number; no separate identity or session binding is shown in source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The agent runtime registration file (tools.py, where the exported banking_tools list is commented to be appended \u2014 banking_tools.py:1096-1100 and 1.py:764-772) is not supplied; dispatch-time wiring beyond the @tool decorators and export lists cannot be confirmed from the provided views.",
+      "The second-phase reviewer rationale cites the PBKDF2 password gate in authenticate_customer_tool (1.py:583-622), but supplied source binds no guarded effect or commit point to its success: no session or state artifact is created on success (only a success string at 1.py:624-627 plus a failed_password_attempts reset UPDATE at 1.py:609-622), and no supplied tool checks authentication state before its guarded effects; a protection contract for it cannot be grounded without guessing, so none is emitted.",
+      "authenticate_customer_tool's incorrect-password message states 'After 5 failed attempts your account will be locked' (1.py:603-606), but no lock enforcement, counter threshold check, or locked-flag read appears anywhere in the supplied source.",
+      "Behavior labels and prevalence data are unavailable for this unit (per stated scope); no claim about how often these paths execute or how the guards perform at runtime is made.",
+      "The external services (VFD WALLET_BASE_URL endpoints, LIVENESS_API_URL) are referenced by URL only; any server-side enforcement they perform is outside the supplied source."
+    ],
+    "repository": "ayodelefestusng/whatsapp_ai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:88082db574c34dfda0d9da85c13a1227"
+  },
+  "request_sha256": "2d4e012cb6e745fd428bafe22fca5edad50f6dfdabdf139e2d95511b8e37911b",
+  "response_sha256": "b849967c878c59914f36eb0a7337e3ff7117af8628ae7dd023a129fd134af528",
+  "state": "completed",
+  "tokens": 47047,
+  "unit": "v24-screen:88082db574c34dfda0d9da85c13a1227"
+}

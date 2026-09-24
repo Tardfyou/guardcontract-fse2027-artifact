@@ -1,0 +1,559 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The ValueError raise at app/core/middleware.py:47-51 (and 40-42 for unknown steps), which precedes request.override and handler(modified_request) at 83-90, so the model call never executes for a failing step.",
+        "contract_id": "ecological-contract:10a27650a525ef561eb90b525428d807",
+        "declared_mechanism": "StepConfigMiddleware(AgentMiddleware).awrap_model_call iterating step_config['requires'] and raising ValueError on any missing/None field; the middleware instance is registered on the agent via create_agent(middleware=[step_config_middleware]).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 65,
+            "line_start": 64,
+            "path": "app/agents/handoffs/travel_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "b2cc93671ba9e815cb40f9ac56959a0744e22bb7577afbf128d0188ecf2af418"
+          },
+          {
+            "line_end": 103,
+            "line_start": 93,
+            "path": "app/core/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "ac52c646dbe365bd38163ef55dfee8aafad42915ec2de24211ce7c9d7739204d"
+          },
+          {
+            "line_end": 102,
+            "line_start": 96,
+            "path": "app/agents/handoffs/travel_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2cc93671ba9e815cb40f9ac56959a0744e22bb7577afbf128d0188ecf2af418"
+          },
+          {
+            "line_end": 51,
+            "line_start": 40,
+            "path": "app/core/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ac52c646dbe365bd38163ef55dfee8aafad42915ec2de24211ce7c9d7739204d"
+          },
+          {
+            "line_end": 34,
+            "line_start": 23,
+            "path": "app/core/middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "ac52c646dbe365bd38163ef55dfee8aafad42915ec2de24211ce7c9d7739204d"
+          },
+          {
+            "line_end": 204,
+            "line_start": 195,
+            "path": "app/agents/handoffs/step_config.py",
+            "role": "protected_operation",
+            "source_sha256": "b3c8b2fa2b63f06e2a85c0f7f2efea9d757d35db33039e3e9ee4797672cab186"
+          },
+          {
+            "line_end": 90,
+            "line_start": 82,
+            "path": "app/core/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "ac52c646dbe365bd38163ef55dfee8aafad42915ec2de24211ce7c9d7739204d"
+          }
+        ],
+        "forbidden_condition": "Invoking handler(modified_request) (the LLM call with the step's injected system prompt and tool set) while any field listed in step_config['requires'] for the current step is absent from state or None; additionally, any current_step value not present in the step configuration (ValueError at app/core/middleware.py:40-42).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The http stratum presumes the model call is a network request, inferred from ChatOpenAI(base_url=settings.qwen_base_url, ...) at app/agents/handoffs/travel_agent.py:39-46; the transport itself is not directly evidenced.",
+          "How the raised ValueError surfaces to the client (e.g., via the except block at app/api/v1/chat.py:119-124 emitting an SSE error frame) is runtime behavior not decidable from supplied source.",
+          "Whether the unknown-step ValueError (app/core/middleware.py:40-42) warrants a separate contract is left to review; it is compiled here as part of the same fail-closed gate."
+        ],
+        "protected_operation": "The per-step model call inside the agent run: awrap_model_call resolving current_step, validating the step's 'requires' prerequisites, rendering the step prompt, and injecting the step tools before delegating to the model-call handler.",
+        "protected_resource": "Model-call execution for the planning steps defined in get_step_config (requirement_collection through order_generation) and each step's prompt/tool surface.",
+        "protection_obligation": "The travel agent's model call for a planning step must not execute when the step's declared prerequisite state fields are unset; StepConfigMiddleware must raise ValueError inside awrap_model_call before the wrapped model-call handler runs, fail-closed (including for unregistered current_step values).",
+        "scope_limits": [
+          "Covers the pre-model-call gate only; effects of the step tools (database writes, MCP/external calls) execute later and at other strata.",
+          "requirement_collection declares requires: [] (app/agents/handoffs/step_config.py:113) and is by construction ungated by this check.",
+          "The middleware validates only presence/non-None of required fields, not their content or ownership."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await db.commit() at app/api/v1/conversations.py:111, after the 404 gate (97-103) and field assignments (105-109).",
+        "contract_id": "ecological-contract:12d91b5ccc3bbcf3d957b9afaf03e1ab",
+        "declared_mechanism": "Ownership-scoped SELECT (id + user_id) with scalar_one_or_none and HTTP 404 before field mutation.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 95,
+            "line_start": 91,
+            "path": "app/api/v1/conversations.py",
+            "role": "guard_registration",
+            "source_sha256": "37c1d0e6145355d842cef194980077178b017d822a970437fe7ca8780e6e291e"
+          },
+          {
+            "line_end": 103,
+            "line_start": 97,
+            "path": "app/api/v1/conversations.py",
+            "role": "forbidden_condition",
+            "source_sha256": "37c1d0e6145355d842cef194980077178b017d822a970437fe7ca8780e6e291e"
+          },
+          {
+            "line_end": 114,
+            "line_start": 105,
+            "path": "app/api/v1/conversations.py",
+            "role": "protected_operation",
+            "source_sha256": "37c1d0e6145355d842cef194980077178b017d822a970437fe7ca8780e6e291e"
+          },
+          {
+            "line_end": 112,
+            "line_start": 111,
+            "path": "app/api/v1/conversations.py",
+            "role": "commit_point",
+            "source_sha256": "37c1d0e6145355d842cef194980077178b017d822a970437fe7ca8780e6e291e"
+          }
+        ],
+        "forbidden_condition": "update_conversation assigning title/status and committing for a conversation whose Conversation.user_id differs from user.id or that does not exist.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether status values written here (e.g., 'deleted') interact with the chat-stream ownership gate is unresolved."
+        ],
+        "protected_operation": "PATCH /conversations/{conversation_id}: conditional title/status assignment followed by await db.commit() and refresh.",
+        "protected_resource": "The Conversation row (title and status columns).",
+        "protection_obligation": "Conversation fields (title, status) may be mutated and committed only on a conversation owned by the authenticated user; cross-user or nonexistent update targets must 404 before any assignment or commit.",
+        "scope_limits": [
+          "No agent tool, lifecycle hook, or agent-generated input participates in this path in supplied source.",
+          "Validation of arbitrary status values submitted via ConversationUpdate is generic application validation outside this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "conversation.status = 'deleted' followed by await db.commit() at app/api/v1/conversations.py:139-140, after the 404 gate at 131-137.",
+        "contract_id": "ecological-contract:227328da3aa5db8c75de2f4ff1f82ab8",
+        "declared_mechanism": "Ownership-scoped SELECT (id + user_id) with scalar_one_or_none and HTTP 404 before the mutation.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 129,
+            "line_start": 125,
+            "path": "app/api/v1/conversations.py",
+            "role": "guard_registration",
+            "source_sha256": "37c1d0e6145355d842cef194980077178b017d822a970437fe7ca8780e6e291e"
+          },
+          {
+            "line_end": 137,
+            "line_start": 131,
+            "path": "app/api/v1/conversations.py",
+            "role": "forbidden_condition",
+            "source_sha256": "37c1d0e6145355d842cef194980077178b017d822a970437fe7ca8780e6e291e"
+          },
+          {
+            "line_end": 142,
+            "line_start": 139,
+            "path": "app/api/v1/conversations.py",
+            "role": "protected_operation",
+            "source_sha256": "37c1d0e6145355d842cef194980077178b017d822a970437fe7ca8780e6e291e"
+          },
+          {
+            "line_end": 140,
+            "line_start": 139,
+            "path": "app/api/v1/conversations.py",
+            "role": "commit_point",
+            "source_sha256": "37c1d0e6145355d842cef194980077178b017d822a970437fe7ca8780e6e291e"
+          }
+        ],
+        "forbidden_condition": "delete_conversation setting status='deleted' and committing for a conversation whose Conversation.user_id differs from user.id or that does not exist.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether deleting a conversation removes or blocks its agent checkpointer thread (thread_id equals conversation_id in the chat flow) is unknown."
+        ],
+        "protected_operation": "DELETE /conversations/{conversation_id}: soft-delete status assignment and await db.commit().",
+        "protected_resource": "The Conversation row status column (soft-delete flag).",
+        "protection_obligation": "Soft deletion (status='deleted') of a conversation may be committed only by the owning user; cross-user or nonexistent delete targets must 404 before the status mutation or commit.",
+        "scope_limits": [
+          "Soft delete only; no physical row deletion or agent-checkpoint cleanup appears in supplied source.",
+          "No agent binding is present on this path in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "await db.commit() in save_message (app/api/v1/chat.py:39-41), executed for the user message at :63 and the assistant message at :109-115, both downstream of the 404 gate at :151-155.",
+        "contract_id": "ecological-contract:3da754aeebab7446815ad1d3a73386fc",
+        "declared_mechanism": "The same ownership-scoped SELECT + 404 gate in stream_chat preceding the response generator; persistence then commits via await db.commit() inside save_message.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 43,
+            "line_start": 23,
+            "path": "app/api/v1/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 147,
+            "line_start": 142,
+            "path": "app/api/v1/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 155,
+            "line_start": 149,
+            "path": "app/api/v1/chat.py",
+            "role": "forbidden_condition",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 41,
+            "line_start": 39,
+            "path": "app/api/v1/chat.py",
+            "role": "commit_point",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 73,
+            "line_start": 65,
+            "path": "app/api/v1/chat.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 115,
+            "line_start": 108,
+            "path": "app/api/v1/chat.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          }
+        ],
+        "forbidden_condition": "Insertion and commit of Message rows for a conversation whose Conversation.user_id differs from user.id (or that does not exist) \u2014 reachable only if the ownership gate at app/api/v1/chat.py:149-155 is bypassed; includes persistence of the agent-generated assistant_message.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Column-level constraints of Message/Conversation (FK to user, cascade behavior) are unverified because the ORM models are not supplied.",
+          "Whether assistant-message persistence requires gating independent of the conversation-owner check is a policy question not decidable from supplied source."
+        ],
+        "protected_operation": "save_message (Message construction, db.add, await db.commit, refresh) for the user turn (chat.py:63) and for the assistant turn accumulated from agent stream tokens (chat.py:109-115).",
+        "protected_resource": "Message rows keyed by conversation_id (ORM model app/models/message.py not supplied; commit evidenced at chat.py:39-41).",
+        "protection_obligation": "Message rows (the user turn and the agent-generated assistant turn) may be committed to the database only under a conversation owned by the authenticated user; the ownership 404 gate must hold before any save_message commit in the chat flow.",
+        "scope_limits": [
+          "The ownership check is a single upstream gate; no per-insert re-validation appears in supplied source.",
+          "Covers only chat-flow persistence; history reads are compiled as a separate HTTP-stratum contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The 404 raise at app/api/v1/chat.py:151-155, which precedes returning StreamingResponse (157-166) and therefore precedes save_message, create_travel_agent, and astream_events inside generate_sse_stream.",
+        "contract_id": "ecological-contract:4486b36961c6891e39209a34f7fb2d8e",
+        "declared_mechanism": "Ownership-scoped query select(Conversation).where(Conversation.id == conversation_id).where(Conversation.user_id == user.id) with scalar_one_or_none and HTTPException 404 when no row matches.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 147,
+            "line_start": 142,
+            "path": "app/api/v1/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 155,
+            "line_start": 149,
+            "path": "app/api/v1/chat.py",
+            "role": "forbidden_condition",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 166,
+            "line_start": 157,
+            "path": "app/api/v1/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 159,
+            "line_start": 149,
+            "path": "app/api/v1/chat.py",
+            "role": "commit_point",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 96,
+            "line_start": 65,
+            "path": "app/api/v1/chat.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          }
+        ],
+        "forbidden_condition": "stream_chat proceeding past the ownership lookup for a conversation whose Conversation.user_id differs from the authenticated user.id (or that does not exist) \u2014 i.e., reaching StreamingResponse without a matching ownership-scoped row.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the checkpointer scopes thread state per user is unknown (app/core/checkpointer.py not supplied).",
+          "Whether soft-deleted conversations can still be streamed into is unresolved from the supplied view."
+        ],
+        "protected_operation": "POST /chat/stream/{conversation_id}: the guarded handler that returns StreamingResponse(generate_sse_stream(...)), which saves the user message, constructs the travel agent, and runs agent.astream_events with thread_id=conversation_id, streaming agent tokens and tool-call events.",
+        "protected_resource": "The per-user agent conversation thread (conversation_id used as checkpointer thread_id) and the SSE response derived from the agent run.",
+        "protection_obligation": "A user may open an agent streaming chat turn (SSE) only on a conversation record they own; cross-user or nonexistent conversation targets must be rejected with HTTP 404 before the agent stream begins.",
+        "scope_limits": [
+          "The gate filters on conversation id and user_id only; Conversation.status (e.g., soft-deleted rows) is not re-checked in the supplied view.",
+          "Agent-internal checkpoint state for thread_id is not independently user-scoped in any supplied source.",
+          "Tool executions triggered during the agent stream are separate effects at other strata, not covered by this HTTP-stratum contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Dependency resolution raising HTTP 401 (app/api/dependencies.py:35-58) before the route handler body executes \u2014 i.e., before any conversation query, agent creation, streaming, or database write.",
+        "contract_id": "ecological-contract:4839c1a356256202c85528e5060d3086",
+        "declared_mechanism": "FastAPI dependency injection: HTTPBearer security scheme plus get_current_user (decode_access_token, 'sub' extraction, User lookup, HTTP 401 on every failure path), bound per route via user: User = Depends(get_current_user).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 20,
+            "line_start": 13,
+            "path": "app/api/dependencies.py",
+            "role": "guard_registration",
+            "source_sha256": "e5b1f8619ca42ed1cf616f85e751681ba5c0cd6af74cbf9591d0a142526f37cf"
+          },
+          {
+            "line_end": 134,
+            "line_start": 128,
+            "path": "app/api/v1/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 58,
+            "line_start": 30,
+            "path": "app/api/dependencies.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e5b1f8619ca42ed1cf616f85e751681ba5c0cd6af74cbf9591d0a142526f37cf"
+          },
+          {
+            "line_end": 140,
+            "line_start": 129,
+            "path": "app/api/v1/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 39,
+            "line_start": 33,
+            "path": "app/api/dependencies.py",
+            "role": "commit_point",
+            "source_sha256": "e5b1f8619ca42ed1cf616f85e751681ba5c0cd6af74cbf9591d0a142526f37cf"
+          }
+        ],
+        "forbidden_condition": "Handling a protected endpoint when the bearer token is missing, invalid, expired, or tampered (decode_access_token returns None), when the token lacks a 'sub' claim, or when the subject does not match an existing User row \u2014 i.e., get_current_user raising HTTPException 401 instead of returning a User.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "stream_chat constructs and runs the travel agent downstream of the dependency (app/api/v1/chat.py:65-66, 76-84); whether that downstream invocation should upgrade this contract's agent_mediation away from not_established is unresolved.",
+          "decode_access_token semantics (signature, expiry) are not in supplied source (app/utils/security.py not provided).",
+          "Whether the routers are mounted into the serving application (include_router) is not shown in supplied views."
+        ],
+        "protected_operation": "Request handling for POST /chat/stream/{conversation_id} and GET /chat/history/{conversation_id} (and, via the same dependency, the /conversations CRUD routes), which would otherwise proceed to ownership queries, agent construction, SSE streaming, and database commits.",
+        "protected_resource": "The /chat and /conversations API surface and the conversation, message, and agent-thread data reachable behind it.",
+        "protection_obligation": "Only requests bearing a valid JWT Bearer token that resolves to an existing user may invoke the unit's conversation/chat API operations (including the agent-driving chat stream and history endpoints); all other requests must be rejected with HTTP 401 before any handler effect executes.",
+        "scope_limits": [
+          "The guard is generic HTTP bearer authentication at the request boundary; it is not registered on an agent tool or lifecycle hook and no agent-generated input participates in the check itself.",
+          "The same dependency also gates /conversations create/list/get/update/delete (app/api/v1/conversations.py:20-21, 40-41, 60-61, 86-87, 120-121); those CRUD routes show no agent binding in supplied source. create_conversation additionally binds new rows to user.id (conversations.py:25-29).",
+          "The auth gate is distinct from the per-conversation ownership filter (404), which is compiled as separate contracts."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The 404 raise at app/api/v1/chat.py:186-190, preceding the Message SELECT (193-197) and response construction (201-204).",
+        "contract_id": "ecological-contract:4882e7a2edf54dfa98a8e3973f12bdd6",
+        "declared_mechanism": "Ownership-scoped SELECT (Conversation.id == conversation_id AND Conversation.user_id == user.id) with scalar_one_or_none and HTTP 404 before the message query runs.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 182,
+            "line_start": 177,
+            "path": "app/api/v1/chat.py",
+            "role": "guard_registration",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 190,
+            "line_start": 184,
+            "path": "app/api/v1/chat.py",
+            "role": "forbidden_condition",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 204,
+            "line_start": 192,
+            "path": "app/api/v1/chat.py",
+            "role": "protected_operation",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          },
+          {
+            "line_end": 193,
+            "line_start": 186,
+            "path": "app/api/v1/chat.py",
+            "role": "commit_point",
+            "source_sha256": "93807aeca310a6ef72e50670b0ee04b1f9637d4eeeee7c15a9d2057b6aeaa3c1"
+          }
+        ],
+        "forbidden_condition": "get_chat_history returning conversation or message data for a conversation whose Conversation.user_id differs from user.id or that does not exist.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether history access to soft-deleted conversations is permitted is unresolved (no status filter visible at app/api/v1/chat.py:178-182)."
+        ],
+        "protected_operation": "GET /chat/history/{conversation_id}: ownership-scoped conversation lookup, Message SELECT ordered by created_at, and the JSON response body.",
+        "protected_resource": "The conversation record and its Message rows disclosed via the history response.",
+        "protection_obligation": "Conversation history (the conversation record plus its ordered messages, including agent-generated assistant turns) may be read only by the owning user; cross-user or nonexistent targets must 404 before any message query or response is produced.",
+        "scope_limits": [
+          "Read-only disclosure gate; this endpoint commits no database mutation.",
+          "The guard itself involves no agent tool, lifecycle hook, or agent-generated input at the check point, although responses contain agent-generated assistant turns."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "request.override(...) and handler(modified_request) at app/core/middleware.py:82-90 \u2014 the model call proceeds only with the step-scoped tool list.",
+        "contract_id": "ecological-contract:d17752ae07835a650e2497442a9df41d",
+        "declared_mechanism": "StepConfigMiddleware wholesale-replaces the request tool set via request.override(tools=step_config['tools']); the middleware is registered via create_agent(middleware=[step_config_middleware]).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 102,
+            "line_start": 96,
+            "path": "app/agents/handoffs/travel_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2cc93671ba9e815cb40f9ac56959a0744e22bb7577afbf128d0188ecf2af418"
+          },
+          {
+            "line_end": 103,
+            "line_start": 93,
+            "path": "app/core/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "ac52c646dbe365bd38163ef55dfee8aafad42915ec2de24211ce7c9d7739204d"
+          },
+          {
+            "line_end": 85,
+            "line_start": 67,
+            "path": "app/agents/handoffs/travel_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b2cc93671ba9e815cb40f9ac56959a0744e22bb7577afbf128d0188ecf2af418"
+          },
+          {
+            "line_end": 203,
+            "line_start": 195,
+            "path": "app/agents/handoffs/step_config.py",
+            "role": "protected_operation",
+            "source_sha256": "b3c8b2fa2b63f06e2a85c0f7f2efea9d757d35db33039e3e9ee4797672cab186"
+          },
+          {
+            "line_end": 90,
+            "line_start": 82,
+            "path": "app/core/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "ac52c646dbe365bd38163ef55dfee8aafad42915ec2de24211ce7c9d7739204d"
+          }
+        ],
+        "forbidden_condition": "A model request for a step carrying tools beyond step_config['tools'] for that step \u2014 e.g., state-transition, rollback, memory, or MCP tools from the full pool assembled at app/agents/handoffs/travel_agent.py:67-85 that the current step does not list.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any code path offers the full all_tools pool (app/agents/handoffs/travel_agent.py:67-85) to the model outside StepConfigMiddleware is unresolved in supplied views.",
+          "The strata of the step tools' own effects (state_transition, memory, MCP tools) are unverified because the tool implementations are not supplied."
+        ],
+        "protected_operation": "Construction of the per-step model request: request.override(system_prompt=..., tools=step_config['tools']) followed by handler(modified_request) inside awrap_model_call.",
+        "protected_resource": "The agent's per-step tool invocation surface defined by the 'tools' lists in get_step_config (e.g., app/agents/handoffs/step_config.py:104-113, 195-203, 250-251, 314-322).",
+        "protection_obligation": "The model may be offered, and hence may invoke, only the tools configured for the current planning step; tools outside the step's 'tools' list must not appear on the model request.",
+        "scope_limits": [
+          "Asserts only the invocation-surface restriction visible in supplied source; enforcement inside each tool (argument validation, authorization, effect checks) is not evidenced.",
+          "MCP tool sets load asynchronously and degrade to empty lists on failure (app/agents/handoffs/step_config.py:40-48), shrinking the scoped set.",
+          "Actual tool executions occur downstream of the model call at other strata and are not covered here."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The re-raise at app/agents/handoffs/travel_agent.py:90-92, which precedes create_agent(...) at 96-102; the MemorySaver assignment at 94 is reachable only outside production.",
+        "contract_id": "ecological-contract:d5aea1d8301b17d76aa74af69e2e3f4c",
+        "declared_mechanism": "Environment check in create_travel_agent's try/except: on get_checkpointer() failure, re-raise when settings.app_env.lower() is in {'production','prod'}; only non-production assigns the MemorySaver fallback.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 94,
+            "line_start": 87,
+            "path": "app/agents/handoffs/travel_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "b2cc93671ba9e815cb40f9ac56959a0744e22bb7577afbf128d0188ecf2af418"
+          },
+          {
+            "line_end": 93,
+            "line_start": 90,
+            "path": "app/agents/handoffs/travel_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b2cc93671ba9e815cb40f9ac56959a0744e22bb7577afbf128d0188ecf2af418"
+          },
+          {
+            "line_end": 102,
+            "line_start": 96,
+            "path": "app/agents/handoffs/travel_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "b2cc93671ba9e815cb40f9ac56959a0744e22bb7577afbf128d0188ecf2af418"
+          },
+          {
+            "line_end": 92,
+            "line_start": 88,
+            "path": "app/agents/handoffs/travel_agent.py",
+            "role": "commit_point",
+            "source_sha256": "b2cc93671ba9e815cb40f9ac56959a0744e22bb7577afbf128d0188ecf2af418"
+          },
+          {
+            "line_end": 102,
+            "line_start": 96,
+            "path": "app/agents/handoffs/travel_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2cc93671ba9e815cb40f9ac56959a0744e22bb7577afbf128d0188ecf2af418"
+          }
+        ],
+        "forbidden_condition": "Reaching create_agent with checkpointer=MemorySaver() when settings.app_env indicates production ('production'/'prod') because get_checkpointer() raised \u2014 i.e., swallowing checkpointer initialization failure in production.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "app/core/checkpointer.py and app/config.py are not supplied; the persistent backend and the accepted app_env values are unverified.",
+          "Whether checkpoint state is user-scoped (relevant to cross-user thread exposure via chat streaming) is unknown."
+        ],
+        "protected_operation": "Agent construction in create_travel_agent \u2192 create_agent with the persistent checkpointer wiring that backs agent thread/checkpoint state.",
+        "protected_resource": "The agent's checkpoint/thread state store (persistent checkpointer from get_checkpointer; backend evidenced only by the 'PostgreSQL Checkpointer' log text).",
+        "protection_obligation": "In production, the travel agent must not be constructed with a degraded in-memory checkpointer: if persistent checkpointer initialization fails, agent creation must raise rather than silently fall back to MemorySaver.",
+        "scope_limits": [
+          "Non-production environments explicitly permit the MemorySaver fallback (app/agents/handoffs/travel_agent.py:93-94); only the production path is guarded.",
+          "The checkpointer implementation is not in supplied source; 'state' denotes agent session/thread state backing rather than a directly evidenced database mutation."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "app/utils/security.py is not supplied; decode_access_token semantics (signature verification, expiry, claims) are evidenced only by its None-return handling in get_current_user (app/api/dependencies.py:33-39).",
+      "app/core/checkpointer.py and app/config.py are not supplied; the persistent checkpointer backend is asserted only by the log string 'PostgreSQL Checkpointer' (app/agents/handoffs/travel_agent.py:93), and the accepted settings.app_env values are unverified.",
+      "No supplied view shows the FastAPI app assembly (include_router for app/api/v1/chat.py and app/api/v1/conversations.py); whether these routes are actually mounted is unverified.",
+      "Tool implementations (app/tools/state_transition.py, app/tools/memory_tools.py, app/tools/mcp_tools.py, app/tools/router_query.py, app/tools/transport_query.py) are not supplied; the strata and per-tool authorization of their committed effects are unverified.",
+      "app/core/state.py (TravelState) is not supplied; the concrete definitions of fields named in the step 'requires' lists (user_requirement, selected_destination, selected_transport, selected_accommodation_types, selected_food_types, itinerary, budget, current_step) are unverified.",
+      "ORM models app/models/conversation.py and app/models/message.py are not supplied; column constraints and relationships backing the ownership filters are unverified.",
+      "app/core/store.py (get_user_memory_service) is not supplied; the long-term-memory injection path in StepConfigMiddleware (app/core/middleware.py:53-64) cannot be checked for cross-user isolation.",
+      "No supplied evidence shows authorization or identity binding inside the agent runtime beyond StepConfigMiddleware; whether MCP-returned tools carry their own access control is unknown."
+    ],
+    "repository": "lixin-1024/langgraph-travel-planner",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:74e37c88962d6db4a59ed4843b539207"
+  },
+  "request_sha256": "ba8f3297bedc5e96623a60b029c7541e71860d6c3a130a61f2f1d3728a245015",
+  "response_sha256": "49a3e4f355977e0d34446b64c1941e6ca3862ba9b5098d22e3c67aadcb388940",
+  "state": "completed",
+  "tokens": 54241,
+  "unit": "v24-screen:74e37c88962d6db4a59ed4843b539207"
+}

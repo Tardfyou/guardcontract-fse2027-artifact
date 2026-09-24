@@ -1,0 +1,96 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "client.agents.tools.detach(agent_id=agent_id, tool_id=attached_tool.id) tasks dispatched via asyncio.create_task and awaited by asyncio.gather (web7/action/interface_search.py lines 65-73).",
+        "contract_id": "ecological-contract:f141e1db8e79b3c1cf1b60da3f7664e7",
+        "declared_mechanism": "Static allowlist system_tools (lines 21-30) plus a per-tool membership check 'attached_tool.id not in system_tools' (lines 61-63) that gates creation of each client.agents.tools.detach asyncio task (lines 65-70); allowlisted ids never receive a detach task.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 30,
+            "line_start": 21,
+            "path": "web7/action/interface_search.py",
+            "role": "guard_registration",
+            "source_sha256": "b149daf3d36860521557666aaab7dac9e387a3d5e8f82641eebc243a7cb30709"
+          },
+          {
+            "line_end": 63,
+            "line_start": 61,
+            "path": "web7/action/interface_search.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b149daf3d36860521557666aaab7dac9e387a3d5e8f82641eebc243a7cb30709"
+          },
+          {
+            "line_end": 58,
+            "line_start": 56,
+            "path": "web7/action/interface_search.py",
+            "role": "protected_operation",
+            "source_sha256": "b149daf3d36860521557666aaab7dac9e387a3d5e8f82641eebc243a7cb30709"
+          },
+          {
+            "line_end": 73,
+            "line_start": 65,
+            "path": "web7/action/interface_search.py",
+            "role": "commit_point",
+            "source_sha256": "b149daf3d36860521557666aaab7dac9e387a3d5e8f82641eebc243a7cb30709"
+          },
+          {
+            "line_end": 155,
+            "line_start": 148,
+            "path": "web7/action/interface_search.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b149daf3d36860521557666aaab7dac9e387a3d5e8f82641eebc243a7cb30709"
+          },
+          {
+            "line_end": 137,
+            "line_start": 136,
+            "path": "web7/action/interface_search.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b149daf3d36860521557666aaab7dac9e387a3d5e8f82641eebc243a7cb30709"
+          },
+          {
+            "line_end": 57,
+            "line_start": 52,
+            "path": "web7/api.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3912319e68a509cf10b2f6c44a01ebe67a5d4acbd7aa5de323dd9c233a8e368f"
+          }
+        ],
+        "forbidden_condition": "client.agents.tools.detach being invoked (or a detach task created) for any tool attached to the agent whose attached_tool.id is a member of the system_tools allowlist.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The literal system tool id strings are redacted in source; allowlist membership is identifiable only via the inline comments naming send_message, core_memory_replace, conversation_search, archival_memory_insert, core_memory_append, run_code, archival_memory_search, and web_search (lines 22-29).",
+          "No supplied line attaches the mcp_search tool to a concrete Letta agent; the attach calls at web7/api.py lines 61 and 76 are commented out, and only server registration via init_letta (web7/api.py lines 52-57) is shown, so a live agent-to-tool dispatch path is unconfirmed.",
+          "Whether detach failures swallowed by asyncio.gather(..., return_exceptions=True) (line 73) can leave the workflow in a state requiring re-execution of the guard is not determinable from supplied source."
+        ],
+        "protected_operation": "Dynamic tool detachment of a Letta agent's attached tools performed by detach_tools() as part of the mcp_search MCP tool workflow.",
+        "protected_resource": "The agent's attached system tools enumerated by client.agents.tools.list whose ids appear in the static system_tools allowlist (web7/action/interface_search.py lines 21-30).",
+        "protection_obligation": "Detachment of tools from a Letta agent must never remove a tool whose id is in the module-level system_tools allowlist (send_message, core_memory_replace, conversation_search, archival_memory_insert, core_memory_append, run_code, archival_memory_search, web_search); only non-system tool ids may be removed via client.agents.tools.detach during the dynamic MCP tool injection/detach workflow. (Merged from both reviewer opinions' shared tool-detachment component.)",
+        "scope_limits": [
+          "Covers only the detach_tools guard in web7/action/interface_search.py; no claim is made about equivalent server-side enforcement inside the Letta platform.",
+          "Guard applies only to tools present in client.agents.tools.list for the given agent_id at the time detach_tools runs; tools attached after that listing are outside this pass.",
+          "The same commit point is also reachable from main() (web7/action/interface_search.py line 177), a non-agent script entry; this contract asserts agent mediation only via the registered mcp_search MCP tool path.",
+          "No contract is asserted here for CORS or cross-origin access control on web7/api.py endpoints (see missing_information)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The first reviewer opinion pairs a CORS restriction obligation (cross-origin access to FastAPI endpoints such as POST /user-query limited to the localhost origins registered via CORSMiddleware, web7/api.py lines 39-47 and 81-100) with the tool-detachment guard. The supplied source contains no explicit binding of the CORS-guarded HTTP effect to an agent tool, agent lifecycle hook, or agent-generated input reaching a guarded effect, so per scope rules no CORS contract is emitted and the obligation is recorded here as out-of-scope pending such a binding.",
+      "web7/action/agent.py (generate_task_list, accomplish_task), imported at web7/api.py line 28 and invoked from process_workflow, is not among the supplied sources; any obligations inside it cannot be assessed.",
+      "Environment-provided values (LETTA_API_KEY, SEARCH_ENDPOINT, SEARCH_MCP_ENDPOINT, agent ids) are redacted, so runtime binding of the guard to a concrete agent or deployment cannot be confirmed from supplied source; nothing here asserts violation, safety, enforcement, or prevalence."
+    ],
+    "repository": "tejasprabhune/web7",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:bff3a6e9d0e69c408670d58d32fd2d63"
+  },
+  "request_sha256": "b2f4f812a8d5ad037e634dcfdbc231be72d935d2aec1815e298e334bf57a066d",
+  "response_sha256": "172b0e0a52650d07823b5f3f3e7aac6f505683d90b6c9fbd19a510eb6238ec93",
+  "state": "completed",
+  "tokens": 17027,
+  "unit": "v24-screen:bff3a6e9d0e69c408670d58d32fd2d63"
+}

@@ -1,0 +1,98 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "handler(request) at agents.py:102 \u2014 the guarded release point at which an approved tool call proceeds to the registered tool body whose external HTTP effect commits (requests.get at line 33 for get_weather; tavily_client.search at line 60 for get_news). Both downstream effects are in the same http stratum, so a single contract covers the shared gate; the denial path (lines 96-100) commits no effect.",
+        "contract_id": "ecological-contract:7559bef17f977531f5ebb1ea9ac973ba",
+        "declared_mechanism": "@wrap_tool_call middleware human_approval (agents.py:90-102) that prompts input(\"... Approve? (yes/no): \") per tool call, returns a denial ToolMessage unless confirm.lower() == 'yes', and only otherwise invokes handler(request); registered on the agent via middleware=[human_approval] in create_agent (agents.py:106-111).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 91,
+            "line_start": 90,
+            "path": "agents.py",
+            "role": "guard_registration",
+            "source_sha256": "7c7922165e83beede71382ff38d9cfb98f7da5521fe6944b5f40abf95d148102"
+          },
+          {
+            "line_end": 100,
+            "line_start": 93,
+            "path": "agents.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7c7922165e83beede71382ff38d9cfb98f7da5521fe6944b5f40abf95d148102"
+          },
+          {
+            "line_end": 102,
+            "line_start": 102,
+            "path": "agents.py",
+            "role": "commit_point",
+            "source_sha256": "7c7922165e83beede71382ff38d9cfb98f7da5521fe6944b5f40abf95d148102"
+          },
+          {
+            "line_end": 33,
+            "line_start": 21,
+            "path": "agents.py",
+            "role": "protected_operation",
+            "source_sha256": "7c7922165e83beede71382ff38d9cfb98f7da5521fe6944b5f40abf95d148102"
+          },
+          {
+            "line_end": 64,
+            "line_start": 53,
+            "path": "agents.py",
+            "role": "protected_operation",
+            "source_sha256": "7c7922165e83beede71382ff38d9cfb98f7da5521fe6944b5f40abf95d148102"
+          },
+          {
+            "line_end": 111,
+            "line_start": 106,
+            "path": "agents.py",
+            "role": "guard_registration",
+            "source_sha256": "7c7922165e83beede71382ff38d9cfb98f7da5521fe6944b5f40abf95d148102"
+          },
+          {
+            "line_end": 111,
+            "line_start": 106,
+            "path": "agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7c7922165e83beede71382ff38d9cfb98f7da5521fe6944b5f40abf95d148102"
+          }
+        ],
+        "forbidden_condition": "A registered tool call (get_weather or get_news) reaching handler(request) \u2014 and thereby committing its external HTTP effect (OpenWeatherMap requests.get at agents.py:33 or Tavily tavily_client.search at agents.py:60) \u2014 without the interactive user having confirmed 'yes' (confirm.lower() == 'yes' at agents.py:96); any non-'yes' input must result in the denial ToolMessage path (agents.py:97-100) with handler unexecuted.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The implementation of langchain.agents.middleware.wrap_tool_call is not in the supplied source, so the guarantee that human_approval intercepts every tool invocation for tools registered at agents.py:108 (including argument-binding or pre-handler failure paths) is framework-asserted rather than source-verified.",
+          "The framework-internal dispatch from handler(request) (agents.py:102) to the concrete tool bodies (lines 22-43 and 54-79) is not shown; binding of the commit point to the exact HTTP calls relies on LangChain tool-execution semantics absent from source.",
+          "Whether input() is reachable for every tool call in non-interactive environments (e.g., stdin closed), and what the resulting behavior is, is not determinable from the supplied source.",
+          "TavilyClient.search's internal transport is library-internal and not shown in source; the http stratum assignment rests on the call's evident network-API nature rather than an in-repo HTTP construction."
+        ],
+        "protected_operation": "Invocation of the agent-registered tools get_weather (agents.py:21-43) and get_news (agents.py:53-79) dispatched by the create_agent agent, each performing an outbound network API call.",
+        "protected_resource": "External HTTP endpoints reached inside the guarded tools: the OpenWeatherMap weather API request (requests.get, agents.py:33) and the Tavily search API request (tavily_client.search, agents.py:60).",
+        "protection_obligation": "Every agent tool invocation of the registered tools get_weather and get_news must receive explicit interactive human approval ('yes') through the human_approval wrap_tool_call middleware before the call is released via handler(request) and commits its external HTTP effect; any other input must deny the call with a ToolMessage and must not execute the handler.",
+        "scope_limits": [
+          "Covers only the two tools registered in create_agent at agents.py:108 (get_weather, get_news); any other tools or code paths outside the supplied source are out of scope.",
+          "Approval is an interactive console prompt via input(); no user identity, session binding, replay protection, or audit trail beyond the denial ToolMessage is declared in source.",
+          "Restricted to the supplied agents.py view; framework internals of langchain.agents.middleware and the requests/tavily libraries are treated as unverified and no runtime behavior, DEC-violation, safety, or prevalence determination is made.",
+          "The guard's approval comparison accepts only the literal string 'yes' case-insensitively; behavior for empty input or stdin EOF is not specified in source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source for langchain.agents.middleware.wrap_tool_call and create_agent is not supplied; whether the middleware is guaranteed to wrap every tool call, and its ordering/error semantics, cannot be verified from the repository view.",
+      "TavilyClient.search's underlying transport implementation is not supplied, so the http classification of the get_news effect is inferred from the API-call nature of the invocation rather than from in-repo network code.",
+      "No runtime traces or behavior labels are available (per scope), so actual approval-prompt coverage across all agent invocations (agents.py:120-143) cannot be confirmed.",
+      "No source specifies intended handling of non-'yes'/'no' inputs beyond the denial path (any input whose .lower() != 'yes' is denied), nor EOF/exception behavior of input() inside the middleware."
+    ],
+    "repository": "mastersounak-iitkgp/AI-Agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:655bed0efc2a788a8cfae694a25f8a1d"
+  },
+  "request_sha256": "5e74c5e242c852554e5768bea7e9a1179f360b73a04bae9b7b7e9040c4056e3d",
+  "response_sha256": "3368670aeb3fa80cfd4591e598a73f3f96a4cf4627bac787a9cbb0b6355b00f6",
+  "state": "completed",
+  "tokens": 8304,
+  "unit": "v24-screen:655bed0efc2a788a8cfae694a25f8a1d"
+}

@@ -1,0 +1,98 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The Runner.run_streamed(agent, history, run_config=config) call at main.py:38, where the agent run \u2014 and therefore the registered input guardrail evaluation over the user history \u2014 commits before the planner run proceeds; on tripwire, control diverts at main.py:50 to the fallback_agent run (main.py:52-53) instead of the planner run.",
+        "contract_id": "ecological-contract:175bf8bfc9dbef72406562b8fce2ddbe",
+        "declared_mechanism": "InputGuardrail(guardrail_function=health_guardrail) registered via planner_agent's input_guardrails (planner_agent.py:49-51); health_guardrail (health_guardrails.py:18-24) runs health_guardrail_agent and returns GuardrailFunctionOutput with tripwire_triggered = not final_output.is_health; a tripped guardrail raises InputGuardrailTripwireTriggered (imported at main.py:13), which is caught in handle_message at main.py:50 to run fallback_agent via Runner.run_sync and send its final_output (main.py:52-53).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 51,
+            "line_start": 49,
+            "path": "Health-Wellness-Planner-Agent/Health-Wellness-Planner-Agent/src/specialized_agents/planner_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "5240d4b504eeab34f441d3c15ba456d092d453371205418b3e505c4a7c4968bc"
+          },
+          {
+            "line_end": 24,
+            "line_start": 18,
+            "path": "Health-Wellness-Planner-Agent/Health-Wellness-Planner-Agent/src/guardrails/health_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5e73bd187afe656c2c87bbcbe11a0cfedba9be7089bcd73047628f133d2398e3"
+          },
+          {
+            "line_end": 38,
+            "line_start": 29,
+            "path": "Health-Wellness-Planner-Agent/Health-Wellness-Planner-Agent/main.py",
+            "role": "protected_operation",
+            "source_sha256": "8d86c3d720424ecdb68cf02ce2387e71b88c1bef8ef59c2156afb126b2bac205"
+          },
+          {
+            "line_end": 38,
+            "line_start": 37,
+            "path": "Health-Wellness-Planner-Agent/Health-Wellness-Planner-Agent/main.py",
+            "role": "commit_point",
+            "source_sha256": "8d86c3d720424ecdb68cf02ce2387e71b88c1bef8ef59c2156afb126b2bac205"
+          },
+          {
+            "line_end": 53,
+            "line_start": 50,
+            "path": "Health-Wellness-Planner-Agent/Health-Wellness-Planner-Agent/main.py",
+            "role": "commit_point",
+            "source_sha256": "8d86c3d720424ecdb68cf02ce2387e71b88c1bef8ef59c2156afb126b2bac205"
+          },
+          {
+            "line_end": 20,
+            "line_start": 17,
+            "path": "Health-Wellness-Planner-Agent/Health-Wellness-Planner-Agent/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8d86c3d720424ecdb68cf02ce2387e71b88c1bef8ef59c2156afb126b2bac205"
+          },
+          {
+            "line_end": 38,
+            "line_start": 35,
+            "path": "Health-Wellness-Planner-Agent/Health-Wellness-Planner-Agent/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8d86c3d720424ecdb68cf02ce2387e71b88c1bef8ef59c2156afb126b2bac205"
+          }
+        ],
+        "forbidden_condition": "planner_agent processing (running on) user input that the health_guardrail classifies as not health-related, i.e., health_guardrail returns GuardrailFunctionOutput with tripwire_triggered = not final_output.is_health (True for non-health input).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The contents of config/agent/session_config (create_run_config and the module-level config imported by health_guardrails.py line 3) are not in supplied source; the model/client used by health_guardrail_agent and whether ctx.context (health_guardrails.py:19) is always defined are unverified.",
+          "Exact lifecycle ordering of input-guardrail execution relative to the model API request is framework-internal (the agents SDK implementation is not part of supplied source).",
+          "Whether fallback_agent or the handoff target agents (nutrition_agent, injury_support_agent, escalation_agent) carry their own guardrails is not shown in supplied source."
+        ],
+        "protected_operation": "The agent run of planner_agent over the user's chat input/history, invoked via Runner.run_streamed inside the Chainlit cl.on_message handler handle_message.",
+        "protected_resource": "planner_agent (the agent instance stored as 'agent' in the Chainlit user session and executed per user message), including its run pipeline and downstream tools/handoffs that would otherwise engage on non-health input.",
+        "protection_obligation": "User input that is not health-related must be blocked from being processed by planner_agent: the InputGuardrail wrapping health_guardrail, registered on planner_agent, must evaluate the user's input at the start of the agent run and trip (raising InputGuardrailTripwireTriggered) whenever the input is classified as non-health, so that the planner run is aborted and the fallback_agent response is substituted instead (merged from both reviewers' wording of the same obligation).",
+        "scope_limits": [
+          "Covers only the Chainlit entry path shown in supplied source (cl.on_chat_start session setup, cl.on_message handler, Runner.run_streamed); any other invocation paths for planner_agent are unobserved.",
+          "Asserts only the declared guard mechanism and its wiring; the classification accuracy, reliability, or safety of the LLM-based health/non-health decision made by health_guardrail_agent is not established.",
+          "The fallback_agent response substituted on tripwire is not itself covered by this guardrail contract.",
+          "Downstream effects of a successful planner run (streamed response tokens to the UI, chat_history/session state writes at main.py:48-49, and planner tools/handoffs such as goal_analyzer, meal_planner, checkin_scheduler) are outside this single commit point and not separately contracted.",
+          "Runtime behavior labels are unavailable and repository enumeration is incomplete; claims are limited to the supplied source views."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source for config/agent/session_config (create_run_config and the config object used by health_guardrail at health_guardrails.py:19) is not supplied; its contents and the model/client backing health_guardrail_agent are unknown.",
+      "Sources for fallback_agent, the planner tools (goal_analyzer, meal_planner, workout_recommender, checkin_scheduler, progress_tracker), and the handoff agents are not supplied; whether those components impose their own guards is unknown.",
+      "The agents SDK's internal guardrail execution semantics (evaluation ordering relative to model invocation, guarantees about InputGuardrailTripwireTriggered) are not part of the supplied source and are asserted only from the repository's usage.",
+      "No runtime/behavioral labels are available, so enforcement effectiveness in execution could not be assessed."
+    ],
+    "repository": "abdulbasitkhalsai/agentic-ai-practice-repo",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:0c9748ceae2a081315c4ed3c17baced0"
+  },
+  "request_sha256": "6e3a3be1e90aa010323d2911abbd74368312481eae74921999b29cb65ed8a330",
+  "response_sha256": "0b12a0a239881c40cb5bac1175b4d61a55a1d64e6222d14e0abde0195e3cc85d",
+  "state": "completed",
+  "tokens": 9640,
+  "unit": "v24-screen:0c9748ceae2a081315c4ed3c17baced0"
+}

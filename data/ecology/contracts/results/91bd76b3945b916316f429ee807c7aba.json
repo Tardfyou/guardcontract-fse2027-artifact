@@ -1,0 +1,102 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The guardrail verdict at guard evaluation time: the returned GuardrailFunctionOutput with tripwire_triggered=not can_negotiate (orchestrator.py lines 159-162), which blocks the rate_negotiator run at agent-invocation time before agent execution. The effect that commits on pass is the agent-run invocation itself (invocation-only); no downstream external commit for rate_negotiator is wired in the supplied source.",
+        "contract_id": "ecological-contract:fbd782b6186664b6843015bce678769c",
+        "declared_mechanism": "Input guardrail: the @input_guardrail-decorated async function negotiator_guardrail(ctx, agent, input) computes can_negotiate from the three preconditions and returns GuardrailFunctionOutput(output_info=can_negotiate, tripwire_triggered=not can_negotiate); it is attached to the agent via input_guardrails=[negotiator_guardrail], so it evaluates at rate_negotiator invocation time, before the agent executes.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 123,
+            "line_start": 118,
+            "path": "src/workflows/load_reply_processsor/orchestrator.py",
+            "role": "guard_registration",
+            "source_sha256": "da739675f332dcd492fe34f8e265d605971c943a491a7e8d3e6eb3488f42826f"
+          },
+          {
+            "line_end": 145,
+            "line_start": 130,
+            "path": "src/workflows/load_reply_processsor/orchestrator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "da739675f332dcd492fe34f8e265d605971c943a491a7e8d3e6eb3488f42826f"
+          },
+          {
+            "line_end": 162,
+            "line_start": 159,
+            "path": "src/workflows/load_reply_processsor/orchestrator.py",
+            "role": "commit_point",
+            "source_sha256": "da739675f332dcd492fe34f8e265d605971c943a491a7e8d3e6eb3488f42826f"
+          },
+          {
+            "line_end": 172,
+            "line_start": 165,
+            "path": "src/workflows/load_reply_processsor/orchestrator.py",
+            "role": "guard_registration",
+            "source_sha256": "da739675f332dcd492fe34f8e265d605971c943a491a7e8d3e6eb3488f42826f"
+          },
+          {
+            "line_end": 196,
+            "line_start": 193,
+            "path": "src/workflows/load_reply_processsor/orchestrator.py",
+            "role": "protected_operation",
+            "source_sha256": "da739675f332dcd492fe34f8e265d605971c943a491a7e8d3e6eb3488f42826f"
+          },
+          {
+            "line_end": 196,
+            "line_start": 193,
+            "path": "src/workflows/load_reply_processsor/orchestrator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "da739675f332dcd492fe34f8e265d605971c943a491a7e8d3e6eb3488f42826f"
+          },
+          {
+            "line_end": 360,
+            "line_start": 355,
+            "path": "src/workflows/load_reply_processsor/orchestrator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "da739675f332dcd492fe34f8e265d605971c943a491a7e8d3e6eb3488f42826f"
+          }
+        ],
+        "forbidden_condition": "Invoking/running the rate_negotiator agent when can_negotiate is false, i.e., when any of the following holds: rate_info is missing or rate_info.rate_usd is None (no offered rate); rate_info.minimum_rate is None or rate_info.maximum_rate is None (bounds undefined); or load_context.warnings is non-empty (outstanding warnings). The guard formalizes this as GuardrailFunctionOutput(tripwire_triggered=not can_negotiate).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether rate_negotiator output flows onward to broker communication (send_email/send_reply via the Communicator Agent), which would constitute a distinct communication-stratum commit point; no such wiring appears in the supplied source and dynamic_negotiation_agent_instructions is not supplied.",
+          "Whether load_context.rate_info or load_context.warnings can change during the manager run (e.g., via the update_warnings or update_details tools) after the guard's single evaluation point.",
+          "Concrete definitions of OrchestratorContext, the load context object, rate_info fields (rate_usd, minimum_rate, maximum_rate), and warnings (models module not supplied).",
+          "Content of dynamic_negotiation_agent_instructions: what the guarded agent actually does when the guard passes.",
+          "Whether any code path other than the Manager Agent's negotiate_rate dispatch can invoke rate_negotiator."
+        ],
+        "protected_operation": "Rate negotiation performed by the rate_negotiator agent run, reached via the negotiate_rate tool dispatched by the Manager Agent (analyzer) during the process_broker_email workflow run.",
+        "protected_resource": "The rate_negotiator Agent[OrchestratorContext] ('Rate Negotiator Agent') run and the OrchestratorContext.load_context rate/warnings state it is gated on (rate_info.rate_usd, rate_info.minimum_rate, rate_info.maximum_rate, load_context.warnings).",
+        "protection_obligation": "The Rate Negotiator Agent (rate_negotiator) must not execute its rate-negotiation run unless the load context simultaneously has (a) a broker-offered rate (rate_info.rate_usd is not None), (b) defined minimum and maximum rate bounds (rate_info.minimum_rate and rate_info.maximum_rate are not None), and (c) no outstanding warnings (load_context.warnings is empty or absent). When any precondition fails, the registered input guardrail must trip (tripwire_triggered) and block the run before the agent executes. (Merged contract: the two reviewer opinions state the same obligation in conjunctive and disjunctive form and are combined here.)",
+        "scope_limits": [
+          "The guard is declared only on rate_negotiator; no other agent or tool in the supplied file (extract_details, analyze_warnings, answer_question, cancel_load on the Manager Agent; send_email, cancel_load on the Communicator Agent) carries this guard.",
+          "The guard reads load_context.rate_info and load_context.warnings from the OrchestratorContext constructed at run start (process_broker_email, lines 339-353); the supplied source does not show re-evaluation if update_warnings (upsert_load_warnings) or update_details (update_load_reply_status) mutate that state mid-run.",
+          "Only the agent-invocation commit is demonstrated in source; the reviewer-referenced downstream broker-communication effect for negotiated rates is not wired in the supplied file (rate_negotiator declares no tools; no dataflow to send_reply/communicator is shown), so no separate communication-stratum contract is emitted.",
+          "Tripwire enforcement semantics (e.g., exception on tripwire, whether only the rate_negotiator sub-run or the entire manager Runner.run aborts) are defined by the external 'agents' SDK, which is not supplied; only the declaration and wiring are verifiable.",
+          "Assessment is limited to the single supplied view (src/workflows/load_reply_processsor/orchestrator.py); repository enumeration is incomplete and behavior labels are unavailable. The two reviewer obligations were duplicates and are merged into this single contract."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Definitions of OrchestratorContext, the load context object, rate_info fields (rate_usd, minimum_rate, maximum_rate), and warnings live in workflows.load_reply_processsor.models, which is not supplied; field semantics beyond their usage in orchestrator.py are unverified.",
+      "Content of dynamic_negotiation_agent_instructions (workflows.load_reply_processsor.instructions.rate_negotiator) is not supplied; the guarded agent's actions when the guard passes are unknown.",
+      "No supplied line binds rate_negotiator output to broker communication (send_reply/Communicator Agent); the downstream communication effect asserted in reviewer rationale is unsupported by the supplied source and therefore excluded from the commit point.",
+      "The external 'agents' SDK implementation (Agent, input_guardrail, GuardrailFunctionOutput, Runner, as_tool) is not supplied; tripwire enforcement behavior and guard evaluation ordering are established only from the registration and dispatch wiring in orchestrator.py.",
+      "Whether the tripwire blocks only the rate_negotiator sub-run or aborts the whole manager Runner.run cannot be determined from the supplied source.",
+      "Runtime behavior, DEC violation status, and prevalence are out of scope for this compilation and are not asserted."
+    ],
+    "repository": "AbdumajidRashidov/mock-agent-service",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:91bd76b3945b916316f429ee807c7aba"
+  },
+  "request_sha256": "e330d6cbdda1d439a45778aad31a6fdecbc592481fb66257a59bd4207af0f0e7",
+  "response_sha256": "cec8dbf749af294daf1a7dcba6dd964ce35ca524474cd1d7a4c5fbd3dfab211a",
+  "state": "completed",
+  "tokens": 16633,
+  "unit": "v24-screen:91bd76b3945b916316f429ee807c7aba"
+}

@@ -1,0 +1,159 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The awaited call self._run_agent_and_process_response(...) at agent_executor.py:202-204, which invokes self.runner.run_async at agent_executor.py:323-328; any guard raise occurs before this point, so the agent never executes for a rejected request.",
+        "contract_id": "ecological-contract:2960b789d8a77c69c51e267b4c120bc2",
+        "declared_mechanism": "Unconditional call to self.ucp_processor.prepare_ucp_metadata(context) at the top of execute (agent_executor.py:194), placed before the try block that runs the agent. UcpRequestProcessor.prepare_ucp_metadata raises ValueError for a missing UCP extension, missing call-context state/headers, missing UCP-Agent header, or empty profile URL, and calls ProfileResolver.resolve_profile, which raises ServerError (InternalError with code VERSION_UNSUPPORTED, severity critical) when the client version date exceeds the merchant's.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 101,
+            "line_start": 75,
+            "path": "backend/src/grock/agent_executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ee2d5d536ad552d14da21f1f78b5ac02cf01a81fa50ab0d5e1ec1c14c6b647aa"
+          },
+          {
+            "line_end": 116,
+            "line_start": 97,
+            "path": "backend/src/grock/ucp_profile_resolver.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f9e01c41ec7085a822afa373aa2c75e929ff4152cc159c1dbeb72b10b685ae78"
+          },
+          {
+            "line_end": 204,
+            "line_start": 190,
+            "path": "backend/src/grock/agent_executor.py",
+            "role": "guard_registration",
+            "source_sha256": "ee2d5d536ad552d14da21f1f78b5ac02cf01a81fa50ab0d5e1ec1c14c6b647aa"
+          },
+          {
+            "line_end": 328,
+            "line_start": 316,
+            "path": "backend/src/grock/agent_executor.py",
+            "role": "protected_operation",
+            "source_sha256": "ee2d5d536ad552d14da21f1f78b5ac02cf01a81fa50ab0d5e1ec1c14c6b647aa"
+          },
+          {
+            "line_end": 328,
+            "line_start": 323,
+            "path": "backend/src/grock/agent_executor.py",
+            "role": "commit_point",
+            "source_sha256": "ee2d5d536ad552d14da21f1f78b5ac02cf01a81fa50ab0d5e1ec1c14c6b647aa"
+          },
+          {
+            "line_end": 101,
+            "line_start": 91,
+            "path": "backend/src/grock/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c2517bf5b99e655809265421dba02d33219b9330e905dcc27e4219d2625b3b57"
+          }
+        ],
+        "forbidden_condition": "Executing the ADK agent for an A2A request that fails any gate condition: (1) A2A_UCP_EXTENSION_URL absent from context.requested_extensions; (2) call-context state or headers missing; (3) no UCP-Agent header present; (4) profile attribute missing or empty in the UCP-Agent header value; or (5) client profile ucp.version date later than the merchant's ucp.version date (ProfileResolver raising ServerError with code VERSION_UNSUPPORTED). Each failure must raise before the agent run starts.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "How A2AStarletteApplication / DefaultRequestHandler maps the propagated ValueError or ServerError to the protocol/HTTP response is a2a-library behavior not present in supplied source.",
+          "Whether context.call_context.state and its headers entry are populated for all A2A transports is a2a-library behavior not present in supplied source.",
+          "The concrete merchant UCP version (data/ucp.) and the agent card capabilities.extensions list (data/agent_card.) are not included in the supplied views, so the accepted-version threshold and activated extension set cannot be evaluated.",
+          "Whether downstream model API calls made during runner.run_async need separate protection is not determinable from supplied source."
+        ],
+        "protected_operation": "Agent execution triggered by an A2A message: ADKAgentExecutor.execute proceeding past UCP request validation into session creation and the ADK Runner run for grock_agent.",
+        "protected_resource": "The ADK agent run (Runner.run_async over grock_agent with InMemorySessionService) reachable from the A2A request handler.",
+        "protection_obligation": "A2A requests must be rejected before any agent execution in ADKAgentExecutor.execute unless they declare the UCP extension (A2A_UCP_EXTENSION_URL in context.requested_extensions), carry a UCP-Agent header containing a non-empty client profile URL, and present a client profile whose UCP version is not newer than the merchant's supported UCP version.",
+        "scope_limits": [
+          "The gate is enforced only on the ADKAgentExecutor.execute path wired in this repository; any other invocation route to the ADK Runner is outside supplied source.",
+          "get_ucp_metadata (ucp_profile_resolver.py:121-158) intersects client and merchant capabilities into the UcpMetadata handed downstream but does not itself reject requests; only the version-date comparison rejects.",
+          "resolve_profile caches accepted profiles per URL (ucp_profile_resolver.py:78-79 and 118); revalidation semantics for cached profiles are unspecified.",
+          "Both ValueError and ServerError are raised outside the executor's internal try block (raise at agent_executor.py:194 vs try at 200-214), so they propagate to the A2A handler rather than being converted to an agent error message in the event queue."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The gated branch at agent.py:602-612: checkout.payment instrument mutation (603-604), store.place_order(checkout_id) at 606 \u2014 which commits order confirmation creation and checkout removal (store.py:673-680) \u2014 and tool_context.state[ADK_USER_CHECKOUT_ID] = None at 608.",
+        "contract_id": "ecological-contract:2da94866cab76db9de605e7c1a78ddf6",
+        "declared_mechanism": "complete_checkout chains prerequisite guards (existing checkout at agent.py:565-575, non-None ADK_PAYMENT_STATE payment data at agent.py:577-588, non-None task at agent.py:596-599) and then the conditional 'if task.status is not None and task.status.state == TaskState.completed:' at agent.py:601 gates the branch containing store.place_order(checkout_id) and the state clear; the else branch returns an error response built from task.status.message.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 588,
+            "line_start": 565,
+            "path": "backend/src/grock/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "d05396a72fc664b90eb241697c451af47ffb6f1a5869137dcf8094ef99ca967a"
+          },
+          {
+            "line_end": 601,
+            "line_start": 590,
+            "path": "backend/src/grock/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "d05396a72fc664b90eb241697c451af47ffb6f1a5869137dcf8094ef99ca967a"
+          },
+          {
+            "line_end": 616,
+            "line_start": 613,
+            "path": "backend/src/grock/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d05396a72fc664b90eb241697c451af47ffb6f1a5869137dcf8094ef99ca967a"
+          },
+          {
+            "line_end": 681,
+            "line_start": 665,
+            "path": "backend/src/grock/store.py",
+            "role": "protected_operation",
+            "source_sha256": "5127485827384faed614319c548ade8a5655af08662223b54b3a5dbb4cb297e7"
+          },
+          {
+            "line_end": 612,
+            "line_start": 602,
+            "path": "backend/src/grock/agent.py",
+            "role": "commit_point",
+            "source_sha256": "d05396a72fc664b90eb241697c451af47ffb6f1a5869137dcf8094ef99ca967a"
+          },
+          {
+            "line_end": 766,
+            "line_start": 745,
+            "path": "backend/src/grock/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d05396a72fc664b90eb241697c451af47ffb6f1a5869137dcf8094ef99ca967a"
+          }
+        ],
+        "forbidden_condition": "store.place_order executing (creating an OrderConfirmation, setting checkout.status to 'completed', registering the checkout in _orders and deleting it from _checkouts, store.py:673-680) and/or tool_context.state[ADK_USER_CHECKOUT_ID] being cleared while the payment task status is None or its state is not TaskState.completed; in that case the else branch must return an error response instead (agent.py:613-616).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether a real Merchant Payment Processor integration can return non-completed task states, and how task.status.message would carry failure detail, is not evidenced \u2014 the supplied processor is a mock.",
+          "Whether place_order should additionally require checkout.status == 'ready_for_complete' (set by start_payment at store.py:660-662) or buyer/fulfillment preconditions is not specified in supplied source.",
+          "Whether clearing ADK_USER_CHECKOUT_ID should be transactional with place_order (e.g., skipped if place_order raises) is not specified; the current except block returns a generic error without restoring state."
+        ],
+        "protected_operation": "Agent-driven checkout finalization inside the complete_checkout tool: mutation of checkout.payment instrument fields, invocation of store.place_order, and clearing of the ADK_USER_CHECKOUT_ID session state key.",
+        "protected_resource": "GroceryStore in-memory checkout/order state (self._checkouts, self._orders, checkout.status, checkout.order) and the ADK session state key ADK_USER_CHECKOUT_ID.",
+        "protection_obligation": "The order-placement operation store.place_order must not be executed \u2014 and the checkout must not be finalized or its session checkout ID cleared \u2014 unless the payment processor's task has reached TaskState.completed, with the enforcing conditional gate in complete_checkout at agent.py line 601 and the effect commit at agent.py lines 602-612.",
+        "scope_limits": [
+          "MockPaymentProcessor.process_payment always returns a Task with status.state=TaskState.completed (payment_processor.py:43-49), so under the supplied implementation the gate never blocks; the contract is over the gate condition, not demonstrated payment approval.",
+          "Checkout/order state is in-memory application state; no persistent database write is evidenced in supplied source.",
+          "store.place_order has no caller in supplied source other than the gated branch in complete_checkout; other store mutations (add/update/remove checkout, start_payment) are not covered by this gate.",
+          "The executor path can also inject ADK_PAYMENT_STATE from A2A data parts (agent_executor.py:244-263, 282-287); that path feeds the same gate but its own adequacy is not evaluated here."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Contents of backend/src/grock/data/agent_card. and backend/src/grock/data/ucp. are not supplied; the declared agent extensions and merchant UCP version cannot be evaluated.",
+      "a2a library internals (DefaultRequestHandler error mapping, RequestContext.call_context state/headers population, requested_extensions resolution) are not in supplied source.",
+      "No non-mock payment processor implementation is supplied; real payment task state semantics are unknown.",
+      "Per the stated scope, behavior labels and repository-wide enumeration are unavailable, so prevalence and alternative call paths cannot be assessed."
+    ],
+    "repository": "pranayjoshi/Grock",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:63fef2ec39d7eadc85e55e4b61e5727c"
+  },
+  "request_sha256": "0301afc1cccd9e540e8f69d7c81473d6798590bfcc7e62f21889fbfbba30eb83",
+  "response_sha256": "48d40e8c6a2263507febb460e4827ead44eb9c40c5e89ba928a643f124ff9fe5",
+  "state": "completed",
+  "tokens": 41705,
+  "unit": "v24-screen:63fef2ec39d7eadc85e55e4b61e5727c"
+}

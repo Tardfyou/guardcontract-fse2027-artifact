@@ -1,0 +1,1093 @@
+{
+  "attempt": "complete_shard_reconciliation",
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The denial ToolMessage return before handler(request) at tool_guardrail.py:116-123 (sync path), and the corresponding async path from tool_guardrail.py:126 onward before the awaited handler runs.",
+        "contract_id": "ecological-contract:0855165d48eaacb7eafc1be9a95b3112",
+        "declared_mechanism": "ToolGuardrailMiddleware building a GuardrailRequest and evaluating the injected RuntimePolicyGuardrailProvider (constructed from the subagent toolset allowlist, guardrail_policy, and tool_runtime_context.permissions), returning a denied error ToolMessage (Guardrail denied: ... status=error) instead of invoking the handler; fail_closed converts provider exceptions into denial decisions.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 347,
+            "line_start": 327,
+            "path": "backend/core/tools/task_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "d818e781577bac2a09f8681a98a0cc7cb464a8a5f302e584ca0989a17d89a873"
+          },
+          {
+            "line_end": 96,
+            "line_start": 91,
+            "path": "backend/core/agents/middlewares/tool_guardrail.py",
+            "role": "guard_registration",
+            "source_sha256": "93518946886073db4f8c0043e02bc7dc7e5916b3f4c2a08716febc9d4ae23140"
+          },
+          {
+            "line_end": 74,
+            "line_start": 29,
+            "path": "backend/core/agents/middlewares/runtime_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "79cfd1e8cbba9e94a5802944843061a30c135d70629e2f95897e9ea422ad4824"
+          },
+          {
+            "line_end": 115,
+            "line_start": 100,
+            "path": "backend/core/agents/middlewares/tool_guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "93518946886073db4f8c0043e02bc7dc7e5916b3f4c2a08716febc9d4ae23140"
+          },
+          {
+            "line_end": 123,
+            "line_start": 97,
+            "path": "backend/core/agents/middlewares/tool_guardrail.py",
+            "role": "protected_operation",
+            "source_sha256": "93518946886073db4f8c0043e02bc7dc7e5916b3f4c2a08716febc9d4ae23140"
+          },
+          {
+            "line_end": 123,
+            "line_start": 116,
+            "path": "backend/core/agents/middlewares/tool_guardrail.py",
+            "role": "commit_point",
+            "source_sha256": "93518946886073db4f8c0043e02bc7dc7e5916b3f4c2a08716febc9d4ae23140"
+          },
+          {
+            "line_end": 346,
+            "line_start": 334,
+            "path": "backend/core/tools/task_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d818e781577bac2a09f8681a98a0cc7cb464a8a5f302e584ca0989a17d89a873"
+          }
+        ],
+        "forbidden_condition": "A GuardrailDecision with allow=False from RuntimePolicyGuardrailProvider.evaluate: allowlist denial (evaluated first, runtime_policy.py:30-32), denied risk level (42-43), write-risk tool under anonymous/guest/unauthenticated auth_role (45-54), disallowed side effect (56-57), multi_kb_search with empty knowledge_base.allowed_ids (59-64), groundwater_* without policy groundwater_project_scope and domain_context.authorized (66-74); under fail_closed, any evaluator exception becomes an evaluator_error denial (tool_guardrail.py:100-115).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The ToolGuardrailMiddleware fail_closed default value and the factory.py middleware-chain installation referenced by the reviewer are not in the supplied views; only the explicit subagent-graph registration (task_tool.py:327-347) is visible."
+        ],
+        "protected_operation": "Execution of a tool handler requested by the agent graph (ToolCallRequest), intercepted at ToolGuardrailMiddleware.wrap_tool_call / awrap_tool_call before handler(request) is invoked.",
+        "protected_resource": "Agent tool handlers bound to the subagent graph, including knowledge-base search (multi_kb_search) and groundwater domain tools.",
+        "protection_obligation": "Agent-graph tool guardrail: tool calls dispatched by the agent graph must be evaluated and denied before the tool handler runs \u2014 calls outside the resolved allowlist, write-risk calls for anonymous/guest/unauthenticated roles, multi_kb_search without authorized KB ids, and groundwater_* calls without the groundwater_project_scope plus authorized domain are forbidden, with evaluator errors converted to denials when fail-closed.",
+        "scope_limits": [
+          "The registration visible in the supplied views is the subagent graph in task_tool.py (RuntimeFeatures guardrail slot of create_agent_graph); registrations for other graphs are not in view.",
+          "Denial is delivered as a model-visible error ToolMessage rather than an exception; the tool handler never runs on denial.",
+          "SkillLoadGuardMiddleware blocks skill-gated tools at the same wrap_tool_call boundary (skill_load_guard.py:118-134); it is a distinct guard for a distinct forbidden condition and is deliberately not merged into this contract.",
+          "The reason-code strings for the guest-write and groundwater denial branches are redacted in the supplied view (runtime_policy.py:52, 72)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The archived check under the FOR UPDATE row lock (task_service.py:201-202) before the snapshot-invalidating DELETE (205-206) and before the enclosing tool transaction's session.commit (dialog_tools.py:299).",
+        "contract_id": "ecological-contract:340033c39f59e69db80eb98e247d5443",
+        "declared_mechanism": "assert_can_edit_data raising TaskArchived, reached via invalidate_downstream's get_task(for_update=True) + assert_can_edit_data sequence, and via the _assert_task_owner(require_editable=True) hook documented in _shared.py:65 and implemented at 78-79.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 60,
+            "line_start": 57,
+            "path": "backend/application/course_eval/task_service.py",
+            "role": "guard_registration",
+            "source_sha256": "7d6204b7e0193b398290214324b5cd245b626dcb2b9f66f3d81bf65cf958efb7"
+          },
+          {
+            "line_end": 60,
+            "line_start": 60,
+            "path": "backend/application/course_eval/agent_tools/_shared.py",
+            "role": "guard_registration",
+            "source_sha256": "0eac6366a7edcd7b192c6584b57f41ed89006455a65294ddc960d2e5e09b007b"
+          },
+          {
+            "line_end": 79,
+            "line_start": 78,
+            "path": "backend/application/course_eval/agent_tools/_shared.py",
+            "role": "guard_registration",
+            "source_sha256": "0eac6366a7edcd7b192c6584b57f41ed89006455a65294ddc960d2e5e09b007b"
+          },
+          {
+            "line_end": 60,
+            "line_start": 57,
+            "path": "backend/application/course_eval/task_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7d6204b7e0193b398290214324b5cd245b626dcb2b9f66f3d81bf65cf958efb7"
+          },
+          {
+            "line_end": 206,
+            "line_start": 189,
+            "path": "backend/application/course_eval/task_service.py",
+            "role": "protected_operation",
+            "source_sha256": "7d6204b7e0193b398290214324b5cd245b626dcb2b9f66f3d81bf65cf958efb7"
+          },
+          {
+            "line_end": 299,
+            "line_start": 293,
+            "path": "backend/application/course_eval/agent_tools/dialog_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "66098ee191cc36eb579a270f5e4ebda7d1f6a040f69e2f27f0dbb8755f487432"
+          },
+          {
+            "line_end": 202,
+            "line_start": 201,
+            "path": "backend/application/course_eval/task_service.py",
+            "role": "commit_point",
+            "source_sha256": "7d6204b7e0193b398290214324b5cd245b626dcb2b9f66f3d81bf65cf958efb7"
+          },
+          {
+            "line_end": 299,
+            "line_start": 272,
+            "path": "backend/application/course_eval/agent_tools/dialog_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "66098ee191cc36eb579a270f5e4ebda7d1f6a040f69e2f27f0dbb8755f487432"
+          }
+        ],
+        "forbidden_condition": "task.status == 'archived' at a data-write entry point: assert_can_edit_data raises TaskArchived (task_service.py:57-60); invalidate_downstream enforces this under the FOR UPDATE row lock before deleting snapshots (task_service.py:201-202).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The code line inside score_service.update_scores that invokes invalidate_downstream is not in the supplied views; the in-transaction linkage is documented only by the service docstring (task_service.py:197-199)."
+        ],
+        "protected_operation": "Data-write paths converging on invalidate_downstream / require_editable: concretely, the update_scores agent tool's transaction calling score_service.update_scores, which per the service contract calls invalidate_downstream in the same transaction.",
+        "protected_resource": "CeSemesterTask data (scores, mappings, configs) and dependent CeStatsSnapshot rows.",
+        "protection_obligation": "Course-eval archived-task data lock: no data mutation (score corrections, mappings, configs, downstream snapshot invalidation) may be applied to a CeSemesterTask whose status is archived; modifications require a prior legal state-machine transition out of archived.",
+        "scope_limits": [
+          "The archived state allows a single legal transition back to report_draft (_TRANSITIONS at task_service.py:45); un-archiving is thus state-machine-mediated, not free.",
+          "The visible update_scores tool reaches the archived lock indirectly via score_service.update_scores \u2192 invalidate_downstream; the require_editable=True parameter of _assert_task_owner exists but no in-view call site passes it.",
+          "State-machine legality of transitions themselves is a separate contract (transition sole-entry guard)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The ValueError raise at explore_resources.py:145-148, before download_kb_resource returns the local Path (explore_resources.py:201-207) that the route streams via FileResponse (explore.py:302-303).",
+        "contract_id": "ecological-contract:400b3e13807398df7be5adec67f4fa43",
+        "declared_mechanism": "_resolve_kb_document_storage enforces root confinement with path_obj.resolve().is_relative_to(root) against _allowed_local_roots() (settings.cache_path plus the data/cache fallback), failing closed with ValueError before returning a 'local' storage key.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 106,
+            "line_start": 88,
+            "path": "backend/application/explore/explore_resources.py",
+            "role": "guard_registration",
+            "source_sha256": "d7320ffd9c8074fccddb041cf6380e970cdd3eb68a1af8fb4c163168b9a16cd1"
+          },
+          {
+            "line_end": 149,
+            "line_start": 121,
+            "path": "backend/application/explore/explore_resources.py",
+            "role": "guard_registration",
+            "source_sha256": "d7320ffd9c8074fccddb041cf6380e970cdd3eb68a1af8fb4c163168b9a16cd1"
+          },
+          {
+            "line_end": 148,
+            "line_start": 138,
+            "path": "backend/application/explore/explore_resources.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d7320ffd9c8074fccddb041cf6380e970cdd3eb68a1af8fb4c163168b9a16cd1"
+          },
+          {
+            "line_end": 290,
+            "line_start": 260,
+            "path": "backend/api/routers/explore.py",
+            "role": "protected_operation",
+            "source_sha256": "361888d78b3de48b10d34f1e0b1b62c88b5d3d415313879f7cf4da9b4d8eb665"
+          },
+          {
+            "line_end": 207,
+            "line_start": 193,
+            "path": "backend/application/explore/explore_resources.py",
+            "role": "protected_operation",
+            "source_sha256": "d7320ffd9c8074fccddb041cf6380e970cdd3eb68a1af8fb4c163168b9a16cd1"
+          },
+          {
+            "line_end": 149,
+            "line_start": 144,
+            "path": "backend/application/explore/explore_resources.py",
+            "role": "commit_point",
+            "source_sha256": "d7320ffd9c8074fccddb041cf6380e970cdd3eb68a1af8fb4c163168b9a16cd1"
+          }
+        ],
+        "forbidden_condition": "An absolute local path in KnowledgeBaseDocument.file_path that exists and is a file but does not resolve under any root in _allowed_local_roots(): _resolve_kb_document_storage raises ValueError('Document storage path is not within the allowed range') (explore_resources.py:144-148); the source comment names the arbitrary-file-read threat explicitly (141-143).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Only the explore download route is visible as a caller of download_kb_resource/_resolve_kb_document_storage; any other caller surface (including any agent-tool caller) is not in the supplied views, so agent mediation cannot be bound."
+        ],
+        "protected_operation": "explore_resource_download (GET /resources/download) resolving storage via svc.download_kb_resource and then reading/streaming the local file (FileResponse at explore.py:302-303), after require_kb_access admits the read.",
+        "protected_resource": "Host filesystem (the arbitrary-file-read surface) and the KnowledgeBaseDocument.file_path column.",
+        "protection_obligation": "Knowledge-base document download path confinement: DB-supplied absolute file_path values must be confined to the configured pending-ingest cache roots before a download reads or streams any local file, preventing arbitrary file read via a tampered or misprovisioned file_path column.",
+        "scope_limits": [
+          "Confinement applies to the absolute-local-path branch only; relative keys must match pending/, files/, kb/, uploads/ prefixes and are served from MinIO (explore_resources.py:151-153).",
+          "The name-based cache fallback (explore_resources.py:185-188) constructs paths only under data/cache using the basename, and the MinIO lookup paths (156-183) do not touch the local filesystem.",
+          "The route independently requires KB read access via require_kb_access before the download call (explore.py:274-283); that HTTP-layer gate is covered by the separate KB access contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The 429 JSONResponse returned inside user_context_middleware (guest_http_server.py:345-353) before call_next(request) at line 354, so the guarded route never begins execution.",
+        "contract_id": "ecological-contract:48d9092d2fae8efe91cc855c5b944d2a",
+        "declared_mechanism": "user_context_middleware registered with @app.middleware(\"http\"), consulting the process-wide RequestRateLimiter.allow per identity bucket: Redis-backed consume_sliding_window_quota (60-second window) with an outage-only in-process token-bucket fallback; not-allowed yields a 429 JSONResponse with Retry-After before call_next.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 327,
+            "line_start": 326,
+            "path": "backend/api/guest_http_server.py",
+            "role": "guard_registration",
+            "source_sha256": "f06a12eaeeabd81da172d5b5f25966056f5985f99617bf4e12577c6570be264b"
+          },
+          {
+            "line_end": 344,
+            "line_start": 339,
+            "path": "backend/api/guest_http_server.py",
+            "role": "guard_registration",
+            "source_sha256": "f06a12eaeeabd81da172d5b5f25966056f5985f99617bf4e12577c6570be264b"
+          },
+          {
+            "line_end": 71,
+            "line_start": 49,
+            "path": "backend/api/rate_limit.py",
+            "role": "guard_registration",
+            "source_sha256": "87a4d3381213e64da4d7b408679d8ce424d70480669935753c39268a33194147"
+          },
+          {
+            "line_end": 108,
+            "line_start": 80,
+            "path": "backend/api/rate_limit.py",
+            "role": "guard_registration",
+            "source_sha256": "87a4d3381213e64da4d7b408679d8ce424d70480669935753c39268a33194147"
+          },
+          {
+            "line_end": 334,
+            "line_start": 328,
+            "path": "backend/api/guest_http_server.py",
+            "role": "protected_operation",
+            "source_sha256": "f06a12eaeeabd81da172d5b5f25966056f5985f99617bf4e12577c6570be264b"
+          },
+          {
+            "line_end": 353,
+            "line_start": 339,
+            "path": "backend/api/guest_http_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f06a12eaeeabd81da172d5b5f25966056f5985f99617bf4e12577c6570be264b"
+          },
+          {
+            "line_end": 354,
+            "line_start": 345,
+            "path": "backend/api/guest_http_server.py",
+            "role": "commit_point",
+            "source_sha256": "f06a12eaeeabd81da172d5b5f25966056f5985f99617bf4e12577c6570be264b"
+          }
+        ],
+        "forbidden_condition": "A non-exempt guest HTTP request arriving when either identity bucket has no remaining sliding-window quota: the per-device bucket (hashed X-Device-ID header, default 60/min) or the per-IP bucket (default 600/min); the middleware returns 429 with Retry-After when allow() returns not-allowed.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The concrete dataflow from the /api/v2/guest/query route handler to the agent runtime/stream is outside the supplied views: the guest_agent.py view ends at line 298 before any stream launch; only the middleware docstring (guest_http_server.py:330-333) asserts the endpoint drives the mounted agent-runtime.",
+          "The route decorator for the guest query endpoint and the contents of _RATE_LIMIT_EXEMPT_PATHS are not in the supplied views."
+        ],
+        "protected_operation": "Admission of guest HTTP requests via call_next(request) in user_context_middleware, which fronts all guest routes including the guest query retrieval+model-inference operation and the mounted agent-runtime.",
+        "protected_resource": "Guest API endpoint capacity and the compute/external-model quota consumed by /api/v2/guest/query and the in-process agent-runtime.",
+        "protection_obligation": "Guest-API HTTP admission control: unauthenticated guest callers must not drive the guest API's full retrieval+model-inference operation (notably POST /api/v2/guest/query and any non-exempt path, including the agent-runtime mounted in the same process) beyond the per-device and per-IP sliding-window admission quotas; excess requests are rejected with 429 before any route (and any agent stream behind it) starts.",
+        "scope_limits": [
+          "Paths in _RATE_LIMIT_EXEMPT_PATHS bypass the quota; the set's definition is not in the supplied view (the /health handler is visible at guest_http_server.py:373-377).",
+          "The device bucket keys on a client-supplied X-Device-ID header that the source itself notes is spoofable; the IP bucket is the documented backstop for header rotation and NAT sharing.",
+          "On Redis failure the limiter falls back to a per-process token bucket, so quotas become per-process in that mode.",
+          "This contract records only the registered guard and its commit point; it does not decide DEC violation, safety, runtime behavior, or prevalence."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "HTTPException 403 raised inside require_kb_access (auth.py:325-336) before the KB row is returned to any route handler; in the guest query path, 403 at guest_agent.py:276-277 before payload.kb_ids is reassigned and the agent request context is built (lines 278-296).",
+        "contract_id": "ecological-contract:7ce8e8400dd469c4fef31c7ad6fc5cc2",
+        "declared_mechanism": "require_kb_access (loads the KB row, rejects missing/inactive with 404, admits admin/owner, else enforces access=read and defers to filter_accessible_kb_ids backed by can_read_knowledge_base and _explicit_kb_grants); plus the require_admin FastAPI dependency on the binding-mutation route.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 336,
+            "line_start": 293,
+            "path": "backend/api/dependencies/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "136dbe5bad5eb0a4ab0c301fc7792f5397ec30694199142d9feb1ccbb3998db7"
+          },
+          {
+            "line_end": 290,
+            "line_start": 275,
+            "path": "backend/api/dependencies/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "136dbe5bad5eb0a4ab0c301fc7792f5397ec30694199142d9feb1ccbb3998db7"
+          },
+          {
+            "line_end": 305,
+            "line_start": 300,
+            "path": "backend/api/dependencies/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "136dbe5bad5eb0a4ab0c301fc7792f5397ec30694199142d9feb1ccbb3998db7"
+          },
+          {
+            "line_end": 336,
+            "line_start": 325,
+            "path": "backend/api/dependencies/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "136dbe5bad5eb0a4ab0c301fc7792f5397ec30694199142d9feb1ccbb3998db7"
+          },
+          {
+            "line_end": 290,
+            "line_start": 260,
+            "path": "backend/api/routers/explore.py",
+            "role": "protected_operation",
+            "source_sha256": "361888d78b3de48b10d34f1e0b1b62c88b5d3d415313879f7cf4da9b4d8eb665"
+          },
+          {
+            "line_end": 278,
+            "line_start": 267,
+            "path": "backend/api/routers/guest_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "23da55ccbe7f04a71c0f152e6008ab659313c4dcf436afe0f8d732a50123b640"
+          },
+          {
+            "line_end": 369,
+            "line_start": 362,
+            "path": "backend/api/routers/agents.py",
+            "role": "protected_operation",
+            "source_sha256": "c05786234cfc129eaa637e0e4ca767906e44e6c2c39fe6de445f881e9972d4e6"
+          },
+          {
+            "line_end": 336,
+            "line_start": 325,
+            "path": "backend/api/dependencies/auth.py",
+            "role": "commit_point",
+            "source_sha256": "136dbe5bad5eb0a4ab0c301fc7792f5397ec30694199142d9feb1ccbb3998db7"
+          }
+        ],
+        "forbidden_condition": "A non-admin, non-owner principal requesting non-read (mutating) KB access (403 Not authorized to modify this knowledge base, auth.py:326-327) or read access to a KB not granted via admin/owner/public/ACL status (403 Not authorized to access this knowledge base, auth.py:336); guest-query requests naming kb_ids that survive filter_accessible_kb_ids are rejected with 403 (guest_agent.py:276-277).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The definitions of verify_api_key, require_admin, and get_current_user dependencies are not in the supplied views (only Depends wiring at agents.py:368 and explore.py:264), so their authentication/authorization internals cannot be contract-bound.",
+          "The filtered kb_ids handoff into the guest agent stream (beyond guest_agent.py:298) is not visible, so the agent mediation of the guest KB filter cannot be bound from source."
+        ],
+        "protected_operation": "Route-level KB operations: explore KB document download (explore.py:260-290 calling require_kb_access then svc.download_kb_resource), guest query KB selection (guest_agent.py:267-278 filtering payload.kb_ids), and admin-only KB binding mutation (agents.py:362-369 set_agent_kbs gated by Depends(require_admin)).",
+        "protected_resource": "KnowledgeBase rows (and their documents) addressed by kb_id, and agent-to-KB bindings.",
+        "protection_obligation": "Knowledge-base access authorization at the API boundary: unauthorized principals must not read or mutate knowledge bases \u2014 read access limited to admins, owners, public/default KBs, and explicit ACL grants (agent bindings never grant access); write access limited to admins and owners \u2014 with 403 committed at the route guard before any KB row is returned, any document download proceeds, or any KB-binding write occurs.",
+        "scope_limits": [
+          "Agent bindings explicitly never grant KB access (auth.py:302-304).",
+          "The guest-query branch filters requested kb_ids and reassigns payload.kb_ids to the allowed set before the agent request context is built; the subsequent agent-stream handoff is outside the supplied view.",
+          "The actual KB-binding write (set_agent_kb_bindings) lies beyond the supplied view; only the admin dependency gate on the route is visible.",
+          "Downstream effects prevented by these 403s are covered by separate contracts where in view (e.g., document file access via the path-confinement contract)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The 403 raise at guest_agent.py:131-132; per the reviewer this check runs at the top of the guest query route before the agent stream starts, but the invocation site itself is not within the supplied view.",
+        "contract_id": "ecological-contract:84bcd2bf855bce57e534f70980f2413e",
+        "declared_mechanism": "_assert_guest_agent_allowed(agent_code): case-insensitive comparison against the env-configured allowlist (GUEST_ALLOWED_AGENT_CODES, comma-separated), raising HTTPException 403 on a non-member code.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 130,
+            "line_start": 117,
+            "path": "backend/api/routers/guest_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "23da55ccbe7f04a71c0f152e6008ab659313c4dcf436afe0f8d732a50123b640"
+          },
+          {
+            "line_end": 132,
+            "line_start": 131,
+            "path": "backend/api/routers/guest_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "23da55ccbe7f04a71c0f152e6008ab659313c4dcf436afe0f8d732a50123b640"
+          },
+          {
+            "line_end": 106,
+            "line_start": 97,
+            "path": "backend/api/routers/guest_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "23da55ccbe7f04a71c0f152e6008ab659313c4dcf436afe0f8d732a50123b640"
+          },
+          {
+            "line_end": 150,
+            "line_start": 140,
+            "path": "backend/api/routers/guest_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "23da55ccbe7f04a71c0f152e6008ab659313c4dcf436afe0f8d732a50123b640"
+          },
+          {
+            "line_end": 132,
+            "line_start": 131,
+            "path": "backend/api/routers/guest_agent.py",
+            "role": "commit_point",
+            "source_sha256": "23da55ccbe7f04a71c0f152e6008ab659313c4dcf436afe0f8d732a50123b640"
+          }
+        ],
+        "forbidden_condition": "agent_code.lower() not in the resolved guest allowlist set, i.e., a guest request selecting any registered profile not explicitly opened to anonymous visitors; enforced with HTTPException 403 (The agent is not open to visitors).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The call site of _assert_guest_agent_allowed inside the guest query route is not in the supplied view (guest_agent.py gap between lines 160 and 240), so the ordering of the 403 commit relative to agent-stream start is asserted by the reviewer but not shown in source.",
+          "The route decorator for the guest query endpoint and the agent-stream launch are outside the supplied view, so agent mediation of the guarded operation cannot be bound from source."
+        ],
+        "protected_operation": "Guest query agent-stream instantiation under the requested profile: GuestQueryRequest.agent_code (a registered agent Profile code) whose default workflow is resolved via AgentProfileLoader and must match the requested mode/task_type.",
+        "protected_resource": "Registered agent profiles and the knowledge bases they can reach (including ownerless/sensitive KBs named in the guard docstring).",
+        "protection_obligation": "Guest agent-profile whitelist: guest query callers must not start an agent stream under an agent profile outside the guest allowlist (GUEST_ALLOWED_AGENT_CODES, default ne,csh,fmca); other registered profiles (e.g., internal audit agents) must be rejected with 403 so anonymous callers cannot reach ownerless-knowledge-base content through them.",
+        "scope_limits": [
+          "The allowlist is deployment-tunable via the GUEST_ALLOWED_AGENT_CODES environment variable; the default set is ne,csh,fmca.",
+          "Only the guard definition is in view; the deep-research/subagent bans (guest_agent.py:247-252) and workflow-equality check (253-258) are separate, adjacent guest restrictions not merged into this contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Conflict/lease rejection inside start() after capacity checks and before the record is created and the runner spawned (agent_tasks.py:395-425, acquisition explicitly at 416-425); guaranteed lease release in the finally block (agent_tasks.py:665-668).",
+        "contract_id": "ecological-contract:a0bedb0d18d1064bb70686ec9ef825a6",
+        "declared_mechanism": "In-registry conflict scan under self._lock raising AgentTaskConflictError; acquire_conversation_thread(conversation_lease_key(user_id, thread_id)) raising ConversationThreadBusy, with the lease stored in _thread_leases; start_lease_heartbeat renewal for the whole execution; _release_thread_lease_for in the run's finally block. Background tasks and normal-mode streams share this one mutual-exclusion source (agent_tasks.py:100-103).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 108,
+            "line_start": 100,
+            "path": "backend/application/agent_tasks.py",
+            "role": "guard_registration",
+            "source_sha256": "cbed5a4768f5445d3014f3b0ffd9a46b9e2b90fdfe0273819163594df233c5ad"
+          },
+          {
+            "line_end": 158,
+            "line_start": 129,
+            "path": "backend/application/conversations/thread_guard.py",
+            "role": "guard_registration",
+            "source_sha256": "9c5380d556935ca5f12461b4ff9bbf9439804e5c5e735011e6008eb0b83a7132"
+          },
+          {
+            "line_end": 403,
+            "line_start": 396,
+            "path": "backend/application/agent_tasks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cbed5a4768f5445d3014f3b0ffd9a46b9e2b90fdfe0273819163594df233c5ad"
+          },
+          {
+            "line_end": 150,
+            "line_start": 145,
+            "path": "backend/application/conversations/thread_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9c5380d556935ca5f12461b4ff9bbf9439804e5c5e735011e6008eb0b83a7132"
+          },
+          {
+            "line_end": 394,
+            "line_start": 386,
+            "path": "backend/application/agent_tasks.py",
+            "role": "protected_operation",
+            "source_sha256": "cbed5a4768f5445d3014f3b0ffd9a46b9e2b90fdfe0273819163594df233c5ad"
+          },
+          {
+            "line_end": 530,
+            "line_start": 513,
+            "path": "backend/application/agent_tasks.py",
+            "role": "protected_operation",
+            "source_sha256": "cbed5a4768f5445d3014f3b0ffd9a46b9e2b90fdfe0273819163594df233c5ad"
+          },
+          {
+            "line_end": 425,
+            "line_start": 416,
+            "path": "backend/application/agent_tasks.py",
+            "role": "commit_point",
+            "source_sha256": "cbed5a4768f5445d3014f3b0ffd9a46b9e2b90fdfe0273819163594df233c5ad"
+          },
+          {
+            "line_end": 668,
+            "line_start": 665,
+            "path": "backend/application/agent_tasks.py",
+            "role": "commit_point",
+            "source_sha256": "cbed5a4768f5445d3014f3b0ffd9a46b9e2b90fdfe0273819163594df233c5ad"
+          },
+          {
+            "line_end": 425,
+            "line_start": 416,
+            "path": "backend/application/agent_tasks.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "cbed5a4768f5445d3014f3b0ffd9a46b9e2b90fdfe0273819163594df233c5ad"
+          },
+          {
+            "line_end": 541,
+            "line_start": 532,
+            "path": "backend/application/agent_tasks.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "cbed5a4768f5445d3014f3b0ffd9a46b9e2b90fdfe0273819163594df233c5ad"
+          }
+        ],
+        "forbidden_condition": "Two executions targeting one conversation graph thread: a duplicate (user_id, agent_code, thread_id) background record already in pending/running state (AgentTaskConflictError, agent_tasks.py:396-403), or a thread lease already held by a live request younger than the stale-takeover bound (ConversationThreadBusy, thread_guard.py:146-150).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The normal-mode stream acquisition sites of acquire_conversation_thread (Agent API / MCP paths referenced in the comment at agent_tasks.py:416-419) are not in the supplied views, so this contract binds only the background-task side of the shared guard.",
+          "The HTTP/SSE caller that invokes AgentTaskRegistry.start is not in the supplied views."
+        ],
+        "protected_operation": "AgentTaskRegistry.start creating the task record and spawning/consuming the background agent event stream (consume_stream) that writes the conversation graph thread state.",
+        "protected_resource": "Per-user conversation graph thread checkpoint state and the background-task registry shared with normal-mode streams.",
+        "protection_obligation": "Conversation-thread mutual exclusion for background agent runs: AgentTaskRegistry.start must reject an in-flight pending/running task on the same (user_id, agent_code, thread_id) with AgentTaskConflictError and must acquire the user-scoped ConversationThreadLease (rejected with ConversationThreadBusy while a normal-mode stream owns the thread), keep the lease alive via heartbeat, and release it in the run's finally, so two executions cannot interleave writes on one graph thread's checkpoint state.",
+        "scope_limits": [
+          "Lease acquisition returns None for empty thread ids: requests without a conversation id get a fresh thread and cannot conflict (thread_guard.py:142-144).",
+          "A stale lease older than the takeover bound is preempted with a warning rather than rejected (thread_guard.py:149-157).",
+          "Lease keys are user-scoped (u_{user}__t_{external}) to match the Agent API / MCP normal paths on the same graph thread (thread_guard.py:109-126).",
+          "Registry capacity limits (_MAX_TASKS, _MAX_TASKS_PER_USER, agent_tasks.py:404-415) and the run semaphore are adjacent guards, not merged into this mutual-exclusion contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "AuthorizationError raised before call_next (fastmcp_app.py:106-120); PermissionError raised before RuntimeToolInvoker construction/execution (query_service.py:178-179 and 203-204, with the invoker built at 220-224).",
+        "contract_id": "ecological-contract:c49fdf6e3b953c873e93607bc3c7099d",
+        "declared_mechanism": "McpToolAllowlistMiddleware._allowed_tools resolving the per-key allowlist (deny-all set when unauthenticated; unrestricted only when auth.mcp_allowed_tools is None) plus on_call_tool pre-call_next checks including the nested PROXY_CALL_TOOL dispatch check; invoke_mcp_tool independently re-checks allowed_tools and build_mcp_tool_catalog membership before RuntimeToolInvoker.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 392,
+            "line_start": 385,
+            "path": "backend/application/mcp/fastmcp_app.py",
+            "role": "guard_registration",
+            "source_sha256": "ae0e510f257ecebc07d6d6a08d70f0bca4cd71d709afc4f275cb061f1da11d79"
+          },
+          {
+            "line_end": 99,
+            "line_start": 81,
+            "path": "backend/application/mcp/fastmcp_app.py",
+            "role": "guard_registration",
+            "source_sha256": "ae0e510f257ecebc07d6d6a08d70f0bca4cd71d709afc4f275cb061f1da11d79"
+          },
+          {
+            "line_end": 119,
+            "line_start": 106,
+            "path": "backend/application/mcp/fastmcp_app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ae0e510f257ecebc07d6d6a08d70f0bca4cd71d709afc4f275cb061f1da11d79"
+          },
+          {
+            "line_end": 179,
+            "line_start": 170,
+            "path": "backend/application/mcp/query_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4279a3877f59959b7eb547fac62963107304bd1e2c03112c1901da03f41689a5"
+          },
+          {
+            "line_end": 204,
+            "line_start": 187,
+            "path": "backend/application/mcp/query_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4279a3877f59959b7eb547fac62963107304bd1e2c03112c1901da03f41689a5"
+          },
+          {
+            "line_end": 176,
+            "line_start": 156,
+            "path": "backend/application/mcp/query_service.py",
+            "role": "protected_operation",
+            "source_sha256": "4279a3877f59959b7eb547fac62963107304bd1e2c03112c1901da03f41689a5"
+          },
+          {
+            "line_end": 120,
+            "line_start": 101,
+            "path": "backend/application/mcp/fastmcp_app.py",
+            "role": "commit_point",
+            "source_sha256": "ae0e510f257ecebc07d6d6a08d70f0bca4cd71d709afc4f275cb061f1da11d79"
+          },
+          {
+            "line_end": 204,
+            "line_start": 178,
+            "path": "backend/application/mcp/query_service.py",
+            "role": "commit_point",
+            "source_sha256": "4279a3877f59959b7eb547fac62963107304bd1e2c03112c1901da03f41689a5"
+          },
+          {
+            "line_end": 392,
+            "line_start": 390,
+            "path": "backend/application/mcp/fastmcp_app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ae0e510f257ecebc07d6d6a08d70f0bca4cd71d709afc4f275cb061f1da11d79"
+          },
+          {
+            "line_end": 224,
+            "line_start": 205,
+            "path": "backend/application/mcp/query_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "4279a3877f59959b7eb547fac62963107304bd1e2c03112c1901da03f41689a5"
+          }
+        ],
+        "forbidden_condition": "tool_name not in the resolved per-key allowlist \u2192 AuthorizationError('API Key Not authorized to call MCP tool') (fastmcp_app.py:108-109); a nested tool_name argument of the call_tool proxy not in the allowlist \u2192 AuthorizationError (110-119, closing the proxy bypass where an allowlist containing only the proxy would reach every catalog tool); invoke-time tool_name not in allowed_tools \u2192 PermissionError (query_service.py:178-179) or not in the bound catalog \u2192 PermissionError (203-204).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The definition/value of the PROXY_CALL_TOOL constant is not in the supplied view.",
+          "The concrete agent clients driving the MCP SSE transport are not in the supplied views; direct_tool mediation is bound via the middleware's attachment to the platform MCP app's tool dispatch and invoke_mcp_tool's dispatch into the agent runtime (AgentService/RuntimeToolInvoker)."
+        ],
+        "protected_operation": "MCP tool invocation: McpToolAllowlistMiddleware.on_call_tool for the FastMCP platform app, and query_service.invoke_mcp_tool's runtime execution via RuntimeToolInvoker after building an AgentRequest through AgentService.",
+        "protected_resource": "The bound MCP tool catalog exposed by the platform MCP app and the runtime tools it fronts.",
+        "protection_obligation": "MCP tool allowlist enforcement: a tool invocation on the MCP surface must not execute unless the tool name is on the caller API key's allowlist \u2014 including nested tools dispatched through the call_tool proxy \u2014 and is a member of the bound policy catalog; enforcement must commit in McpToolAllowlistMiddleware.on_call_tool before call_next and again in invoke_mcp_tool before the runtime tool actually executes.",
+        "scope_limits": [
+          "on_list_tools filters tool listings only (fastmcp_app.py:90-99); enforcement of execution is on_call_tool and invoke_mcp_tool.",
+          "The nested-dispatch check applies only when tool_name equals PROXY_CALL_TOOL and the caller has a non-None allowlist.",
+          "An unauthenticated MCP context resolves to an empty allowlist (deny-all) at fastmcp_app.py:84-85."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await flush_or_commit(session) at knowledge_base_crud.py:81 in create (following session.add(kb) at :80), and await flush_or_commit(session) at knowledge_base_crud.py:228 in update (following the UPDATE statement at :223-227); both persist the KnowledgeBase row to the database.",
+        "contract_id": "ecological-contract:cd23f8aa3aa291aa421442716e3082de",
+        "declared_mechanism": "backend.domain.knowledge_base.backend_policy.validate_backend_isolation (raises ValueError on any isolation-violating combination), invoked synchronously in KnowledgeBaseCRUD.create at knowledge_base_crud.py:57-62 (after inline VALID_INGESTION_BACKENDS/VALID_RETRIEVAL_BACKENDS membership checks at :53-56) and in KnowledgeBaseCRUD.update at knowledge_base_crud.py:213-218 (after per-field membership checks at :197-200 and resolution of the final combined backend values at :203-212), immediately before the persistence statement.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 62,
+            "line_start": 53,
+            "path": "backend/db/crud/knowledge_base_crud.py",
+            "role": "guard_registration",
+            "source_sha256": "45678acb51d9a52b7c28863de584283f614595b1d7a37f3e740097fc3190fd6b"
+          },
+          {
+            "line_end": 218,
+            "line_start": 213,
+            "path": "backend/db/crud/knowledge_base_crud.py",
+            "role": "guard_registration",
+            "source_sha256": "45678acb51d9a52b7c28863de584283f614595b1d7a37f3e740097fc3190fd6b"
+          },
+          {
+            "line_end": 99,
+            "line_start": 79,
+            "path": "backend/domain/knowledge_base/backend_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "14668389c0c957c77c9eb61945f1b37b0bad99e4b64771325b29880ee45742cc"
+          },
+          {
+            "line_end": 8,
+            "line_start": 1,
+            "path": "backend/domain/knowledge_base/backend_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "14668389c0c957c77c9eb61945f1b37b0bad99e4b64771325b29880ee45742cc"
+          },
+          {
+            "line_end": 51,
+            "line_start": 39,
+            "path": "backend/db/crud/knowledge_base_crud.py",
+            "role": "protected_operation",
+            "source_sha256": "45678acb51d9a52b7c28863de584283f614595b1d7a37f3e740097fc3190fd6b"
+          },
+          {
+            "line_end": 201,
+            "line_start": 170,
+            "path": "backend/db/crud/knowledge_base_crud.py",
+            "role": "protected_operation",
+            "source_sha256": "45678acb51d9a52b7c28863de584283f614595b1d7a37f3e740097fc3190fd6b"
+          },
+          {
+            "line_end": 81,
+            "line_start": 80,
+            "path": "backend/db/crud/knowledge_base_crud.py",
+            "role": "commit_point",
+            "source_sha256": "45678acb51d9a52b7c28863de584283f614595b1d7a37f3e740097fc3190fd6b"
+          },
+          {
+            "line_end": 228,
+            "line_start": 223,
+            "path": "backend/db/crud/knowledge_base_crud.py",
+            "role": "commit_point",
+            "source_sha256": "45678acb51d9a52b7c28863de584283f614595b1d7a37f3e740097fc3190fd6b"
+          }
+        ],
+        "forbidden_condition": "Committing a KnowledgeBase row whose (ingestion_backend, retrieval_backend, self_ingestion_enabled, self_retriever_enabled) combination hits any isolation-violating branch of validate_backend_isolation: ingestion_backend not in VALID_INGESTION_BACKENDS; retrieval_backend not in VALID_RETRIEVAL_BACKENDS; ingestion_backend == 'self_ingestion' without self_ingestion_enabled; retrieval_backend in {'self_ingestion', 'hybrid'} without self_retriever_enabled; ingestion_backend == 'self_ingestion' with retrieval_backend == 'legacy_lightrag'; or ingestion_backend == 'legacy_lightrag' with retrieval_backend == 'self_ingestion' (legacy ingestion + hybrid retrieval is the explicitly permitted grey-scale path per backend_policy.py:99).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether callers of KnowledgeBaseCRUD.create/update are agent tools, agent lifecycle hooks, or ordinary HTTP/API handlers: the supplied source contains no decorator, registration, callback wiring, tool dispatch, or concrete dataflow binding these CRUD methods to agent mediation, hence agent_mediation = not_established.",
+          "The semantics of flush_or_commit (backend/db/unit_of_work.py is not supplied): whether it always commits or conditionally flushes, which affects the exact transaction semantics of the cited commit points.",
+          "Whether any code path outside the supplied views (raw SQL, migrations, other services) can write KnowledgeBase.ingestion_backend/retrieval_backend without passing the guard."
+        ],
+        "protected_operation": "Persistence of new KnowledgeBase rows via KnowledgeBaseCRUD.create, and modification of the backend-configuration fields (ingestion_backend, retrieval_backend, self_ingestion_enabled, self_retriever_enabled) via KnowledgeBaseCRUD.update.",
+        "protected_resource": "The KnowledgeBase database row \u2014 specifically its backend-configuration columns ingestion_backend, retrieval_backend, self_ingestion_enabled, and self_retriever_enabled.",
+        "protection_obligation": "It is forbidden to persist (create or update) a KnowledgeBase row whose ingestion/retrieval backend configuration breaks legacy/self-ingestion isolation: invalid backend values, self_ingestion ingestion without self_ingestion_enabled, self_ingestion/hybrid retrieval without self_retriever_enabled, self_ingestion ingestion paired with legacy retrieval, or legacy ingestion paired with self_ingestion retrieval. validate_backend_isolation must run in KnowledgeBaseCRUD.create and KnowledgeBaseCRUD.update before flush_or_commit persists the row. (Merges both reviewer opinions, which describe the same obligation, guard, and commit points.)",
+        "scope_limits": [
+          "The guard covers only KnowledgeBaseCRUD.create and KnowledgeBaseCRUD.update; no other write path in the supplied source invokes validate_backend_isolation.",
+          "KnowledgeBaseCRUD.update_status (knowledge_base_crud.py:155-168) and update_stats (:232-258) persist KnowledgeBase changes via flush_or_commit without re-validating backend isolation.",
+          "KnowledgeBaseDocumentCRUD.create validates only ingestion_backend membership (knowledge_base_crud.py:321-322), not the full isolation combination, and KnowledgeBaseDocumentCRUD.upsert performs no backend validation.",
+          "The mechanism is application-level validation only; the supplied source shows no database constraint or trigger enforcing the isolation rule.",
+          "Both commit points (create at :81 and update at :228) share the same effect stratum (database), so they are expressed as a single contract with two commit-point citations."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Register checks before record insertion (control_slots.py:68-77); reservation gate before the slot grant and RUNNING transition (control_slots.py:162-188); ledger consume under the lock (control_models.py:247-283) followed by the decision/raise at control_budget.py:61-74 before the child proceeds.",
+        "contract_id": "ecological-contract:dd5182865024da6f8751572e59655b25",
+        "declared_mechanism": "AgentControl register/reserve checks under the condition lock raising AgentCapacityError/AgentDepthError/AgentStateError; RunBudgetLedger.consume atomically consuming both counters or neither under self._lock with time-limit latching; AgentControl.consume_budget applying the decision (cooperative cancellation of the tree plus root-agent interrupt) and raising AgentBudgetExceededError.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 77,
+            "line_start": 68,
+            "path": "backend/core/agents/control_slots.py",
+            "role": "guard_registration",
+            "source_sha256": "1b2688dbcd760309a4383e2e29d7c9a4cced60ee58a0851d2cfa3950b859c4e9"
+          },
+          {
+            "line_end": 188,
+            "line_start": 132,
+            "path": "backend/core/agents/control_slots.py",
+            "role": "guard_registration",
+            "source_sha256": "1b2688dbcd760309a4383e2e29d7c9a4cced60ee58a0851d2cfa3950b859c4e9"
+          },
+          {
+            "line_end": 74,
+            "line_start": 40,
+            "path": "backend/core/agents/control_budget.py",
+            "role": "guard_registration",
+            "source_sha256": "27d3e89e5ee999e1dfa07752519b1f188c7f6d51517af62320c97ca6d660d7a3"
+          },
+          {
+            "line_end": 283,
+            "line_start": 237,
+            "path": "backend/core/agents/control_models.py",
+            "role": "guard_registration",
+            "source_sha256": "77a419eae5587bfa2e80bbc11614f74c1fe385cdd8841e9a3e6baf04c8bfa206"
+          },
+          {
+            "line_end": 77,
+            "line_start": 68,
+            "path": "backend/core/agents/control_slots.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b2688dbcd760309a4383e2e29d7c9a4cced60ee58a0851d2cfa3950b859c4e9"
+          },
+          {
+            "line_end": 187,
+            "line_start": 183,
+            "path": "backend/core/agents/control_slots.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1b2688dbcd760309a4383e2e29d7c9a4cced60ee58a0851d2cfa3950b859c4e9"
+          },
+          {
+            "line_end": 277,
+            "line_start": 254,
+            "path": "backend/core/agents/control_models.py",
+            "role": "forbidden_condition",
+            "source_sha256": "77a419eae5587bfa2e80bbc11614f74c1fe385cdd8841e9a3e6baf04c8bfa206"
+          },
+          {
+            "line_end": 95,
+            "line_start": 84,
+            "path": "backend/core/agents/control_slots.py",
+            "role": "protected_operation",
+            "source_sha256": "1b2688dbcd760309a4383e2e29d7c9a4cced60ee58a0851d2cfa3950b859c4e9"
+          },
+          {
+            "line_end": 182,
+            "line_start": 165,
+            "path": "backend/core/agents/control_slots.py",
+            "role": "protected_operation",
+            "source_sha256": "1b2688dbcd760309a4383e2e29d7c9a4cced60ee58a0851d2cfa3950b859c4e9"
+          },
+          {
+            "line_end": 74,
+            "line_start": 61,
+            "path": "backend/core/agents/control_budget.py",
+            "role": "commit_point",
+            "source_sha256": "27d3e89e5ee999e1dfa07752519b1f188c7f6d51517af62320c97ca6d660d7a3"
+          },
+          {
+            "line_end": 283,
+            "line_start": 247,
+            "path": "backend/core/agents/control_models.py",
+            "role": "commit_point",
+            "source_sha256": "77a419eae5587bfa2e80bbc11614f74c1fe385cdd8841e9a3e6baf04c8bfa206"
+          },
+          {
+            "line_end": 93,
+            "line_start": 84,
+            "path": "backend/core/agents/control_slots.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "1b2688dbcd760309a4383e2e29d7c9a4cced60ee58a0851d2cfa3950b859c4e9"
+          },
+          {
+            "line_end": 37,
+            "line_start": 26,
+            "path": "backend/core/agents/control_budget.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "27d3e89e5ee999e1dfa07752519b1f188c7f6d51517af62320c97ca6d660d7a3"
+          }
+        ],
+        "forbidden_condition": "Registration when len(records) >= max_spawned_agents (control_slots.py:68-72); depth > max_depth (73-77); reservation when active slots are at max_active_agents and waiting is not allowed (183-187); a consume increment (tokens or tool_calls) that would exceed its limit, latching exceeded state and neither counter being applied (control_models.py:254-280), surfacing as AgentBudgetExceededError (control_budget.py:72-73).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The caller that invokes register/reserve (e.g., a spawn/task tool dispatch) is not in the supplied views; task_tool.py's view shows subagent graph construction but not the control-plane registration call, so tool-level entry binding is not citable \u2014 mediation is assigned from the request-tree lifecycle wiring itself (parent-linked records, depth, child cancellation tokens, root interrupt)."
+        ],
+        "protected_operation": "Child-agent registration in the request tree, active-slot reservation (transition to RUNNING with slot accounting), and atomic budget consumption against the shared tree ledger.",
+        "protected_resource": "Request-tree agent records (spawn/depth/slot accounting) and the shared RunBudget ledger (tokens/tool_calls counters).",
+        "protection_obligation": "Agent control-plane capacity and budget enforcement: the request-tree control plane must reject subagent registration beyond max_spawned_agents, depth beyond max_depth, active-slot reservation beyond max_active_agents, and token/tool-call charges that would exceed the shared RunBudget limits \u2014 raising AgentCapacityError/AgentDepthError/AgentStateError/AgentBudgetExceededError at the register/reserve/consume commit points before the child agent runs.",
+        "scope_limits": [
+          "Budget enforcement is cooperative: on violation the control plane latches the reason, cancels the tree token, and interrupts the root agent (control_budget.py:26-37) in addition to raising.",
+          "The restored-claim path (control_slots.py:43-62) enforces a distinct AgentStateError for duplicate/re-parented registration.",
+          "Time-limit latching via _latch_time_limit is part of the same ledger transaction (control_models.py:250-253)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "validate_read_only_sql(sql) at excel_engine.py:296 before the connection is leased and conn executes the query (299-304); path PermissionError at excel_engine_connections.py:244-250 before a local path is returned for connection; external-access disable at connection creation (excel_engine_safety.py:64-82).",
+        "contract_id": "ecological-contract:e3d122f59fa90fb992c3bb26de4dee02",
+        "declared_mechanism": "validate_read_only_sql (strip code fences/prompts/comments, enforce single SELECT/WITH, _mask_sql_literals_and_comments + _UNSAFE_SQL deny-list); is_allowed_local_table_path/_resolve_local_path raising PermissionError for out-of-root paths; _new_safe_connection executing SET enable_external_access = false plus env-configured memory_limit/threads caps.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 129,
+            "line_start": 85,
+            "path": "backend/application/tools/providers/excel_engine_safety.py",
+            "role": "guard_registration",
+            "source_sha256": "d95aca3fd60255072037def62682362350a62fd765ee1f7724be2b2cfa5203fe"
+          },
+          {
+            "line_end": 82,
+            "line_start": 64,
+            "path": "backend/application/tools/providers/excel_engine_safety.py",
+            "role": "guard_registration",
+            "source_sha256": "d95aca3fd60255072037def62682362350a62fd765ee1f7724be2b2cfa5203fe"
+          },
+          {
+            "line_end": 198,
+            "line_start": 179,
+            "path": "backend/application/tools/providers/excel_engine_safety.py",
+            "role": "guard_registration",
+            "source_sha256": "d95aca3fd60255072037def62682362350a62fd765ee1f7724be2b2cfa5203fe"
+          },
+          {
+            "line_end": 128,
+            "line_start": 123,
+            "path": "backend/application/tools/providers/excel_engine_safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d95aca3fd60255072037def62682362350a62fd765ee1f7724be2b2cfa5203fe"
+          },
+          {
+            "line_end": 250,
+            "line_start": 237,
+            "path": "backend/application/tools/providers/excel_engine_connections.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1cb4b7bcbcc5f9d545fde718fdaa5fae0c3186891a897e23837724af30fbf5ee"
+          },
+          {
+            "line_end": 312,
+            "line_start": 288,
+            "path": "backend/application/tools/providers/excel_engine.py",
+            "role": "protected_operation",
+            "source_sha256": "1bffa9e3e340935fa0508a97ca1520bea055f57af52e43bd75b8abbc38c2a69b"
+          },
+          {
+            "line_end": 250,
+            "line_start": 244,
+            "path": "backend/application/tools/providers/excel_engine_connections.py",
+            "role": "commit_point",
+            "source_sha256": "1cb4b7bcbcc5f9d545fde718fdaa5fae0c3186891a897e23837724af30fbf5ee"
+          },
+          {
+            "line_end": 304,
+            "line_start": 296,
+            "path": "backend/application/tools/providers/excel_engine.py",
+            "role": "commit_point",
+            "source_sha256": "1bffa9e3e340935fa0508a97ca1520bea055f57af52e43bd75b8abbc38c2a69b"
+          }
+        ],
+        "forbidden_condition": "SQL that is empty or over 100000 chars, contains ';', does not start with SELECT/WITH, or whose literal/comment-masked body matches _UNSAFE_SQL (file readers, extensions, writes, catalog operations) \u2192 ValueError (excel_engine_safety.py:123-128); a local table path that exists but is not under _allowed_local_roots() or caller-supplied authorized_roots \u2192 PermissionError (excel_engine_connections.py:245-249).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The agent tool wrapper that passes model-authored SQL into execute_sql is not in the supplied views; docstrings reference model-authored SQL (excel_engine_safety.py:71-75) and the Excel tools (86-93), and excel_engine.py:273-283 generates JOIN SQL hints evidently aimed at the model, but no tool dispatch into execute_sql is visible, so agent mediation cannot be bound from source.",
+          "The execute sites for execute_multi_sql and execute_named_tables_sql are not in the supplied views."
+        ],
+        "protected_operation": "execute_sql(file_path, sql): validate_read_only_sql(sql) then DuckDB execution via _leased_connection(get_connection(file_path)) and _fetch_bounded_query(conn, normalized_sql, bounded_rows); local table resolution via _resolve_local_path before any connection is built.",
+        "protected_resource": "In-process DuckDB engine connections over Excel/CSV data frames registered by the module, and host filesystem table paths.",
+        "protection_obligation": "Excel/CSV SQL sandboxing: SQL executed on the Excel engine's DuckDB connections must be a single read-only SELECT/WITH query \u2014 file access, extension, catalog, and write/mutating operations denied via a masked-literal keyword scan \u2014 and may run only against local table files under globally or caller-authorized roots, on connections created with DuckDB external access disabled and bounded memory/threads.",
+        "scope_limits": [
+          "The deny-list is a keyword scan over masked literals/comments on top of a SELECT/WITH allow-list; the _UNSAFE_SQL pattern definition itself is not in the supplied view.",
+          "Only the execute_sql site is visible in the supplied views; execute_multi_sql and execute_named_tables_sql are named by the reviewers but their execute sites are not in view.",
+          "Resource caps (memory/threads) and row bounding (_bounded_max_rows) are adjacent resource guards, not merged into this read-only/path contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The allowed-set check (task_service.py:163-165) precedes task.status = target and the audit write inside the locked transaction (task_service.py:166-186).",
+        "contract_id": "ecological-contract:ee72d71e2797dfb1c2601ac08665a381",
+        "declared_mechanism": "transition(): get_task(for_update=True) row lock, allowed-set membership check raising CourseEvalStateError (docstring: The only entrance to the state machine), then status assignment and _write_audit capturing the previous status.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 162,
+            "line_start": 153,
+            "path": "backend/application/course_eval/task_service.py",
+            "role": "guard_registration",
+            "source_sha256": "7d6204b7e0193b398290214324b5cd245b626dcb2b9f66f3d81bf65cf958efb7"
+          },
+          {
+            "line_end": 165,
+            "line_start": 163,
+            "path": "backend/application/course_eval/task_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7d6204b7e0193b398290214324b5cd245b626dcb2b9f66f3d81bf65cf958efb7"
+          },
+          {
+            "line_end": 161,
+            "line_start": 153,
+            "path": "backend/application/course_eval/task_service.py",
+            "role": "protected_operation",
+            "source_sha256": "7d6204b7e0193b398290214324b5cd245b626dcb2b9f66f3d81bf65cf958efb7"
+          },
+          {
+            "line_end": 178,
+            "line_start": 166,
+            "path": "backend/application/course_eval/task_service.py",
+            "role": "commit_point",
+            "source_sha256": "7d6204b7e0193b398290214324b5cd245b626dcb2b9f66f3d81bf65cf958efb7"
+          }
+        ],
+        "forbidden_condition": "A target status not in _TRANSITIONS[task.status]: transition raises CourseEvalStateError(task.status, target, allowed) (task_service.py:163-165).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The surface that invokes task_service.transition (agent tool, HTTP route, or internal service caller) is not in the supplied views, so agent mediation and any ownership gating of transition callers cannot be bound from source."
+        ],
+        "protected_operation": "CeSemesterTask status mutation plus the accompanying 'task.transition' audit write (CeAuditLog).",
+        "protected_resource": "CeSemesterTask.status and the course-eval audit log.",
+        "protection_obligation": "Course-eval state-machine integrity: CeSemesterTask status changes must pass through task_service.transition \u2014 the sole state-change entry \u2014 which rejects transitions outside the per-status allowed set under a FOR UPDATE row lock and records a from/to audit entry; illegal moves raise CourseEvalStateError with allowed_actions.",
+        "scope_limits": [
+          "allowed_transitions() exposes the same map for front-end button gating; it is informational, not enforcement.",
+          "The archived state's single allowed exit (report_draft) ties this contract to the archived-data lock contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "_assert_task_owner executed as the first statement of the write tool's transaction (dialog_tools.py:284-292) before score_service.update_scores and before await session.commit() (dialog_tools.py:293-299); the owner filter applied to the read query (read_tools.py:29-31).",
+        "contract_id": "ecological-contract:f0070e99637a2564f07425f282c2fb54",
+        "declared_mechanism": "_viewer_scope/_is_admin_role deriving (user_id, is_admin) from runtime_context; _assert_task_owner performing get_task(for_update=True) row-locked ownership enforcement raising CourseEvalAccessDenied, with an optional require_editable archived soft-lock; _operator_id raising ValueError when no logged-in user identity exists.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 80,
+            "line_start": 51,
+            "path": "backend/application/course_eval/agent_tools/_shared.py",
+            "role": "guard_registration",
+            "source_sha256": "0eac6366a7edcd7b192c6584b57f41ed89006455a65294ddc960d2e5e09b007b"
+          },
+          {
+            "line_end": 48,
+            "line_start": 36,
+            "path": "backend/application/course_eval/agent_tools/_shared.py",
+            "role": "guard_registration",
+            "source_sha256": "0eac6366a7edcd7b192c6584b57f41ed89006455a65294ddc960d2e5e09b007b"
+          },
+          {
+            "line_end": 77,
+            "line_start": 74,
+            "path": "backend/application/course_eval/agent_tools/_shared.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0eac6366a7edcd7b192c6584b57f41ed89006455a65294ddc960d2e5e09b007b"
+          },
+          {
+            "line_end": 31,
+            "line_start": 29,
+            "path": "backend/application/course_eval/agent_tools/read_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d5726069adc2759e9c46ba32bdae71834801b21429b6c02733ad990360872d5e"
+          },
+          {
+            "line_end": 278,
+            "line_start": 272,
+            "path": "backend/application/course_eval/agent_tools/dialog_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "66098ee191cc36eb579a270f5e4ebda7d1f6a040f69e2f27f0dbb8755f487432"
+          },
+          {
+            "line_end": 18,
+            "line_start": 16,
+            "path": "backend/application/course_eval/agent_tools/read_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "d5726069adc2759e9c46ba32bdae71834801b21429b6c02733ad990360872d5e"
+          },
+          {
+            "line_end": 299,
+            "line_start": 283,
+            "path": "backend/application/course_eval/agent_tools/dialog_tools.py",
+            "role": "commit_point",
+            "source_sha256": "66098ee191cc36eb579a270f5e4ebda7d1f6a040f69e2f27f0dbb8755f487432"
+          },
+          {
+            "line_end": 292,
+            "line_start": 272,
+            "path": "backend/application/course_eval/agent_tools/dialog_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "66098ee191cc36eb579a270f5e4ebda7d1f6a040f69e2f27f0dbb8755f487432"
+          },
+          {
+            "line_end": 24,
+            "line_start": 16,
+            "path": "backend/application/course_eval/agent_tools/read_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d5726069adc2759e9c46ba32bdae71834801b21429b6c02733ad990360872d5e"
+          }
+        ],
+        "forbidden_condition": "Non-admin access to a CeSemesterTask with owner_user_id != operator user_id: _assert_task_owner raises CourseEvalAccessDenied (_shared.py:74-77); the read tool excludes other teachers' tasks from listing entirely for non-admins (read_tools.py:29-31).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "Course-eval agent tool transactions: the write tool update_scores (row-locked ownership check as the first statement of its transaction, before score_service.update_scores and session.commit) and the read tool list_course_eval_tasks (owner-scoped listing).",
+        "protected_resource": "CeSemesterTask rows and the student PII they contain.",
+        "protection_obligation": "Course-eval object-level ownership for agent tools: a logged-in non-admin operator (identity taken from the agent tool runtime context) must not read or modify any CeSemesterTask whose owner_user_id differs from the operator's; all course-eval read/write agent tools converge on this single authorization point, and guest/anonymous/unauthenticated contexts are rejected outright.",
+        "scope_limits": [
+          "Admins (admin/superadmin/super_admin roles per _is_admin_role) are exempt from the ownership restriction.",
+          "Guest/anonymous/unauthenticated runtime contexts are rejected before any query (_shared.py:31-33, docstring at 44-45).",
+          "Identity comes from the agent runtime context (runtime_context.user_id/role), not from client-supplied headers."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Behavior labels and prevalence data are unavailable for this packet per the stated scope; no contract above decides DEC violation, safety, or runtime frequency.",
+      "Definitions of the verify_api_key, require_admin, and get_current_user dependencies are not in the supplied views (only Depends wiring at backend/api/routers/agents.py:368 and backend/api/routers/explore.py:264), so their authentication/authorization internals cannot be contract-bound.",
+      "No agent_entry_binding evidence exists in the supplied views: nothing ties KnowledgeBaseCRUD.create/update (or their backend-configuration arguments) to an agent tool registration, agent lifecycle hook, or agent-generated input dataflow, so agent mediation remains not_established.",
+      "No supplied source shows database-level constraints, triggers, or migrations independently enforcing the legacy/self-ingestion isolation rule on the KnowledgeBase table.",
+      "Normal-mode stream acquisition sites of acquire_conversation_thread (Agent API / MCP paths referenced only in the comment at backend/application/agent_tasks.py:416-419) are not in the supplied views.",
+      "Some guardrail denial reason codes are redacted in the supplied source (backend/core/agents/middlewares/runtime_policy.py:52 and 72), so the exact denial codes for the guest-write and groundwater branches cannot be named.",
+      "The agent tool wrapper dispatching model-authored SQL into the Excel engine's execute_sql is not in the supplied views; execute_multi_sql and execute_named_tables_sql execute sites, the _UNSAFE_SQL pattern definition, and the PROXY_CALL_TOOL constant definition are also not in view.",
+      "The contents of _RATE_LIMIT_EXEMPT_PATHS in backend/api/guest_http_server.py are referenced (line 339) but not defined in the supplied view.",
+      "The guest query route decorator, the head of the guest query handler (including the _assert_guest_agent_allowed call site, guest_agent.py gap between lines 160 and 240), and the agent-stream launch site (after line 298) are outside the supplied views; the reviewer's claim that the whitelist check runs before the agent stream is not verifiable from source.",
+      "The in-transaction call from score_service.update_scores to invalidate_downstream is documented only by the task_service docstring (backend/application/course_eval/task_service.py:197-199); the actual call site is not in view.",
+      "The surface invoking task_service.transition (agent tool vs. HTTP route vs. internal service) is not in the supplied views, so mediation for the state-machine contract cannot be bound.",
+      "ToolGuardrailMiddleware's fail_closed default and the factory.py middleware-chain installation mentioned by the reviewer are not in the supplied views; only the subagent-graph registration at backend/core/tools/task_tool.py:327-347 is visible.",
+      "backend/db/unit_of_work.flush_or_commit is imported (knowledge_base_crud.py:26) but its body is not supplied, so whether the cited commit points always commit versus only flush is unsupported."
+    ],
+    "repository": "simpleqt/radai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:88996907692a390e357bb848bfbddb94"
+  },
+  "request_sha256": "79b22c4b662085e808b7f8af58822d3a67097212e14c7177bf495ff626aa2555",
+  "response_sha256": "136a17fe219f4e07b8e36c8dde62dbffb0bea14cb53d55b4581190d22b6e96bc",
+  "shard_provenance": [
+    {
+      "attempt": 1,
+      "request_sha256": "b14106c7fd2143c8b2f082f6a611461f3694360707033c852774d29843415b7c",
+      "response_sha256": "710ce0c675c94cdde15836827ce53fc6b5b10d19849f5a2e7454eae85f767342",
+      "result_sha256": "f803eb80d79f73489bce6332f418364f376e2b34c9f96c2dc1ed771ec2d980d3",
+      "tokens": 71578,
+      "unit": "v24-screen:88996907692a390e357bb848bfbddb94-p000"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "0913688c1cad731ce1327af5580a8c4c5ecde6c03347126a872252bb8d40bf79",
+      "response_sha256": "c67ed3b830db37afd912d1c6bcb6131ab254e151b5d2af72ceb8dcdf6ffd84d9",
+      "result_sha256": "c5672648b8b79f1b0a4b9728d1a8f843b23d0506d129b955e35fd23972bfb250",
+      "tokens": 15066,
+      "unit": "v24-screen:88996907692a390e357bb848bfbddb94-p001"
+    }
+  ],
+  "state": "completed",
+  "tokens": 86644,
+  "unit": "v24-screen:88996907692a390e357bb848bfbddb94"
+}

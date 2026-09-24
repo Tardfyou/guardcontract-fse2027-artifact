@@ -1,0 +1,2656 @@
+{
+  "attempt": "complete_shard_reconciliation",
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "mcp_adapter.py:1694-1696 \u2014 the denial return before execution; the guarded effect commits at mcp_adapter.py:1794-1802 (session.call_tool).",
+        "contract_id": "ecological-contract:00b4b70c77e2084aa02ad23ae15bbf94",
+        "declared_mechanism": "_is_mcp_user_allowed(user_id, allow_users) \u2014 fail-closed identity check (no user ID: allow only if allow_users is None or 'system' in allow_users; identified user: admitted when allow_users is None or the ID is listed) \u2014 evaluated at the top of run__async, returning _mcp_access_denied_result (is_error content) before any MCP session is created.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 1102,
+            "line_start": 1091,
+            "path": "src/xagent/core/tools/adapters/vibe/mcp_adapter.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2ba5bd0ca3a1a2a654af475c576a795ff5f2112a4baf990c8eb058ea77b03a42"
+          },
+          {
+            "line_end": 1111,
+            "line_start": 1105,
+            "path": "src/xagent/core/tools/adapters/vibe/mcp_adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "2ba5bd0ca3a1a2a654af475c576a795ff5f2112a4baf990c8eb058ea77b03a42"
+          },
+          {
+            "line_end": 1696,
+            "line_start": 1694,
+            "path": "src/xagent/core/tools/adapters/vibe/mcp_adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "2ba5bd0ca3a1a2a654af475c576a795ff5f2112a4baf990c8eb058ea77b03a42"
+          },
+          {
+            "line_end": 1693,
+            "line_start": 1688,
+            "path": "src/xagent/core/tools/adapters/vibe/mcp_adapter.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2ba5bd0ca3a1a2a654af475c576a795ff5f2112a4baf990c8eb058ea77b03a42"
+          },
+          {
+            "line_end": 1802,
+            "line_start": 1794,
+            "path": "src/xagent/core/tools/adapters/vibe/mcp_adapter.py",
+            "role": "commit_point",
+            "source_sha256": "2ba5bd0ca3a1a2a654af475c576a795ff5f2112a4baf990c8eb058ea77b03a42"
+          }
+        ],
+        "forbidden_condition": "Invoking session.call_tool for a caller whose user ID is not in allow_users, or with no user identity when allow_users is a list that does not contain 'system' (an absent identity passes only when allow_users is None or 'system' is explicitly allowed).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Where allow_users is populated from MCP server/tool registration configuration is not in the supplied views.",
+          "The method-level _is_user_allowed invoked at mcp_adapter.py:1695 (distinct from the module-level _is_mcp_user_allowed) is not shown; whether it delegates to the module-level predicate is a binding gap.",
+          "The MCP connection transport (network vs stdio) for create_session(connection) is not shown; the http stratum follows the remote-server session.call_tool characterization."
+        ],
+        "protected_operation": "The MCP tool invocation: _execute_mcp_call's session.initialize followed by session.call_tool(self.mcp_tool.name, dict(tool_args), meta) against the MCP server.",
+        "protected_resource": "The wrapped MCP server tool (self.mcp_tool) exposed through MCPToolAdapter and its allow_users authorization list.",
+        "protection_obligation": "MCPToolAdapter.run__async must verify the caller's user identity against the wrapped MCP tool's allow_users list before the remote MCP session.call_tool commits, denying execution when the identity is absent from the list, and denying when no user ID is present unless allow_users is None or explicitly contains 'system'.",
+        "scope_limits": [
+          "allow_users None admits any identified user (and unidentified callers); only an explicit list enforces membership.",
+          "Identity is sourced from the environment/context (XAGENT_USER_ID); the code itself warns this is a stand-in ('In production, this should be replaced with proper context passing') at mcp_adapter.py:1083-1088.",
+          "A delegated-authorization 401 retry path (_retry_after_authorization_failure) may re-invoke _execute_mcp_call on a refreshed connection after the initial gate; the allow_users gate itself runs once per run__async entry."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The ValueError from the prefix check fires when _request calls _headers(...) at stripe.py:209, before requests.request dispatches the HTTP call at stripe.py:213-220; no request leaves the process carrying a non-restricted key.",
+        "contract_id": "ecological-contract:01948fc556febe567d10f7148ea88788",
+        "declared_mechanism": "_headers() (stripe.py:41-64) requires the configured key to start with ('rk_live_', 'rk_test_') and raises ValueError with remediation guidance otherwise (stripe.py:54-60); the check is enforced at request time rather than delegated to the generic MCP connect flow, which has no per-connector validation hook (stripe.py:47-53).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 64,
+            "line_start": 41,
+            "path": "src/xagent/web/tools/mcp/stripe.py",
+            "role": "guard_registration",
+            "source_sha256": "142035634b891420e81301271e984e4fbd2846e444d5ff8ea7a15f9aed7f1c94"
+          },
+          {
+            "line_end": 60,
+            "line_start": 45,
+            "path": "src/xagent/web/tools/mcp/stripe.py",
+            "role": "forbidden_condition",
+            "source_sha256": "142035634b891420e81301271e984e4fbd2846e444d5ff8ea7a15f9aed7f1c94"
+          },
+          {
+            "line_end": 194,
+            "line_start": 186,
+            "path": "src/xagent/web/tools/mcp/stripe.py",
+            "role": "protected_operation",
+            "source_sha256": "142035634b891420e81301271e984e4fbd2846e444d5ff8ea7a15f9aed7f1c94"
+          },
+          {
+            "line_end": 220,
+            "line_start": 206,
+            "path": "src/xagent/web/tools/mcp/stripe.py",
+            "role": "commit_point",
+            "source_sha256": "142035634b891420e81301271e984e4fbd2846e444d5ff8ea7a15f9aed7f1c94"
+          }
+        ],
+        "forbidden_condition": "Attaching a STRIPE_API_KEY that is not a Restricted key (anything not starting with rk_live_/rk_test_) to an outbound Stripe API request; the connector's comment states a full sk_live_/sk_test_ secret key 'works against Stripe's API just as well as a Restricted Key' and would silently grant full account access (stripe.py:45-53).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The @mcp.tool()-decorated Stripe tool functions and their dispatch into _request are outside the supplied view; the agent-entry binding (and hence direct_tool mediation) cannot yet be established.",
+          "Whether any other code path in stripe.py builds Authorization headers without passing through _headers is not determinable from the supplied view."
+        ],
+        "protected_operation": "Issuing any Stripe Web API call through _request, the single choke point that resolves auth headers for every request before dispatch (stripe.py:186-194, 206-220).",
+        "protected_resource": "The Stripe account credential configured as STRIPE_API_KEY and the Stripe account it can access.",
+        "protection_obligation": "Every outbound Stripe API request issued by the stripe connector must carry only a Restricted API key: STRIPE_API_KEY must start with rk_live_ or rk_test_, and _headers() must raise ValueError before the HTTP call in _request() for any other value, so a full sk_live_/sk_test_ secret key cannot silently grant full account access instead of the curated minimal permissions a Restricted Key guarantees.",
+        "scope_limits": [
+          "The check validates the key prefix only; it does not verify the restricted key's actual permission scopes (a restricted key with broad scopes still passes).",
+          "The guard covers requests routed through _request/_headers in stripe.py; any code path building Authorization headers without _headers would be outside the guard.",
+          "No Stripe tool registration appears in the supplied view (stripe.py lines 1-300 contain no @mcp.tool() definition), so the enforcement site is characterized per-request, not per-tool."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The PermissionError raised at onedrive.py:693-697 when the resolved path is not relative to any allowed directory, enforced before any file content is read or uploaded.",
+        "contract_id": "ecological-contract:05aebad12deb1c0ca1fe99944d779bcf",
+        "declared_mechanism": "_resolve_upload_file_path (onedrive.py:659-707) resolves the path (with strict resolution when the candidate is a symlink, onedrive.py:669-680), requires containment under an allowed directory before checking existence (onedrive.py:682-697), then requires a regular file (onedrive.py:699-707).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 707,
+            "line_start": 659,
+            "path": "src/xagent/web/tools/mcp/onedrive.py",
+            "role": "guard_registration",
+            "source_sha256": "196cab50718dc45909af385bb71ae9987ecf39e3302437478c3447d4e092f9bc"
+          },
+          {
+            "line_end": 662,
+            "line_start": 660,
+            "path": "src/xagent/web/tools/mcp/onedrive.py",
+            "role": "protected_operation",
+            "source_sha256": "196cab50718dc45909af385bb71ae9987ecf39e3302437478c3447d4e092f9bc"
+          },
+          {
+            "line_end": 697,
+            "line_start": 687,
+            "path": "src/xagent/web/tools/mcp/onedrive.py",
+            "role": "forbidden_condition",
+            "source_sha256": "196cab50718dc45909af385bb71ae9987ecf39e3302437478c3447d4e092f9bc"
+          },
+          {
+            "line_end": 697,
+            "line_start": 693,
+            "path": "src/xagent/web/tools/mcp/onedrive.py",
+            "role": "commit_point",
+            "source_sha256": "196cab50718dc45909af385bb71ae9987ecf39e3302437478c3447d4e092f9bc"
+          }
+        ],
+        "forbidden_condition": "An upload path resolving outside every allowed directory being read and transmitted to OneDrive via the Graph API; the guard rejects it with 'local_file_path is outside the allowed upload directories' (onedrive.py:687-697), and containment is deliberately checked before existence so out-of-allowlist probes cannot leak whether a host path exists (onedrive.py:664-668).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Registration of onedrive_upload_file as an MCP tool and the concrete call site passing local_file_path into _resolve_upload_file_path are outside the supplied view; agent mediation cannot yet be bound.",
+          "The value of _UPLOAD_ALLOWED_DIRS_ENV_VAR (referenced at onedrive.py:683) is defined outside the supplied view and is not visible."
+        ],
+        "protected_operation": "Uploading a local file to OneDrive through the onedrive_upload_file MCP tool, named as the restricted operation in the guard's docstring (onedrive.py:659-662); the tool body and Graph upload call site lie outside the supplied view.",
+        "protected_resource": "Host filesystem files readable by the onedrive-mcp server process, specifically files outside the allowlist returned by allowed_dirs_from_env(_UPLOAD_ALLOWED_DIRS_ENV_VAR) (onedrive.py:682-686).",
+        "protection_obligation": "The local_file_path supplied to onedrive_upload_file must resolve to a regular file under one of the configured allowed upload directories; out-of-allowlist paths are rejected with PermissionError (containment checked before existence) before the file is read and uploaded to the Microsoft Graph API, preventing exfiltration of arbitrary host files.",
+        "scope_limits": [
+          "Containment is checked before existence (onedrive.py:664-668, 687), so an out-of-allowlist path always receives the allowlist message, never 'not found'.",
+          "Non-regular files that exist (directories, device nodes) raise ValueError rather than FileNotFoundError (onedrive.py:699-704).",
+          "The onedrive_upload_file tool definition, its call into this guard, and the Graph upload request are outside the supplied view (view covers onedrive.py lines 579-787)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The fenced locked re-read at task_execution.py:1504-1513 whose rowcount/None outcome gates the settlement write, and the rollback + late-result return at 1523-1540 on fence miss; the settlement write itself lies beyond the cited range.",
+        "contract_id": "ecological-contract:067d958c401a8e00dddc2f9745dbd25d",
+        "declared_mechanism": "lock_task_lease_for_settlement_no_commit plus a with_for_update() re-read filtered on Task.runner_id == task_lease.runner_id, task_lease_attempt_predicate(task_lease), and Task.run_id == task_lease.run_id (task_execution.py:1503-1512); late_result = (task_updated is None) triggers rollback and a late-result return (1513, 1523-1540).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1521,
+            "line_start": 1493,
+            "path": "src/xagent/web/services/task_execution.py",
+            "role": "guard_registration",
+            "source_sha256": "95c2259f167aa6c3df5029d2d75a53f04c78ac5ae2990bb7431cc4754482ba86"
+          },
+          {
+            "line_end": 1502,
+            "line_start": 1494,
+            "path": "src/xagent/web/services/task_execution.py",
+            "role": "forbidden_condition",
+            "source_sha256": "95c2259f167aa6c3df5029d2d75a53f04c78ac5ae2990bb7431cc4754482ba86"
+          },
+          {
+            "line_end": 1512,
+            "line_start": 1504,
+            "path": "src/xagent/web/services/task_execution.py",
+            "role": "protected_operation",
+            "source_sha256": "95c2259f167aa6c3df5029d2d75a53f04c78ac5ae2990bb7431cc4754482ba86"
+          },
+          {
+            "line_end": 1513,
+            "line_start": 1503,
+            "path": "src/xagent/web/services/task_execution.py",
+            "role": "commit_point",
+            "source_sha256": "95c2259f167aa6c3df5029d2d75a53f04c78ac5ae2990bb7431cc4754482ba86"
+          },
+          {
+            "line_end": 1529,
+            "line_start": 1523,
+            "path": "src/xagent/web/services/task_execution.py",
+            "role": "forbidden_condition",
+            "source_sha256": "95c2259f167aa6c3df5029d2d75a53f04c78ac5ae2990bb7431cc4754482ba86"
+          }
+        ],
+        "forbidden_condition": "Finalizing a task result when task_lease.run_id is None (refused as unfenced), or when the fenced locked re-read returns None (ownership/attempt/run changed) \u2014 in both cases no terminal settlement may be written and the transaction is rolled back as a late result.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The runner/lease lifecycle is presumably agent-run execution, but no cited line explicitly binds this finalization to an agent tool, agent lifecycle hook, or agent-generated input; mediation is unbound."
+        ],
+        "protected_operation": "Terminal settlement of the Task row by the finalization path.",
+        "protected_resource": "The Task row (Task.id == task_id).",
+        "protection_obligation": "Durable terminal task-result settlement may only be committed by the current lease owner: an unfenced lease (run_id None) is refused outright, and the settlement proceeds only if a SELECT ... FOR UPDATE filtered on the exact runner_id + lease_attempt predicate + run_id still matches the task row; fence misses are discarded as late results with rollback.",
+        "scope_limits": [
+          "Legacy callers with no concrete lease may only finalize ownerless task rows (Task.runner_id IS NULL), optionally narrowed by expected_run_id (1514-1521).",
+          "The bodies of lock_task_lease_for_settlement_no_commit and task_lease_attempt_predicate, and the post-fence settlement UPDATE, are not in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Registration commits at web_ingestion.py:659-671 (ingest time, before failure handling) via pipeline_compatibility.py:445-451; compensation execution commits at operation_compatibility.py:216-222 (execute_compensations) with the at-most-once dedupe binding at 163-182.",
+        "contract_id": "ecological-contract:0cc93c7161a5900de8e914d6dc599ea8",
+        "declared_mechanism": "pipeline_facade.record_web_page_file_side_effect delegates to KBOperation.record_side_effect, which dedupes by idempotency key (dedupe_key membership in _idempotency_keys; early return refreshing the compensation callback) and appends a CompensationStep; compensations run via execute_compensations(step_names={'cleanup_web_page_persistence'}, planes={FILE}); on handler failure a marker side effect with reason='file_handler_failed' is recorded and the page operation is finished as error.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 647,
+            "line_start": 626,
+            "path": "src/xagent/core/tools/core/RAG_tools/pipelines/web_ingestion.py",
+            "role": "protected_operation",
+            "source_sha256": "fc49480c209fc75e587297a94d35d2e1339dda1f1978b7fc039e70f448ddecab"
+          },
+          {
+            "line_end": 671,
+            "line_start": 649,
+            "path": "src/xagent/core/tools/core/RAG_tools/pipelines/web_ingestion.py",
+            "role": "guard_registration",
+            "source_sha256": "fc49480c209fc75e587297a94d35d2e1339dda1f1978b7fc039e70f448ddecab"
+          },
+          {
+            "line_end": 707,
+            "line_start": 685,
+            "path": "src/xagent/core/tools/core/RAG_tools/pipelines/web_ingestion.py",
+            "role": "guard_registration",
+            "source_sha256": "fc49480c209fc75e587297a94d35d2e1339dda1f1978b7fc039e70f448ddecab"
+          },
+          {
+            "line_end": 451,
+            "line_start": 422,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/pipeline_compatibility.py",
+            "role": "guard_registration",
+            "source_sha256": "5755960be5cb7586883cf233af63e318629fa5d1d654219b20d0d54b135043df"
+          },
+          {
+            "line_end": 182,
+            "line_start": 163,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/operation_compatibility.py",
+            "role": "guard_registration",
+            "source_sha256": "d0cfca5378f12f8c1ae71862d26995062c99c1480376d64acea77b9d5028c083"
+          },
+          {
+            "line_end": 222,
+            "line_start": 216,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/operation_compatibility.py",
+            "role": "commit_point",
+            "source_sha256": "d0cfca5378f12f8c1ae71862d26995062c99c1480376d64acea77b9d5028c083"
+          }
+        ],
+        "forbidden_condition": "A page file persisted by the ingestion file_handler remaining uncompensated after the page's ingestion fails, or being compensated more than once via duplicate registration under the same idempotency key (duplicate registrations are collapsed, refreshing only the callback).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "The FILE compensation callback body (the file handler's actual cleanup implementation) is not in the supplied views.",
+          "No supplied view binds web ingestion to an agent tool invocation or lifecycle hook; agent mediation is not established."
+        ],
+        "protected_operation": "Web-page file persistence performed by the ingestion file_handler (producing final_file_path/final_file_id outside the temp dir) and the execution of its registered cleanup_web_page_persistence compensation during rollback.",
+        "protected_resource": "Persisted web-page files (and their file records) under the collection, tracked per collection+file_id/file_path/url.",
+        "protection_obligation": "KB web-page ingestion must register an idempotent FILE-plane compensation boundary for each persisted page file at ingest time \u2014 record_side_effect(name='cleanup_web_page_persistence', plane=FILE, idempotency_key='file:{collection}:{file_id or file_path or url}', compensation=<file handler callback>) \u2014 so that a failed page ingestion compensates the persisted file effect at most once and no persisted file is left uncompensated.",
+        "scope_limits": [
+          "A FILE side effect is recorded only when the handler supplied a per-boundary file_compensation, or when the persisted path/id differs from the temp file; a handler returning nothing or failing records a marker without a compensation callback.",
+          "Compensation callbacks are synchronous; async callbacks are unsupported (enforced for the STATUS plane with TypeError)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "table.alter_columns({'path': 'file_id', 'nullable': True}) at fix_file_id_nullable.py:151, executed only after both locks are held.",
+        "contract_id": "ecological-contract:1a74ec0c881f1dde5c9b5b36dac7ae6e",
+        "declared_mechanism": "Module-level threading.Lock acquired non-blocking in main(); _acquire_file_lock() takes fcntl.flock(LOCK_EX | LOCK_NB) on a lock file and writes the PID; either acquisition failure logs a warning naming the concurrent migration and sys.exit(1) before the fix runs.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 45,
+            "line_start": 44,
+            "path": "src/xagent/migrations/lancedb/fix_file_id_nullable.py",
+            "role": "guard_registration",
+            "source_sha256": "52fb361980d8c4003b20baf52bf56433ea0d2f100b8d4b100931351f9bba8b07"
+          },
+          {
+            "line_end": 81,
+            "line_start": 64,
+            "path": "src/xagent/migrations/lancedb/fix_file_id_nullable.py",
+            "role": "guard_registration",
+            "source_sha256": "52fb361980d8c4003b20baf52bf56433ea0d2f100b8d4b100931351f9bba8b07"
+          },
+          {
+            "line_end": 187,
+            "line_start": 178,
+            "path": "src/xagent/migrations/lancedb/fix_file_id_nullable.py",
+            "role": "forbidden_condition",
+            "source_sha256": "52fb361980d8c4003b20baf52bf56433ea0d2f100b8d4b100931351f9bba8b07"
+          },
+          {
+            "line_end": 153,
+            "line_start": 149,
+            "path": "src/xagent/migrations/lancedb/fix_file_id_nullable.py",
+            "role": "protected_operation",
+            "source_sha256": "52fb361980d8c4003b20baf52bf56433ea0d2f100b8d4b100931351f9bba8b07"
+          },
+          {
+            "line_end": 153,
+            "line_start": 151,
+            "path": "src/xagent/migrations/lancedb/fix_file_id_nullable.py",
+            "role": "commit_point",
+            "source_sha256": "52fb361980d8c4003b20baf52bf56433ea0d2f100b8d4b100931351f9bba8b07"
+          }
+        ],
+        "forbidden_condition": "Concurrent execution of the fix_file_id_nullable migration from another thread or another local process racing the same database alteration.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Any entry points into the fix other than main() are not shown.",
+          "Wiring of this script relative to the alembic migration runner is not shown."
+        ],
+        "protected_operation": "Making the documents table's file_id column nullable via table.alter_columns.",
+        "protected_resource": "LanceDB documents table file_id column definition.",
+        "protection_obligation": "Single-flight execution of the fix_file_id_nullable LanceDB migration: an in-process threading lock and a cross-process non-blocking fcntl file lock must both be acquired before the documents-table alteration can commit.",
+        "scope_limits": [
+          "The fcntl lock is a single-host mutex; networked/replicated deployments are not addressed in the supplied view.",
+          "Whether main() is the only invocation path for the fix is not shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file_path.unlink() at files.py:2261 (record path) and 2265 (legacy path), preceded by the guards at 2216-2225.",
+        "contract_id": "ecological-contract:26f94abd198f7c54c8bae593757cc65a",
+        "declared_mechanism": "_check_file_access raises 403 before deletion; the legacy no-record path requires owner match or admin; _ensure_under_uploads containment runs before the deletion proceeds.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 1085,
+            "line_start": 1081,
+            "path": "src/xagent/web/api/files.py",
+            "role": "guard_registration",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 2222,
+            "line_start": 2216,
+            "path": "src/xagent/web/api/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 2225,
+            "line_start": 2216,
+            "path": "src/xagent/web/api/files.py",
+            "role": "guard_registration",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 2265,
+            "line_start": 2260,
+            "path": "src/xagent/web/api/files.py",
+            "role": "protected_operation",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 2265,
+            "line_start": 2259,
+            "path": "src/xagent/web/api/files.py",
+            "role": "commit_point",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          }
+        ],
+        "forbidden_condition": "A non-admin caller unlinking a file whose owning user_id differs from the caller's, in either the record-backed or the legacy record-less delete path.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "None beyond the general absence of agent-binding evidence for this route."
+        ],
+        "protected_operation": "file_path.unlink() in delete_file, for both record-backed and legacy paths.",
+        "protected_resource": "The local uploaded-file path.",
+        "protection_obligation": "Owner-only authorization for deleting uploaded files (filesystem unlink leg): a non-admin user must never unlink a file they do not own.",
+        "scope_limits": [
+          "A failing durable storage cleanup before the row delete raises before the unlink; partial-failure semantics are outside the supplied ranges."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "scoped.py:40-46 \u2014 _scoped raises StorageKeyScopeError before delegation; the effects commit at the delegated backend calls, e.g. put_file at scoped.py:48-51 and delete at scoped.py:88-89.",
+        "contract_id": "ecological-contract:27b4014af469fc135a5476fa73b9e206",
+        "declared_mechanism": "ScopedFileStorage._scoped normalizes the key via normalize_storage_key (null bytes and empty/./.. components always rejected; backslashes/control characters rejected in strict mode used for writes and list) and raises StorageKeyScopeError unless normalized == self._prefix or normalized.startswith(self._prefix + '/'), before the backend call. Read/delete/stat/signed_url use tolerant normalization (strict=False) because their keys may come from persisted DB records; writes and list use strict mode.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 46,
+            "line_start": 40,
+            "path": "src/xagent/core/file_storage/scoped.py",
+            "role": "guard_registration",
+            "source_sha256": "ca97964a55ae0fe8f6087ca63e0216901477ed76284a8ce2152512e598119a50"
+          },
+          {
+            "line_end": 26,
+            "line_start": 19,
+            "path": "src/xagent/core/file_storage/scoped.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ca97964a55ae0fe8f6087ca63e0216901477ed76284a8ce2152512e598119a50"
+          },
+          {
+            "line_end": 51,
+            "line_start": 48,
+            "path": "src/xagent/core/file_storage/scoped.py",
+            "role": "commit_point",
+            "source_sha256": "ca97964a55ae0fe8f6087ca63e0216901477ed76284a8ce2152512e598119a50"
+          },
+          {
+            "line_end": 89,
+            "line_start": 88,
+            "path": "src/xagent/core/file_storage/scoped.py",
+            "role": "commit_point",
+            "source_sha256": "ca97964a55ae0fe8f6087ca63e0216901477ed76284a8ce2152512e598119a50"
+          },
+          {
+            "line_end": 47,
+            "line_start": 17,
+            "path": "src/xagent/core/file_storage/storage.py",
+            "role": "guard_registration",
+            "source_sha256": "ffd61f9c9b6615df9ae413f2e0a5d17f0ad91a0d76d0c0d1ba62d7118be369bf"
+          },
+          {
+            "line_end": 15,
+            "line_start": 9,
+            "path": "src/xagent/core/file_storage/keys.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1d28f89d22a54163f5a828e9fbeb16e02c58480d71993488989c0ad6b8899253"
+          }
+        ],
+        "forbidden_condition": "A cross-prefix durable-storage operation: any read, write, delete, list, or signed-URL operation whose normalized key equals a different prefix root or extends a different prefix (e.g. accessing users/10/... through a handle bound to users/1).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "No supplied view shows how ScopedFileStorage handles are constructed (the get_user_file_storage factory referenced in keys.py) or which agent tool, lifecycle hook, or agent-generated key flows through them; agent mediation is not established.",
+          "FsspecFileStorage backend method bodies beyond put_file's normalization prologue (storage.py:81-87) are not in the supplied views."
+        ],
+        "protected_operation": "Delegation of the storage call to the FsspecFileStorage backend (put_file, put_bytes, open_read, delete, list, signed_url, etc.) with the normalized key.",
+        "protected_resource": "The durable object-storage namespace under the handle's bound per-user key prefix (users/{user_id}/..., optionally extended by validated workspace scope segments).",
+        "protection_obligation": "Every ScopedFileStorage operation (put_file, put_bytes, open_read, exists, stat, signed_url, content_hash, list, delete, materialize, copy_to_path) must be refused when its normalized key is not contained under the handle's bound prefix \u2014 containment separator-aware, so binding users/1 does not admit users/10/... \u2014 raising StorageKeyScopeError before the operation is delegated to the underlying FsspecFileStorage.",
+        "scope_limits": [
+          "The guard enforces containment against the single prefix bound at handle construction; it does not itself authenticate the caller or bind a user identity.",
+          "Strict/tolerant normalization is split by operation: writes and list are strict; open_read, exists, stat, signed_url, content_hash, delete, materialize, copy_to_path are tolerant for legacy persisted keys.",
+          "The guard binds only this handle's view; direct use of the underlying FsspecFileStorage bypasses it (not shown in supplied views)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "await _fire_event(db, trigger=event_trigger, event=event) at pipeline.py:330-331, reached only after verification and resource authorization pass; refusal commit points at pipeline.py:189-193 and 309-328.",
+        "contract_id": "ecological-contract:288011d279539c55ca4af2032f90c461",
+        "declared_mechanism": "Pipeline gate: provider.verify(context, db, trigger, raw_body) with audited refusal (155-193); _attested_resource_matches(trigger, verification.attested_resource_id) plus provider.authorize_resource (87-102, 297-306); WebhookProvider.verify (HMAC compare_digest, replay window, 87-119); GmailProvider.verify (OIDC audience/issuer/service-account chain, 373-462).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 119,
+            "line_start": 87,
+            "path": "src/xagent/web/services/trigger_providers/webhook.py",
+            "role": "guard_registration",
+            "source_sha256": "b65d4fca804f2893df00f89dd4ac119609a222703e3f8c0415f40a7a4a7a9f2a"
+          },
+          {
+            "line_end": 462,
+            "line_start": 373,
+            "path": "src/xagent/web/services/trigger_providers/gmail.py",
+            "role": "guard_registration",
+            "source_sha256": "842c239ceb9fe3737c0f2f9956fd8510ab9c6c787270c0fa807f70da56ab0034"
+          },
+          {
+            "line_end": 193,
+            "line_start": 155,
+            "path": "src/xagent/web/services/trigger_providers/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "17e9543bc02c2d64eaab229d6196702959449460ebbb48b055e66cfc1d68289e"
+          },
+          {
+            "line_end": 102,
+            "line_start": 87,
+            "path": "src/xagent/web/services/trigger_providers/pipeline.py",
+            "role": "forbidden_condition",
+            "source_sha256": "17e9543bc02c2d64eaab229d6196702959449460ebbb48b055e66cfc1d68289e"
+          },
+          {
+            "line_end": 193,
+            "line_start": 179,
+            "path": "src/xagent/web/services/trigger_providers/pipeline.py",
+            "role": "forbidden_condition",
+            "source_sha256": "17e9543bc02c2d64eaab229d6196702959449460ebbb48b055e66cfc1d68289e"
+          },
+          {
+            "line_end": 106,
+            "line_start": 95,
+            "path": "src/xagent/web/services/trigger_providers/base.py",
+            "role": "protected_operation",
+            "source_sha256": "d9ef14c3da5b638f6818ba2a4688e39a5423cd0139f857df8fc6d8f9d2544b5d"
+          },
+          {
+            "line_end": 331,
+            "line_start": 297,
+            "path": "src/xagent/web/services/trigger_providers/pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "17e9543bc02c2d64eaab229d6196702959449460ebbb48b055e66cfc1d68289e"
+          },
+          {
+            "line_end": 331,
+            "line_start": 330,
+            "path": "src/xagent/web/services/trigger_providers/pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "17e9543bc02c2d64eaab229d6196702959449460ebbb48b055e66cfc1d68289e"
+          }
+        ],
+        "forbidden_condition": "Firing a trigger for an unverified callback (verification.verified false, or verify() rejected) or for an event whose resource identity was not proven by the provider's trust model / mismatches trigger.resource_id \u2014 rejected via REJECTED_SIGNATURE (179-193) or REJECTED_RESOURCE (301-328) outcomes before _fire_event.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The bodies of _fire_event / fire_trigger (TriggerRun/Task creation) are not in the supplied views; the fired-effect description rests on the reviewer assertion.",
+          "Whether the trigger-fired run creation is best modeled as an agent lifecycle entry versus a distinct agent-run initiation path should be confirmed against _fire_event's source."
+        ],
+        "protected_operation": "Firing an AgentTrigger: await _fire_event(db, trigger=event_trigger, event=event) at the end of the unified callback pipeline.",
+        "protected_resource": "AgentTrigger instances (including their encrypted webhook signing secrets) and the runs they initiate.",
+        "protection_obligation": "An inbound provider callback may fire an AgentTrigger (creating a TriggerRun/Task) only if the callback passes its provider's authentication \u2014 webhook callbacks require a valid HMAC-SHA256 signature over {timestamp}.{raw_body} using the trigger's decrypted secret within the configured replay window (hmac.compare_digest commit point in WebhookProvider.verify); Gmail callbacks require a signature-verified OIDC token with accepted audience, trusted issuer, and (when configured) matching verified service-account email \u2014 and the provider-attested resource identity matches the trigger's persisted resource_id; every unverified or resource-mismatched callback is audited (REJECTED_SIGNATURE / REJECTED_RESOURCE) and refused immediately before _fire_event.",
+        "scope_limits": [
+          "Triggers without a bound resource skip the resource-identity check (pipeline.py:97-98).",
+          "Gmail verification transport errors (GoogleTransportError) propagate for redelivery instead of rejecting (402-407); when the service-account env var is absent, only issuer/audience/signature checks remain, with a registered degradation (440-451).",
+          "REPLAY_WINDOW_SECONDS, SIGNATURE_HEADER, and TIMESTAMP_HEADER values are referenced but not defined in the supplied views (the reviewer-asserted 300s window is unverified).",
+          "A verification exception answers with ack.failure_status for redelivery rather than rejection (159-178)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await self.app(scope, receive, send) at app.py:844 (request delivered only after successful sync); the refusal commit points are the websocket.close 1013 send (827-835) and the 503 response (837-841).",
+        "contract_id": "ecological-contract:2939002ce3fa198d99a7c8f220ecbae9",
+        "declared_mechanism": "FileStorageStartupSyncGateMiddleware ASGI middleware (app.py:797-844) registered app-wide via app.add_middleware (app.py:1197); it awaits wait_for_file_storage_startup_sync for http/websocket scopes, honoring FILE_STORAGE_STARTUP_SYNC_EXEMPT_PATHS and an OPTIONS bypass, and on failure sends websocket.close 1013 (827-835) or a 503 JSONResponse (837-841) instead of calling the inner app.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 1197,
+            "line_start": 1197,
+            "path": "src/xagent/web/app.py",
+            "role": "guard_registration",
+            "source_sha256": "ac9a57528c52678b01245c44a8913cfa02279aee249d1841ec7526320569c0c1"
+          },
+          {
+            "line_end": 820,
+            "line_start": 797,
+            "path": "src/xagent/web/app.py",
+            "role": "guard_registration",
+            "source_sha256": "ac9a57528c52678b01245c44a8913cfa02279aee249d1841ec7526320569c0c1"
+          },
+          {
+            "line_end": 820,
+            "line_start": 809,
+            "path": "src/xagent/web/app.py",
+            "role": "protected_operation",
+            "source_sha256": "ac9a57528c52678b01245c44a8913cfa02279aee249d1841ec7526320569c0c1"
+          },
+          {
+            "line_end": 842,
+            "line_start": 824,
+            "path": "src/xagent/web/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ac9a57528c52678b01245c44a8913cfa02279aee249d1841ec7526320569c0c1"
+          },
+          {
+            "line_end": 844,
+            "line_start": 843,
+            "path": "src/xagent/web/app.py",
+            "role": "commit_point",
+            "source_sha256": "ac9a57528c52678b01245c44a8913cfa02279aee249d1841ec7526320569c0c1"
+          }
+        ],
+        "forbidden_condition": "Forwarding a non-exempt http/websocket scope to the inner ASGI app (await self.app(...)) before wait_for_file_storage_startup_sync succeeds.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the gated traffic includes agent-channel endpoints (e.g. agent websocket routes) is not established by the supplied view; no decorator, registration, or dataflow in the view binds this gate to an agent tool, agent lifecycle hook, or agent-generated input.",
+          "The contents of FILE_STORAGE_STARTUP_SYNC_EXEMPT_PATHS and of wait_for_file_storage_startup_sync are not in the supplied views."
+        ],
+        "protected_operation": "Delivery of client http/websocket requests to route handlers.",
+        "protected_resource": "The application's route handlers and the durable file storage they depend on.",
+        "protection_obligation": "No HTTP or WebSocket client request may be delivered to its route handler until durable file-storage startup sync completes; on sync failure HTTP requests must receive 503 and WebSocket connections must be closed with code 1013 instead of reaching the application.",
+        "scope_limits": [
+          "Applies only to scope types 'http' and 'websocket'; other scope types pass through (app.py:809-812).",
+          "Paths in FILE_STORAGE_STARTUP_SYNC_EXEMPT_PATHS and HTTP OPTIONS requests bypass the gate (app.py:814-820).",
+          "The wait is only enforced when scope['app'] is a FastAPI instance; otherwise the request falls through ungated (app.py:822-824, 844)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "subprocess.run(command, **run_options) at command_executor.py:326-329.",
+        "contract_id": "ecological-contract:2fee7ddf81f091fb547d54fd60e84dfb",
+        "declared_mechanism": "Injected self._path_guard invoked pre-spawn: validate() for shell strings (parse-tree/state-based shell inspection in WorkspaceCommandPathGuard), validate_argv()/prepare_argv_for_execution() for argv; resolve_trusted_executable pins bash to trusted roots before run_options['executable'] or argv[0] is set; violations return a rejected result instead of executing.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 284,
+            "line_start": 261,
+            "path": "src/xagent/core/tools/core/command_executor.py",
+            "role": "guard_registration",
+            "source_sha256": "01cddff322768c13322dce797f1bbce7b1a7d7a6b03d2af121a0539b7d8b56de"
+          },
+          {
+            "line_end": 323,
+            "line_start": 302,
+            "path": "src/xagent/core/tools/core/command_executor.py",
+            "role": "guard_registration",
+            "source_sha256": "01cddff322768c13322dce797f1bbce7b1a7d7a6b03d2af121a0539b7d8b56de"
+          },
+          {
+            "line_end": 301,
+            "line_start": 295,
+            "path": "src/xagent/core/tools/core/command_executor.py",
+            "role": "protected_operation",
+            "source_sha256": "01cddff322768c13322dce797f1bbce7b1a7d7a6b03d2af121a0539b7d8b56de"
+          },
+          {
+            "line_end": 329,
+            "line_start": 325,
+            "path": "src/xagent/core/tools/core/command_executor.py",
+            "role": "commit_point",
+            "source_sha256": "01cddff322768c13322dce797f1bbce7b1a7d7a6b03d2af121a0539b7d8b56de"
+          },
+          {
+            "line_end": 733,
+            "line_start": 721,
+            "path": "src/xagent/core/tools/core/command_path_guard.py",
+            "role": "guard_registration",
+            "source_sha256": "903760cc425e8c1e0742667c9211b29867cf7181e808637a8dfa3c5f8bdcc775"
+          },
+          {
+            "line_end": 81,
+            "line_start": 58,
+            "path": "src/xagent/core/tools/core/command_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "27154375bbeeb6ee342cc7a760eeea466a7fb175242662e5c5b03354d77e0ad8"
+          }
+        ],
+        "forbidden_condition": "Spawning a process whose command uses out-of-policy paths, an untrusted interpreter, or unsafe shell syntax; any CommandPolicyViolation or validation failure must abort execution before subprocess.run is invoked.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The injection/registration site proving a CommandPolicyGuard (WorkspaceCommandPathGuard) is always bound to CommandExecutorCore is not in the supplied views.",
+          "The claimed COMMAND_REJECTED_EXIT_CODE value (126) is not visible in the supplied source.",
+          "No supplied source binds execute_command to agent tool dispatch or agent-generated command strings."
+        ],
+        "protected_operation": "OS process creation via subprocess.run(command, **run_options) in CommandExecutorCore.execute_command (shell and argv modes).",
+        "protected_resource": "Host process creation from the command executor, including shell interpreters and the working directory.",
+        "protection_obligation": "Pre-execution command-policy validation: every command run through CommandExecutorCore.execute_command must pass the injected CommandPolicyGuard (workspace path/shell-syntax validation and trusted-executable binding) before any process is created.",
+        "scope_limits": [
+          "The guard is optional: when self._path_guard is None no policy validation runs before the spawn (line 262).",
+          "Workspace boundary internals (out-of-workspace read/write detection) and _TRUSTED_EXECUTABLE_ROOTS are outside the supplied ranges.",
+          "The rejected-result construction is shown only as _command_rejected_result(...); its exit code value is not visible."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "table.delete(filter_expr) inside _vis_delete_rows_by_filters (lancedb_stores.py:3212), reached only after the tenant filter and confirm/preview gate.",
+        "contract_id": "ecological-contract:467410ce3beb3cd04820126577f39e81",
+        "declared_mechanism": "_vis_build_documents_filter appends build_user_id_filter_for_table(user_id) or UserPermissions.get_no_access_filter(), and fails closed with an explicit user_id predicate if introspection raises; the cascade entry returns {} (no deletion) for non-admin callers with user_id None; _vis_execute_or_plan_by_predicates routes to _vis_delete_by_predicates only when confirm and not preview_only, otherwise returns the plan.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 3557,
+            "line_start": 3519,
+            "path": "src/xagent/core/tools/core/RAG_tools/storage/lancedb_stores.py",
+            "role": "guard_registration",
+            "source_sha256": "42ecf9059b983ef58e1a32e4979259ef6675aa6bf7203506983e74606e60e7f6"
+          },
+          {
+            "line_end": 3541,
+            "line_start": 3540,
+            "path": "src/xagent/core/tools/core/RAG_tools/storage/lancedb_stores.py",
+            "role": "forbidden_condition",
+            "source_sha256": "42ecf9059b983ef58e1a32e4979259ef6675aa6bf7203506983e74606e60e7f6"
+          },
+          {
+            "line_end": 3595,
+            "line_start": 3585,
+            "path": "src/xagent/core/tools/core/RAG_tools/storage/lancedb_stores.py",
+            "role": "forbidden_condition",
+            "source_sha256": "42ecf9059b983ef58e1a32e4979259ef6675aa6bf7203506983e74606e60e7f6"
+          },
+          {
+            "line_end": 3427,
+            "line_start": 3417,
+            "path": "src/xagent/core/tools/core/RAG_tools/storage/lancedb_stores.py",
+            "role": "guard_registration",
+            "source_sha256": "42ecf9059b983ef58e1a32e4979259ef6675aa6bf7203506983e74606e60e7f6"
+          },
+          {
+            "line_end": 3595,
+            "line_start": 3591,
+            "path": "src/xagent/core/tools/core/RAG_tools/storage/lancedb_stores.py",
+            "role": "protected_operation",
+            "source_sha256": "42ecf9059b983ef58e1a32e4979259ef6675aa6bf7203506983e74606e60e7f6"
+          },
+          {
+            "line_end": 3214,
+            "line_start": 3205,
+            "path": "src/xagent/core/tools/core/RAG_tools/storage/lancedb_stores.py",
+            "role": "commit_point",
+            "source_sha256": "42ecf9059b983ef58e1a32e4979259ef6675aa6bf7203506983e74606e60e7f6"
+          }
+        ],
+        "forbidden_condition": "Deleting document-scoped LanceDB rows outside the caller's tenant scope (an unauthenticated non-admin caller must hit the no-access filter or be refused outright), or reaching destructive execution without both confirm=True and preview_only=False.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source shows the delete_document_record or cascade_delete function bodies or their registration.",
+          "No tool registration, decorator, or agent dispatch binding for these delete paths appears in the supplied ranges."
+        ],
+        "protected_operation": "Cascade/document deletion across the documents, parses, chunks, main-pointers, and ingestion-runs LanceDB tables via _vis_execute_or_plan_by_predicates / _vis_delete_by_predicates / _vis_delete_rows_by_filters.",
+        "protected_resource": "LanceDB document-store table rows (documents, parses, chunks, main pointers, ingestion runs).",
+        "protection_obligation": "Tenant-scoped, confirm-gated destructive deletion on LanceDB document stores: cascade/document deletes must be scoped to the caller's user_id (fail-closed for unauthenticated non-admin callers) and may only execute destructively with confirm=True and preview_only=False.",
+        "scope_limits": [
+          "Admin callers intentionally bypass the tenant predicate (lines 3538-3539).",
+          "Legacy schemas without a user_id column remain document-scoped by doc_id only (lines 3551-3552).",
+          "Only the _vis_* helper chain is visible; the reviewer-cited delete_document_record / cascade_delete public entry points are outside the supplied ranges."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The PermissionError raised at google_drive.py:888-892 when the resolved path is not relative to any allowed directory, enforced before any file content is read or uploaded.",
+        "contract_id": "ecological-contract:525454991d819afae6c232c28390cf2c",
+        "declared_mechanism": "_resolve_upload_file_path (google_drive.py:857-896) expands/absolute-izes and resolves the path, requires containment under one of the allowed directories before checking existence (google_drive.py:871-892), then requires a regular file (google_drive.py:894-896).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 896,
+            "line_start": 857,
+            "path": "src/xagent/web/tools/mcp/google_drive.py",
+            "role": "guard_registration",
+            "source_sha256": "0e34646c7fa298618820ac497b2f1b654ac6a4ef04e4406a9c3e67e177e9b97d"
+          },
+          {
+            "line_end": 869,
+            "line_start": 858,
+            "path": "src/xagent/web/tools/mcp/google_drive.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0e34646c7fa298618820ac497b2f1b654ac6a4ef04e4406a9c3e67e177e9b97d"
+          },
+          {
+            "line_end": 854,
+            "line_start": 846,
+            "path": "src/xagent/web/tools/mcp/google_drive.py",
+            "role": "guard_registration",
+            "source_sha256": "0e34646c7fa298618820ac497b2f1b654ac6a4ef04e4406a9c3e67e177e9b97d"
+          },
+          {
+            "line_end": 864,
+            "line_start": 858,
+            "path": "src/xagent/web/tools/mcp/google_drive.py",
+            "role": "protected_operation",
+            "source_sha256": "0e34646c7fa298618820ac497b2f1b654ac6a4ef04e4406a9c3e67e177e9b97d"
+          },
+          {
+            "line_end": 892,
+            "line_start": 888,
+            "path": "src/xagent/web/tools/mcp/google_drive.py",
+            "role": "commit_point",
+            "source_sha256": "0e34646c7fa298618820ac497b2f1b654ac6a4ef04e4406a9c3e67e177e9b97d"
+          }
+        ],
+        "forbidden_condition": "A path outside the upload allowlist being resolved, read, and uploaded to Drive \u2014 the guard's docstring states 'without this, google_drive_upload_file could be tricked into reading arbitrary host files' (google_drive.py:858-869), and containment precedes existence so a caller cannot learn whether a host path exists (google_drive.py:866-869).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Registration of google_drive_upload_file as an MCP tool and the concrete call site passing file_path into _resolve_upload_file_path are outside the supplied view; agent mediation cannot yet be bound.",
+          "The value of _UPLOAD_ALLOWED_DIRS_ENV_VAR is sanitized to '<REDACTED>' at google_drive.py:846 in the supplied view; the real environment variable name is unavailable here."
+        ],
+        "protected_operation": "Uploading a local file to Google Drive through the google_drive_upload_file MCP tool, named in the guard's docstring (google_drive.py:857-864); the tool body and Drive upload request lie outside the supplied view.",
+        "protected_resource": "Host filesystem files readable by the google-drive-mcp server process, specifically files outside the allowlist from _upload_allowed_dirs()/allowed_dirs_from_env (google_drive.py:846-854, 876).",
+        "protection_obligation": "The file_path supplied to google_drive_upload_file must resolve to a regular file under one of the configured allowed upload directories; out-of-allowlist paths are rejected with PermissionError (containment checked before existence) before the file is read and uploaded to the Google Drive API, preventing the tool from being tricked into reading arbitrary host files.",
+        "scope_limits": [
+          "Containment is checked before existence (google_drive.py:866-896), so an out-of-allowlist path always reports the allowlist message, never 'not found'.",
+          "Raised messages deliberately omit the host path because errors reach the caller/LLM unfiltered; full detail including allowed directories is logged server-side only (google_drive.py:878-887).",
+          "The separate text/binary extension gate (_KNOWN_TEXT_EXTENSIONS, google_drive.py:899-976) governs upload content typing and is not part of this path-containment obligation.",
+          "The google_drive_upload_file tool definition, its call into this guard, and the Drive upload request are outside the supplied view (view covers google_drive.py lines 777-976)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The caller's interaction_handoff.stage() insert of the interaction row; the module itself inserts nothing (76-78) and fail-closed outcomes route to the caller's late-result discard (260-264).",
+        "contract_id": "ecological-contract:5ab10d076eff996d242161605b53ba14",
+        "declared_mechanism": "Fixed fail-closed guard chain in the resolver (task_clarification_draft.py:571-578: lease_is_fenced, task_row_matches_lease_owner, task_row_matches_lease_attempt, each returning FailClosed), executed against the same task row the finalizer holds under SELECT ... FOR UPDATE before lease release (44-49), under the documented single-active-row invariant (73-78).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 44,
+            "path": "src/xagent/web/services/task_clarification_draft.py",
+            "role": "guard_registration",
+            "source_sha256": "54663bd979d5b969442e11c8c3c7391d047ed25cc767a1fe6a4672773b245868"
+          },
+          {
+            "line_end": 578,
+            "line_start": 571,
+            "path": "src/xagent/web/services/task_clarification_draft.py",
+            "role": "guard_registration",
+            "source_sha256": "54663bd979d5b969442e11c8c3c7391d047ed25cc767a1fe6a4672773b245868"
+          },
+          {
+            "line_end": 264,
+            "line_start": 260,
+            "path": "src/xagent/web/services/task_clarification_draft.py",
+            "role": "forbidden_condition",
+            "source_sha256": "54663bd979d5b969442e11c8c3c7391d047ed25cc767a1fe6a4672773b245868"
+          },
+          {
+            "line_end": 78,
+            "line_start": 73,
+            "path": "src/xagent/web/services/task_clarification_draft.py",
+            "role": "protected_operation",
+            "source_sha256": "54663bd979d5b969442e11c8c3c7391d047ed25cc767a1fe6a4672773b245868"
+          },
+          {
+            "line_end": 78,
+            "line_start": 76,
+            "path": "src/xagent/web/services/task_clarification_draft.py",
+            "role": "commit_point",
+            "source_sha256": "54663bd979d5b969442e11c8c3c7391d047ed25cc767a1fe6a4672773b245868"
+          }
+        ],
+        "forbidden_condition": "Staging/inserting the clarification interaction row when lease_is_fenced(lease) is false (FailClosed 'unfenced_lease'), task_row_matches_lease_owner fails ('ownership_changed'), or task_row_matches_lease_attempt fails ('attempt_mismatch').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The cited views describe a run/lease/attempt finalization lifecycle but never explicitly name an agent construct; whether this clarification publication is bound to agent-run lifecycle mediation is an open binding question."
+        ],
+        "protected_operation": "Publication of the clarification draft as the task's single durable interaction row through the caller's interaction_handoff.stage() insert.",
+        "protected_resource": "The task's single active task_interaction_requests row (unique-constrained active slot).",
+        "protection_obligation": "A finalizing run may publish its clarification draft as the task's durable structured interaction row (via interaction_handoff.stage()) only while its lease is fenced and the FOR UPDATE-locked task row still names that lease's owner and current attempt; a stale, unfenced, or ownership-lost round must be discarded wholesale via the caller's existing late-result exit.",
+        "scope_limits": [
+          "Timing is caller-constrained: the resolver must be invoked before the lease is released, against the already-locked task row, never a re-read (44-49).",
+          "The stage() body and the finalizer call site invoking this resolver are not in the supplied views.",
+          "A reviewer-asserted event-identity validation guard is not present in the cited ranges and is not claimed here."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The PermissionError raised at slack.py:165-168, before any read or upload of the file's contents to the Slack Web API.",
+        "contract_id": "ecological-contract:662828c353024ca6f7bea72f4c90e18e",
+        "declared_mechanism": "_resolve_allowed_file_path (slack.py:136-168) expands/absolute-izes and resolves the path, checks is_file, then requires containment under one of _allowed_file_dirs() (slack.py:128-133, 149-154); non-contained paths raise PermissionError with the host path kept out of the returned message (slack.py:156-168).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 168,
+            "line_start": 136,
+            "path": "src/xagent/web/tools/mcp/slack.py",
+            "role": "guard_registration",
+            "source_sha256": "d32f48167ce2d8f7896eb72ec1ca22968b0db62ffca76b1cb50014c08cdf2617"
+          },
+          {
+            "line_end": 140,
+            "line_start": 137,
+            "path": "src/xagent/web/tools/mcp/slack.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d32f48167ce2d8f7896eb72ec1ca22968b0db62ffca76b1cb50014c08cdf2617"
+          },
+          {
+            "line_end": 133,
+            "line_start": 128,
+            "path": "src/xagent/web/tools/mcp/slack.py",
+            "role": "guard_registration",
+            "source_sha256": "d32f48167ce2d8f7896eb72ec1ca22968b0db62ffca76b1cb50014c08cdf2617"
+          },
+          {
+            "line_end": 140,
+            "line_start": 136,
+            "path": "src/xagent/web/tools/mcp/slack.py",
+            "role": "protected_operation",
+            "source_sha256": "d32f48167ce2d8f7896eb72ec1ca22968b0db62ffca76b1cb50014c08cdf2617"
+          },
+          {
+            "line_end": 168,
+            "line_start": 165,
+            "path": "src/xagent/web/tools/mcp/slack.py",
+            "role": "commit_point",
+            "source_sha256": "d32f48167ce2d8f7896eb72ec1ca22968b0db62ffca76b1cb50014c08cdf2617"
+          }
+        ],
+        "forbidden_condition": "Reading a host file located outside the configured upload-allowlist directories and transmitting its contents to Slack via slack_upload_file (slack.py:137-140: 'without it an agent could be tricked into exfiltrating arbitrary host files through this tool').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The @mcp.tool()-decorated definition of slack_upload_file and the concrete call site passing file_path into _resolve_allowed_file_path are outside the supplied view; agent mediation cannot yet be bound.",
+          "The value of _UPLOAD_ALLOWED_DIRS_ENV_VAR (referenced at slack.py:130) is defined before the supplied view's first line and is not visible."
+        ],
+        "protected_operation": "Uploading a local file to Slack through the slack_upload_file MCP tool, named as the guarded operation in the guard's docstring (slack.py:136-140); the tool body itself lies outside the supplied view.",
+        "protected_resource": "Host filesystem files readable by the slack-mcp server process, specifically files outside the allowlist configured via allowed_dirs_from_env(_UPLOAD_ALLOWED_DIRS_ENV_VAR).",
+        "protection_obligation": "The file_path supplied to slack_upload_file must resolve to a regular file under one of the environment-configured allowed directories; paths outside the allowlist are rejected with PermissionError before the file is read and uploaded to the Slack Web API, so the agent cannot exfiltrate arbitrary host files through the upload tool.",
+        "scope_limits": [
+          "Existence is checked before containment here (slack.py:146-154), so a nonexistent out-of-allowlist path raises FileNotFoundError rather than the allowlist PermissionError; only out-of-allowlist paths that exist reach the commit point.",
+          "The slack_upload_file tool definition, its call into the guard, and the Slack upload request itself are outside the supplied view (view covers slack.py lines 56-248).",
+          "Slack credential handling in _headers (slack.py:62-66) is a separate mechanism and not part of this obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.delete(file_record); db.commit() at files.py:2257-2258.",
+        "contract_id": "ecological-contract:68424e3a2ae7c5d5831b1021a384d596",
+        "declared_mechanism": "_check_file_access raises 403 before the delete; the legacy no-record path requires owner match or admin; containment is checked before any deletion proceeds.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1085,
+            "line_start": 1081,
+            "path": "src/xagent/web/api/files.py",
+            "role": "guard_registration",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 2222,
+            "line_start": 2216,
+            "path": "src/xagent/web/api/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 2258,
+            "line_start": 2257,
+            "path": "src/xagent/web/api/files.py",
+            "role": "commit_point",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          }
+        ],
+        "forbidden_condition": "A non-admin caller deleting an UploadedFile row whose owning user_id differs from the caller's.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "None beyond the general absence of agent-binding evidence for this route."
+        ],
+        "protected_operation": "db.delete(file_record) followed by db.commit() in delete_file.",
+        "protected_resource": "The UploadedFile database row.",
+        "protection_obligation": "Owner-only authorization for deleting uploaded-file records (database leg): a non-admin user must never delete an UploadedFile database row they do not own.",
+        "scope_limits": [
+          "Durable storage cleanup (get_user_file_storage(...).delete) precedes the row delete and has its own error handling (2228-2255)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "client.stream('GET', connect_url, headers, extensions=stream_extensions) inside fetch_public_http_bytes per hop (security.py:364-371), reached from WebContentFetcher's isolated client at web_content.py:189-197.",
+        "contract_id": "ecological-contract:7147b3e09ed05eadc989543e2e922dad",
+        "declared_mechanism": "validate_public_http_url resolves DNS and rejects non-public resolved IPs; reject_private_network_host blocks localhost and non-global literals; fetch_public_http_bytes re-validates per redirect hop (follow_redirects=False) and rewrites the connect URL to the pinned IP with an explicit Host header and sni_hostname stream extension; get_trusted_proxy_url raises unless trusted-egress-proxy is opted into; build_isolated_httpx_client_kwargs forces trust_env=False with an explicit SSL context.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 236,
+            "line_start": 213,
+            "path": "src/xagent/core/utils/security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "cfe6d4a520b5fd1e01f055e4bbb7139ccb0bd1e1a5347a9341ecd5a2269efe29"
+          },
+          {
+            "line_end": 291,
+            "line_start": 261,
+            "path": "src/xagent/core/utils/security.py",
+            "role": "guard_registration",
+            "source_sha256": "cfe6d4a520b5fd1e01f055e4bbb7139ccb0bd1e1a5347a9341ecd5a2269efe29"
+          },
+          {
+            "line_end": 348,
+            "line_start": 320,
+            "path": "src/xagent/core/utils/security.py",
+            "role": "guard_registration",
+            "source_sha256": "cfe6d4a520b5fd1e01f055e4bbb7139ccb0bd1e1a5347a9341ecd5a2269efe29"
+          },
+          {
+            "line_end": 371,
+            "line_start": 353,
+            "path": "src/xagent/core/utils/security.py",
+            "role": "commit_point",
+            "source_sha256": "cfe6d4a520b5fd1e01f055e4bbb7139ccb0bd1e1a5347a9341ecd5a2269efe29"
+          },
+          {
+            "line_end": 124,
+            "line_start": 106,
+            "path": "src/xagent/core/tools/core/web_content.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0def62cf891b63d36e1e5d4f6c3f3b672c000a2bcecdf08a3341de7604ae7317"
+          },
+          {
+            "line_end": 160,
+            "line_start": 127,
+            "path": "src/xagent/core/tools/core/web_content.py",
+            "role": "guard_registration",
+            "source_sha256": "0def62cf891b63d36e1e5d4f6c3f3b672c000a2bcecdf08a3341de7604ae7317"
+          },
+          {
+            "line_end": 197,
+            "line_start": 185,
+            "path": "src/xagent/core/tools/core/web_content.py",
+            "role": "protected_operation",
+            "source_sha256": "0def62cf891b63d36e1e5d4f6c3f3b672c000a2bcecdf08a3341de7604ae7317"
+          }
+        ],
+        "forbidden_condition": "Dispatching an outbound HTTP request to a private, loopback, link-local, multicast, reserved, or otherwise non-global target (including IPv4-mapped IPv6 and localhost); connecting to an address that differs from the validated DNS answer (DNS-rebinding/TOCTOU); or routing egress through an ambient HTTP(S)_PROXY that is not explicitly marked trusted.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Value of _MAX_REDIRECTS (reviewer asserts 5).",
+          "Agent-facing entry (tool registration) through which fetched URLs arrive is not shown; agent mediation of the URL input is unverified."
+        ],
+        "protected_operation": "Outbound public-HTTP body fetches performed through fetch_public_http_bytes, including the WebContentFetcher webpage-fetching path that supplies the client and via_proxy flag.",
+        "protected_resource": "Internal/private network targets reachable from the fetch path; integrity of the connection target versus the validated host.",
+        "protection_obligation": "SSRF-safe outbound public-HTTP fetching (merged from two reviewer opinions): every fetch must reject private-network/loopback targets and pin each request \u2014 including every redirect hop \u2014 to a DNS-validated public IP before dispatch, with ambient proxy/SSL environment distrusted unless the proxy is explicitly trusted.",
+        "scope_limits": [
+          "In via_proxy mode the original hostname remains the connect target and only the upfront validation applies, by design (security.py:339-348).",
+          "The numeric redirect limit _MAX_REDIRECTS and _pin_url_to_ip internals are not in the supplied ranges.",
+          "The reviewer-cited vision_tool call sites of fetch_public_http_bytes are not in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The gate's post-hook comparison and raise (connector_team_scope.py:870-887), which stands between the hook call and the route's own db.commit() that persists the row-locked update/delete.",
+        "contract_id": "ecological-contract:7f5f492d0f11aa23a3a40e10c0492714",
+        "declared_mechanism": "_call_connector_hook_gate compares root_transaction_end_count(db) before and after the hook call (connector_team_scope.py:840-843, 858-886), raising ConnectorHookSessionBoundaryError after _restore_session_after_hook_failure (870-886); the check is enabled per call site via caller_holds_lock=True (1236-1263); ConnectorHookSessionBoundaryError maps to a stable public 500 via connector_hook_session_boundary_error_handler (126-150).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 26,
+            "line_start": 17,
+            "path": "src/xagent/web/services/connector_team_scope.py",
+            "role": "forbidden_condition",
+            "source_sha256": "63bec415f254ad9f61f003024f589641ada0f6c9f94b92faec383af8755fcb6a"
+          },
+          {
+            "line_end": 887,
+            "line_start": 840,
+            "path": "src/xagent/web/services/connector_team_scope.py",
+            "role": "guard_registration",
+            "source_sha256": "63bec415f254ad9f61f003024f589641ada0f6c9f94b92faec383af8755fcb6a"
+          },
+          {
+            "line_end": 1263,
+            "line_start": 1230,
+            "path": "src/xagent/web/services/connector_team_scope.py",
+            "role": "guard_registration",
+            "source_sha256": "63bec415f254ad9f61f003024f589641ada0f6c9f94b92faec383af8755fcb6a"
+          },
+          {
+            "line_end": 150,
+            "line_start": 126,
+            "path": "src/xagent/web/services/connector_team_scope.py",
+            "role": "guard_registration",
+            "source_sha256": "63bec415f254ad9f61f003024f589641ada0f6c9f94b92faec383af8755fcb6a"
+          },
+          {
+            "line_end": 55,
+            "line_start": 47,
+            "path": "src/xagent/web/services/connector_team_scope.py",
+            "role": "protected_operation",
+            "source_sha256": "63bec415f254ad9f61f003024f589641ada0f6c9f94b92faec383af8755fcb6a"
+          },
+          {
+            "line_end": 887,
+            "line_start": 870,
+            "path": "src/xagent/web/services/connector_team_scope.py",
+            "role": "commit_point",
+            "source_sha256": "63bec415f254ad9f61f003024f589641ada0f6c9f94b92faec383af8755fcb6a"
+          }
+        ],
+        "forbidden_condition": "The session's root transaction end count increasing across the hook invocation (end_count_after > end_count_before) while the caller holds FOR UPDATE row locks \u2014 i.e., a hook calling commit()/rollback()/close() (or release_db_connection_if_clean's rollback branch) on the handed session.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No cited view binds the connector/MCP hooks to agent tool dispatch, agent lifecycle hooks, or agent-generated input; the mcp.* call sites concern MCP server definitions, but the mediation of the hook invocation chain is unbound."
+        ],
+        "protected_operation": "The row-locked update/delete of the connector definition row, finalized by the route's own db.commit() after the hook returns through _call_connector_hook_gate.",
+        "protected_resource": "The custom_apis / mcp_servers definition rows held under FOR UPDATE (per the call-site table) and the caller's live database session/transaction.",
+        "protection_obligation": "Installed connector hooks invoked at row-lock-holding call sites (custom_api.update_custom_api, custom_api.delete_custom_api, mcp.update_mcp_server, mcp.delete_mcp_server, declaring caller_holds_lock=True) must not commit, roll back, or close the endpoint's live session; a hook that ends the caller's transaction must be refused so the route's own db.commit() finalizes the row-locked update/delete without interleaved lost writes.",
+        "scope_limits": [
+          "Enforcement is active only at call sites declaring caller_holds_lock=True; the default is False, so an undeclared lock-holding site is unchecked (1244-1249).",
+          "Duck-typed sessions that cannot report a root transaction end count are logged and the check is skipped both pre- and post-hook (843-852, 860-869); a skipped check is visible only in debug logs.",
+          "The routes' own db.commit() call sites (custom_api/mcp routes) are not in the supplied views; the commit point is characterized from the gate and docstrings."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Each token-bearing request: async with client.stream(\"GET\", current_url) at bot.py:821, reached only after validation of current_url (initial URL at 799, each redirect target at 828-830).",
+        "contract_id": "ecological-contract:890861b6dbcf6a0d44514e2610b03dc3",
+        "declared_mechanism": "validate_slack_file_url (utils.py:116-129: HTTPS-only, no embedded credentials, host allowlist) called before the first request (bot.py:799) and re-called on every redirect location (bot.py:828-830), with httpx follow_redirects=False so no library-driven hop bypasses validation (bot.py:814-817) and a bounded redirect loop.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 129,
+            "line_start": 103,
+            "path": "src/xagent/web/channels/slack/utils.py",
+            "role": "guard_registration",
+            "source_sha256": "00ffddd28d63575365752de7a6bdb0babc2477ef1aefe87ced50ef802a6f7408"
+          },
+          {
+            "line_end": 818,
+            "line_start": 810,
+            "path": "src/xagent/web/channels/slack/bot.py",
+            "role": "guard_registration",
+            "source_sha256": "d1d4906755ddedfa9e1f090d6068aa4cafdd4a7bd41c10808fe2882717c7c502"
+          },
+          {
+            "line_end": 831,
+            "line_start": 822,
+            "path": "src/xagent/web/channels/slack/bot.py",
+            "role": "guard_registration",
+            "source_sha256": "d1d4906755ddedfa9e1f090d6068aa4cafdd4a7bd41c10808fe2882717c7c502"
+          },
+          {
+            "line_end": 106,
+            "line_start": 103,
+            "path": "src/xagent/web/channels/slack/utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "00ffddd28d63575365752de7a6bdb0babc2477ef1aefe87ced50ef802a6f7408"
+          },
+          {
+            "line_end": 799,
+            "line_start": 797,
+            "path": "src/xagent/web/channels/slack/bot.py",
+            "role": "protected_operation",
+            "source_sha256": "d1d4906755ddedfa9e1f090d6068aa4cafdd4a7bd41c10808fe2882717c7c502"
+          },
+          {
+            "line_end": 821,
+            "line_start": 819,
+            "path": "src/xagent/web/channels/slack/bot.py",
+            "role": "commit_point",
+            "source_sha256": "d1d4906755ddedfa9e1f090d6068aa4cafdd4a7bd41c10808fe2882717c7c502"
+          }
+        ],
+        "forbidden_condition": "Issuing a bot-token-bearing GET to a URL that is not HTTPS on slack.com or a *.slack.com / *.slack-edge.com / *.slack-files.com / *.slack-msgs.com / *.slackb.com host, or that embeds userinfo credentials \u2014 including any redirect-hop location that fails re-validation; per the source comment an arbitrary host would turn attachment handling into a credential-leaking SSRF primitive.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The supplied views do not bind the Slack file download to an agent tool, agent lifecycle hook, or agent-generated input: the URL arrives in an inbound Slack event, and no cited line ties _download_slack_file to agent tool dispatch or agent-run lifecycle. Whether inbound Slack channel events count as agent-mediated input is an open binding question."
+        ],
+        "protected_operation": "httpx stream GET of the event-supplied file download URL using the Authorization: Bearer bot_token header.",
+        "protected_resource": "SlackBotInstance.bot_token (workspace bot credential) attached to every download request.",
+        "protection_obligation": "Every Slack file download URL taken from an inbound Slack event and fetched with the workspace bot token must be HTTPS on a Slack-owned host and must be re-validated at each manual redirect hop before any token-bearing GET is issued, so the Authorization: Bearer bot_token is never sent to a non-Slack host.",
+        "scope_limits": [
+          "Applies to the Slack file download path in SlackBotInstance._download_slack_file; the download URL originates in an inbound Slack event payload (bot.py:797-799).",
+          "The downstream write of downloaded bytes to target_path (bot.py:833-835) is a filesystem effect downstream of the validated request and is not separately fenced by this guard.",
+          "The redirect bound _MAX_FILE_DOWNLOAD_REDIRECTS is referenced but its value is not in the supplied view."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await self._service.stop_existing(sandbox_name, ...) at sandbox_manager.py:1652-1654 and await self._service.delete(name) at sandbox_manager.py:2111 (reached via _reconcile_delete at 1683 and via _evict_idle_sandbox -> delete_sandbox at 1882), each reached only after the immediately preceding ref-count guard passes.",
+        "contract_id": "ecological-contract:936c9dafb0dedb618ad3559a47987c3f",
+        "declared_mechanism": "_reject_if_now_active re-reading the ref-count immediately before each destructive step (sandbox_manager.py:1604-1621, invoked at 1648 and again at 1682), and _claim_idle_sandbox atomically re-validating the ref-count under self._activity_guard before dropping lease providers/caches and allowing deletion (1831-1863), as documented in the class safety contract (597-607).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 607,
+            "line_start": 597,
+            "path": "src/xagent/web/sandbox_manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5fc38ce2450401a245a1dd40acc4f2aa5e94630a9240b36794d21fd0cc2d3b32"
+          },
+          {
+            "line_end": 1621,
+            "line_start": 1604,
+            "path": "src/xagent/web/sandbox_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "5fc38ce2450401a245a1dd40acc4f2aa5e94630a9240b36794d21fd0cc2d3b32"
+          },
+          {
+            "line_end": 1863,
+            "line_start": 1831,
+            "path": "src/xagent/web/sandbox_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "5fc38ce2450401a245a1dd40acc4f2aa5e94630a9240b36794d21fd0cc2d3b32"
+          },
+          {
+            "line_end": 1654,
+            "line_start": 1648,
+            "path": "src/xagent/web/sandbox_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "5fc38ce2450401a245a1dd40acc4f2aa5e94630a9240b36794d21fd0cc2d3b32"
+          },
+          {
+            "line_end": 1654,
+            "line_start": 1652,
+            "path": "src/xagent/web/sandbox_manager.py",
+            "role": "commit_point",
+            "source_sha256": "5fc38ce2450401a245a1dd40acc4f2aa5e94630a9240b36794d21fd0cc2d3b32"
+          },
+          {
+            "line_end": 1683,
+            "line_start": 1682,
+            "path": "src/xagent/web/sandbox_manager.py",
+            "role": "commit_point",
+            "source_sha256": "5fc38ce2450401a245a1dd40acc4f2aa5e94630a9240b36794d21fd0cc2d3b32"
+          },
+          {
+            "line_end": 1882,
+            "line_start": 1877,
+            "path": "src/xagent/web/sandbox_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "5fc38ce2450401a245a1dd40acc4f2aa5e94630a9240b36794d21fd0cc2d3b32"
+          },
+          {
+            "line_end": 2111,
+            "line_start": 2107,
+            "path": "src/xagent/web/sandbox_manager.py",
+            "role": "commit_point",
+            "source_sha256": "5fc38ce2450401a245a1dd40acc4f2aa5e94630a9240b36794d21fd0cc2d3b32"
+          }
+        ],
+        "forbidden_condition": "Calling self._service.stop_existing or self._service.delete (via _reconcile_delete/_delete_sandbox_names/_evict_idle_sandbox) while self._activity[base_name].ref_count > 0; _reject_if_now_active raises SandboxRuntimeConflictError and _claim_idle_sandbox returns False instead of claiming.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The ref-count counts attached tasks, but no cited view explicitly binds the stop/delete effects to agent tool dispatch, agent lifecycle hooks, or agent-generated input; mediation is unbound."
+        ],
+        "protected_operation": "The destructive lifecycle operations: mismatch-rebuild stop (stop_existing), mismatch-rebuild delete (_reconcile_delete), and idle-sweep/capacity-eviction deletion (delete_sandbox -> _delete_sandbox_names -> _service.delete).",
+        "protected_resource": "In-use sandbox lifecycles (containers) with non-zero attach ref-count for their base name.",
+        "protection_obligation": "In SandboxManager, a sandbox lifecycle whose task attach ref-count is non-zero must never be stopped, deleted, or evicted \u2014 by the idle sweep, capacity eviction, or the reconciliation matrix's mismatch handling \u2014 and every destructive path must re-validate the ref-count immediately before issuing the backend stop or delete call.",
+        "scope_limits": [
+          "Covers the mismatch-rebuild, idle-sweep, and capacity-eviction paths shown in the cited ranges; the fencing of the standalone explicit delete_sandbox entry path and the sweep/eviction call loops themselves are not in the supplied views.",
+          "Guard correctness depends on _activity_guard serialization and the per-key lifecycle lock / global capacity gate context described in the docstrings (1607-1613, 1832-1876)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The ORM flush/UPDATE of the ActorMCPServerConnection row, at which the before_update hook fires and raises prior to persistence.",
+        "contract_id": "ecological-contract:982eaf7229e34f09306667479c4d9c30",
+        "declared_mechanism": "SQLAlchemy event listener @event.listens_for(ActorMCPServerConnection, 'before_update') that inspects the target's attribute history and raises ValueError listing changed immutable fields before the UPDATE proceeds.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 111,
+            "line_start": 107,
+            "path": "src/xagent/web/models/actor_mcp_connection.py",
+            "role": "guard_registration",
+            "source_sha256": "09e218b89dc947528b2e8ca8e423f3b7d63accb23e28d520fc96d223050b3f22"
+          },
+          {
+            "line_end": 126,
+            "line_start": 112,
+            "path": "src/xagent/web/models/actor_mcp_connection.py",
+            "role": "forbidden_condition",
+            "source_sha256": "09e218b89dc947528b2e8ca8e423f3b7d63accb23e28d520fc96d223050b3f22"
+          },
+          {
+            "line_end": 110,
+            "line_start": 107,
+            "path": "src/xagent/web/models/actor_mcp_connection.py",
+            "role": "protected_operation",
+            "source_sha256": "09e218b89dc947528b2e8ca8e423f3b7d63accb23e28d520fc96d223050b3f22"
+          },
+          {
+            "line_end": 110,
+            "line_start": 107,
+            "path": "src/xagent/web/models/actor_mcp_connection.py",
+            "role": "commit_point",
+            "source_sha256": "09e218b89dc947528b2e8ca8e423f3b7d63accb23e28d520fc96d223050b3f22"
+          }
+        ],
+        "forbidden_condition": "A before_update flush of an ActorMCPServerConnection in which any immutable field's history has_changes(), raising ValueError ('identity and catalog binding are immutable through supported ORM and service writes').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Although MCP connections plausibly relate to agent tool servers, no cited view binds ActorMCPServerConnection writes to an agent tool, agent lifecycle hook, or agent-generated input; mediation is unbound."
+        ],
+        "protected_operation": "ORM UPDATE of ActorMCPServerConnection rows.",
+        "protected_resource": "ActorMCPServerConnection rows: identity fields (lifecycle_generation, user_id, resource_owner_key) and catalog binding (app_id, catalog_app_generation).",
+        "protection_obligation": "ActorMCPServerConnection identity and catalog-binding fields (lifecycle_generation, user_id, resource_owner_key, app_id, catalog_app_generation) must not be mutated through ORM updates; any flush that changes them must be refused before the UPDATE executes.",
+        "scope_limits": [
+          "Guards only ORM-emitted updates (before_update event); raw-SQL or non-ORM mutation paths are not addressed by this listener.",
+          "Only the five listed fields are immutable; other columns may change."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "coordinator.py:2099-2107 \u2014 the gate evaluation and the conditional SNAPSHOT execute_compensations call.",
+        "contract_id": "ecological-contract:99bbf0ce48cf72a13b5d2661bc0504a0",
+        "declared_mechanism": "Rollback orchestration records the SNAPSHOT side effect via operation.record_side_effect, then gates operation.execute_compensations(step_names={'cleanup_web_page_snapshot'}, planes={SNAPSHOT}) on the condition (first_error is None and (not file_registered or file_succeeded)); when withheld, side_effects_may_remain is computed from boundary_errors or has_uncompensated_side_effects() and the rollback status is 'incomplete'.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 2098,
+            "line_start": 2078,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/coordinator.py",
+            "role": "guard_registration",
+            "source_sha256": "5238d5f01cac5bb7a6f69ac01fca126e22bc01a048001ff3462ce1714cf5ee97"
+          },
+          {
+            "line_end": 2107,
+            "line_start": 2099,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/coordinator.py",
+            "role": "commit_point",
+            "source_sha256": "5238d5f01cac5bb7a6f69ac01fca126e22bc01a048001ff3462ce1714cf5ee97"
+          },
+          {
+            "line_end": 2127,
+            "line_start": 2109,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/coordinator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5238d5f01cac5bb7a6f69ac01fca126e22bc01a048001ff3462ce1714cf5ee97"
+          }
+        ],
+        "forbidden_condition": "Executing the SNAPSHOT compensation (cleanup_web_page_snapshot \u2014 deleting the ingestion backup) when first_error is not None, or when a FILE compensation was registered but file_succeeded is false; likewise reporting rollback status 'complete'/'not_needed' while side_effects_may_remain holds (asserted invariant).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The derivation of file_succeeded earlier in the rollback orchestration is outside the supplied view (only its use at coordinator.py:2099-2100 is visible).",
+          "The snapshot_compensation callback body (backup deletion) is not in the supplied views.",
+          "No supplied view binds this rollback path to an agent tool invocation; agent mediation is not established."
+        ],
+        "protected_operation": "The snapshot_compensation callback execution for the failed page (registered as cleanup_web_page_snapshot with idempotency key snapshot:{collection}:{backup_path or key_fallback}).",
+        "protected_resource": "The ingestion backup file at backup_path and the rollback ledger's completed-compensation state for the failed page.",
+        "protection_obligation": "SNAPSHOT backup cleanup for a failed web-page ingestion must be executed only when no prior compensation boundary errored (first_error is None) AND either no FILE compensation was registered or the FILE compensation succeeded; otherwise the snapshot cleanup must not run and the rollback must be reported with side_effects_may_remain / rollback incomplete.",
+        "scope_limits": [
+          "The callback-only path (no saga) applies the same order and SNAPSHOT gate per the docstring at coordinator.py:2138-2141.",
+          "Withholding the SNAPSHOT cleanup deliberately leaves the backup in place and marks the rollback incomplete rather than deleting on a partially failed compensation chain."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "batch.create_check_constraint(SINGLE_OWNER_CHECK, sa.text(SINGLE_OWNER_CONDITION)) at 20260722_add_workforce_triggers.py:121-122, committing the schema change within the batch_alter_table block.",
+        "contract_id": "ecological-contract:a0b5174c67fd96933106b51afda5d232",
+        "declared_mechanism": "Named database CHECK constraint ck_agent_triggers_single_owner with the portable condition SINGLE_OWNER_CONDITION, created via batch.create_check_constraint inside op.batch_alter_table(TRIGGERS_TABLE) on the initial column-add branch.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 40,
+            "line_start": 37,
+            "path": "src/xagent/migrations/versions/20260722_add_workforce_triggers.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0e917a5d679279156770ac5f5f49c99b02dc6dd1988e68aa1b0e5f736eed53ea"
+          },
+          {
+            "line_end": 123,
+            "line_start": 104,
+            "path": "src/xagent/migrations/versions/20260722_add_workforce_triggers.py",
+            "role": "guard_registration",
+            "source_sha256": "0e917a5d679279156770ac5f5f49c99b02dc6dd1988e68aa1b0e5f736eed53ea"
+          },
+          {
+            "line_end": 122,
+            "line_start": 118,
+            "path": "src/xagent/migrations/versions/20260722_add_workforce_triggers.py",
+            "role": "protected_operation",
+            "source_sha256": "0e917a5d679279156770ac5f5f49c99b02dc6dd1988e68aa1b0e5f736eed53ea"
+          },
+          {
+            "line_end": 123,
+            "line_start": 121,
+            "path": "src/xagent/migrations/versions/20260722_add_workforce_triggers.py",
+            "role": "commit_point",
+            "source_sha256": "0e917a5d679279156770ac5f5f49c99b02dc6dd1988e68aa1b0e5f736eed53ea"
+          }
+        ],
+        "forbidden_condition": "An agent_triggers row where both agent_id and workforce_id are set, or neither is, i.e., any insert/update violating (agent_id IS NULL) <> (workforce_id IS NULL).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "How the constraint behaves for pre-existing rows or dialect-specific batch recreation is not determinable from the supplied ranges."
+        ],
+        "protected_operation": "Row writes on the agent_triggers table, including direct/buggy inserts that bypass the service layer.",
+        "protected_resource": "agent_triggers table rows.",
+        "protection_obligation": "Exactly-one-owner invariant on agent trigger rows, enforced at the database layer as a backstop for service-layer checks.",
+        "scope_limits": [
+          "The constraint is added only when needs_workforce_column or agent_id_not_nullable (idempotency gate at line 104); behavior for tables that skip this branch is not shown.",
+          "The service-layer enforcement the constraint backs up is not in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The refusal return at task_command_execution.py:2870-2874 (REJECTED), which prevents the resume from proceeding past this gate.",
+        "contract_id": "ecological-contract:a27b5046a7b62b559f362d397297ed5d",
+        "declared_mechanism": "active_interaction_id_sync read plus a typed-receipt comparison (isinstance int, excluding bool, exact equality, responder_identity present) at task_command_execution.py:2820-2840; refusal registers ops_signals.INTERACTION_LEGACY_RESUME_SHIM degradation, logs, replies an error message, and returns ResumeCommandResult(REJECTED, reason_code='interaction_pending') (2841-2874).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 2840,
+            "line_start": 2820,
+            "path": "src/xagent/web/services/task_command_execution.py",
+            "role": "guard_registration",
+            "source_sha256": "aa82f4df3ede3fe900bcfd0d3beb39744825d437411ca6a05ad2fb15cfc9c77c"
+          },
+          {
+            "line_end": 2822,
+            "line_start": 2820,
+            "path": "src/xagent/web/services/task_command_execution.py",
+            "role": "protected_operation",
+            "source_sha256": "aa82f4df3ede3fe900bcfd0d3beb39744825d437411ca6a05ad2fb15cfc9c77c"
+          },
+          {
+            "line_end": 2858,
+            "line_start": 2843,
+            "path": "src/xagent/web/services/task_command_execution.py",
+            "role": "forbidden_condition",
+            "source_sha256": "aa82f4df3ede3fe900bcfd0d3beb39744825d437411ca6a05ad2fb15cfc9c77c"
+          },
+          {
+            "line_end": 2874,
+            "line_start": 2870,
+            "path": "src/xagent/web/services/task_command_execution.py",
+            "role": "commit_point",
+            "source_sha256": "aa82f4df3ede3fe900bcfd0d3beb39744825d437411ca6a05ad2fb15cfc9c77c"
+          }
+        ],
+        "forbidden_condition": "Resuming a run whose active_interaction_id_sync read finds an active interaction when receipt_interaction_id is a bool, not an int, does not equal active_interaction_id, or receipt_responder_identity is empty \u2014 the legacy resume is refused with reason_code 'interaction_pending'.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No cited view explicitly binds the RESUME command path to an agent tool, agent lifecycle hook, or agent-generated input; mediation is unbound."
+        ],
+        "protected_operation": "Processing (granting) a legacy RESUME command for a task with an active interaction row.",
+        "protected_resource": "The task's pending active interaction (task_interaction_requests active row) and the run it gates.",
+        "protection_obligation": "A RESUME command must be refused while an active, unanswered task interaction row remains, unless the resume message carries a matching identity receipt: an exact int interaction_id equal to the active row's id (bools and floats rejected) plus a non-empty responder_identity.",
+        "scope_limits": [
+          "Applies to the legacy resume path shown; the respond()-side staging of the receipt identity (interaction_id/responder_identity) is not in the supplied views.",
+          "The downstream effect of an accepted resume (run resumption mechanics) is not shown in the cited ranges."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "handle_chat_message / handle_execute_task invocation at public_chat_access.py:1644-1649.",
+        "contract_id": "ecological-contract:a294cc3ccb8b8b2e428f8f6f14935600",
+        "declared_mechanism": "_authorize_share_chat_websocket re-derives the principal per connection and closes the socket with 4003 on HTTPException or signals infrastructure failure; get_share_rate_limiter().allow_ws_turn rejects rate-limited chat/execute turns per guest; only then are the turn handlers invoked.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 1625,
+            "line_start": 1611,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "guard_registration",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          },
+          {
+            "line_end": 1642,
+            "line_start": 1634,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "guard_registration",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          },
+          {
+            "line_end": 315,
+            "line_start": 294,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "forbidden_condition",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          },
+          {
+            "line_end": 1649,
+            "line_start": 1644,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "protected_operation",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          },
+          {
+            "line_end": 1649,
+            "line_start": 1644,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "commit_point",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          }
+        ],
+        "forbidden_condition": "Dispatching a chat or execute_task turn for a guest whose share principal is disabled, unpublished, token-mismatched, or otherwise rejected (connection closed 4003), or whose guest_id has exhausted the per-guest WebSocket turn rate limit.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "get_task_for_share_context application inside the WebSocket chat/execute handlers.",
+          "The stratum of the ultimate run effects triggered by the dispatch."
+        ],
+        "protected_operation": "handle_chat_message / handle_execute_task dispatch on the share WebSocket loop (with handle_intervention explicitly ungated for rate limiting).",
+        "protected_resource": "Task runs started from the public share WebSocket (owner-billed chat/execute turns).",
+        "protection_obligation": "Per-turn share-guest authorization gating WebSocket chat/execute dispatch: each chat or execute_task turn on the share WebSocket must be dispatched only for a freshly validated share principal within the guest turn rate limit.",
+        "scope_limits": [
+          "Downstream effects of the dispatched turn (agent run execution, billing, tool effects) are outside the supplied views; classified state for the run-starting dispatch.",
+          "Whether the WS handlers internally re-run get_task_for_share_context is not shown.",
+          "Intervention messages are intentionally not rate-limited (comment 1628-1633)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.execute(_answer_fence_stmt(...)) at task_interaction_service.py:3534-3545; refusal/classification at 3546-3552 (rowcount) and 3680-3708 (run_ended / foreign_run / not_task_principal).",
+        "contract_id": "ecological-contract:a57cb7b74ad66529b063342de98ce2c3",
+        "declared_mechanism": "_answer_fence_stmt \u2014 sa.update(TaskInteractionRequest).where(id, task_id, Task.id join, _active_native_row_criteria(), _answer_fence_task_predicate(principal)) (2761-2779); _answer_fence_task_predicate re-asserts WAITING_FOR_USER, Task.user_id == principal.user_id, and guest guest_id in SQL (2701-2707); db.execute at 3534-3545 with rowcount checks at 3546-3552 and reread-based miss classification at 3680-3708.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 2779,
+            "line_start": 2761,
+            "path": "src/xagent/web/services/task_interaction_service.py",
+            "role": "guard_registration",
+            "source_sha256": "7de64d9d275ef004091171f350f183bca7f29e643a5abf6bf2fd5e63fd85b0b5"
+          },
+          {
+            "line_end": 2669,
+            "line_start": 2653,
+            "path": "src/xagent/web/services/task_interaction_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7de64d9d275ef004091171f350f183bca7f29e643a5abf6bf2fd5e63fd85b0b5"
+          },
+          {
+            "line_end": 2727,
+            "line_start": 2720,
+            "path": "src/xagent/web/services/task_interaction_service.py",
+            "role": "protected_operation",
+            "source_sha256": "7de64d9d275ef004091171f350f183bca7f29e643a5abf6bf2fd5e63fd85b0b5"
+          },
+          {
+            "line_end": 3545,
+            "line_start": 3534,
+            "path": "src/xagent/web/services/task_interaction_service.py",
+            "role": "commit_point",
+            "source_sha256": "7de64d9d275ef004091171f350f183bca7f29e643a5abf6bf2fd5e63fd85b0b5"
+          },
+          {
+            "line_end": 3552,
+            "line_start": 3546,
+            "path": "src/xagent/web/services/task_interaction_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7de64d9d275ef004091171f350f183bca7f29e643a5abf6bf2fd5e63fd85b0b5"
+          },
+          {
+            "line_end": 3708,
+            "line_start": 3680,
+            "path": "src/xagent/web/services/task_interaction_service.py",
+            "role": "commit_point",
+            "source_sha256": "7de64d9d275ef004091171f350f183bca7f29e643a5abf6bf2fd5e63fd85b0b5"
+          }
+        ],
+        "forbidden_condition": "The answer-fence UPDATE matching zero rows \u2014 answering a non-active row, a row from a foreign run, a task no longer WAITING_FOR_USER, or a row whose owner/guest binding does not match the principal (including admins answering another user's task, which step 3's Python authorization admits but the write-point fence rejects).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Interaction answering is user/guest-to-agent-loop input, but no cited view binds the answer write to an agent tool, agent lifecycle hook, or agent-generated input; mediation is unbound."
+        ],
+        "protected_operation": "The one and only write to an active interaction row: the compare-and-swap UPDATE setting status='answered', clearing active_slot, and writing response_payload/responded_at/responder identity.",
+        "protected_resource": "The task's single active task_interaction_requests row (joined against the tasks row by primary key).",
+        "protection_obligation": "Writing an answer (status='answered') to a task interaction row is forbidden unless, in a single atomic UPDATE whose WHERE clause is evaluated at execute time, the row is still the task's one live active row (status='active', active_slot NOT NULL, run_id matching the task), the task is still WAITING_FOR_USER, and the principal owns the task (Task.user_id equality, plus agent_config['guest_id'] match for guest principals); the UPDATE's rowcount is the commit/refusal point, zero-rowcount misses are classified (run_ended / foreign_run / not_task_principal) against a fresh reread rather than swallowed, and rowcount > 1 raises RuntimeError.",
+        "scope_limits": [
+          "Only three terms are re-asserted in SQL at write time; the rest of the guest conjunction (auth_mode, entity binding, channel binding) is evaluated once in Python at step 3 and not re-checked in SQL (2683-2687).",
+          "On SQLite the dialect drops locking clauses, making this write-point statement the serialization point; on PostgreSQL step 2's FOR NO KEY UPDATE lock additionally serializes (2671-2679).",
+          "respond() itself is described as currently zero-caller-gated by one reviewer; the route wiring to respond() is not in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The content-serving exit (FileResponse/redirect) immediately following the guard at files.py:1543-1546; the emission lines themselves are outside the supplied ranges.",
+        "contract_id": "ecological-contract:a6074fb819d167f450920dd40b6adc62",
+        "declared_mechanism": "_is_under_uploads resolves symlinks and requires containment under both uploads root and scoped user root; _ensure_under_uploads raises 403 on failure; _resolve_public_preview_target validates the base path, constrains the relative candidate under the resolved base directory, and re-runs containment on the candidate; download_file runs the containment check immediately before the serving exit.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 733,
+            "line_start": 729,
+            "path": "src/xagent/web/api/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 746,
+            "line_start": 736,
+            "path": "src/xagent/web/api/files.py",
+            "role": "guard_registration",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 765,
+            "line_start": 749,
+            "path": "src/xagent/web/api/files.py",
+            "role": "guard_registration",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 1461,
+            "line_start": 1456,
+            "path": "src/xagent/web/api/files.py",
+            "role": "protected_operation",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 1546,
+            "line_start": 1543,
+            "path": "src/xagent/web/api/files.py",
+            "role": "commit_point",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          }
+        ],
+        "forbidden_condition": "Serving, publicly resolving via a relative path, or otherwise exposing any uploaded-file path whose symlink-resolved location falls outside the uploads root or outside the owning user's per-user root; _ensure_under_uploads must 403 such paths.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Verification of containment-guard placement at public_preview_file and preview serving exits."
+        ],
+        "protected_operation": "Download/preview/public-preview serving exits and _resolve_public_preview_target's resolution of relative public paths.",
+        "protected_resource": "The user-scoped uploads directory tree (uploads root and per-user root).",
+        "protection_obligation": "Uploads-root path containment for serving and resolving uploaded-file paths (http serving leg): no served or resolved path may escape the owning user's scoped uploads directory, including symlink-resolved and public relative-path traversal.",
+        "scope_limits": [
+          "The public_preview_file route and any X-Accel/redirect emission sites are not within the supplied ranges.",
+          "The guard placement at 1543-1546 is shown for download_file; other serving exits are reviewer-asserted only."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "coordinator.py:2053-2069 (registration) and coordinator.py:2070-2076 (the STATUS execute_compensations call); dedupe binds at operation_compatibility.py:163-182.",
+        "contract_id": "ecological-contract:a68985519a1ea9422796035778d9211a",
+        "declared_mechanism": "operation.record_side_effect(name='clear_ingestion_status', plane=STATUS, payload=..., idempotency_key=..., compensation=_compensate_status) followed by _fold('STATUS', operation.execute_compensations(step_names={'clear_ingestion_status'}, planes={SideEffectPlane.STATUS})); _compensate_status closes any awaitable and raises TypeError for async callbacks; record_side_effect dedupes by idempotency key so at most one compensation step exists per key.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 2069,
+            "line_start": 2038,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/coordinator.py",
+            "role": "guard_registration",
+            "source_sha256": "5238d5f01cac5bb7a6f69ac01fca126e22bc01a048001ff3462ce1714cf5ee97"
+          },
+          {
+            "line_end": 2076,
+            "line_start": 2070,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/coordinator.py",
+            "role": "commit_point",
+            "source_sha256": "5238d5f01cac5bb7a6f69ac01fca126e22bc01a048001ff3462ce1714cf5ee97"
+          },
+          {
+            "line_end": 182,
+            "line_start": 155,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/operation_compatibility.py",
+            "role": "guard_registration",
+            "source_sha256": "d0cfca5378f12f8c1ae71862d26995062c99c1480376d64acea77b9d5028c083"
+          }
+        ],
+        "forbidden_condition": "Ingestion-status rows for the failed page remaining uncleaned after rollback, or the status-clear compensation running more than once (duplicate registration under the same idempotency key is collapsed), or an async callback being silently accepted (a TypeError is raised instead).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The construction and body of status_compensation callbacks (request.status_compensation(request.ingestion_result)) are not in the supplied views.",
+          "The DOCUMENT-plane side-effect registration (_record_document_ingestion_side_effects, pipeline_compatibility.py:489) is truncated to its signature in the supplied views; no DOCUMENT-plane contract is emitted.",
+          "No supplied view binds this rollback path to an agent tool invocation; agent mediation is not established."
+        ],
+        "protected_operation": "Compensation of ingestion-status rows during rollback: status_compensation(request.ingestion_result) producing the callback whose execution clears the recorded status side effect.",
+        "protected_resource": "Ingestion-status rows for the collection+doc/file identified in the side-effect payload (collection, url, doc_id, file_id, rollback_kind).",
+        "protection_obligation": "The STATUS-plane compensation for a failed web-page ingestion (clear_ingestion_status) must be registered with an idempotency key keyed per collection+doc (status:{collection}:{doc_id}, or status:{collection}:{key_fallback} when no doc_id) and executed exactly once via execute_compensations(step_names={'clear_ingestion_status'}, planes={STATUS}), with only synchronous compensation callbacks accepted.",
+        "scope_limits": [
+          "The idempotency key falls back to a key_fallback when no doc_id is available; collisions across pages sharing the fallback key collapse into one compensation boundary.",
+          "Boundary errors from STATUS compensation feed boundary_errors and the side_effects_may_remain accounting rather than aborting remaining boundaries."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "mcp_adapter.py:1700-1714 \u2014 strip-and-replace immediately before dispatch; the guarded effect commits at mcp_adapter.py:1796-1800 (session.call_tool).",
+        "contract_id": "ecological-contract:adfbe76ee7c490758efbb652aa426cff",
+        "declared_mechanism": "run__async enumerates runtime-bound argument names from the input schema properties, pops any caller/LLM-supplied values for those names from normalized_args (logging 'Ignoring LLM-supplied runtime-bound MCP argument'), parses the remainder via _args_type, then updates tool_args with self._runtime_tool_arguments() before dispatching _execute_mcp_call.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 1714,
+            "line_start": 1698,
+            "path": "src/xagent/core/tools/adapters/vibe/mcp_adapter.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2ba5bd0ca3a1a2a654af475c576a795ff5f2112a4baf990c8eb058ea77b03a42"
+          },
+          {
+            "line_end": 1711,
+            "line_start": 1703,
+            "path": "src/xagent/core/tools/adapters/vibe/mcp_adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "2ba5bd0ca3a1a2a654af475c576a795ff5f2112a4baf990c8eb058ea77b03a42"
+          },
+          {
+            "line_end": 1802,
+            "line_start": 1794,
+            "path": "src/xagent/core/tools/adapters/vibe/mcp_adapter.py",
+            "role": "commit_point",
+            "source_sha256": "2ba5bd0ca3a1a2a654af475c576a795ff5f2112a4baf990c8eb058ea77b03a42"
+          }
+        ],
+        "forbidden_condition": "An LLM-supplied value for a runtime-bound tool argument (a name returned by _runtime_bound_tool_argument_names) surviving into the tool_args passed to session.call_tool \u2014 it must be popped from normalized_args (with a warning) and the field re-filled from binding-derived runtime arguments before schema parsing and the call.",
+        "missing_evidence_roles": [
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Implementations of _runtime_bound_tool_argument_names and _runtime_tool_arguments are not in the supplied views, so the set of runtime-bound fields is not enumerable from source."
+        ],
+        "protected_operation": "The MCP tool invocation _execute_mcp_call \u2192 session.call_tool with the assembled tool_args.",
+        "protected_resource": "Runtime-bound MCP tool arguments \u2014 binding-derived parameters of the wrapped MCP tool that the model must not control.",
+        "protection_obligation": "In MCPToolAdapter.run__async, LLM-supplied values for runtime-bound MCP tool arguments must be stripped from the call payload and replaced by binding-derived values (from _runtime_tool_arguments) before the remote MCP session.call_tool commits, so model-controlled input cannot override server-injected parameters.",
+        "scope_limits": [
+          "Only fields recognized as runtime-bound via the tool's input schema are stripped; all other model-supplied arguments pass through schema normalization and type parsing.",
+          "Replacement values come from _runtime_tool_arguments() on the adapter instance; their provenance is not shown in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "coordinator.py:969-971 \u2014 the abort return on data_warnings, which must precede the status rename commit at 973-985 and the metadata rename commit at 987-992.",
+        "contract_id": "ecological-contract:b3ea5ff57cde1e7359cc24b527cb772b",
+        "declared_mechanism": "rename_collection_data runs first; its non-empty warnings list extends the accumulated warnings and the method returns immediately (short-circuit) before touching status or metadata \u2014 both failure surfaces (hard exception and per-table warnings returned by the store) gate the control-plane mutations.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 962,
+            "line_start": 956,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/coordinator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5238d5f01cac5bb7a6f69ac01fca126e22bc01a048001ff3462ce1714cf5ee97"
+          },
+          {
+            "line_end": 971,
+            "line_start": 963,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/coordinator.py",
+            "role": "guard_registration",
+            "source_sha256": "5238d5f01cac5bb7a6f69ac01fca126e22bc01a048001ff3462ce1714cf5ee97"
+          },
+          {
+            "line_end": 971,
+            "line_start": 969,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/coordinator.py",
+            "role": "commit_point",
+            "source_sha256": "5238d5f01cac5bb7a6f69ac01fca126e22bc01a048001ff3462ce1714cf5ee97"
+          },
+          {
+            "line_end": 992,
+            "line_start": 973,
+            "path": "src/xagent/core/tools/core/RAG_tools/kb/coordinator.py",
+            "role": "protected_operation",
+            "source_sha256": "5238d5f01cac5bb7a6f69ac01fca126e22bc01a048001ff3462ce1714cf5ee97"
+          }
+        ],
+        "forbidden_condition": "Executing rename_collection_status or rename_collection_metadata after rename_collection_data returned non-empty warnings (per-table vector rows not moved); a hard exception in the data rename propagates and likewise prevents the control-plane renames.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view binds KBCoordinator.rename_collection to an agent tool, lifecycle hook, or agent-generated input; agent mediation is not established.",
+          "LanceDBCollectionHandle.rename_collection_data/status/metadata implementations are not in the supplied views; per-table warning semantics are taken from the coordinator's comments."
+        ],
+        "protected_operation": "The sequential control-plane renames: handle.rename_collection_status (via asyncio.to_thread) and handle.rename_collection_metadata.",
+        "protected_resource": "The KB collection's rename planes in the vector store: vector data tables, ingestion-status rows, and control-plane collection metadata (old_name \u2192 new_name).",
+        "protection_obligation": "In KBCoordinator.rename_collection, the control-plane renames (ingestion-status rows via handle.rename_collection_status and collection metadata via handle.rename_collection_metadata) are forbidden unless the vector-data rename handle.rename_collection_data completes with an empty per-table warnings list, preventing a split-brain collection whose metadata/status point at new_name while vector data remains under old_name.",
+        "scope_limits": [
+          "Downstream renames are best-effort: failures of the status/metadata renames become warnings and do not abort each other; the gate protects only data-vs-control-plane consistency.",
+          "The gate keys on the warnings list returned by rename_collection_data; a data rename that failed without reporting warnings would not be caught (handle semantics not shown)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The PermissionError raised at gmail.py:74-77, executed per attachment from _resolve_message_attachments (gmail.py:103) before local_path.open('rb') reads any bytes (gmail.py:105-116) and before the composed message is dispatched to the Gmail API.",
+        "contract_id": "ecological-contract:b5035b9b105792a4ca5c76a6e4cbfcd2",
+        "declared_mechanism": "_resolve_allowed_file_path (gmail.py:43-77) expands/absolute-izes the path, resolves it, requires it to be a regular file, then requires containment under one of allowed_dirs_from_env('XAGENT_GMAIL_FILE_ALLOWED_DIRS') (gmail.py:32, 35-40, 60-63); non-contained paths raise PermissionError whose message deliberately omits the host path (gmail.py:65-77).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 77,
+            "line_start": 43,
+            "path": "src/xagent/web/tools/mcp/gmail.py",
+            "role": "guard_registration",
+            "source_sha256": "a30487188df92db5acecf34e8225ef89fb1144cdfaae25e777667c445d634f2d"
+          },
+          {
+            "line_end": 47,
+            "line_start": 44,
+            "path": "src/xagent/web/tools/mcp/gmail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a30487188df92db5acecf34e8225ef89fb1144cdfaae25e777667c445d634f2d"
+          },
+          {
+            "line_end": 40,
+            "line_start": 32,
+            "path": "src/xagent/web/tools/mcp/gmail.py",
+            "role": "guard_registration",
+            "source_sha256": "a30487188df92db5acecf34e8225ef89fb1144cdfaae25e777667c445d634f2d"
+          },
+          {
+            "line_end": 106,
+            "line_start": 96,
+            "path": "src/xagent/web/tools/mcp/gmail.py",
+            "role": "protected_operation",
+            "source_sha256": "a30487188df92db5acecf34e8225ef89fb1144cdfaae25e777667c445d634f2d"
+          },
+          {
+            "line_end": 77,
+            "line_start": 74,
+            "path": "src/xagent/web/tools/mcp/gmail.py",
+            "role": "commit_point",
+            "source_sha256": "a30487188df92db5acecf34e8225ef89fb1144cdfaae25e777667c445d634f2d"
+          }
+        ],
+        "forbidden_condition": "An attachment path that resolves outside every allowed upload directory being opened, read, and transmitted to the Gmail API as message content (exfiltration of arbitrary host files; gmail.py:44-47 states 'an agent could be tricked into exfiltrating arbitrary host files through this tool').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The @mcp.tool()-decorated definition of gmail_send_messages and its call into _resolve_message_attachments are outside the supplied view (gmail.py lines 1-157 show the FastMCP registration pattern only for gmail_search_messages at lines 154-155); the agent-entry binding must be confirmed before marking this direct_tool.",
+          "The concrete Gmail API request construction/send for messages with attachments is outside the supplied view."
+        ],
+        "protected_operation": "Attaching local files to outgoing Gmail messages via gmail_send_messages: each entry of a message's 'attachments' list is resolved through the allowlist guard and read (gmail.py:96-106) before the message is sent.",
+        "protected_resource": "Host filesystem files readable by the gmail-mcp server process, specifically any file outside the XAGENT_GMAIL_FILE_ALLOWED_DIRS allowlist.",
+        "protection_obligation": "Local file paths supplied as gmail_send_messages attachments must resolve to a regular file under one of the directories configured via XAGENT_GMAIL_FILE_ALLOWED_DIRS; any path outside the allowlist is rejected with PermissionError before the file is opened/read and its contents dispatched to the Gmail API, preventing exfiltration of arbitrary host files through the attachment mechanism.",
+        "scope_limits": [
+          "Existence (is_file) is checked before the allowlist in this connector (gmail.py:57-63), so a nonexistent out-of-allowlist path reports 'Attachment not found' rather than the allowlist rejection \u2014 the opposite ordering of the onedrive/google_drive guards.",
+          "The guard covers only gmail_send_messages attachments; no other tool in the supplied view routes local paths through it.",
+          "The final Gmail API send/upload call site lies outside the supplied view; pre-dispatch ordering rests on the guard's position before the file read and the guard's own stated purpose.",
+          "Relative paths resolve against the process working directory, not the allowed directory (gmail.py:49-54); this documented caller contract is not part of the forbidden condition."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Emission of the handler's error response for a raised authority exception; the response-producing handler body itself is not in the supplied view.",
+        "contract_id": "ecological-contract:c0643792575c912f8dee99f0de17a111",
+        "declared_mechanism": "Three app.add_exception_handler registrations (app.py:1156-1169) mapping StorageKeyScopeError, ExecutionScopeAuthorityError, and ExecutionScopeResolverContractError to the shared storage_namespace_authority_error_handler.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 1169,
+            "line_start": 1156,
+            "path": "src/xagent/web/app.py",
+            "role": "guard_registration",
+            "source_sha256": "ac9a57528c52678b01245c44a8913cfa02279aee249d1841ec7526320569c0c1"
+          },
+          {
+            "line_end": 1166,
+            "line_start": 1160,
+            "path": "src/xagent/web/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ac9a57528c52678b01245c44a8913cfa02279aee249d1841ec7526320569c0c1"
+          },
+          {
+            "line_end": 1158,
+            "line_start": 1156,
+            "path": "src/xagent/web/app.py",
+            "role": "protected_operation",
+            "source_sha256": "ac9a57528c52678b01245c44a8913cfa02279aee249d1841ec7526320569c0c1"
+          }
+        ],
+        "forbidden_condition": "An authority fault (including a resolver that broke its return contract or an undecodable persisted snapshot) being classified or reported as retryable; the source comments state nothing about such a request can be corrected or retried into working.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "No supplied view binds storage/execution-scope authority faults to an agent tool, agent lifecycle hook, or agent-generated input; mediation is unbound.",
+          "The body of storage_namespace_authority_error_handler (status code and payload it returns) is not in the supplied views; the permanent-500 classification rests on the reviewer assertion plus the permanence comments at app.py:1160-1166."
+        ],
+        "protected_operation": "HTTP error responses produced for storage/execution-scope authority faults.",
+        "protected_resource": "Storage namespace / execution-scope authority decisions surfaced to HTTP clients.",
+        "protection_obligation": "Storage and execution-scope authority violations (StorageKeyScopeError, ExecutionScopeAuthorityError, ExecutionScopeResolverContractError) must surface as permanent, non-retryable HTTP error responses via the app-level exception handler storage_namespace_authority_error_handler, never as retryable classifications.",
+        "scope_limits": [
+          "Covers exactly the three registered exception types; handler lookup reportedly walks the raised exception's MRO (app.py:1160 comment).",
+          "The handler's concrete response body/status construction is not present in the supplied source view."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The staging write inside create(), which the assertion must precede; the create() body and its call to the assertion are not in the supplied view.",
+        "contract_id": "ecological-contract:cb6bda558a3927c54549737a2c774341",
+        "declared_mechanism": "_assert_write_point_admissible(principal, task) raising InteractionWritePointUnfenced when principal.kind is not InteractionPrincipalKind.SYSTEM (task_interaction_service.py:1445-1464).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1458,
+            "line_start": 1445,
+            "path": "src/xagent/web/services/task_interaction_service.py",
+            "role": "guard_registration",
+            "source_sha256": "7de64d9d275ef004091171f350f183bca7f29e643a5abf6bf2fd5e63fd85b0b5"
+          },
+          {
+            "line_end": 1464,
+            "line_start": 1460,
+            "path": "src/xagent/web/services/task_interaction_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7de64d9d275ef004091171f350f183bca7f29e643a5abf6bf2fd5e63fd85b0b5"
+          },
+          {
+            "line_end": 1452,
+            "line_start": 1448,
+            "path": "src/xagent/web/services/task_interaction_service.py",
+            "role": "protected_operation",
+            "source_sha256": "7de64d9d275ef004091171f350f183bca7f29e643a5abf6bf2fd5e63fd85b0b5"
+          }
+        ],
+        "forbidden_condition": "A non-system InteractionPrincipal reaching the create() staging write path \u2014 _assert_write_point_admissible raises InteractionWritePointUnfenced (a programming-error guard deliberately outside the outcome/reason vocabulary).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "create()'s invocation of _assert_write_point_admissible and the staging write itself are not in the supplied views; the binding of this write path to agent mediation is likewise unbound."
+        ],
+        "protected_operation": "Staging of an interaction row through create()'s write path.",
+        "protected_resource": "task_interaction_requests rows created via create().",
+        "protection_obligation": "create()'s interaction staging write path admits only the SYSTEM principal (the finalizer layer); any principal representing a person reaching the write point must raise InteractionWritePointUnfenced rather than staging a row.",
+        "scope_limits": [
+          "Guards only the create() write-path seam; the respond() answer path carries its own fence at its own write point.",
+          "The raise is deliberate and not part of the outcome/reason vocabulary (1454-1457)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The fenced UPDATE built at task_command_transport.py:1028-1039; its execution/commit lies beyond the cited range.",
+        "contract_id": "ecological-contract:d87c72fde1f5b5f4b54aaeac3bc6f9d3",
+        "declared_mechanism": "Snapshot read filtered on expected_attempt_count (1017-1021) followed by a single UPDATE whose WHERE clause carries the full claim fence (1028-1039: id, status, claimed_by, failure_count, attempt_count, and conditional claim_expires_at term).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 1039,
+            "line_start": 1017,
+            "path": "src/xagent/web/services/task_command_transport.py",
+            "role": "guard_registration",
+            "source_sha256": "f8e59ee44390069d492a0d5267fbab323476fc6b363699e9bc066641f801825e"
+          },
+          {
+            "line_end": 1023,
+            "line_start": 1021,
+            "path": "src/xagent/web/services/task_command_transport.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f8e59ee44390069d492a0d5267fbab323476fc6b363699e9bc066641f801825e"
+          },
+          {
+            "line_end": 1027,
+            "line_start": 1024,
+            "path": "src/xagent/web/services/task_command_transport.py",
+            "role": "protected_operation",
+            "source_sha256": "f8e59ee44390069d492a0d5267fbab323476fc6b363699e9bc066641f801825e"
+          },
+          {
+            "line_end": 1039,
+            "line_start": 1028,
+            "path": "src/xagent/web/services/task_command_transport.py",
+            "role": "commit_point",
+            "source_sha256": "f8e59ee44390069d492a0d5267fbab323476fc6b363699e9bc066641f801825e"
+          }
+        ],
+        "forbidden_condition": "The fenced disposition UPDATE matching zero rows (snapshot_query.first() is None at 1021-1023 returns False), i.e., a non-owner, superseded attempt, expired claim, or concurrent state change attempting to mutate the command row.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Command transport between runners and the orchestrator is not explicitly bound to an agent tool, agent lifecycle hook, or agent-generated input in the cited views; mediation is unbound."
+        ],
+        "protected_operation": "Incrementing failure_count and deciding terminal disposition (force_terminal or MAX_COMMAND_FAILURES) on a TaskExecutionCommand row.",
+        "protected_resource": "The TaskExecutionCommand row (command_db_id).",
+        "protection_obligation": "A command failure disposition may only be written in the same UPDATE that fences on the current claim: TaskExecutionCommand.id, status == COMMAND_PROCESSING, claimed_by == runner_id, failure_count == observed value, attempt_count == observed value (and claim_expires_at > now when a handoff is present); a stale snapshot or lost claim matches zero rows and writes nothing.",
+        "scope_limits": [
+          "The claim_expires_at fence term applies only when handoff is not None (1036-1038).",
+          "The UPDATE's execution and commit are beyond the cited range and not directly evidenced."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "runner.py:126-150 \u2014 asyncssh.connect inside AsyncsshRunner._connect with the _authorize_peer re-check at line 149 before the connection is yielded; the fail-closed pre-flight commits earlier at executor.py:112-118 in the execute prologue.",
+        "contract_id": "ecological-contract:d9845db4a6c96341a2a72db51b781ed0",
+        "declared_mechanism": "check_ip (pure decision logic; IPv4-mapped IPv6 and NAT64/6to4-tunneled IPv4 decoded before classification; metadata deny ahead of allowlist; allowlist wins over deny rules except metadata; multicast always denied); resolve_and_authorize resolves DNS via getaddrinfo and raises SshError EGRESS_DENIED if the name does not resolve or any resolved address is denied; the executor calls it in the prologue before reading the secret and pins connect_ip to the vetted address; AsyncsshRunner._connect immediately calls _authorize_peer on the connected conn (get_extra_info peername) and raises EGRESS_DENIED before yielding the connection.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 146,
+            "line_start": 102,
+            "path": "src/xagent/core/ssh/egress.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b3410ecc3200c37105e9f5e10ccc76df5ceba3266e204ebc62408119517a4ee3"
+          },
+          {
+            "line_end": 57,
+            "line_start": 31,
+            "path": "src/xagent/core/ssh/egress_io.py",
+            "role": "guard_registration",
+            "source_sha256": "ff2979a93eac6a1937d67150cbb9430e7cdda7c52313c7961f537ca20efbefcd"
+          },
+          {
+            "line_end": 118,
+            "line_start": 108,
+            "path": "src/xagent/core/ssh/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "bd269125ac9bd22371c1a27fece298005c07b2f91b90cc9371dfced63411a912"
+          },
+          {
+            "line_end": 352,
+            "line_start": 341,
+            "path": "src/xagent/core/ssh/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "0f35010debee598a3ffe736244f82db3c0005336084363465ce23ac1b288fb8f"
+          },
+          {
+            "line_end": 195,
+            "line_start": 172,
+            "path": "src/xagent/core/ssh/runner.py",
+            "role": "protected_operation",
+            "source_sha256": "0f35010debee598a3ffe736244f82db3c0005336084363465ce23ac1b288fb8f"
+          },
+          {
+            "line_end": 97,
+            "line_start": 85,
+            "path": "src/xagent/core/ssh/runner.py",
+            "role": "protected_operation",
+            "source_sha256": "0f35010debee598a3ffe736244f82db3c0005336084363465ce23ac1b288fb8f"
+          },
+          {
+            "line_end": 150,
+            "line_start": 125,
+            "path": "src/xagent/core/ssh/runner.py",
+            "role": "commit_point",
+            "source_sha256": "0f35010debee598a3ffe736244f82db3c0005336084363465ce23ac1b288fb8f"
+          }
+        ],
+        "forbidden_condition": "Opening an SSH connection (for command execution or SFTP upload/download) to a destination denied by the egress policy: cloud-metadata addresses (denied ahead of any allowlist), loopback, link-local, private, multicast (denied unconditionally), extra denied CIDRs, unresolvable hostnames (EGRESS_DENIED fail-closed), or, when default_allow_public is False, any address not in allow_cidrs; likewise continuing on a connection whose live peer IP fails check_ip.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view registers SshExecutor.execute/upload/download as agent-facing MCP tools; runner.py comments reference 'the SSH MCP tools' and 'the tool wrapper' (runner.py:120-122, 160-163) but the registration/dispatch site is absent, so agent mediation is not established.",
+          "Construction of the deployment's EgressPolicyConfig (allow_cidrs, extra_denied_cidrs, default_allow_public) is not shown.",
+          "Bodies of SshExecutor.upload/download beyond their signatures (executor.py:158-161) are not in the supplied views; the upload protocol signature requiring egress_config is visible at runner.py:85-97."
+        ],
+        "protected_operation": "SshExecutor.execute/upload/download provisioning and AsyncsshRunner._connect opening the SSH session (asyncssh.connect) used for remote command execution and SFTP transfers.",
+        "protected_resource": "Outbound SSH network connections and the credentials they authenticate (secrets are read only after egress authorization succeeds).",
+        "protection_obligation": "Outbound SSH command execution and SFTP transfers must be fail-closed egress-authorized before connecting: every resolved address must be judged by check_ip against EgressPolicyConfig (denying loopback, link-local, private, multicast, cloud-metadata, extra denied CIDRs, and everything when deny-by-default) via resolve_and_authorize in the SshExecutor prologue before any secret is read, and the actually connected peer IP must be re-verified at the connect commit as the DNS-rebinding backstop.",
+        "scope_limits": [
+          "Fail-closed: an unresolvable hostname raises EGRESS_DENIED rather than bypassing the executor's SshError handling and audit sink.",
+          "The in-process AsyncsshRunner ignores the pinned connect_ip and connects by hostname, relying on the post-connect _authorize_peer; the sandbox runner cannot re-check and relies on the executor's pinned connect_ip (per the executor comment at executor.py:108-111).",
+          "Host-key verification (pinned known_hosts file, publickey-only auth, no agent/config/forwarding) is a separate mechanism at the same connect point and is not part of the egress decision.",
+          "Connection and login timeouts bound the TCP-connect/auth handshake; per-op wait_for covers only post-connect work."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "react.py:3903-3921 \u2014 the synchronous suppression scan and envelope return (envelope recorded only if the call id is not already in the ledger), which precedes _record_tool_call(status='running') at line 3922 and the runtime.run_tool_call invocation at 3939-3941.",
+        "contract_id": "ecological-contract:e71700c516a0333950f3dbdb6975a585",
+        "declared_mechanism": "_suppressed_duplicate_write_result resolves the tool, checks tool_requires_duplicate_write_guard (is True comparisons only; undeclared tools exempt because dedup fails open), resolves turn_id (None means never guarded \u2014 an unknowable turn fails open), computes the canonical args_hash of the post-transform tool_call, and scans self.tool_ledger for a completed record matching (turn_id, tool_name, args_hash), skipping prior suppression envelopes so the genuine result is always attached. _execute_tool_safely runs this scan synchronously for non-control calls before writing any ledger record (provider id reuse cannot clobber the completed evidence record) and returns build_suppression_envelope (success: True, duplicate_write_suppressed marker, prior tool_call_id, prior result) without invoking the tool. Guarded tools are kept out of concurrent batches by _tool_is_concurrency_safe (the concurrency flag doubles as the author's idempotency declaration), making check-then-record race-free. Enrollment is read from tool.metadata (wrappers such as the sandbox wrapper forward only .metadata); a bare non_idempotent attribute is honored too.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 75,
+            "line_start": 56,
+            "path": "src/xagent/core/agent/pattern/react/duplicate_write_guard.py",
+            "role": "guard_registration",
+            "source_sha256": "affe31f4b1d1f95fdc29ec7450084eb23559e1d8ad1c9dfcc442bb5f8100bc4e"
+          },
+          {
+            "line_end": 123,
+            "line_start": 119,
+            "path": "src/xagent/core/agent/pattern/react/react.py",
+            "role": "guard_registration",
+            "source_sha256": "ba80d1cee79ba8caa2b0a50fab00475c66fe8785d1d424a48fb9aa8379d135aa"
+          },
+          {
+            "line_end": 2759,
+            "line_start": 2746,
+            "path": "src/xagent/core/agent/pattern/react/react.py",
+            "role": "guard_registration",
+            "source_sha256": "ba80d1cee79ba8caa2b0a50fab00475c66fe8785d1d424a48fb9aa8379d135aa"
+          },
+          {
+            "line_end": 104,
+            "line_start": 78,
+            "path": "src/xagent/core/agent/pattern/react/duplicate_write_guard.py",
+            "role": "guard_registration",
+            "source_sha256": "affe31f4b1d1f95fdc29ec7450084eb23559e1d8ad1c9dfcc442bb5f8100bc4e"
+          },
+          {
+            "line_end": 6,
+            "line_start": 2,
+            "path": "src/xagent/core/agent/pattern/react/duplicate_write_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "affe31f4b1d1f95fdc29ec7450084eb23559e1d8ad1c9dfcc442bb5f8100bc4e"
+          },
+          {
+            "line_end": 3842,
+            "line_start": 3836,
+            "path": "src/xagent/core/agent/pattern/react/react.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ba80d1cee79ba8caa2b0a50fab00475c66fe8785d1d424a48fb9aa8379d135aa"
+          },
+          {
+            "line_end": 3941,
+            "line_start": 3939,
+            "path": "src/xagent/core/agent/pattern/react/react.py",
+            "role": "protected_operation",
+            "source_sha256": "ba80d1cee79ba8caa2b0a50fab00475c66fe8785d1d424a48fb9aa8379d135aa"
+          },
+          {
+            "line_end": 3922,
+            "line_start": 3903,
+            "path": "src/xagent/core/agent/pattern/react/react.py",
+            "role": "commit_point",
+            "source_sha256": "ba80d1cee79ba8caa2b0a50fab00475c66fe8785d1d424a48fb9aa8379d135aa"
+          },
+          {
+            "line_end": 3910,
+            "line_start": 3894,
+            "path": "src/xagent/core/agent/pattern/react/react.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ba80d1cee79ba8caa2b0a50fab00475c66fe8785d1d424a48fb9aa8379d135aa"
+          },
+          {
+            "line_end": 6,
+            "line_start": 2,
+            "path": "src/xagent/core/agent/pattern/react/duplicate_write_guard.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "affe31f4b1d1f95fdc29ec7450084eb23559e1d8ad1c9dfcc442bb5f8100bc4e"
+          }
+        ],
+        "forbidden_condition": "Re-executing a guarded (declared non-idempotent write) tool call whose (turn_id, tool_name, args_hash) matches an already-completed record in the same turn's ledger \u2014 the model re-issuing a write-category tool call with byte-identical arguments after it already succeeded (xorbitsai/xagent#2217).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "classify_non_idempotent_write in the MCP adapter, which produces metadata.mcp_non_idempotent_write from wire annotations, is described only in the duplicate_write_guard.py docstring and is not present in the supplied views.",
+          "Which concrete internal tools set non_idempotent = True in this repository is not shown.",
+          "What runtime.run_tool_call additionally wraps around _execute_tool (metering/tracing) is not shown.",
+          "The reviewer-cited capability gate in builtin/executor.py (rejecting built-in agents executing tools lacking an assignable category) has no supplied source view."
+        ],
+        "protected_operation": "Execution of the repeat tool call in _execute_tool_safely: the _record_tool_call(status='running') write followed by runtime.run_tool_call(lambda: self._execute_tool(tool_call, tools)).",
+        "protected_resource": "The external write effects of tools enrolled via tool_requires_duplicate_write_guard (explicit opt-in declarations on the tool object or its ToolMetadata), evidenced by the turn-scoped ReAct tool ledger records.",
+        "protection_obligation": "In ReAct's tool-execution path, a tool call explicitly declared as a non-idempotent write (tool.non_idempotent is True, metadata.non_idempotent is True, or metadata.mcp_non_idempotent_write is True) that is re-issued with byte-identical arguments within the same turn must not be re-executed; the pattern must synchronously scan the turn-scoped tool ledger before execution and return a duplicate_write_suppressed envelope carrying the prior result instead of running the repeat.",
+        "scope_limits": [
+          "Same turn only, enforced by turn_id equality: a resume under a new user message compares unequal and executes; an intra-turn resume keeps suppressing; a call with no stamped turn_id is never guarded (fail open).",
+          "Byte-identical arguments only, compared via the ledger's canonical args hash of the same post-transform tool_call that _record_tool_call hashes and _execute_tool executes.",
+          "Only three opt-in declarations enroll a tool (non_idempotent is True, metadata.non_idempotent is True, metadata.mcp_non_idempotent_write is True); undeclared tools are exempt so identical-args poll loops are not suppressed.",
+          "Control tools (CONTROL_TOOL_NAMES) bypass the scan; only ordinary tool calls are guarded.",
+          "On provider id reuse, the envelope is not recorded over the genuine completed record, so later duplicates still find the original result.",
+          "If configuration marks a non-idempotent MCP tool concurrency-safe (connection-level operator config), the serial-execution safety argument is contradicted, as documented at react.py:3813-3818."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The RuntimeError raised at zoom.py:146-147, immediately before the credentialed requests.get(download_url, headers=_headers(), ...) at zoom.py:156-160.",
+        "contract_id": "ecological-contract:e9e8b470144cfb326a7f5ebffb978fd9",
+        "declared_mechanism": "_download_text (zoom.py:144-147) parses the hostname of the Zoom-supplied download_url and raises RuntimeError unless host == 'zoom.us' or host.endswith(_ZOOM_DOWNLOAD_HOST_SUFFIX) with _ZOOM_DOWNLOAD_HOST_SUFFIX = '.zoom.us' (zoom.py:31); only after passing the check does requests.get attach _headers()' bearer token (zoom.py:155-160).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 297,
+            "line_start": 296,
+            "path": "src/xagent/web/tools/mcp/zoom.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f347eeb86127cf626bd019b538317dd8cd296b3229ca6a8c464a510d47bb99"
+          },
+          {
+            "line_end": 363,
+            "line_start": 349,
+            "path": "src/xagent/web/tools/mcp/zoom.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "23f347eeb86127cf626bd019b538317dd8cd296b3229ca6a8c464a510d47bb99"
+          },
+          {
+            "line_end": 31,
+            "line_start": 27,
+            "path": "src/xagent/web/tools/mcp/zoom.py",
+            "role": "forbidden_condition",
+            "source_sha256": "23f347eeb86127cf626bd019b538317dd8cd296b3229ca6a8c464a510d47bb99"
+          },
+          {
+            "line_end": 147,
+            "line_start": 144,
+            "path": "src/xagent/web/tools/mcp/zoom.py",
+            "role": "guard_registration",
+            "source_sha256": "23f347eeb86127cf626bd019b538317dd8cd296b3229ca6a8c464a510d47bb99"
+          },
+          {
+            "line_end": 160,
+            "line_start": 155,
+            "path": "src/xagent/web/tools/mcp/zoom.py",
+            "role": "commit_point",
+            "source_sha256": "23f347eeb86127cf626bd019b538317dd8cd296b3229ca6a8c464a510d47bb99"
+          },
+          {
+            "line_end": 364,
+            "line_start": 360,
+            "path": "src/xagent/web/tools/mcp/zoom.py",
+            "role": "protected_operation",
+            "source_sha256": "23f347eeb86127cf626bd019b538317dd8cd296b3229ca6a8c464a510d47bb99"
+          }
+        ],
+        "forbidden_condition": "Sending the Zoom bearer Authorization token to any host other than zoom.us/*.zoom.us \u2014 the module comment states _download_text 'attaches the live Zoom bearer token' to a Zoom-supplied URL, so the host must be asserted before sending credentials as defense-in-depth (zoom.py:27-31); the guard phrases it as 'Refusing to send Zoom credentials to an unexpected host' (zoom.py:146-147).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "Downloading meeting-transcript text via the zoom_get_meeting_transcript MCP tool (zoom.py:296-364): the tool fetches transcript/recordings metadata, then retrieves the transcript via _download_text(download_url) at zoom.py:363.",
+        "protected_resource": "The Zoom access token configured as ZOOM_ACCESS_TOKEN and attached by _headers() (zoom.py:84-88) to the transcript download request.",
+        "protection_obligation": "The Zoom transcript download path must refuse to send the live Zoom bearer token to any host other than zoom.us or a *.zoom.us subdomain: _download_text validates the Zoom-supplied download_url's hostname and raises before the credentialed requests.get, so the access token cannot be delivered to an attacker-chosen host.",
+        "scope_limits": [
+          "Applies to the URL-based transcript download path only; all other connector calls target the fixed ZOOM_BASE_URL (https://api.zoom.us/v2) via _request (zoom.py:21, 109-121).",
+          "download_url is a Zoom-supplied field, not agent input (zoom.py:27-28); the agent influences it only indirectly through meeting_id, so the guard is host-allowlist defense-in-depth rather than agent-input validation.",
+          "The allowlist accepts zoom.us exactly and any hostname ending in '.zoom.us'; it does not pin scheme or TLS identity beyond requests' default certificate validation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "file_path.unlink() at files.py:2261 (record path) and 2265 (legacy path), gated by _ensure_under_uploads at 2225.",
+        "contract_id": "ecological-contract:eb20f381eeb02a5b27045cf33bc9f95c",
+        "declared_mechanism": "_ensure_under_uploads/_is_under_uploads run on the path immediately before the deletion sequence; failure raises 403 before storage cleanup, row delete, or unlink.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 733,
+            "line_start": 729,
+            "path": "src/xagent/web/api/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 746,
+            "line_start": 736,
+            "path": "src/xagent/web/api/files.py",
+            "role": "guard_registration",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 2225,
+            "line_start": 2216,
+            "path": "src/xagent/web/api/files.py",
+            "role": "guard_registration",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 2265,
+            "line_start": 2260,
+            "path": "src/xagent/web/api/files.py",
+            "role": "protected_operation",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 2265,
+            "line_start": 2259,
+            "path": "src/xagent/web/api/files.py",
+            "role": "commit_point",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          }
+        ],
+        "forbidden_condition": "Unlinking any uploaded-file path whose resolved location falls outside the uploads root or the owning user's per-user root.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "None beyond the general absence of agent-binding evidence for this route."
+        ],
+        "protected_operation": "file_path.unlink() in delete_file (record-backed and legacy paths).",
+        "protected_resource": "The user-scoped uploads directory tree and every file within it.",
+        "protection_obligation": "Uploads-root path containment before uploaded-file deletion (file leg): no path may be unlinked unless its symlink-resolved location is contained in the owning user's scoped uploads directory.",
+        "scope_limits": [
+          "The legacy_cache_source resolution at 2226 is bookkeeping; the containment verdict is already fixed by the 2225 check."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await store_uploaded_files(...) at public_chat_access.py:975-982, executed only after get_task_for_share_context and the clean-connection check at 964-973.",
+        "contract_id": "ecological-contract:ef1de0853158db0d7a71f7333eb3047e",
+        "declared_mechanism": "build_share_chat_dependency wired as a FastAPI dependency (Depends(get_current_share_user_dep)) on the route; get_share_chat_user re-validates per request via ensure_share_agent_available/ensure_share_workforce_available (fail-closed 403 on disabled/unpublished/token mismatch); get_task_for_share_context enforces owner+agent task scoping and guest principal matching before store_uploaded_files is invoked; get_share_rate_limiter().allow_upload refuses over-quota guests.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 157,
+            "line_start": 145,
+            "path": "src/xagent/web/api/share.py",
+            "role": "guard_registration",
+            "source_sha256": "45080ade915fdfc0433c8b9b56276266f083b9fdb10401d7d9de37c66c4cc20b"
+          },
+          {
+            "line_end": 315,
+            "line_start": 294,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "forbidden_condition",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          },
+          {
+            "line_end": 347,
+            "line_start": 318,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "guard_registration",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          },
+          {
+            "line_end": 575,
+            "line_start": 554,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "guard_registration",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          },
+          {
+            "line_end": 794,
+            "line_start": 764,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "forbidden_condition",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          },
+          {
+            "line_end": 982,
+            "line_start": 964,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "protected_operation",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          },
+          {
+            "line_end": 982,
+            "line_start": 975,
+            "path": "src/xagent/web/api/public_chat_access.py",
+            "role": "commit_point",
+            "source_sha256": "84bdc1cda57c9f7f75643be09ff2d055f9265b3469cb882375897cf4a26fbd4f"
+          }
+        ],
+        "forbidden_condition": "A public guest uploading into any task when the share is disabled, unpublished, archived, or the presented share token no longer matches the live stored credential, or when the target task is not owned by the shared entity's owner with the guest's own guest_id; per-guest upload rate limits also refuse excess uploads.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "store_uploaded_files' internal strata (file vs database mutations).",
+          "The guest task-create commit point and its guard placement."
+        ],
+        "protected_operation": "upload_share_file \u2192 upload_share_chat_files \u2192 store_uploaded_files durable upload on the share path.",
+        "protected_resource": "Task-scoped uploaded files written on the public share path.",
+        "protection_obligation": "Per-request share-guest authorization gating public file uploads (merged from two reviewer opinions): a share/widget guest may upload only when the share is live, published/share-enabled, token-matched, and the target task is owned by the shared entity's owner and carries the guest's own guest_id.",
+        "scope_limits": [
+          "The internal effects of store_uploaded_files (file writes vs database rows) are not in the supplied views; classified file for the persisted uploads.",
+          "The guest task-create route asserted by the reviewer is not shown.",
+          "Rate limiting (429) is abuse control layered on the same gate, not the authorization verdict itself."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "db.commit() in update_custom_api and delete_custom_api \u2014 the exact call sites are outside the supplied ranges; the gating re-checks are at custom_api.py:622-698 (update) and 974-993 (delete).",
+        "contract_id": "ecological-contract:f49742cffe258ce419ea6d25f7262300",
+        "declared_mechanism": "definition_query.with_for_update() locks the definition row; post-lock re-reads use populate_existing; _recheck_team_access_under_definition_lock re-resolves team access; stale or absent authorization raises 403/404 with rollback before any durable write.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 568,
+            "line_start": 563,
+            "path": "src/xagent/web/api/custom_api.py",
+            "role": "guard_registration",
+            "source_sha256": "5c9fc7ce5bbed3396cc9651443607c793ea0324366fb736d0f195c6e7374eed7"
+          },
+          {
+            "line_end": 634,
+            "line_start": 622,
+            "path": "src/xagent/web/api/custom_api.py",
+            "role": "guard_registration",
+            "source_sha256": "5c9fc7ce5bbed3396cc9651443607c793ea0324366fb736d0f195c6e7374eed7"
+          },
+          {
+            "line_end": 698,
+            "line_start": 661,
+            "path": "src/xagent/web/api/custom_api.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5c9fc7ce5bbed3396cc9651443607c793ea0324366fb736d0f195c6e7374eed7"
+          },
+          {
+            "line_end": 993,
+            "line_start": 974,
+            "path": "src/xagent/web/api/custom_api.py",
+            "role": "guard_registration",
+            "source_sha256": "5c9fc7ce5bbed3396cc9651443607c793ea0324366fb736d0f195c6e7374eed7"
+          }
+        ],
+        "forbidden_condition": "Committing a shared CustomApi definition-row update or delete on authorization (personal-link or team access) that was valid before the FOR UPDATE wait but was revoked while the request waited for the lock.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "commit_point",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Exact db.commit() locations for both routes.",
+          "Whether delete_custom_api acquires the definition-row lock before its fresh UserCustomApi read."
+        ],
+        "protected_operation": "The durable update/delete of the CustomApi definition row in update_custom_api and delete_custom_api (terminating at each route's db.commit()).",
+        "protected_resource": "CustomApi definition rows and the UserCustomApi access rows that grant edit/delete.",
+        "protection_obligation": "Re-authorization under the CustomApi definition-row lock: update_custom_api and delete_custom_api may only durably write or delete the shared definition row when can_edit/can_delete authorization is re-established from fresh reads after acquiring the FOR UPDATE lock.",
+        "scope_limits": [
+          "with_for_update is applied only when writes_definition_row is true (lines 566-567).",
+          "The row write/delete statements and the db.commit() lines themselves are not within the supplied ranges.",
+          "Whether delete_custom_api also locks the definition row FOR UPDATE is not visible in the supplied range."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self._store.add_info(name, info) at docker_sandbox.py:1601, guarded by the mismatch check and forced removal at 1527-1568.",
+        "contract_id": "ecological-contract:fd9c99e52736eb6b035de6f5fab3fd82",
+        "declared_mechanism": "_find_publish_mismatches compares the post-start container inspection against the desired spec field-by-field; on any mismatch the container is force-removed through a shielded await and SandboxRuntimeConflictError is raised; the store write is reached only after verification passes.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 606,
+            "line_start": 542,
+            "path": "src/xagent/sandbox/docker_sandbox.py",
+            "role": "forbidden_condition",
+            "source_sha256": "614f14c6ff5a1308a0bf8b5267697c20a8a93c5c57d6dc4186abdb87b889e221"
+          },
+          {
+            "line_end": 1568,
+            "line_start": 1527,
+            "path": "src/xagent/sandbox/docker_sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "614f14c6ff5a1308a0bf8b5267697c20a8a93c5c57d6dc4186abdb87b889e221"
+          },
+          {
+            "line_end": 62,
+            "line_start": 46,
+            "path": "src/xagent/sandbox/base.py",
+            "role": "guard_registration",
+            "source_sha256": "92c9c54b38d53875ccbf4ff3eac44641187e1d62c10614d31b398db18ccbf018"
+          },
+          {
+            "line_end": 1601,
+            "line_start": 1596,
+            "path": "src/xagent/sandbox/docker_sandbox.py",
+            "role": "protected_operation",
+            "source_sha256": "614f14c6ff5a1308a0bf8b5267697c20a8a93c5c57d6dc4186abdb87b889e221"
+          },
+          {
+            "line_end": 1601,
+            "line_start": 1596,
+            "path": "src/xagent/sandbox/docker_sandbox.py",
+            "role": "commit_point",
+            "source_sha256": "614f14c6ff5a1308a0bf8b5267697c20a8a93c5c57d6dc4186abdb87b889e221"
+          }
+        ],
+        "forbidden_condition": "Persisting a store record for a sandbox whose observed image, volumes, ports, working_dir, network isolation, cpus, or memory diverge from the ResolvedSandboxRuntimeSpec it was created from.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Concrete implementation of self._store.add_info (database vs other persistent store) is not in the supplied ranges.",
+          "Any binding of sandbox creation to agent lifecycle or agent tool execution is not shown."
+        ],
+        "protected_operation": "Persisting the sandbox store record via self._store.add_info(name, info) at the end of DockerSandboxService.create().",
+        "protected_resource": "The sandbox store record for the created container (and, downstream, every reconcile that trusts the attested spec fingerprint).",
+        "protection_obligation": "Publish-before-verify for Docker sandbox creation: a created container may only be published to the persistent store when its observed runtime facts match the canonical desired spec.",
+        "scope_limits": [
+          "Failure of the compensation remove is logged and swallowed; the SandboxRuntimeConflictError still names the mismatched fields.",
+          "The _store backend type (DB-backed vs in-memory registry) is not visible; the database classification follows the 'store row'/'store record' docstrings in the supplied views.",
+          "The forced container removal (1552-1554) is the guard's compensation effect, not the protected commit."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The content-serving exit in download_file; the guards run at files.py:1456-1457 before serving setup (1458-1461); the FileResponse/redirect emission lines are outside the supplied ranges.",
+        "contract_id": "ecological-contract:ffaa171e0d52fe4c6cca58e554ce4afb",
+        "declared_mechanism": "_check_file_access raises HTTPException 403 immediately after record resolution when the record's user_id differs from the caller's (admins exempt); it is invoked at the top of download_file before serving setup.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 1085,
+            "line_start": 1081,
+            "path": "src/xagent/web/api/files.py",
+            "role": "guard_registration",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 1085,
+            "line_start": 1081,
+            "path": "src/xagent/web/api/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 1461,
+            "line_start": 1456,
+            "path": "src/xagent/web/api/files.py",
+            "role": "protected_operation",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          },
+          {
+            "line_end": 1457,
+            "line_start": 1456,
+            "path": "src/xagent/web/api/files.py",
+            "role": "commit_point",
+            "source_sha256": "9255607c7564f1197dbf48714e52c607306984f03268a147744991f0600ba62d"
+          }
+        ],
+        "forbidden_condition": "A non-admin caller whose user_id differs from the UploadedFile record's owner receiving served content, previews, or conversions; _check_file_access must raise 403 before any bytes are served.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Verification that _check_file_access is invoked on the preview_file and preview_pptx_as_pdf serving exits.",
+          "Exact response-emission lines gated by the guard in the supplied view's neighborhood."
+        ],
+        "protected_operation": "Authenticated file serving in download_file (and reviewer-cited preview paths): guard execution precedes the response-emission exit.",
+        "protected_resource": "UploadedFile content and its local path.",
+        "protection_obligation": "Owner-only authorization for serving uploaded-file content (http serving leg): a non-admin user must never receive file content for an UploadedFile they do not own.",
+        "scope_limits": [
+          "preview_file (cited 1790-1791) and preview_pptx_as_pdf (cited 1929-1930) enforcement sites are not within the supplied ranges.",
+          "Legacy files without records rely on path-ownership checks shown only in the delete path."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "ActorMCPServerConnection listener: raw-SQL/non-ORM mutation paths bypass the before_update guard; whether MCP connection writes flow through agent tool dispatch is unbound in the cited views.",
+      "Concrete tools carrying non_idempotent = True or metadata.mcp_non_idempotent_write, and the population of MCPToolAdapter allow_users, are not shown in the supplied views.",
+      "Environment variable names backing the Slack, OneDrive, and Google Drive upload allowlists are not visible in the supplied views (slack.py:130 and onedrive.py:683 reference constants defined outside the views; google_drive.py:846 is sanitized to '<REDACTED>'); only Gmail's XAGENT_GMAIL_FILE_ALLOWED_DIRS (gmail.py:32) is visible.",
+      "Final external upload/dispatch call sites for gmail_send_messages, slack_upload_file, onedrive_upload_file, and google_drive_upload_file are outside the supplied views; the 'rejected before read and transmission' ordering rests on the guards' position before the local file read plus the connectors' own docstrings.",
+      "LanceDBCollectionHandle.rename_collection_data/status/metadata implementations, and all compensation callback bodies (file cleanup, snapshot backup deletion, status clearing), are not supplied.",
+      "MCP tool registrations for gmail_send_messages, slack_upload_file, onedrive_upload_file, google_drive_upload_file, and the Stripe tools are outside the supplied views, so agent_mediation is recorded as not_established for those five contracts pending the decorated definitions and their call sites into the guards.",
+      "No registration, decorator, or wiring site is supplied that binds SshExecutor operations, ScopedFileStorage handles (get_user_file_storage), KBCoordinator entry points, or the web-ingestion pipeline to agent tools or agent lifecycle hooks; agent_mediation for those contracts is marked not_established rather than inferred from repository topic.",
+      "No supplied view shows an agent tool decorator, tool registry entry, lifecycle hook, or concrete agent-input dataflow reaching any guarded effect; agent_mediation is not_established for all compiled contracts and no agent_entry_binding evidence exists in this packet.",
+      "Opinion 2 additionally names a LinkedIn create_post image-upload guard; no linkedin source view is supplied in this packet, so that obligation cannot be compiled or verified.",
+      "Opinion 3's rationale cites corroborating guards in zendesk.py (private-network DNS resolution check, refusal to follow redirects with Basic Auth attached) and aws.py (enforcing its security claim server-side); none of these files are supplied in this packet, so no contracts are emitted for them.",
+      "Reviewer phase-1 rationale cites an additional enforced capability gate in builtin/executor.py (rejecting built-in agents executing tools lacking an assignable category); no source view for that file is supplied, so no contract is emitted for it.",
+      "The MCP connection transport (network vs stdio) and the method-level _is_user_allowed wrapper used at mcp_adapter.py:1695 are not shown.",
+      "The derivation of file_succeeded in the rollback orchestration and the body of _record_document_ingestion_side_effects (DOCUMENT plane) fall outside the supplied views.",
+      "allowed_dirs_from_env (imported from .utils at gmail.py:14; used at gmail.py:37, slack.py:130, onedrive.py:683, google_drive.py:851) is not supplied; its parsing, normalization, and symlink-resolution semantics for the allowlists are unknown.",
+      "app.py: FILE_STORAGE_STARTUP_SYNC_EXEMPT_PATHS contents and wait_for_file_storage_startup_sync behavior are not in the supplied views; whether the gated traffic includes agent-channel endpoints is unbound.",
+      "app.py: the body of storage_namespace_authority_error_handler (response status/payload) is not in the supplied views; the permanent non-retryable-500 classification rests on the registrations (1156-1169) and the permanence comments (1160-1166).",
+      "channels/slack: the value of _MAX_FILE_DOWNLOAD_REDIRECTS and the full caller chain of SlackBotInstance._download_slack_file are not in the supplied views; no cited line binds the Slack download to agent tool dispatch, agent lifecycle hooks, or agent-generated input.",
+      "classify_non_idempotent_write in the MCP adapter (the source of ToolMetadata.mcp_non_idempotent_write) is described only in the duplicate_write_guard.py docstring; its implementation is absent from the supplied views.",
+      "command_executor: the injection/registration site guaranteeing a CommandPolicyGuard is bound (self._path_guard is optional), the internals of _command_rejected_result, and the claimed exit code 126 are outside the supplied ranges.",
+      "command_path_guard/command_policy: workspace boundary rules, _TRUSTED_EXECUTABLE_ROOTS, and _validate_node_states internals are outside the supplied ranges.",
+      "connector_team_scope.py: the routes' own db.commit() call sites (custom_api.update_custom_api, custom_api.delete_custom_api, mcp.update_mcp_server, mcp.delete_mcp_server) are not in the supplied views; the row-lock-holding commit point is characterized from the call-site table and gate code only. Duck-typed sessions silently skip the boundary check.",
+      "custom_api.py: the exact db.commit() call sites, the definition-row write/delete statements, and whether delete_custom_api acquires the FOR UPDATE lock are not within the supplied ranges.",
+      "docker_sandbox.py/base.py: the _store backend implementation (database vs in-memory) is not shown; the database classification of add_info rests on 'store row'/'store record' docstrings.",
+      "files.py: preview_file (cited 1790-1791), preview_pptx_as_pdf (cited 1929-1930), public_preview_file route, and FileResponse/X-Accel/redirect emission lines are not within the supplied ranges.",
+      "fix_file_id_nullable.py: whether main() is the sole invocation path and how the script relates to the alembic runner are not supplied.",
+      "lancedb_stores.py: delete_document_record and cascade_delete public entry points, and any agent-facing tool exposure of the _vis_* deletion chain, are not supplied.",
+      "public_chat_access.py/share.py: store_uploaded_files internals, the guest task-create route, and the WebSocket handlers' internal use of get_task_for_share_context are not supplied.",
+      "sandbox_manager.py: the explicit delete_sandbox entry path's own ref-count fencing, the idle-sweep and capacity-eviction call loops, and the bodies of _reconcile_delete/delete_sandbox are not in the cited ranges; agent mediation of sandbox teardown is unbound.",
+      "security.py/web_content.py: _MAX_REDIRECTS value, _pin_url_to_ip implementation, get_proxy_url/get_trusted_egress_proxy_enabled bodies, and the reviewer-cited vision_tool call sites are not supplied.",
+      "task_clarification_draft.py: interaction_handoff.stage()'s body, the finalizer call site invoking the resolver, and any event-identity validation guard are not in the supplied views; the reviewer-asserted event-identity check is not evidenced in the cited ranges.",
+      "task_command_execution.py: the respond()-side staging of the receipt identity (interaction_id/responder_identity) and the accepted-resume downstream mechanics are not in the cited ranges.",
+      "task_command_transport.py: the fenced UPDATE's execution/commit beyond line 1039 is not shown.",
+      "task_execution.py: the post-fence terminal settlement UPDATE, lock_task_lease_for_settlement_no_commit, and task_lease_attempt_predicate bodies are beyond the cited range; agent binding of the runner/lease lifecycle is unbound.",
+      "task_interaction_service.py: create()'s body (its call to _assert_write_point_admissible and the staging write) and the route wiring into respond() are not in the supplied views; one reviewer notes respond() is currently zero-caller-gated.",
+      "trigger_providers: _fire_event/fire_trigger bodies (TriggerRun/Task creation) are not in the supplied views; REPLAY_WINDOW_SECONDS / SIGNATURE_HEADER / TIMESTAMP_HEADER values are undefined in the views, so the reviewer-asserted 300s replay window is unverified.",
+      "widget_domains.py (widget_domains.py:92-115): require_domain_allowed raises 403 for origins outside the owner's normalized allowed-domains allowlist, but no supplied view binds widget requests to an agent tool, agent lifecycle hook, or agent-generated input reaching a guarded effect; treated as out-of-scope generic origin validation (CORS-like) and excluded from contracts pending an explicit agent binding."
+    ],
+    "repository": "xorbitsai/xagent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:e6410b0d7645ca8c2fb539f53fa6d281"
+  },
+  "request_sha256": "1468adae72291bc92420a84bf3b02e08ab78303f8e9d089d26ac69ed2d311194",
+  "response_sha256": "a97ac564139b1ca252b5b06e8ba6872c73c5f2fbc2c5dac954d4343dea5db16a",
+  "shard_provenance": [
+    {
+      "attempt": 0,
+      "request_sha256": "6c94ce11db51e7508b12cf3736036793e3aee7caceb769cdc0a1f4ebf91d63d5",
+      "response_sha256": "d8445483613b8417c8c2a536ed2014a15dea070502d73d1cc826a7aeaa57e018",
+      "result_sha256": "c8f589b8cc0b1de0212e00e2d68636869128f3d593c1e67ecc8e5e0eaffe8a18",
+      "tokens": 61174,
+      "unit": "v24-screen:e6410b0d7645ca8c2fb539f53fa6d281-p000"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "95c5c6929b041ea9d5830aa1899d51b7fa7425c2feab5e297bc3aeb51ec22eb8",
+      "response_sha256": "cf548f8fe3e49434482d15726810333a5c5ca21a8d92a73b74f83e90af2a515d",
+      "result_sha256": "143308e004f76fc4a10fb14543e3ef0299074a72ca444513b82f65c035d8c56a",
+      "tokens": 51922,
+      "unit": "v24-screen:e6410b0d7645ca8c2fb539f53fa6d281-p001"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "9adc945396470c83a5bae511f39bf219e555fd2b2f3c371f3bb313f520ebe425",
+      "response_sha256": "a9d4c8ecce22ce029e8695f6de8ef47b9ee16d65c6fecba4779e1ea5347da4ea",
+      "result_sha256": "44a2852e0ffe5653ca410f3b3feeecf1a6f67fc18350b4724a246691c1d4d4b8",
+      "tokens": 49724,
+      "unit": "v24-screen:e6410b0d7645ca8c2fb539f53fa6d281-p002"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "6a7fb4244dd164d927de955fc3392daab0ba9a12d20e044754669f0ea0e6e295",
+      "response_sha256": "194bef8b37f07cd6af77e6b924e949940c748c1fcf2eaa00903d9615647e63a7",
+      "result_sha256": "0a6b6346e14dc3e37a764a4bc4cdca5b5ec9c7028191811e28bdb3ddd11b2d82",
+      "tokens": 47577,
+      "unit": "v24-screen:e6410b0d7645ca8c2fb539f53fa6d281-p003"
+    }
+  ],
+  "state": "completed",
+  "tokens": 210397,
+  "unit": "v24-screen:e6410b0d7645ca8c2fb539f53fa6d281"
+}

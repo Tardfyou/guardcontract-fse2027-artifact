@@ -1,0 +1,233 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "rs.apply() at landlock_tool.py:218 \u2014 the documented irreversible kernel enforcement point, executed inside the child at landlock_tool.py:294 before the tool function body runs at landlock_tool.py:315; child.start() at landlock_tool.py:447 is the point after which tool code runs only in the spawned child process.",
+        "contract_id": "ecological-contract:4a3d006711643705e0e7c37670e2aaf0",
+        "declared_mechanism": "@landlock_tool decorator factory wrapping sync tool functions (rejecting coroutines), spawning a forkserver/spawn-context child running _child_main, which reinstalls the parent config singleton and calls _apply_landlock_rules: Ruleset.allow(...) per allowed path followed by rs.apply(); require_sandbox (default true per config.py:103-105) turns child-side ImportError/RuntimeError into an error payload the parent re-raises; init_sandbox_mp_context('forkserver') is initialized at startup after fail-closed diagnostics (main.py:144-157).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 15,
+            "line_start": 9,
+            "path": "AI/trashdig/src/trashdig/tools/read_file.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "803503a37674ea821bf46ceaf6207c39a2606c6fcccfb21eb161c08b7b5fc714"
+          },
+          {
+            "line_end": 447,
+            "line_start": 373,
+            "path": "AI/trashdig/src/trashdig/sandbox/landlock_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "377c882c2e4c71ca5508aaa768be3ddc8663ed3c95453ab791df6b3c3cccd3a5"
+          },
+          {
+            "line_end": 21,
+            "line_start": 13,
+            "path": "AI/trashdig/src/trashdig/sandbox/landlock_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "377c882c2e4c71ca5508aaa768be3ddc8663ed3c95453ab791df6b3c3cccd3a5"
+          },
+          {
+            "line_end": 311,
+            "line_start": 292,
+            "path": "AI/trashdig/src/trashdig/sandbox/landlock_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "377c882c2e4c71ca5508aaa768be3ddc8663ed3c95453ab791df6b3c3cccd3a5"
+          },
+          {
+            "line_end": 318,
+            "line_start": 313,
+            "path": "AI/trashdig/src/trashdig/sandbox/landlock_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "377c882c2e4c71ca5508aaa768be3ddc8663ed3c95453ab791df6b3c3cccd3a5"
+          },
+          {
+            "line_end": 218,
+            "line_start": 185,
+            "path": "AI/trashdig/src/trashdig/sandbox/landlock_tool.py",
+            "role": "commit_point",
+            "source_sha256": "377c882c2e4c71ca5508aaa768be3ddc8663ed3c95453ab791df6b3c3cccd3a5"
+          },
+          {
+            "line_end": 157,
+            "line_start": 144,
+            "path": "AI/trashdig/src/trashdig/main.py",
+            "role": "guard_registration",
+            "source_sha256": "cdab36a59120e809163679176296ede72eb84d3b97e7ec2306a721a44bd6be57"
+          },
+          {
+            "line_end": 105,
+            "line_start": 103,
+            "path": "AI/trashdig/src/trashdig/config.py",
+            "role": "guard_registration",
+            "source_sha256": "799bb78343f01f60f57aaeb4c112422348232866544f50269af842cec83749ed"
+          }
+        ],
+        "forbidden_condition": "A @landlock_tool-wrapped tool function reaching filesystem access outside a Landlock-confined child: execution in the parent process (e.g., via TRASHDIG_SKIP_SANDBOX=1), on a non-Linux platform where Landlock is a no-op, or in a child where ruleset application failed while require_sandbox=true and the call nevertheless proceeds unsandboxed.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Source of tools/base.py (artifact_tool) to confirm that decorated functions are registered with an ADK agent runner and that ToolContext is injected at dispatch; agent mediation currently rests on the decorator stack plus the tool_context dataflow (landlock_tool.py:23-25, 344-350, 423-426).",
+          "Implementation of run_all_diagnostics to confirm which startup checks are critical (e.g., a Landlock availability probe) behind the fail-closed gate at main.py:33, 41-54, 144-151.",
+          "Whether any production (non-test) mechanism prevents TRASHDIG_SKIP_SANDBOX=1 from disabling the sandbox for agent-invoked tools."
+        ],
+        "protected_operation": "Invocation of tool functions wrapped by @landlock_tool (e.g., read_file(file_path, ...)): the wrapper resolves config in the parent, strips tool-context kwargs, spawns a child via SandboxProvider.mp_context.Process(target=_child_main) (landlock_tool.py:428-447), and the child runs the tool body only after Landlock is applied (landlock_tool.py:313-315).",
+        "protected_resource": "The host filesystem outside the allowed set: workspace root (read-only unless write=True), caller-declared extra read-only paths, Python runtime prefixes and sys.path snapshot, /proc/self, /tmp (scratch access), /dev (read-only).",
+        "protection_obligation": "Every tool function registered under the @landlock_tool decorator (e.g., read_file) must execute only inside a spawned child process whose filesystem access is confined by an irreversibly applied Landlock ruleset \u2014 workspace root read-only by default (read+write only when write=True), declared extra paths and Python runtime/sys.path entries read-only, /proc/self read-only, /tmp scratch-writable, /dev read-only \u2014 and, when require_sandbox=true (the configuration default), any failure to apply Landlock on Linux must abort the tool call rather than fall through to unsandboxed execution.",
+        "scope_limits": [
+          "Landlock enforcement is Linux-only; on non-Linux platforms the child runs with an unrestricted filesystem (landlock_tool.py:15-16, 290-292, 339-342).",
+          "TRASHDIG_SKIP_SANDBOX=1 bypasses the child process entirely and executes the tool in-process (landlock_tool.py:17-18, 409-411); the source labels this a test-suite path but no production guard against setting it is visible.",
+          "When require_sandbox=false, Landlock import/application failure degrades to a logged warning and unsandboxed execution inside the child (landlock_tool.py:295-311).",
+          "The ruleset confines the filesystem only; no network or other access domain is restricted by this mechanism (landlock_tool.py:171-218).",
+          "Access inside the allowed set is permitted by design: workspace read-only unless write=True (landlock_tool.py:187-189, 361-363), /tmp scratch-writable (lines 210-212), /dev read-only (lines 214-216), extra_paths read-only (lines 191-194).",
+          "Coverage is limited to functions decorated with @landlock_tool; tools decorated only with @artifact_tool (e.g., container_bash_tool) are outside this mechanism.",
+          "The wrapper strips only tool_context/ctx kwargs (landlock_tool.py:423-426); all other caller-supplied arguments are pickled into the child."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The allowlist gate at container_bash_tool.py:49-53 \u2014 which returns early on failure \u2014 immediately before subprocess.run(cmd, ...) at container_bash_tool.py:89-91 commits the container execution effect.",
+        "contract_id": "ecological-contract:51d889891b0a0d24b925f38cef68a165",
+        "declared_mechanism": "_image_allowed (container_bash_tool.py:26-32) strips the registry/org prefix and tag from the requested image and checks the base name against _DEFAULT_IMAGE_ALLOWLIST extended by config container_image_allowlist; container_bash_tool returns an error string naming the allowed bases when the check fails (lines 49-53), before Docker availability checks and command construction.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 32,
+            "line_start": 26,
+            "path": "AI/trashdig/src/trashdig/tools/container_bash_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "999c1edf17cad4fd04b5940b1708328104c000c0c845327ab848b1f376134f77"
+          },
+          {
+            "line_end": 23,
+            "line_start": 9,
+            "path": "AI/trashdig/src/trashdig/tools/container_bash_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "999c1edf17cad4fd04b5940b1708328104c000c0c845327ab848b1f376134f77"
+          },
+          {
+            "line_end": 53,
+            "line_start": 49,
+            "path": "AI/trashdig/src/trashdig/tools/container_bash_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "999c1edf17cad4fd04b5940b1708328104c000c0c845327ab848b1f376134f77"
+          },
+          {
+            "line_end": 91,
+            "line_start": 72,
+            "path": "AI/trashdig/src/trashdig/tools/container_bash_tool.py",
+            "role": "commit_point",
+            "source_sha256": "999c1edf17cad4fd04b5940b1708328104c000c0c845327ab848b1f376134f77"
+          },
+          {
+            "line_end": 48,
+            "line_start": 35,
+            "path": "AI/trashdig/src/trashdig/tools/container_bash_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "999c1edf17cad4fd04b5940b1708328104c000c0c845327ab848b1f376134f77"
+          }
+        ],
+        "forbidden_condition": "Invoking 'docker run' (subprocess) with an image whose base name is not on the configured allowlist, i.e., executing agent-supplied shell commands inside an unapproved container image.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Source of tools/base.py (artifact_tool) to confirm container_bash_tool is registered with an agent runner and that command/image are agent-supplied tool parameters at dispatch.",
+          "bash_tool implementation to assess guard behavior of the host-execution fallback path."
+        ],
+        "protected_operation": "Execution of an agent-supplied command inside a Docker container via the constructed ['docker','run','--rm','--network','none','-v',<workspace>:/app:ro,'-w','/tmp',image,'bash','-c',command] argv and subprocess.run at container_bash_tool.py:72-91.",
+        "protected_resource": "The host container runtime and host environment \u2014 preventing execution under arbitrary, unapproved container images.",
+        "protection_obligation": "container_bash_tool must not execute an agent-supplied command in a Docker image whose base name (registry/org prefix and tag stripped) is absent from _DEFAULT_IMAGE_ALLOWLIST union the config's container_image_allowlist; the allowlist check must complete with a refusal before any docker run invocation.",
+        "scope_limits": [
+          "Allowlist matching compares only the base image name after stripping registry/org prefix and tag (container_bash_tool.py:29-31); no digest or version-pinning verification is present.",
+          "The permitted set is operator-extendable via container_image_allowlist in trashdig.toml (container_bash_tool.py:9-10, 28).",
+          "If Docker is unavailable, the tool raises under require_sandbox=true (unless TRASHDIG_SKIP_SANDBOX=1), but otherwise falls back to host bash_tool execution (container_bash_tool.py:56-66); the image allowlist gates entry to the tool body but does not meaningfully constrain that host fallback.",
+          "container_bash_tool is not wrapped by @landlock_tool; its isolation is the Docker invocation itself (--network none, read-only workspace mount) at container_bash_tool.py:72-86."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The containment check and WorkspacePathError raise at config.py:341-344, reached from the resolve_workspace_path call at read_file.py:29, which must complete before the open() at read_file.py:33 performs the filesystem access.",
+        "contract_id": "ecological-contract:dfa756a5aafa1ac28759e34c8196c19e",
+        "declared_mechanism": "Module-level resolve_workspace_path (config.py:307-345): anchors relative paths to the workspace root instead of the process CWD, applies os.path.realpath to both root and candidate, and raises WorkspacePathError unless the candidate equals the realpath'd workspace root or a descendant (workspace_root + os.sep prefix); read_file imports and calls it before file access.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 345,
+            "line_start": 307,
+            "path": "AI/trashdig/src/trashdig/config.py",
+            "role": "guard_registration",
+            "source_sha256": "799bb78343f01f60f57aaeb4c112422348232866544f50269af842cec83749ed"
+          },
+          {
+            "line_end": 25,
+            "line_start": 24,
+            "path": "AI/trashdig/src/trashdig/config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "799bb78343f01f60f57aaeb4c112422348232866544f50269af842cec83749ed"
+          },
+          {
+            "line_end": 34,
+            "line_start": 28,
+            "path": "AI/trashdig/src/trashdig/tools/read_file.py",
+            "role": "protected_operation",
+            "source_sha256": "803503a37674ea821bf46ceaf6207c39a2606c6fcccfb21eb161c08b7b5fc714"
+          },
+          {
+            "line_end": 344,
+            "line_start": 336,
+            "path": "AI/trashdig/src/trashdig/config.py",
+            "role": "commit_point",
+            "source_sha256": "799bb78343f01f60f57aaeb4c112422348232866544f50269af842cec83749ed"
+          },
+          {
+            "line_end": 15,
+            "line_start": 9,
+            "path": "AI/trashdig/src/trashdig/tools/read_file.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "803503a37674ea821bf46ceaf6207c39a2606c6fcccfb21eb161c08b7b5fc714"
+          }
+        ],
+        "forbidden_condition": "read_file opening or reading a file at a path that resolves (through absolute-path injection, '..' segments, or symlinks) to a location outside the workspace root \u2014 i.e., a caller-supplied path escaping the scanned project.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Source of tools/base.py (artifact_tool) to confirm agent-tool registration of read_file and ToolContext injection.",
+          "Sources for list_files, find_files, and ripgrep_search to confirm each calls resolve_workspace_path before its own filesystem effects, extending this obligation to all file tools named by the reviewer.",
+          "artifact_tool behavior governing how the returned error string from a WorkspacePathError is surfaced to the invoking agent."
+        ],
+        "protected_operation": "Opening and reading the agent-supplied file path in read_file: resolve_workspace_path(file_path) at read_file.py:29 with WorkspacePathError handled at lines 30-31, immediately preceding open(file_path) and readlines() at read_file.py:33-34.",
+        "protected_resource": "Files and directories outside the configured workspace root on the host filesystem.",
+        "protection_obligation": "Agent-facing file tools that accept a caller-supplied path (verified here for read_file) must reject, before any file access, any path whose fully resolved location \u2014 symlinks and '..' segments included \u2014 is outside the configured workspace root, via the module-level resolve_workspace_path raising WorkspacePathError; the tool may open and read the file only after resolution succeeds.",
+        "scope_limits": [
+          "The guard evaluates at path-resolution time only; symlink swaps or directory-entry changes after resolution (TOCTOU) are not addressed by the supplied source.",
+          "On Linux the Landlock layer (contract 1) supplies an independent second confinement; on non-Linux platforms resolve_workspace_path is the only confinement visible for read_file.",
+          "The module-level guard permits only the workspace root and its descendants; it does not carry the {tmpdir} allowance present in the distinct Config.resolve_workspace_path method (config.py:159-193, esp. 186-189).",
+          "Rejection is surfaced as a returned error string (read_file.py:30-31), not an exception to the dispatching framework.",
+          "Verification is limited to read_file; the reviewer-named tools list_files, find_files, and ripgrep_search are not present in the supplied views."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "tools/base.py (artifact_tool) is not among the supplied views; the chain from the @artifact_tool decorator to registration with an ADK agent/runner is not directly visible. Agent mediation for all three contracts rests on the decorator stack plus the injected tool_context dataflow visible at landlock_tool.py:23-25, 344-350, and 423-426 and read_file.py:15.",
+      "trashdig/diagnostics.py (run_all_diagnostics) is not supplied; which startup checks are marked critical (e.g., a Landlock availability probe) behind the fail-closed gate at main.py:33, 41-54, 144-151 is unverified.",
+      "Sources for the list_files, find_files, and ripgrep_search tools named in reviewer opinion 2 are not supplied; whether they call resolve_workspace_path before their filesystem effects cannot be confirmed, so no contracts are emitted for them.",
+      "No call site for filter_env (AI/trashdig/src/trashdig/sandbox/base.py:38-56) appears in the supplied views; its enforcement point relative to any subprocess effect cannot be placed, so no contract is emitted for it pending its callers.",
+      "bash_tool implementation is not supplied; the host-execution fallback at container_bash_tool.py:64-66 cannot be assessed for its own guards.",
+      "Reviewer opinion 1 describes a 'forked child process'; the supplied sources show a multiprocessing-context child (default 'forkserver', main.py:157; landlock_tool.py:55, 132) rather than a raw fork \u2014 treated as the same child-process mechanism, but the exact start method in production depends on init_sandbox_mp_context being reached (it is skipped under --check-env, main.py:140-142)."
+    ],
+    "repository": "Matir/hacks",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:13f9069c0fd889a73f5acf7453b92ae3"
+  },
+  "request_sha256": "19cbc948956dac150805f89f1a05b57ebca75184a61df5d6c8f53afa37b63a3b",
+  "response_sha256": "2eeb983ce25736f832b58478600fb80e6220146904066e62c35af9b8796e2198",
+  "state": "completed",
+  "tokens": 39341,
+  "unit": "v24-screen:13f9069c0fd889a73f5acf7453b92ae3"
+}

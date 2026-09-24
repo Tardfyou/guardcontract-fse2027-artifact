@@ -1,0 +1,117 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Guard enforcement/commit is the framework-managed interrupt raised at the request_confirmation tool call, halting before that tool executes (tools.py:115-116; agent.py:28); the protected submission effect can only commit at the subsequent journal task_submit(taskId) call (prompts/jrnl.md:103 for Workflow B; :118 for Workflow C) after the human decision and flow resume.",
+        "contract_id": "ecological-contract:b4b03ee94b77f9921f8d8a150b2bc664",
+        "declared_mechanism": "deepagents create_deep_agent human-in-the-loop registration: tools=[request_confirmation, read_file] with interrupt_on={\"request_confirmation\": True} (agent.py:22,28). request_confirmation is an annotation-only @tool whose docstring declares it '\u0437\u0430\u043f\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u0442 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0435 \u0443 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044f \u043f\u0435\u0440\u0435\u0434 \u043e\u0442\u043f\u0440\u0430\u0432\u043a\u043e\u0439 \u0437\u0430\u0434\u0430\u043d\u0438\u044f' and whose comments state that interruption and response handling are performed by the framework (tools.py:112-117). The journal prompt separately instructs asking confirmation before task_submit when unsure (prompts/jrnl.md:24). Note: the tool body performs no validation and unconditionally returns 'confirmed' (tools.py:117), so enforcement rests entirely on the framework interrupt registration.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 29,
+            "line_start": 20,
+            "path": "agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ab4ad7185ef402b30afcfecbcb4f43c96c5dd1d4acb47a7515ff991964bbd415"
+          },
+          {
+            "line_end": 22,
+            "line_start": 22,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ab4ad7185ef402b30afcfecbcb4f43c96c5dd1d4acb47a7515ff991964bbd415"
+          },
+          {
+            "line_end": 114,
+            "line_start": 113,
+            "path": "tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7f76381ad6295c48fea89ce957ff405293b11bde8a666cc1a32ac4df25c093d2"
+          },
+          {
+            "line_end": 117,
+            "line_start": 115,
+            "path": "tools.py",
+            "role": "commit_point",
+            "source_sha256": "7f76381ad6295c48fea89ce957ff405293b11bde8a666cc1a32ac4df25c093d2"
+          },
+          {
+            "line_end": 106,
+            "line_start": 95,
+            "path": "prompts/jrnl.md",
+            "role": "protected_operation",
+            "source_sha256": "addab684b2c5bf4b6ed1d3a793e7fbfe279ff508a2de7d8acbca95dfd34a4d19"
+          },
+          {
+            "line_end": 119,
+            "line_start": 109,
+            "path": "prompts/jrnl.md",
+            "role": "protected_operation",
+            "source_sha256": "addab684b2c5bf4b6ed1d3a793e7fbfe279ff508a2de7d8acbca95dfd34a4d19"
+          },
+          {
+            "line_end": 24,
+            "line_start": 24,
+            "path": "prompts/jrnl.md",
+            "role": "forbidden_condition",
+            "source_sha256": "addab684b2c5bf4b6ed1d3a793e7fbfe279ff508a2de7d8acbca95dfd34a4d19"
+          },
+          {
+            "line_end": 15,
+            "line_start": 15,
+            "path": "prompts/jrnl.md",
+            "role": "agent_entry_binding",
+            "source_sha256": "addab684b2c5bf4b6ed1d3a793e7fbfe279ff508a2de7d8acbca95dfd34a4d19"
+          },
+          {
+            "line_end": 18,
+            "line_start": 17,
+            "path": "agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ab4ad7185ef402b30afcfecbcb4f43c96c5dd1d4acb47a7515ff991964bbd415"
+          }
+        ],
+        "forbidden_condition": "A journal task submission committing \u2014 i.e. task_submit(taskId) being invoked in the SUBMIT TASK flow (after task_update_answer) or in the COMMENT TO TEACHER flow \u2014 without a prior explicit human approval produced through the framework interrupt on the request_confirmation tool call (task submission '\u043f\u0435\u0440\u0435\u0434 \u043e\u0442\u043f\u0440\u0430\u0432\u043a\u043e\u0439 \u0437\u0430\u0434\u0430\u043d\u0438\u044f' proceeding without user confirmation; the journal prompt likewise requires asking confirmation before task_submit when unsure).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ORCHESTRATOR_PROMPT content (config.py, imported at agent.py:5): does it mandate calling request_confirmation before dispatching Workflow B/C to the journal subagent, and is the human decision conveyed downstream?",
+          "deepagents framework interrupt/resume semantics for create_deep_agent: what the human response payload is and where the resume result is enforced relative to subsequent tool dispatch (tools.py:116 only annotates that the framework handles interruption).",
+          "Journal-bh-student MCP server implementation of task_submit / task_update_answer: concrete endpoint/effect confirming the http stratum.",
+          "build_subagents (subagents.py, agent.py:7,17-18,27): whether subagents receive the same interrupt_on and middleware configuration as the orchestrator.",
+          "middleware.normalize_tool_name (agent.py:9,24): whether tool-name normalization interacts with the string key matching in interrupt_on."
+        ],
+        "protected_operation": "Invocation of the journal tool task_submit(taskId) that submits the task for review (Workflow B step 2 at prompts/jrnl.md:103; Workflow C step 3 at prompts/jrnl.md:118), within the journal subagent's submission flows.",
+        "protected_resource": "Journal API task/submission state for the given taskId \u2014 the task's transition to submitted ('\u041e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e') effected via the journal-bh-student MCP tools.",
+        "protection_obligation": "Journal task submission must not proceed without explicit human approval: the production orchestrator registers its request_confirmation tool under interrupt_on (create_deep_agent(..., interrupt_on={\"request_confirmation\": True})), so the deep agent interrupts at that tool call and awaits the user's decision before the tool executes; this human-in-the-loop gate is annotated as preceding ('\u043f\u0435\u0440\u0435\u0434 \u043e\u0442\u043f\u0440\u0430\u0432\u043a\u043e\u0439 \u0437\u0430\u0434\u0430\u043d\u0438\u044f') the downstream journal task_submit flow (Workflow B: task_update_answer then task_submit; Workflow C also commits via task_submit). (Merges the duplicate first-phase and second-phase reviewer wordings of the same gate.)",
+        "scope_limits": [
+          "Gate registration is source-supported only for request_confirmation: interrupt_on contains exactly {\"request_confirmation\": True} (agent.py:28); no interrupt registration for task_submit, task_update_answer, write_file, sync_repo_with_project, or any other tool appears in the supplied source.",
+          "The http stratum is inferred from the prompt's characterization of the journal tools as 'journal API' operations (prompts/jrnl.md:8,15); the task_submit implementation (journal-bh-student MCP server) is not part of the supplied source.",
+          "The end-to-end enforcement path (orchestrator calls request_confirmation \u2192 human decision \u2192 journal subagent dispatches task_submit) remains a hypothesis: ORCHESTRATOR_PROMPT (config.py) and build_subagents (subagents.py) are not supplied, so the source shows the gate registration and annotated intent, not the verified orchestration sequence.",
+          "The journal prompt's own confirmation rule (prompts/jrnl.md:24) is conditional ('\u0435\u0441\u043b\u0438 \u043d\u0435\u0443\u0432\u0435\u0440\u0435\u043d') and prompt-level; it is distinct from and does not substitute for the framework interrupt registration.",
+          "Whether the journal subagent inherits the orchestrator's interrupt_on/middleware configuration is not established from the supplied source.",
+          "Behavior labels are unavailable and repository enumeration is incomplete per the unit scope; DEC violation, safety, runtime behavior, and prevalence are not decided here."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "config.py source (ORCHESTRATOR_PROMPT, orch_llm, backend) \u2014 imported at agent.py:5 but not supplied; orchestrator instructions gating submission dispatch are unknown.",
+      "subagents.py source (build_subagents) \u2014 wiring of journal-bh-student and gitea MCP tools into subagents, and interrupt/middleware inheritance, not supplied.",
+      "mcp_servers.py and the journal MCP server source \u2014 implementation of task_submit, task_update_answer, and the other journal API tools not supplied; http stratum of the submission effect is inferred only from prompts/jrnl.md:8,15.",
+      "deepagents library source \u2014 create_deep_agent interrupt_on enforcement and resume semantics not supplied.",
+      "middleware/middleware.py source (normalize_tool_name) \u2014 potential interaction with interrupt_on key matching not determinable.",
+      "Behavior labels / runtime execution traces for the unit (declared unavailable in the unit scope)."
+    ],
+    "repository": "nadenka-b/HW-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7f4c9fd31eac3edd0a1fc6171b9cc513"
+  },
+  "request_sha256": "f5c05ab4a50d3afffbaf5f33c8048f11e2af59cc6f1d0371e89905fa8afbd9b4",
+  "response_sha256": "41babc36dcf91f2ad8d5d994425c8445f1476172c10a69d5504fa7d717b2cab9",
+  "state": "completed",
+  "tokens": 22864,
+  "unit": "v24-screen:7f4c9fd31eac3edd0a1fc6171b9cc513"
+}

@@ -1,0 +1,291 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The generate_dft_inputs tool call inside the agent's tool loop, which the middleware interrupts before execution; execution proceeds only after an allowed decision.",
+        "contract_id": "ecological-contract:0324d430fc844216b22aae133c65c087",
+        "declared_mechanism": "HumanInTheLoopMiddleware(interrupt_on={'generate_dft_inputs': {'allowed_decisions': ['approve', 'edit', 'reject']}}, description_prefix='Preparing a DFT job needs PI approval') included in _base_middleware and attached to create_agent.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 48,
+            "line_start": 47,
+            "path": "week-03-middleware-agent/production/src/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c5ff0ad0aafb69dab9a9334dbe1f54779117dc8a434db8f40e49588b917ad528"
+          },
+          {
+            "line_end": 56,
+            "line_start": 49,
+            "path": "week-03-middleware-agent/production/src/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "c5ff0ad0aafb69dab9a9334dbe1f54779117dc8a434db8f40e49588b917ad528"
+          },
+          {
+            "line_end": 53,
+            "line_start": 50,
+            "path": "week-03-middleware-agent/production/src/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "c5ff0ad0aafb69dab9a9334dbe1f54779117dc8a434db8f40e49588b917ad528"
+          },
+          {
+            "line_end": 56,
+            "line_start": 51,
+            "path": "week-03-middleware-agent/production/src/agent.py",
+            "role": "commit_point",
+            "source_sha256": "c5ff0ad0aafb69dab9a9334dbe1f54779117dc8a434db8f40e49588b917ad528"
+          },
+          {
+            "line_end": 69,
+            "line_start": 60,
+            "path": "week-03-middleware-agent/production/src/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c5ff0ad0aafb69dab9a9334dbe1f54779117dc8a434db8f40e49588b917ad528"
+          }
+        ],
+        "forbidden_condition": "generate_dft_inputs executing without a prior PI approval decision captured through the HumanInTheLoopMiddleware interrupt.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm from tools.py (not supplied) that generate_dft_inputs is in TOOLS and that its effect is writing VASP input files to disk.",
+          "Confirm whether build_record_agent or any other execution path can invoke generate_dft_inputs without passing the HumanInTheLoopMiddleware."
+        ],
+        "protected_operation": "Agent invocation of the generate_dft_inputs tool (preparing a real, submittable DFT job).",
+        "protected_resource": "The generate_dft_inputs tool dispatched by the production agent via its TOOLS registry.",
+        "protection_obligation": "Every generate_dft_inputs call made by the production middleware agent must pause for explicit PI approval before the tool executes; no invocation may proceed to execution without an approve/edit/reject human decision, with the commit point at tool invocation gated by HumanInTheLoopMiddleware interrupt_on registration.",
+        "scope_limits": [
+          "The HITL middleware stack is registered only on build_agent; build_record_agent (lines 72-85) binds the same TOOLS with only load_project_context middleware and no HumanInTheLoopMiddleware.",
+          "tools.py / TOOLS contents are not in the supplied views; generate_dft_inputs's membership in TOOLS is implied by the guard registration rather than shown directly.",
+          "ToolCallLimitMiddleware (lines 44-46, run_limit=DFT_RUN_LIMIT, exit_behavior='end') is a separate call-cap mechanism on the same tool and is not part of this approval obligation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The write to /report.md at the backend boundary, where mode='interrupt' halts for approval before the filesystem mutation is applied.",
+        "contract_id": "ecological-contract:1864589c8aba34330fb5a2cddbbac2dd",
+        "declared_mechanism": "FilesystemPermission(operations=['write'], paths=['/report.md'], mode='interrupt') passed via permissions=[...] to create_deep_agent.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 5,
+            "line_start": 4,
+            "path": "week-03-middleware-agent/capstone-research-desk/src/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "933fcdad9f7401d72f397da194c858c816315ee8a44af5fa5a44880e2278aad8"
+          },
+          {
+            "line_end": 35,
+            "line_start": 33,
+            "path": "week-03-middleware-agent/capstone-research-desk/src/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "933fcdad9f7401d72f397da194c858c816315ee8a44af5fa5a44880e2278aad8"
+          },
+          {
+            "line_end": 34,
+            "line_start": 34,
+            "path": "week-03-middleware-agent/capstone-research-desk/src/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "933fcdad9f7401d72f397da194c858c816315ee8a44af5fa5a44880e2278aad8"
+          },
+          {
+            "line_end": 34,
+            "line_start": 34,
+            "path": "week-03-middleware-agent/capstone-research-desk/src/agent.py",
+            "role": "commit_point",
+            "source_sha256": "933fcdad9f7401d72f397da194c858c816315ee8a44af5fa5a44880e2278aad8"
+          },
+          {
+            "line_end": 38,
+            "line_start": 25,
+            "path": "week-03-middleware-agent/capstone-research-desk/src/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "933fcdad9f7401d72f397da194c858c816315ee8a44af5fa5a44880e2278aad8"
+          }
+        ],
+        "forbidden_condition": "A write to /report.md being applied without the permission-gated human approval (FilesystemPermission mode='interrupt') required before the report is published.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Identify the concrete agent filesystem tool that performs the /report.md write and confirm when mode='interrupt' halts relative to the mutation."
+        ],
+        "protected_operation": "Filesystem 'write' operations targeting the '/report.md' path.",
+        "protected_resource": "/report.md in the deep agent's FilesystemBackend rooted at REPORTS_DIR (virtual_mode=True).",
+        "protection_obligation": "Writes to /report.md through the capstone research-desk deep agent must pause for human approval (interrupt mode) before the write is applied; the report may not be published without that permission-gated approval.",
+        "scope_limits": [
+          "Only the 'write' operation on the '/report.md' path is gated by this registration; other paths and operations are outside this obligation.",
+          "The backend is virtual_mode=True rooted at REPORTS_DIR (line 23), so the gate covers the agent's virtual report filesystem.",
+          "The deepagents library code that enforces the permission and performs the write is not in the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "generate_dft_inputs.invoke(...) at the top of process_calc_node, reachable only when human_approval resumes with approve or edit.",
+        "contract_id": "ecological-contract:5191b7054e8f08f0219e3f040d68c3f8",
+        "declared_mechanism": "LangGraph interrupt() in human_approval_node with Command routing (approve/edit -> process_calc; otherwise a PI-declined note -> supervisor), wired via builder.add_node and compiled with checkpointer and store.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 5,
+            "line_start": 4,
+            "path": "week-03-middleware-agent/production/src/orchestrator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e29efc887f43a9fd08935fcebfd0cf48e7c1706188888041f3fb6bc6fff1b1c0"
+          },
+          {
+            "line_end": 182,
+            "line_start": 175,
+            "path": "week-03-middleware-agent/production/src/orchestrator.py",
+            "role": "guard_registration",
+            "source_sha256": "e29efc887f43a9fd08935fcebfd0cf48e7c1706188888041f3fb6bc6fff1b1c0"
+          },
+          {
+            "line_end": 226,
+            "line_start": 225,
+            "path": "week-03-middleware-agent/production/src/orchestrator.py",
+            "role": "guard_registration",
+            "source_sha256": "e29efc887f43a9fd08935fcebfd0cf48e7c1706188888041f3fb6bc6fff1b1c0"
+          },
+          {
+            "line_end": 192,
+            "line_start": 183,
+            "path": "week-03-middleware-agent/production/src/orchestrator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e29efc887f43a9fd08935fcebfd0cf48e7c1706188888041f3fb6bc6fff1b1c0"
+          },
+          {
+            "line_end": 196,
+            "line_start": 194,
+            "path": "week-03-middleware-agent/production/src/orchestrator.py",
+            "role": "protected_operation",
+            "source_sha256": "e29efc887f43a9fd08935fcebfd0cf48e7c1706188888041f3fb6bc6fff1b1c0"
+          },
+          {
+            "line_end": 201,
+            "line_start": 197,
+            "path": "week-03-middleware-agent/production/src/orchestrator.py",
+            "role": "commit_point",
+            "source_sha256": "e29efc887f43a9fd08935fcebfd0cf48e7c1706188888041f3fb6bc6fff1b1c0"
+          },
+          {
+            "line_end": 156,
+            "line_start": 147,
+            "path": "week-03-middleware-agent/production/src/orchestrator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e29efc887f43a9fd08935fcebfd0cf48e7c1706188888041f3fb6bc6fff1b1c0"
+          },
+          {
+            "line_end": 187,
+            "line_start": 183,
+            "path": "week-03-middleware-agent/production/src/orchestrator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e29efc887f43a9fd08935fcebfd0cf48e7c1706188888041f3fb6bc6fff1b1c0"
+          }
+        ],
+        "forbidden_condition": "generate_dft_inputs being invoked from process_calc_node without a preceding PI approve/edit decision obtained via the human_approval interrupt.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "tools.py is not supplied; the file-writing effect of generate_dft_inputs is asserted by the orchestrator comment (line 196) and the long-term note text (lines 211-212), not by the tool's source."
+        ],
+        "protected_operation": "generate_dft_inputs.invoke(...) with the proposed calculation arguments (mp_id, calc_type, supercell) inside process_calc_node.",
+        "protected_resource": "The generate_dft_inputs tool invocation in the orchestrator's process_calc node (real VASP input generation).",
+        "protection_obligation": "In the production orchestrator, process_calc may invoke generate_dft_inputs (preparing a real, submittable DFT job) only after the human_approval interrupt returns an approve or edit decision; a proposal declined by the PI must never reach the DFT input generation.",
+        "scope_limits": [
+          "The gate covers the simulation_agent -> human_approval -> process_calc path; run_simulation routes to human_approval only when a propose_dft_calculation tool call is found in the specialist's messages (lines 147-156).",
+          "The edit decision may adjust supercell before process_calc runs (lines 185-187).",
+          "process_calc also appends an audit record and writes a long-term store note (lines 202-214); those effects are not the obligation guarded here."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Entry into the execute_transfer node on resumption (transfer_graph.invoke(None, thread_config) after Approve/Edit); the initial invoke stops at the breakpoint before the node, and Reject never resumes.",
+        "contract_id": "ecological-contract:8495e82d62762d3dc0e95b6f68ac6efb",
+        "declared_mechanism": "transfer_graph compiled with checkpointer=MemorySaver() and interrupt_before=['execute_transfer']; run_supervised_transfer pauses at the breakpoint, collects Approve/Edit/Reject via input(), resumes with transfer_graph.invoke(None, thread_config) only on Approve/Edit, and halts on Reject.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 27,
+            "line_start": 21,
+            "path": "week-04-hardened-concierge/assignment.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7d2f8d4cc9d2464b9cd2e4d95ddda4dd5c9ebf6b036394146d48d2173a5c670b"
+          },
+          {
+            "line_end": 246,
+            "line_start": 243,
+            "path": "week-04-hardened-concierge/assignment.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7d2f8d4cc9d2464b9cd2e4d95ddda4dd5c9ebf6b036394146d48d2173a5c670b"
+          },
+          {
+            "line_end": 238,
+            "line_start": 228,
+            "path": "week-04-hardened-concierge/assignment.py",
+            "role": "guard_registration",
+            "source_sha256": "7d2f8d4cc9d2464b9cd2e4d95ddda4dd5c9ebf6b036394146d48d2173a5c670b"
+          },
+          {
+            "line_end": 225,
+            "line_start": 218,
+            "path": "week-04-hardened-concierge/assignment.py",
+            "role": "protected_operation",
+            "source_sha256": "7d2f8d4cc9d2464b9cd2e4d95ddda4dd5c9ebf6b036394146d48d2173a5c670b"
+          },
+          {
+            "line_end": 281,
+            "line_start": 268,
+            "path": "week-04-hardened-concierge/assignment.py",
+            "role": "commit_point",
+            "source_sha256": "7d2f8d4cc9d2464b9cd2e4d95ddda4dd5c9ebf6b036394146d48d2173a5c670b"
+          },
+          {
+            "line_end": 290,
+            "line_start": 284,
+            "path": "week-04-hardened-concierge/assignment.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7d2f8d4cc9d2464b9cd2e4d95ddda4dd5c9ebf6b036394146d48d2173a5c670b"
+          },
+          {
+            "line_end": 434,
+            "line_start": 421,
+            "path": "week-04-hardened-concierge/assignment.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7d2f8d4cc9d2464b9cd2e4d95ddda4dd5c9ebf6b036394146d48d2173a5c670b"
+          }
+        ],
+        "forbidden_condition": "The execute_transfer node running (the transfer being marked completed and money moving) without a preceding human Approve/Edit decision collected in run_supervised_transfer.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether execute_transfer is bound to any real external money-movement service is not shown; per supplied source the commit effect is the node's state update (lines 218-225)."
+        ],
+        "protected_operation": "Execution of the balance transfer via the transfer_graph's execute_transfer node, reached through the request_balance_transfer tool.",
+        "protected_resource": "The customer balance transfer (customer_id, destination_account, transfer_amount) processed by transfer_graph.",
+        "protection_obligation": "A balance transfer reached through the request_balance_transfer tool must never execute its transfer step without a human decision: transfer_graph is registered with interrupt_before=['execute_transfer'], halting at the commit point so the transfer proceeds only after an Approve/Edit decision and is halted on Reject.",
+        "scope_limits": [
+          "The outer concierge graph has no separate interrupt machinery; the HITL pause happens synchronously inside the tool call (module docstring lines 21-27).",
+          "The decision is collected from console input() (line 268), a synchronous CLI interaction, not an external approval system.",
+          "Each request_balance_transfer call derives a fresh thread_id from customer_id and a millisecond timestamp (line 289).",
+          "In supplied source the transfer effect is represented as in-graph state/status strings; no external banking or ledger API call is visible."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "week-03-middleware-agent/production/src/tools.py (defining TOOLS and generate_dft_inputs) is not among the supplied views; the tool's file-writing effect and its membership in TOOLS rest on orchestrator comments (orchestrator.py line 196 and lines 211-212) and reviewer rationale, not the tool's own source.",
+      "No supplied view shows deepagents' internal enforcement of FilesystemPermission or the concrete agent filesystem tool that writes /report.md, so enforcement timing of mode='interrupt' relative to the write cannot be confirmed.",
+      "No external banking/payment integration appears for execute_transfer in week-04-hardened-concierge/assignment.py; the transfer completion is an in-graph status string (lines 218-225), so a real external money-movement effect stratum cannot be confirmed from source.",
+      "Behavior labels and runtime enforcement semantics are unavailable per the stated scope, so whether the declared guards enforce as described at runtime cannot be decided from the supplied text."
+    ],
+    "repository": "ibtisamkhan96/atomcamp-agentic-ai-cohort5",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:3d20dea2a63a07f035dea9f77c1aa587"
+  },
+  "request_sha256": "e7f4ceeb5fce6488ec2d3f77d609c41f76df815fb39bf1d4b220940cbcf207e5",
+  "response_sha256": "1147bd05b39182898a1d14d850c119d53d4988f3809657fb27540e66719406ef",
+  "state": "completed",
+  "tokens": 31162,
+  "unit": "v24-screen:3d20dea2a63a07f035dea9f77c1aa587"
+}

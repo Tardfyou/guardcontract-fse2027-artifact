@@ -1,0 +1,218 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The four per-format filesystem writes, each immediately preceded by _assert_export_path: open(filepath,'w') at agents/export_agent.py:218-219 (md, guard at 216); doc.save(filepath) at :255 (docx, guard at 254); SimpleDocTemplate(filepath) bound at :336 and written by doc.build(story) at :359 (pdf, guard at 331); open(filepath,'w') at :436-437 (html, guard at 433). All writes share the file effect stratum, so a single contract covers them.",
+        "contract_id": "ecological-contract:531be15191f051ee3e279c25191cdb66",
+        "declared_mechanism": "_assert_export_path (agents/export_agent.py:73-83) calls trigger_hooks(POINT_FILE_WRITE, path=filepath, purpose='export') immediately before each export write and raises PermissionError(reason) on any returned reason; trigger_hooks lazily registers the default hook _hook_file_write (utils/permission_hooks.py:110-118), which compares os.path.realpath(path) against realpath'd roots ['reports','data'] from _allowed_write_roots (lines 102-107); trigger_hooks treats hook exceptions as rejections (fail-closed) and audits interceptions to the decision log.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 83,
+            "line_start": 73,
+            "path": "agents/export_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "744a62d44f1efe2f506b7ef0daaccb59d774dc2f45817d5e15dd0d524df01bce"
+          },
+          {
+            "line_end": 126,
+            "line_start": 97,
+            "path": "agents/export_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "744a62d44f1efe2f506b7ef0daaccb59d774dc2f45817d5e15dd0d524df01bce"
+          },
+          {
+            "line_end": 221,
+            "line_start": 211,
+            "path": "agents/export_agent.py",
+            "role": "commit_point",
+            "source_sha256": "744a62d44f1efe2f506b7ef0daaccb59d774dc2f45817d5e15dd0d524df01bce"
+          },
+          {
+            "line_end": 257,
+            "line_start": 251,
+            "path": "agents/export_agent.py",
+            "role": "commit_point",
+            "source_sha256": "744a62d44f1efe2f506b7ef0daaccb59d774dc2f45817d5e15dd0d524df01bce"
+          },
+          {
+            "line_end": 336,
+            "line_start": 328,
+            "path": "agents/export_agent.py",
+            "role": "commit_point",
+            "source_sha256": "744a62d44f1efe2f506b7ef0daaccb59d774dc2f45817d5e15dd0d524df01bce"
+          },
+          {
+            "line_end": 360,
+            "line_start": 357,
+            "path": "agents/export_agent.py",
+            "role": "commit_point",
+            "source_sha256": "744a62d44f1efe2f506b7ef0daaccb59d774dc2f45817d5e15dd0d524df01bce"
+          },
+          {
+            "line_end": 439,
+            "line_start": 430,
+            "path": "agents/export_agent.py",
+            "role": "commit_point",
+            "source_sha256": "744a62d44f1efe2f506b7ef0daaccb59d774dc2f45817d5e15dd0d524df01bce"
+          },
+          {
+            "line_end": 63,
+            "line_start": 50,
+            "path": "utils/permission_hooks.py",
+            "role": "guard_registration",
+            "source_sha256": "52cd96c3ab9e9385720c7c4afe26933c0c9413bab7fb12e8fab6fa11aa6192eb"
+          },
+          {
+            "line_end": 118,
+            "line_start": 102,
+            "path": "utils/permission_hooks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "52cd96c3ab9e9385720c7c4afe26933c0c9413bab7fb12e8fab6fa11aa6192eb"
+          },
+          {
+            "line_end": 138,
+            "line_start": 126,
+            "path": "utils/permission_hooks.py",
+            "role": "guard_registration",
+            "source_sha256": "52cd96c3ab9e9385720c7c4afe26933c0c9413bab7fb12e8fab6fa11aa6192eb"
+          }
+        ],
+        "forbidden_condition": "Committing a filesystem write to a path whose os.path.realpath is neither equal to nor nested under the realpath of the reports/ or data/ roots ('The file writing path is out of bounds' rejection); any exception raised inside the hook is likewise treated as a violation (fail-closed via trigger_hooks).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Identify the registration that exposes ExportAgent.run as an agent tool (agents/base.py and any tool/graph wiring are not in the supplied views) to bind agent_mediation.",
+          "Verify that the chart-save and task-persistence write sites referenced in permission hook comments (permission_hooks.py:103, 111) actually trigger POINT_FILE_WRITE; the corresponding modules are not supplied.",
+          "Determine the origin of input_data (markdown/title) fed to ExportAgent.run to assess an agent_generated_input_to_guarded_effect binding for the guarded write."
+        ],
+        "protected_operation": "Report file export: ExportAgent.run -> _export -> _export_markdown/_export_docx/_export_pdf/_export_html writing the generated report artifact to a computed filepath via open(...,'w') (md, html), doc.save (docx), and SimpleDocTemplate + doc.build (pdf).",
+        "protected_resource": "Local filesystem write targets for export artifacts \u2014 the EXPORT_DIR 'reports' tree (whitelist roots reports/ and data/).",
+        "protection_obligation": "Every file write performed by the export/report pipeline must be path-confined: at each md/docx/pdf/html export write site, _assert_export_path triggers the shared POINT_FILE_WRITE whitelist hook (_hook_file_write), which admits only paths whose realpath falls under the reports/ or data/ roots (per hook comments, intended to cover report/export/task/chart/dataset writes) and returns a rejection reason otherwise; a non-None reason raises PermissionError before the file is created or written, and hook exceptions fail closed as rejections.",
+        "scope_limits": [
+          "Only the four ExportAgent write sites (md/docx/pdf/html) are evidenced in the supplied views; the chart/task/dataset write sites referenced in hook comments (permission_hooks.py:103, 111) are not present in supplied source and cannot be verified.",
+          "The whitelist is realpath-based confinement to the reports/ and data/ roots; it restricts only writes performed at POINT_FILE_WRITE trigger sites and does not restrict file reads.",
+          "Export paths are constructed under EXPORT_DIR 'reports' (export_agent.py:70, 86-89); the shared hook also allows data/, but no data/-rooted trigger site is shown in the supplied views.",
+          "Agent mediation is not established: BaseAgent and any tool registry binding ExportAgent.run to agent dispatch are not supplied; the origin of input_data (markdown/title) is not shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.conn.execute(sql) inside DuckDBManager.execute \u2014 database/duckdb_manager.py lines 196 (timeout-watched path) and 204 (direct path) \u2014 strictly after the hook check at lines 185-187.",
+        "contract_id": "ecological-contract:8a3cbfa6b6688b389fb8a1c9fc44a5b2",
+        "declared_mechanism": "Central hook bus: DuckDBManager.execute calls trigger_hooks(POINT_SQL_EXECUTE, sql=sql, user_id=self.user_id) before executing; trigger_hooks lazily registers default hooks via _ensure_defaults, including _hook_sql_execute which delegates to database.safety.assert_read_only (sqlglot parse read='duckdb'; statement-type whitelist plus forbidden-statement double-check, normalized function-name blacklist, multi-statement rejection); the first returned reason aborts execution with SecurityError; hook exceptions are converted into rejection reasons (fail-closed) and audited to the decision log.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 182,
+            "line_start": 176,
+            "path": "database/duckdb_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "7befdfa732ca956f9eac50f7e6c3154e761e923d2df1393ee88c9a7c7bb6378c"
+          },
+          {
+            "line_end": 213,
+            "line_start": 206,
+            "path": "database/duckdb_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "7befdfa732ca956f9eac50f7e6c3154e761e923d2df1393ee88c9a7c7bb6378c"
+          },
+          {
+            "line_end": 229,
+            "line_start": 222,
+            "path": "database/duckdb_manager.py",
+            "role": "protected_operation",
+            "source_sha256": "7befdfa732ca956f9eac50f7e6c3154e761e923d2df1393ee88c9a7c7bb6378c"
+          },
+          {
+            "line_end": 187,
+            "line_start": 183,
+            "path": "database/duckdb_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "7befdfa732ca956f9eac50f7e6c3154e761e923d2df1393ee88c9a7c7bb6378c"
+          },
+          {
+            "line_end": 204,
+            "line_start": 189,
+            "path": "database/duckdb_manager.py",
+            "role": "commit_point",
+            "source_sha256": "7befdfa732ca956f9eac50f7e6c3154e761e923d2df1393ee88c9a7c7bb6378c"
+          },
+          {
+            "line_end": 98,
+            "line_start": 67,
+            "path": "database/safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dbdb9c9e74a8cbac68667bae552bec453981f4e99a704b50fea062ec8e467962"
+          },
+          {
+            "line_end": 167,
+            "line_start": 132,
+            "path": "database/safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dbdb9c9e74a8cbac68667bae552bec453981f4e99a704b50fea062ec8e467962"
+          },
+          {
+            "line_end": 63,
+            "line_start": 50,
+            "path": "utils/permission_hooks.py",
+            "role": "guard_registration",
+            "source_sha256": "52cd96c3ab9e9385720c7c4afe26933c0c9413bab7fb12e8fab6fa11aa6192eb"
+          },
+          {
+            "line_end": 89,
+            "line_start": 82,
+            "path": "utils/permission_hooks.py",
+            "role": "guard_registration",
+            "source_sha256": "52cd96c3ab9e9385720c7c4afe26933c0c9413bab7fb12e8fab6fa11aa6192eb"
+          },
+          {
+            "line_end": 138,
+            "line_start": 126,
+            "path": "utils/permission_hooks.py",
+            "role": "guard_registration",
+            "source_sha256": "52cd96c3ab9e9385720c7c4afe26933c0c9413bab7fb12e8fab6fa11aa6192eb"
+          }
+        ],
+        "forbidden_condition": "Execution on the query channel of: (a) any statement whose AST key is in _FORBIDDEN_STMT_TYPES (create/insert/update/delete/drop/alter/truncate/copy/attach/detach/call/set/pragma/vacuum/merge/replace/install/load); (b) any statement type outside _READ_ONLY_STMT_TYPES (select/union/intersect/except/subquery/show/describe/summarize), including unparsable SQL and uninspectable 'command'-dialect forms (EXPLAIN/LOAD/CALL/VACUUM); (c) any call to a forbidden function (READCSVAUTO/READCSV/READJSON/READPARQUET/READTEXT/HTTPFS/GLOB/INSTALL/LOAD/EXPORTDATABASE/EXPORTPARQUET/EXPORTCSV/SYSTEM/SHELL); or (d) more than one real statement in a single submission (e.g., 'SELECT 1; DROP TABLE x').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Locate the agent tool registration/dispatch (e.g., the LangGraph tool-node wiring alluded to in the _serialized docstring at duckdb_manager.py:89-94) that invokes DuckDBManager.execute/query_df/execute_fetchall, to bind agent_mediation as direct_tool or agent_generated_input_to_guarded_effect.",
+          "Obtain the SQLAgent/_fix_sql modules described in docstrings (duckdb_manager.py:190-191, 226-228) to confirm that agent-generated SQL actually reaches the guarded conn.execute commit point.",
+          "Determine whether all query-channel callers are agent tools or whether non-agent internal code also passes through execute(), which affects the obligation's phrasing and scope."
+        ],
+        "protected_operation": "Execution of caller-supplied SQL against the per-user in-memory DuckDB connection via DuckDBManager.execute, and via its wrappers execute_fetchall and query_df which route through execute.",
+        "protected_resource": "The per-user DuckDB :memory: connection and its loaded tables (self.conn / self.table_name, isolated per user_id).",
+        "protection_obligation": "All SQL submitted to the DuckDBManager query channel (execute / execute_fetchall / query_df) must be read-only: before any statement reaches conn.execute, the central permission-hook bus must run the default POINT_SQL_EXECUTE hook (_hook_sql_execute -> database.safety.assert_read_only), a sqlglot DuckDB-dialect AST whitelist that admits only SELECT-derived statements plus SHOW/DESCRIBE/SUMMARIZE, and rejects write/DDL/utility statements (CREATE/INSERT/UPDATE/DELETE/DROP/ALTER/TRUNCATE/COPY/ATTACH/SET/PRAGMA/etc.), file-read/network/export/shell functions (read_csv_auto, httpfs, glob, export_*, system/shell), and multi-statement (semicolon-injection) submissions; any rejection reason is raised as SecurityError, and hook exceptions fail closed. (Merges the duplicate first- and second-phase reviewer wording for the SQL obligation.)",
+        "scope_limits": [
+          "Applies only to the query channel (execute/execute_fetchall/query_df); management-channel methods (_load_csv, reload_csv, load_csv_dataset, load_excel_dataset, drop_table, _normalize_table_columns) call self.conn.execute directly and deliberately bypass this whitelist (duckdb_manager.py:142, 179-181, 251, 332, 410, 461; safety.py:9-10, 128-130).",
+          "The guard validates the SQL string by AST only; resource limits (timeout watchdog, max_result_rows, memory_limit/threads) are separate mechanisms and are not part of this obligation (duckdb_manager.py:66-83, 189-203, 229-235).",
+          "Non-whitelisted 'command'-dialect statements are rejected wholesale rather than inspected (safety.py:69-70).",
+          "Agent mediation is not established by the supplied views: no tool dispatcher, decorator, registration, or callback wiring connecting DuckDBManager query methods to an agent is present; only comments reference LangGraph tool nodes and a SQLAgent/_fix_sql feedback loop."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The agent tool dispatch/registration layer (agents/base.py, tool registry, graph wiring) is absent from the supplied views, so agent mediation for both contracts cannot be bound beyond not_established.",
+      "The SQLAgent/_fix_sql implementation referenced in duckdb_manager.py docstrings (lines 190-191, 226-228) is not supplied, so the claimed agent-generated SQL dataflow into the guarded conn.execute cannot be confirmed.",
+      "The chart saving and task persistence modules referenced in permission_hooks.py comments (lines 103, 111) are not supplied, so their alleged POINT_FILE_WRITE triggers cannot be verified.",
+      "utils/path_tool.get_abs_path and utils/report_paths implementations, on which the realpath whitelist roots and export path construction depend, are not supplied; root resolution behavior is unverified."
+    ],
+    "repository": "MynameisKcy/InsightForge-AI",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:c110274f87ce5c4b13e5ce98b2118171"
+  },
+  "request_sha256": "2337c2fe04cb9532178dcc216a3b81e94a35c02dadc3d123b78e19e568949ac1",
+  "response_sha256": "c9acf908bb1a36f11085dc04561b0baf32f1edd77b193224b97ca9e7524d5d75",
+  "state": "completed",
+  "tokens": 40931,
+  "unit": "v24-screen:c110274f87ce5c4b13e5ce98b2118171"
+}

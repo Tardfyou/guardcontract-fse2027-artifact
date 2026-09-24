@@ -1,0 +1,108 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Runner.run(main_agent, user_input, run_config=config, context=context) at main.py:98-100 (decision phase) and Runner.run(analysis_agent, decision.document_content, run_config=config) at main.py:107-109 (analysis phase). Both commits are in the same effect stratum (model API request), so they are merged into a single contract; the tripwire aborts the run at these points via the handler at main.py:126-128.",
+        "contract_id": "ecological-contract:293e22dc64ed997283a37c1a726d2c75",
+        "declared_mechanism": "sensitive_input_guardrail, registered with @input_guardrail (guardrails.py:28-33): it extracts the last user input (guardrails.py:36-40), runs the LLM-based sensitive_check_agent via Runner.run (guardrails.py:20-25, 47), and returns GuardrailFunctionOutput(tripwire_triggered=result.final_output.contains_sensitive_info) (guardrails.py:54-57). It is wired onto both agents via input_guardrails=[sensitive_input_guardrail] on analysis_agent (main.py:45) and main_agent (main.py:70). On trip, Runner.run raises InputGuardrailTripwireTriggered, caught in main() (main.py:126-128), which logs the trigger and prints 'Input blocked', so the guarded agent's model request does not complete.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 48,
+            "line_start": 42,
+            "path": "12_OpenAI_Agent_SDK/Projects/03_Legal_Document_Assistant/main.py",
+            "role": "guard_registration",
+            "source_sha256": "c90da2550eac05e7070ccc07c673365d6f7c36ef2de39285360364582a90b64b"
+          },
+          {
+            "line_end": 78,
+            "line_start": 65,
+            "path": "12_OpenAI_Agent_SDK/Projects/03_Legal_Document_Assistant/main.py",
+            "role": "guard_registration",
+            "source_sha256": "c90da2550eac05e7070ccc07c673365d6f7c36ef2de39285360364582a90b64b"
+          },
+          {
+            "line_end": 33,
+            "line_start": 28,
+            "path": "12_OpenAI_Agent_SDK/Projects/03_Legal_Document_Assistant/guardrails.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0b3dd9f2e267495e0bb88546904e1d398402174d048c2b4574e3e21b1ba42e9f"
+          },
+          {
+            "line_end": 57,
+            "line_start": 36,
+            "path": "12_OpenAI_Agent_SDK/Projects/03_Legal_Document_Assistant/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0b3dd9f2e267495e0bb88546904e1d398402174d048c2b4574e3e21b1ba42e9f"
+          },
+          {
+            "line_end": 100,
+            "line_start": 88,
+            "path": "12_OpenAI_Agent_SDK/Projects/03_Legal_Document_Assistant/main.py",
+            "role": "protected_operation",
+            "source_sha256": "c90da2550eac05e7070ccc07c673365d6f7c36ef2de39285360364582a90b64b"
+          },
+          {
+            "line_end": 100,
+            "line_start": 98,
+            "path": "12_OpenAI_Agent_SDK/Projects/03_Legal_Document_Assistant/main.py",
+            "role": "commit_point",
+            "source_sha256": "c90da2550eac05e7070ccc07c673365d6f7c36ef2de39285360364582a90b64b"
+          },
+          {
+            "line_end": 109,
+            "line_start": 107,
+            "path": "12_OpenAI_Agent_SDK/Projects/03_Legal_Document_Assistant/main.py",
+            "role": "commit_point",
+            "source_sha256": "c90da2550eac05e7070ccc07c673365d6f7c36ef2de39285360364582a90b64b"
+          },
+          {
+            "line_end": 128,
+            "line_start": 126,
+            "path": "12_OpenAI_Agent_SDK/Projects/03_Legal_Document_Assistant/main.py",
+            "role": "commit_point",
+            "source_sha256": "c90da2550eac05e7070ccc07c673365d6f7c36ef2de39285360364582a90b64b"
+          }
+        ],
+        "forbidden_condition": "User input text containing sensitive personal information \u2014 as classified by sensitive_check_agent yielding contains_sensitive_info=true \u2014 being forwarded to the external LLM model API by the guarded agent runs (MainLegalAgent / LegalAnalysisAgent).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The sensitive-info taxonomy (email, phone, SSN, CNIC, etc.) is defined in guardrail_instructions (agent_instructions.py), which is not supplied.",
+          "The identity/endpoint of model and client (model.py) is not supplied; the reviewer rationale's 'OpenRouter' characterization is not verifiable from the given views.",
+          "SDK-internal ordering \u2014 that input guardrails execute before the model request inside Runner.run \u2014 is not demonstrated in the supplied source (the agents library source is absent); only registration and the InputGuardrailTripwireTriggered handler are shown.",
+          "Whether friendly_agent or casual_chat_agent define any input guardrails (agents_definitions.py not supplied)."
+        ],
+        "protected_operation": "Agent-run LLM inference requests executed via Runner.run for main_agent with the captured user_input (main.py:88-100) and for analysis_agent with decision.document_content (main.py:107-109), which transmit the supplied input text to the external model API.",
+        "protected_resource": "External LLM model API accessed via model/client (RunConfig at main.py:85) on behalf of the MainLegalAgent and LegalAnalysisAgent runs.",
+        "protection_obligation": "User input containing sensitive personal information must be blocked from being processed by the legal-analysis LLM agents: the registered input guardrail sensitive_input_guardrail must trip (tripwire_triggered=true on contains_sensitive_info) before Runner.run commits the main_agent / analysis_agent requests to the external model API, with InputGuardrailTripwireTriggered aborting the run. (Merges the two reviewer wordings, which describe the same obligation.)",
+        "scope_limits": [
+          "Only main_agent and analysis_agent carry the input guardrail; the Runner.run calls for friendly_agent (main.py:110-114) and casual_chat_agent (main.py:118-120) have no registered input guardrail in the supplied source (agents_definitions.py is not supplied).",
+          "The analysis-phase commit consumes decision.document_content (main_agent-generated content, main.py:108) rather than raw user input; coverage of that derived payload rests solely on the registration at main.py:45.",
+          "The guardrail's own check forwards last_input to the model via Runner.run(sensitive_check_agent, last_input) (guardrails.py:47), so the block prevents the guarded agents' model requests but not every transmission of the input to a model API.",
+          "The trip decision is an LLM classification (sensitive_check_agent, guardrails.py:20-25, 47), not deterministic pattern matching; no accuracy or recall claim is supportable from the supplied source.",
+          "Output guardrails final_output_validation_guardrail (guardrails.py:60-93) and friendly_message_validation_guardrail (guardrails.py:96-132) are format-validation obligations and are excluded from this contract, per the reviewers' own distinction.",
+          "Behavior labels and prevalence data are unavailable; no runtime-outcome or detection-efficacy claims are made."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Contents of guardrail_instructions (agent_instructions.py) defining the sensitive-info categories that drive contains_sensitive_info.",
+      "model.py definitions of model and client establishing the external API endpoint/provider (OpenRouter claim unsupported by supplied views).",
+      "agents_definitions.py, to confirm whether friendly_agent and casual_chat_agent have any input guardrails, since they also receive user input / analysis output at main.py:110-120.",
+      "OpenAI Agents SDK runtime source confirming that input guardrails execute before the model request within Runner.run; supplied source shows only the decorator/registration and the InputGuardrailTripwireTriggered handler.",
+      "Any behavior or prevalence labels for this unit; none were supplied, so no runtime-behavior or prevalence claims are encoded."
+    ],
+    "repository": "AbdulSamad94/Learn_Modern_Python",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:bdf49d845027386b89786c886a556200"
+  },
+  "request_sha256": "405410120f5c7276bf84aafa787e6467e8dbe3c3779530e2e992759ac0ea42d4",
+  "response_sha256": "3fb38f816cf24bbe953434c97d339116b4bd880d16fe185aa69cf6149619a3bf",
+  "state": "completed",
+  "tokens": 13795,
+  "unit": "v24-screen:bdf49d845027386b89786c886a556200"
+}

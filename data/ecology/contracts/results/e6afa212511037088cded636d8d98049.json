@@ -1,0 +1,540 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "await session.commit() inside _write (insert or update of the UserMemory row) \u2014 src/providers/user_memory/__init__.py:89 within the session block 78-90.",
+        "contract_id": "ecological-contract:0d02de0bfcd927e9df73bad51a6f827b",
+        "declared_mechanism": "register(agent, participants) attaches both tools with @agent.tool_plain; each tool first calls the check() closure, which raises pydantic_ai ModelRetry when participants.get(user_id) is None, aborting the tool before append_memory/replace_memory executes; provider ValueErrors are likewise converted to ModelRetry (src/plugins/chat/memory_tools.py:49-51, 70-71).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 24,
+            "line_start": 20,
+            "path": "src/plugins/chat/memory_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "461cc909d75a61b77f31a498605261d014fc10981b22b901ad86504a1d0257e9"
+          },
+          {
+            "line_end": 33,
+            "line_start": 26,
+            "path": "src/plugins/chat/memory_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "461cc909d75a61b77f31a498605261d014fc10981b22b901ad86504a1d0257e9"
+          },
+          {
+            "line_end": 8,
+            "line_start": 5,
+            "path": "src/plugins/chat/memory_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "461cc909d75a61b77f31a498605261d014fc10981b22b901ad86504a1d0257e9"
+          },
+          {
+            "line_end": 49,
+            "line_start": 47,
+            "path": "src/plugins/chat/memory_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "461cc909d75a61b77f31a498605261d014fc10981b22b901ad86504a1d0257e9"
+          },
+          {
+            "line_end": 69,
+            "line_start": 67,
+            "path": "src/plugins/chat/memory_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "461cc909d75a61b77f31a498605261d014fc10981b22b901ad86504a1d0257e9"
+          },
+          {
+            "line_end": 36,
+            "line_start": 35,
+            "path": "src/plugins/chat/memory_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "461cc909d75a61b77f31a498605261d014fc10981b22b901ad86504a1d0257e9"
+          },
+          {
+            "line_end": 56,
+            "line_start": 55,
+            "path": "src/plugins/chat/memory_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "461cc909d75a61b77f31a498605261d014fc10981b22b901ad86504a1d0257e9"
+          },
+          {
+            "line_end": 117,
+            "line_start": 99,
+            "path": "src/providers/user_memory/__init__.py",
+            "role": "protected_operation",
+            "source_sha256": "50b20cfb66d4b5e88767a6834c42fbbd36b60bc9fab5906505ceaa744ddb42ee"
+          },
+          {
+            "line_end": 159,
+            "line_start": 120,
+            "path": "src/providers/user_memory/__init__.py",
+            "role": "protected_operation",
+            "source_sha256": "50b20cfb66d4b5e88767a6834c42fbbd36b60bc9fab5906505ceaa744ddb42ee"
+          },
+          {
+            "line_end": 90,
+            "line_start": 78,
+            "path": "src/providers/user_memory/__init__.py",
+            "role": "commit_point",
+            "source_sha256": "50b20cfb66d4b5e88767a6834c42fbbd36b60bc9fab5906505ceaa744ddb42ee"
+          }
+        ],
+        "forbidden_condition": "A remember or update_memory tool invocation whose user_id is absent from the participants mapping (the model attributing a memory to a user it cannot see this round, e.g. copying an id incorrectly from the chat log) reaching the UserMemory persistence commit.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Identify the caller of memory_tools.register() (agent construction) and how participants is populated per conversation round.",
+          "Confirm that append_memory/replace_memory have no non-agent callers that would reach _write with an unvalidated user_id."
+        ],
+        "protected_operation": "The tool-invoked append_memory and replace_memory calls (and their _write persistence) inside the registered agent tools remember and update_memory.",
+        "protected_resource": "UserMemory rows (user_memory table): free-form per-user long-term memory documents shared across groups and adapters.",
+        "protection_obligation": "The chat agent's LLM memory tools (remember, update_memory) must reject, via ModelRetry before any persistence, any write whose model-supplied user_id is not present in the current conversation's participants, so no UserMemory record is committed for a user the model cannot see in the current round.",
+        "scope_limits": [
+          "Guard covers only the two registered LLM tools; other UserMemory writers exposed by the provider (set_memory, clear_memory, and the memory-plugin admin commands named in the module docstring) are outside this contract.",
+          "Guard strength depends on the participants dict supplied by the register() caller, which is not in supplied views.",
+          "The guard is a per-round participant allow-list over the model's chosen user_id; it is not user authentication and does not validate note content beyond provider-level non-empty checks."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await sess.commit() after the DELETE execute in DBConfig.delete_cookie_by_id \u2014 src/plugins/bison/config/db_config.py:410.",
+        "contract_id": "ecological-contract:14779c951eade29859cd6c05d44cdb8f",
+        "declared_mechanism": "on_command('deletecookie', rule=to_me(), permission=SUPERUSER, priority=5, block=True) matcher registration checked at dispatch, backed by the no_permission_matcher denial fallback.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 98,
+            "line_start": 90,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 205,
+            "line_start": 186,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "forbidden_condition",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 410,
+            "line_start": 397,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "protected_operation",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 410,
+            "line_start": 409,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "commit_point",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          }
+        ],
+        "forbidden_condition": "A message event from a user not matching SUPERUSER triggering the deletecookie/deleteCookie command flow and reaching the cookie-deletion database write; unauthorized invocations are answered by the no-permission fallback matcher.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Verify that do_del_cookie calls config.delete_cookie_by_id.",
+          "Establish whether any agent-mediated path can invoke DBConfig.delete_cookie_by_id; none appears in supplied views."
+        ],
+        "protected_operation": "The del_cookie_matcher command flow performing DBConfig.delete_cookie_by_id (DELETE of a Cookie row).",
+        "protected_resource": "Cookie rows (stored platform-site credentials) in the bison ORM database.",
+        "protection_obligation": "Only SUPERUSER-privileged users may delete stored platform credentials via the deletecookie chat command; non-privileged users must be rejected at matcher dispatch before the credential-deletion effect commits.",
+        "scope_limits": [
+          "This contract covers only the actor-permission facet; the separate in-use precondition that refuses deleting a cookie with associated targets is compiled as its own contract.",
+          "The do_del_cookie handler module is not in supplied views; the matcher\u2192delete_cookie_by_id chain is inferred from wiring at src/plugins/bison/sub_manager/__init__.py:98 and is unverified.",
+          "No supplied source binds this deletion to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "_config.save() at src/plugins/deepseek/__init__.py:222, which persists the default_model assignment made at src/plugins/deepseek/__init__.py:221; the in-process state change is visible from line 221.",
+        "contract_id": "ecological-contract:3d5d2f1d029d9c1cb0322ccfddb2db2c",
+        "declared_mechanism": "Handler-level Depends(SuperUser()) dependency followed by an explicit 'if not is_superuser: await deepseek.finish' rejection placed before the assignment and save.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 218,
+            "line_start": 214,
+            "path": "src/plugins/deepseek/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "0c0fe1b08f4ea6ab7843fa460c410fbdbf89fab558e08e3f571ea4458aad8472"
+          },
+          {
+            "line_end": 220,
+            "line_start": 219,
+            "path": "src/plugins/deepseek/__init__.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0c0fe1b08f4ea6ab7843fa460c410fbdbf89fab558e08e3f571ea4458aad8472"
+          },
+          {
+            "line_end": 221,
+            "line_start": 221,
+            "path": "src/plugins/deepseek/__init__.py",
+            "role": "protected_operation",
+            "source_sha256": "0c0fe1b08f4ea6ab7843fa460c410fbdbf89fab558e08e3f571ea4458aad8472"
+          },
+          {
+            "line_end": 222,
+            "line_start": 222,
+            "path": "src/plugins/deepseek/__init__.py",
+            "role": "commit_point",
+            "source_sha256": "0c0fe1b08f4ea6ab7843fa460c410fbdbf89fab558e08e3f571ea4458aad8472"
+          }
+        ],
+        "forbidden_condition": "Execution of the model.set assignment/persistence when the SuperUser() dependency resolves is_superuser=False; the handler finishes with This command is only available with superuser instead.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Determine what _config.save() writes (medium, path, format) to decide whether a separate file-stratum contract is required.",
+          "Confirm no other writer mutates _config.default_model without the SuperUser check.",
+          "Establish whether any agent-mediated path can reach the model.set handler; none appears in supplied views."
+        ],
+        "protected_operation": "The @deepseek.assign('model.set') handler mutating _config.default_model and persisting via _config.save().",
+        "protected_resource": "DeepSeek runtime configuration, specifically the default_model selection (_config).",
+        "protection_obligation": "The /ds model --set-default handler must execute its runtime-config mutation and persistence only when the invoking user passes the SuperUser() check; non-superusers must be rejected before _config.default_model is changed or saved.",
+        "scope_limits": [
+          "Covers only the model.set assignment; the read-only model.list handler (src/plugins/deepseek/__init__.py:200-211) is intentionally unguarded and out of scope.",
+          "Stratum is filed as state for the in-memory _config mutation; _config.save() implementation is not in supplied views, so any file-stratum persistence facet is unsupported and recorded in missing_information.",
+          "The same handler family guards model.render-markdown, bind, and unbind with SuperUser() checks (src/plugins/deepseek/__init__.py:226-240, 251-325); those effects were not raised as obligations and are not compiled here.",
+          "This is a plain chat-command handler; no supplied source binds it to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await sess.commit() in DBConfig.add_cookie_target after sess.add(cookie_target) \u2014 src/plugins/bison/config/db_config.py:436.",
+        "contract_id": "ecological-contract:50f88300125f49cd583ebef7f5fb2f38",
+        "declared_mechanism": "on_command('associationcookie', rule=to_me(), permission=SUPERUSER, priority=5, block=True) matcher registration checked at dispatch, backed by the no_permission_matcher denial fallback.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 78,
+            "line_start": 70,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 205,
+            "line_start": 186,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "forbidden_condition",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 436,
+            "line_start": 412,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "protected_operation",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 436,
+            "line_start": 436,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "commit_point",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          }
+        ],
+        "forbidden_condition": "A message event from a user not matching SUPERUSER triggering the associationcookie/associationCookie command flow and reaching the CookieTarget association write; unauthorized invocations are denied by the no-permission fallback matcher.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Verify that do_add_cookie_target calls config.add_cookie_target.",
+          "Establish whether any agent-mediated path can invoke DBConfig.add_cookie_target; none appears in supplied views."
+        ],
+        "protected_operation": "The add_cookie_target_matcher command flow performing DBConfig.add_cookie_target (insert of a CookieTarget association row).",
+        "protected_resource": "CookieTarget association rows linking Cookie credentials to Target records in the bison ORM database.",
+        "protection_obligation": "Only SUPERUSER-privileged users may associate a stored cookie with a scraping target via the associationcookie chat command; non-privileged users must be rejected at matcher dispatch before the association row is committed.",
+        "scope_limits": [
+          "The same DBConfig function also refuses duplicate associations (raise DuplicateCookieTargetException at src/plugins/bison/config/db_config.py:431-432) before commit; that data precondition was not raised as a distinct obligation and is noted only as scope.",
+          "The do_add_cookie_target handler module is not in supplied views; the matcher\u2192add_cookie_target chain is inferred from wiring at src/plugins/bison/sub_manager/__init__.py:78.",
+          "No supplied source binds this operation to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await sess.commit() in DBConfig.delete_cookie_target (src/plugins/bison/config/db_config.py:453) and in DBConfig.delete_cookie_target_by_id (src/plugins/bison/config/db_config.py:460); which of the two commit points the command reaches is not determinable from supplied views.",
+        "contract_id": "ecological-contract:82fcdfe092b887a56cce2c91b6704476",
+        "declared_mechanism": "on_command('Disassociatecookie', rule=to_me(), permission=SUPERUSER, priority=5, block=True) matcher registration checked at dispatch, backed by the no_permission_matcher denial fallback.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 88,
+            "line_start": 80,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 205,
+            "line_start": 186,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "forbidden_condition",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 460,
+            "line_start": 438,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "protected_operation",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 453,
+            "line_start": 453,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "commit_point",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 460,
+            "line_start": 460,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "commit_point",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          }
+        ],
+        "forbidden_condition": "A message event from a user not matching SUPERUSER triggering the Disassociatecookie/DisassociateCookie command flow and reaching a CookieTarget deletion write; unauthorized invocations are denied by the no-permission fallback matcher.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Determine whether do_del_cookie_target invokes delete_cookie_target or delete_cookie_target_by_id.",
+          "Establish whether any agent-mediated path can reach these deletion functions; none appears in supplied views."
+        ],
+        "protected_operation": "The del_cookie_target_matcher command flow performing DBConfig.delete_cookie_target or DBConfig.delete_cookie_target_by_id (DELETE of CookieTarget association rows).",
+        "protected_resource": "CookieTarget association rows linking Cookie credentials to Target records in the bison ORM database.",
+        "protection_obligation": "Only SUPERUSER-privileged users may remove a cookie-target association via the Disassociatecookie chat command; non-privileged users must be rejected at matcher dispatch before the association deletion commits.",
+        "scope_limits": [
+          "Two candidate DBConfig deletion functions with separate commit points exist in the same stratum; they are kept in one contract pending identification of the invoked path.",
+          "The do_del_cookie_target handler module is not in supplied views; the matcher\u2192deletion chain is inferred from wiring at src/plugins/bison/sub_manager/__init__.py:88.",
+          "No supplied source binds this operation to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await session.commit() in DBConfig.add_subscribe \u2014 src/plugins/bison/config/db_config.py:103; and await session.commit() in DBConfig.del_subscribe \u2014 src/plugins/bison/config/db_config.py:162 (same stratum, both retained in one contract).",
+        "contract_id": "ecological-contract:915aa49f58e4a5dc374e77edddfaff7f",
+        "declared_mechanism": "on_command(..., permission=admin_permission()) matcher registrations, where admin_permission() composes SUPERUSER | GROUP_ADMIN | GROUP_OWNER; the Group management flow re-derives permission via matcher.update_permission and threads it into the dynamically created temporary matcher so dispatched sub-flows inherit the same check.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 71,
+            "line_start": 64,
+            "path": "src/plugins/bison/sub_manager/utils.py",
+            "role": "guard_registration",
+            "source_sha256": "5efc4078ee545fd63c4c2a4ae29fa9d5dd78cc08f4213ae25e0b31f053771cb6"
+          },
+          {
+            "line_end": 40,
+            "line_start": 32,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 58,
+            "line_start": 50,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 171,
+            "line_start": 146,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 205,
+            "line_start": 186,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "forbidden_condition",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 107,
+            "line_start": 65,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "protected_operation",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 162,
+            "line_start": 134,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "protected_operation",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 103,
+            "line_start": 103,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "commit_point",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 162,
+            "line_start": 162,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "commit_point",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          }
+        ],
+        "forbidden_condition": "A message event from a user matching none of SUPERUSER | GROUP_ADMIN | GROUP_OWNER triggering Add subscription/Delete subscription (directly or via Group management dispatch) and reaching the subscribe insertion/deletion writes; unauthorized invocations are denied by the no-permission fallback matcher.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Verify that do_add_sub/do_del_sub call config.add_subscribe/config.del_subscribe.",
+          "Establish whether any agent-mediated path can reach these subscribe mutations; none appears in supplied views."
+        ],
+        "protected_operation": "The add_sub_matcher and del_sub_matcher command flows performing DBConfig.add_subscribe and DBConfig.del_subscribe (insert/delete of Subscribe records, with cascading User/Target creation and cleanup).",
+        "protected_resource": "Subscribe rows (and dependent User/Target rows) in the bison ORM database.",
+        "protection_obligation": "Subscribe management mutations (Add subscription add, Delete subscription delete, including flows dispatched from the SUPERUSER-gated Group management menu) must run only for SUPERUSER, GROUP_ADMIN, or GROUP_OWNER users; admin_permission() must reject all other actors at matcher dispatch before subscription rows are committed.",
+        "scope_limits": [
+          "Query subscription/query_sub and the group-list view are read-only and unguarded by design; they are outside this contract.",
+          "add_subscribe additionally refuses duplicate subscriptions by translating UNIQUE-constraint IntegrityError into SubscribeDupException at commit (src/plugins/bison/config/db_config.py:102-107); that precondition was not raised as a distinct obligation.",
+          "The do_add_sub/do_del_sub handler modules are not in supplied views; the matcher\u2192DBConfig chains are inferred from wiring at src/plugins/bison/sub_manager/__init__.py:40 and 58.",
+          "No supplied source binds these operations to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await sess.execute(delete(Cookie)...) followed by await sess.commit() in DBConfig.delete_cookie_by_id \u2014 src/plugins/bison/config/db_config.py:409-410.",
+        "contract_id": "ecological-contract:a5bfb1b7c8babc488401ac809d1ca5d0",
+        "declared_mechanism": "Inline precondition guard: the cookie is loaded with selectinload(Cookie.targets) so its associations are materialized, and an explicit length check raises before sess.execute(delete(Cookie)) runs.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 404,
+            "line_start": 399,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "guard_registration",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 408,
+            "line_start": 407,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 410,
+            "line_start": 397,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "protected_operation",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 410,
+            "line_start": 409,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "commit_point",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          }
+        ],
+        "forbidden_condition": "Reaching the DELETE/commit for a cookie whose loaded targets list is non-empty (len(cookie.targets) > 0); the function raises Exception('cookie ... in use') instead. A nonexistent cookie_id is likewise refused with NoSuchTargetException.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Confirm all production deletion paths for in-use cookies route through delete_cookie_by_id and that no caller swallows the raised Exception before the guard takes effect."
+        ],
+        "protected_operation": "Deletion of a Cookie row via DBConfig.delete_cookie_by_id.",
+        "protected_resource": "Cookie rows (stored platform-site credentials) and their CookieTarget associations in the bison ORM database.",
+        "protection_obligation": "DBConfig.delete_cookie_by_id must refuse to delete a Cookie that still has associated targets, raising before the DELETE statement and its commit; only cookies with an empty targets collection may be removed.",
+        "scope_limits": [
+          "This is a data-integrity precondition, independent of the actor-permission guard on the deletecookie command compiled separately.",
+          "DBConfig.clear_db (src/plugins/bison/config/db_config.py:475-484) deletes all Cookie rows without this in-use check; it is documented as unit-test cleanup and is out of scope.",
+          "No supplied source binds this function to an agent tool, lifecycle hook, or agent-generated input."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await sess.commit() in DBConfig.add_cookie, immediately after sess.add(cookie) \u2014 src/plugins/bison/config/db_config.py:379.",
+        "contract_id": "ecological-contract:a96273f2d232262260b66cc8e2938a59",
+        "declared_mechanism": "on_command('Add tocookie', rule=to_me(), permission=SUPERUSER, priority=5, block=True) matcher registration checked by NoneBot at dispatch before handlers run, with a low-priority no_permission_matcher fallback denying unauthorized invocations of these command names.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 68,
+            "line_start": 60,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 205,
+            "line_start": 186,
+            "path": "src/plugins/bison/sub_manager/__init__.py",
+            "role": "forbidden_condition",
+            "source_sha256": "713d90cdca5990f45a08dc54de84f5449b9cce4f82ab6b93c65295b2f0347fdd"
+          },
+          {
+            "line_end": 381,
+            "line_start": 376,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "protected_operation",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          },
+          {
+            "line_end": 379,
+            "line_start": 378,
+            "path": "src/plugins/bison/config/db_config.py",
+            "role": "commit_point",
+            "source_sha256": "3b575565db14be0ebb5d189435c2dbf3168ee81ac37876f00c9ab1d13b374aeb"
+          }
+        ],
+        "forbidden_condition": "A message event from a user not matching SUPERUSER triggering the Add cookie/Add Cookie command flow and reaching the cookie-creation database write; non-privileged invocations fall through to the priority-8 fallback matcher that replies You do not have permission to perform this operation.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Verify that do_add_cookie calls config.add_cookie and that no unguarded path inserts Cookie rows.",
+          "Establish whether any agent tool or lifecycle path can reach DBConfig.add_cookie; none appears in supplied views."
+        ],
+        "protected_operation": "The add_cookie_matcher command flow performing DBConfig.add_cookie (insert of a Cookie credential row).",
+        "protected_resource": "Cookie rows (stored platform-site credentials) in the bison ORM database.",
+        "protection_obligation": "Only SUPERUSER-privileged users may create stored platform credentials (Cookie rows) via the Add tocookie chat command; non-privileged users must be rejected at matcher dispatch before any credential-insertion effect commits.",
+        "scope_limits": [
+          "Chat-command path only; no supplied source binds this write to an agent tool, agent lifecycle hook, or agent-generated input.",
+          "The do_add_cookie handler module (src/plugins/bison/sub_manager/add_cookie.py) is not in supplied views, so the matcher\u2192add_cookie call chain is inferred from the registration wiring at src/plugins/bison/sub_manager/__init__.py:68 and is unverified.",
+          "This contract asserts only the actor-permission guard; no claim is made about validation of cookie content."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Handler modules for the bison sub_manager commands (add_cookie.py, del_cookie.py, add_cookie_target.py, del_cookie_target.py, add_sub.py, del_sub.py) are not in supplied views; the matcher\u2192DBConfig call chains compiled above are inferred from registration wiring and remain unverified.",
+      "src/plugins/deepseek/config.py (_config, ds_config, and save()) is not supplied; the persistence medium of _config.save() for /ds model.set is unsupported, so that contract is filed under effect_stratum=state for the in-memory default_model mutation, and any file-stratum facet is not asserted.",
+      "The caller of src/plugins/chat/memory_tools.register() (agent construction and per-round participants population) is not supplied, so the per-round correctness of the participants allow-list cannot be assessed.",
+      "No supplied source binds the bison cookie/subscribe commands or the /ds model.set handler to an LLM agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effects; agent_mediation is recorded as not_established for those contracts rather than inferred from the NoneBot/pydantic-ai framework context.",
+      "Whether do_del_cookie_target invokes DBConfig.delete_cookie_target or DBConfig.delete_cookie_target_by_id is not determinable from supplied views; both commit points are retained in one contract pending that identification.",
+      "Other source-visible guarded or unguarded effects (deepseek balance/model.render-markdown/bind/unbind SuperUser checks at src/plugins/deepseek/__init__.py:178-197 and 226-325; unguarded UserMemory writers set_memory/clear_memory at src/providers/user_memory/__init__.py:93-96 and 162-171; DBConfig.update_subscribe/update_cookie/delete_cookie_target_by_id exposure) were not raised as reviewer obligations and are not compiled as contracts."
+    ],
+    "repository": "MooncellWiki/BotFooChan",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:e6afa212511037088cded636d8d98049"
+  },
+  "request_sha256": "3269ce5cd08d0e005f533e996386e780df459f28999f0bddc65cddb165253817",
+  "response_sha256": "9bac7d716edefb3c5e7395c11a6056ab9efb6ea4181da81013add33878c1333e",
+  "state": "completed",
+  "tokens": 39771,
+  "unit": "v24-screen:e6afa212511037088cded636d8d98049"
+}

@@ -1,0 +1,253 @@
+{
+  "behavior_ground_truth_established": false,
+  "budget": {
+    "in_flight": 0,
+    "known_accounted_tokens": 209378,
+    "max_calls": 1,
+    "maximum_in_flight": 1,
+    "run_tokens_stop_before_next_call": 8000000,
+    "semantics": "Stop admitting new requests after observed usage reaches threshold or becomes unknown. Already admitted requests may finish above threshold; this is not a hard billing cap.",
+    "started_calls": 1,
+    "usage_known": true
+  },
+  "decision": "source_support_only_pending_reconciliation",
+  "independence_limit": "Fresh no-history requests, same underlying provider/model family as detector; not an independent behavioral oracle.",
+  "previous_predictions_supplied": false,
+  "rows": [
+    {
+      "behavior_ground_truth_established": false,
+      "contract_id": "protection-contract:67ae17e8eab8edf896a20a3a978a28f3",
+      "execution_state": "completed",
+      "raw_result_sha256": "783eadbdd6e3a62bd0b5e9b910c9d72caab09c430f641ae648d330728a87981f",
+      "review": {
+        "analysis_environment": {
+          "actual_deployment_verified": false,
+          "framework": "google-adk",
+          "range_wide_conclusion": false,
+          "scope": "fixed_compatible_reference",
+          "selected_reference_sdk": "google-adk==1.22.1; httpx==0.28.1; libsql-client==0.3.1; pydantic==2.12.5; python-dotenv==1.0.1; starlette==0.49.1; ucp-sdk==0.1.0",
+          "selection_origin": "explicit_source_reference_candidate",
+          "source_constraint_note": "Selected analysis candidate only; verify critical source/API compatibility. Pending evidence does not authorize exclusion."
+        },
+        "analysis_environment_sha256": "4e18fea87d3978c7ab3a7a7c8ece4b8c546da46ce9df300605797999a9cc6d5f",
+        "contract_id": "protection-contract:67ae17e8eab8edf896a20a3a978a28f3",
+        "contract_sha256": "50cca6d3e2c1e8f183691fe00d4ddc72016e11a1b4e7e3d5604933acdc671cbf",
+        "critical_path_gaps": [
+          "The joint witness is established only on the product-search/checkout sub-clause of the protected operation; the saved-address retrieval sub-clause depends on unsupplied SalesforceSyncClient internals.",
+          "Whether store-side customer_id can be populated by any route other than verify_passwordless_otp (store.py 215-235) cannot be checked without scapi_sync_client.py."
+        ],
+        "denial_basis": "missing_matching_approval",
+        "environment_argument": "The audit uses the explicitly fixed reference profile (google-adk==1.22.1, httpx==0.28.1, pydantic==2.12.5, python-dotenv==1.0.1, starlette==0.49.1, ucp-sdk==0.1.0, libsql-client==0.3.1), consistent with the selected build entry apps/business_agent/Dockerfile -> src/business_agent/requirements.txt (google-adk[a2a]>=1.22.0, ucp-sdk==0.1.0); uv.lock independently resolves google-adk 1.22.1. Critical API compatibility for the witness is verified in the supplied SDK sources: plain callables in Agent.tools are wrapped into FunctionTool (llm_agent.py 174-177), FunctionTool.run_async injects tool_context, requires no confirmation by default and invokes the app function (function_tool.py 45-84, 156-218), the LLM flow dispatches model function calls through tool.run_async when no before-tool override exists (functions.py 340-426, 782-788), ToolContext.state is the delta-aware session State (callback_context.py 39-64), and every Agent field used in agent.py (model, instruction, tools, after_tool_callback, after_agent_callback) exists in LlmAgent. agent.py imports (Runner, InMemorySessionService, ToolContext, BaseTool, google.genai types) all resolve against the supplied 1.22.1 tree; no missing SDK module is used in the witness path. This is the selected fixed reference, not a project pin; no claim is made about other SDK versions or the deployed installation.",
+        "environment_basis": "compatible_witness",
+        "environment_sources": [
+          {
+            "end_line": 28,
+            "path": "apps/business_agent/Dockerfile",
+            "start_line": 1
+          },
+          {
+            "end_line": 7,
+            "path": "apps/business_agent/src/business_agent/requirements.txt",
+            "start_line": 1
+          },
+          {
+            "end_line": 535,
+            "path": "apps/business_agent/uv.lock",
+            "start_line": 477
+          },
+          {
+            "end_line": 177,
+            "path": "__sdk__/google-adk/1.22.1/google/adk/agents/llm_agent.py",
+            "start_line": 174
+          },
+          {
+            "end_line": 84,
+            "path": "__sdk__/google-adk/1.22.1/google/adk/tools/function_tool.py",
+            "start_line": 45
+          },
+          {
+            "end_line": 218,
+            "path": "__sdk__/google-adk/1.22.1/google/adk/tools/function_tool.py",
+            "start_line": 156
+          },
+          {
+            "end_line": 426,
+            "path": "__sdk__/google-adk/1.22.1/google/adk/flows/llm_flows/functions.py",
+            "start_line": 340
+          },
+          {
+            "end_line": 64,
+            "path": "__sdk__/google-adk/1.22.1/google/adk/agents/callback_context.py",
+            "start_line": 39
+          }
+        ],
+        "exclusion": "No supplied guard blocks the joint path: search_shopping_catalog, add_to_checkout and complete_checkout never read ADK_AUTH_MODE/ADK_CUSTOMER_ID; the Agent installs no before_tool_callback and no output_schema (only after_tool_modifier, which always returns None); FunctionTool.confirmation defaults to False. The email+OTP sequence exists only as instruction text (agent.py 708-722), which is not enforcement. The only partial blocking in supplied source is store.get_customer_addresses/get_customer_address returning empty/None when the SCAPI client lacks customer_id (store.py 245-251, 271-277), which never covers search or checkout.",
+        "facts": {
+          "forbidden_commit_joint_reachable": "true",
+          "forbidden_condition_reachable": "true",
+          "protected_operation_reachable": "true",
+          "same_contract_scope": "true"
+        },
+        "forbidden_condition": "Registered-user mode is selected (choose_auth_mode('registered') sets RetailStore._auth_mode and session state 'auth_mode') while request_passwordless_login and verify_passwordless_otp have not completed and no authenticated customer id exists.",
+        "missing_evidence": [
+          "scapi_integration/scapi_sync_client.py (SalesforceSyncClient.customer_id, is_authenticated, request_passwordless_login, get_passwordless_token, get_customer, get_customer_address) is not supplied; whether the saved-address sub-clause can commit without completed OTP under an active SCAPI client is unknown.",
+          "data/agent_card. and data/ucp. contents are not supplied; the concrete per-session capability/extension set is unverified, though no traced step depends on it.",
+          "The schedule is a source-permitted well-formed model plan under the declared interface; no live model behavior, deployment run or execution observation is claimed."
+        ],
+        "operation_commit": "search_shopping_catalog (or add_to_checkout) executes the store-backed product search / cart add and returns a success result with product or checkout data within the same registered-mode session.",
+        "scope_complete": false,
+        "sources": {
+          "forbidden_commit_joint_reachable": [
+            {
+              "end_line": 78,
+              "path": "apps/business_agent/src/business_agent/agent.py",
+              "start_line": 58
+            },
+            {
+              "end_line": 292,
+              "path": "apps/business_agent/src/business_agent/agent.py",
+              "start_line": 279
+            },
+            {
+              "end_line": 665,
+              "path": "apps/business_agent/src/business_agent/agent.py",
+              "start_line": 639
+            },
+            {
+              "end_line": 177,
+              "path": "__sdk__/google-adk/1.22.1/google/adk/agents/llm_agent.py",
+              "start_line": 174
+            },
+            {
+              "end_line": 368,
+              "path": "__sdk__/google-adk/1.22.1/google/adk/flows/llm_flows/functions.py",
+              "start_line": 363
+            }
+          ],
+          "forbidden_condition_reachable": [
+            {
+              "end_line": 97,
+              "path": "apps/business_agent/src/business_agent/agent.py",
+              "start_line": 58
+            },
+            {
+              "end_line": 168,
+              "path": "apps/business_agent/src/business_agent/agent.py",
+              "start_line": 136
+            },
+            {
+              "end_line": 181,
+              "path": "apps/business_agent/src/business_agent/store.py",
+              "start_line": 170
+            },
+            {
+              "end_line": 722,
+              "path": "apps/business_agent/src/business_agent/agent.py",
+              "start_line": 708
+            }
+          ],
+          "protected_operation_reachable": [
+            {
+              "end_line": 298,
+              "path": "apps/business_agent/src/business_agent/agent.py",
+              "start_line": 279
+            },
+            {
+              "end_line": 340,
+              "path": "apps/business_agent/src/business_agent/agent.py",
+              "start_line": 301
+            },
+            {
+              "end_line": 359,
+              "path": "apps/business_agent/src/business_agent/store.py",
+              "start_line": 306
+            }
+          ],
+          "same_contract_scope": [
+            {
+              "end_line": 759,
+              "path": "apps/business_agent/src/business_agent/agent.py",
+              "start_line": 697
+            },
+            {
+              "end_line": 44,
+              "path": "apps/business_agent/src/business_agent/agent.py",
+              "start_line": 43
+            },
+            {
+              "end_line": 163,
+              "path": "apps/business_agent/src/business_agent/agent_executor.py",
+              "start_line": 138
+            }
+          ]
+        },
+        "trace": [
+          {
+            "end_line": 88,
+            "event": "Executable entry: create_app() wires the imported root_agent into ADKAgentExecutor and A2AStarletteApplication; no authentication middleware or before-tool guard is installed.",
+            "path": "apps/business_agent/src/business_agent/main.py",
+            "start_line": 58
+          },
+          {
+            "end_line": 194,
+            "event": "execute() runs the agent for the request; the initial state delta (lines 268-273) contains only UCP metadata, extensions, payment and latest-result keys, so no auth state preexists in the session.",
+            "path": "apps/business_agent/src/business_agent/agent_executor.py",
+            "start_line": 165
+          },
+          {
+            "end_line": 368,
+            "event": "Chosen schedule inside one run_async loop: the model's first well-formed function call is choose_auth_mode(mode='registered'); with no before_tool_callback returning a response, __call_tool_async dispatches tool.run_async.",
+            "path": "__sdk__/google-adk/1.22.1/google/adk/flows/llm_flows/functions.py",
+            "start_line": 363
+          },
+          {
+            "end_line": 78,
+            "event": "choose_auth_mode validates 'registered', calls store.set_auth_mode('registered') and writes tool_context.state['auth_mode']='registered'; no email or OTP precondition exists.",
+            "path": "apps/business_agent/src/business_agent/agent.py",
+            "start_line": 58
+          },
+          {
+            "end_line": 181,
+            "event": "RetailStore._auth_mode becomes 'registered'; no customer id or token is recorded, so the forbidden condition now holds.",
+            "path": "apps/business_agent/src/business_agent/store.py",
+            "start_line": 170
+          },
+          {
+            "end_line": 168,
+            "event": "Nothing in the schedule invokes verify_passwordless_otp, the only writer of ADK_CUSTOMER_ID; the unauthenticated-registered state persists.",
+            "path": "apps/business_agent/src/business_agent/agent.py",
+            "start_line": 136
+          },
+          {
+            "end_line": 788,
+            "event": "The model's next well-formed call search_shopping_catalog is dispatched through the same route into tool.run_async.",
+            "path": "__sdk__/google-adk/1.22.1/google/adk/flows/llm_flows/functions.py",
+            "start_line": 782
+          },
+          {
+            "end_line": 298,
+            "event": "search_shopping_catalog executes without reading auth_mode or customer_id state and returns the store search result.",
+            "path": "apps/business_agent/src/business_agent/agent.py",
+            "start_line": 279
+          },
+          {
+            "end_line": 359,
+            "event": "search_products serves results from SCAPI or the static catalog with no authentication branch; ProductResults are produced.",
+            "path": "apps/business_agent/src/business_agent/store.py",
+            "start_line": 306
+          },
+          {
+            "end_line": 665,
+            "event": "after_tool_modifier, the only after_tool_callback, records typed results and returns None; the search success event proceeds to the model/user as the protected commit in the same session scope.",
+            "path": "apps/business_agent/src/business_agent/agent.py",
+            "start_line": 639
+          }
+        ],
+        "validation_status": "valid"
+      },
+      "supported_label": "unknown",
+      "task_sha256": "bded23212d733e4f57a470a04b8e1cead54495e9802b9a2678f7f9242c1112ad"
+    }
+  ],
+  "schema_version": "p0-isolated-source-review-result-1"
+}

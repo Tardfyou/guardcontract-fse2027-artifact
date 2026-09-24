@@ -1,0 +1,301 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "return FileResponse(path) at backend/app/routers/media.py:64 \u2014 the HTTP response that streams the resolved file's bytes to the client (path construction and existence check at lines 61-63 immediately precede it).",
+        "contract_id": "ecological-contract:088e9441359cd821896c8a12f76527b8",
+        "declared_mechanism": "Character-level filename rejection in fetch_media: 'if \"/\" in filename or \"\\\\\" in filename or \"..\" in filename: raise HTTPException(400, ...)', executed before _media_dir() / filename path construction, before the is_file() check, and before FileResponse (backend/app/routers/media.py:56-59).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 55,
+            "line_start": 54,
+            "path": "backend/app/routers/media.py",
+            "role": "protected_operation",
+            "source_sha256": "771a20f07cb45606ff913813f50cd311c9e0933a464d9545ec3e0a21a29138df"
+          },
+          {
+            "line_end": 57,
+            "line_start": 56,
+            "path": "backend/app/routers/media.py",
+            "role": "forbidden_condition",
+            "source_sha256": "771a20f07cb45606ff913813f50cd311c9e0933a464d9545ec3e0a21a29138df"
+          },
+          {
+            "line_end": 59,
+            "line_start": 58,
+            "path": "backend/app/routers/media.py",
+            "role": "guard_registration",
+            "source_sha256": "771a20f07cb45606ff913813f50cd311c9e0933a464d9545ec3e0a21a29138df"
+          },
+          {
+            "line_end": 64,
+            "line_start": 61,
+            "path": "backend/app/routers/media.py",
+            "role": "commit_point",
+            "source_sha256": "771a20f07cb45606ff913813f50cd311c9e0933a464d9545ec3e0a21a29138df"
+          }
+        ],
+        "forbidden_condition": "An HTTP GET /media/{filename} request whose filename parameter carries a path separator or '..' traversal sequence that would cause a file outside settings.media_root to be resolved and its bytes served to the client (arbitrary file read).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, hook, or agent-generated URI ever drives GET /media/{filename} (which would reclassify mediation) cannot be determined from the supplied views.",
+          "The value and resolution of settings.media_root (backend/app/config.py) is not supplied, so the guaranteed containment of '_media_dir() / filename' under the character check cannot be fully verified."
+        ],
+        "protected_operation": "Serving a media file in response to GET /media/{filename} via the fetch_media handler.",
+        "protected_resource": "Files under settings.media_root (and, by exclusion, the rest of the filesystem that traversal could otherwise reach).",
+        "protection_obligation": "URL-served media files must never escape the media root: the GET /media/{filename} handler must reject any URL-supplied filename containing '/', '\\\\', or '..' before any filesystem access, so only paths resolving inside settings.media_root can be served. (Merged statement: this obligation was raised with identical media.py:54-64 citations in both reviewer opinions and is compiled once here.)",
+        "scope_limits": [
+          "No supplied source binds fetch_media to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; the filename comes straight off the URL per the source comment (media.py:56-57), so agent mediation is left unresolved rather than inferred from the repository's agent-related topic.",
+          "The upload endpoint POST /media (media.py:36-51) is not covered by this contract; its stored filename is server-generated from a SHA-256 digest, and no reviewer obligation was raised for it.",
+          "The character check addresses separator/'..' traversal only; symlink or other filesystem-level escape vectors are not addressed in the supplied source.",
+          "No claim is made about whether the guard is bypassable or sufficient at runtime."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Execution of the namespaced SELECT over knowledge_docs and materialization of the returned hit list handed back to the agent (backend/app/tools/knowledge.py:28-30 execute, 43-45 top_k-truncated RetrievalHit list return).",
+        "contract_id": "ecological-contract:cfc467da0b8e9dde9758c229379b2ddc",
+        "declared_mechanism": "Two-layer namespace confinement: (1) the tool wrapper registered as the agent's FunctionTool constructs RetrievalQuery(query=query, namespaces=[\"advisory\", \"local\"], top_k=top_k) with a hard-coded namespace list that the agent-controllable parameters (query: str, top_k: int) cannot alter (backend/app/agent/advisor_agent.py:37-42); (2) retrieve_knowledge_impl issues SELECT over KnowledgeDoc filtered by KnowledgeDoc.namespace.in_(query.namespaces) (backend/app/tools/knowledge.py:29-30).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 42,
+            "line_start": 37,
+            "path": "backend/app/agent/advisor_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "9f42289d1c6bb0dc7b29733fd118323bb2e5b94e2e4e31d53f780ca9a1fb2cd9"
+          },
+          {
+            "line_end": 55,
+            "line_start": 49,
+            "path": "backend/app/agent/advisor_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9f42289d1c6bb0dc7b29733fd118323bb2e5b94e2e4e31d53f780ca9a1fb2cd9"
+          },
+          {
+            "line_end": 10,
+            "line_start": 8,
+            "path": "backend/app/agent/advisor_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9f42289d1c6bb0dc7b29733fd118323bb2e5b94e2e4e31d53f780ca9a1fb2cd9"
+          },
+          {
+            "line_end": 32,
+            "line_start": 29,
+            "path": "backend/app/agent/advisor_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9f42289d1c6bb0dc7b29733fd118323bb2e5b94e2e4e31d53f780ca9a1fb2cd9"
+          },
+          {
+            "line_end": 11,
+            "line_start": 9,
+            "path": "backend/app/tools/knowledge.py",
+            "role": "forbidden_condition",
+            "source_sha256": "56c0d9968427f0f4e03abaa90b4a79d6447b41c0142eb068fdcf715b7b043300"
+          },
+          {
+            "line_end": 29,
+            "line_start": 29,
+            "path": "backend/app/tools/knowledge.py",
+            "role": "guard_registration",
+            "source_sha256": "56c0d9968427f0f4e03abaa90b4a79d6447b41c0142eb068fdcf715b7b043300"
+          },
+          {
+            "line_end": 30,
+            "line_start": 28,
+            "path": "backend/app/tools/knowledge.py",
+            "role": "commit_point",
+            "source_sha256": "56c0d9968427f0f4e03abaa90b4a79d6447b41c0142eb068fdcf715b7b043300"
+          },
+          {
+            "line_end": 45,
+            "line_start": 43,
+            "path": "backend/app/tools/knowledge.py",
+            "role": "commit_point",
+            "source_sha256": "56c0d9968427f0f4e03abaa90b4a79d6447b41c0142eb068fdcf715b7b043300"
+          },
+          {
+            "line_end": 183,
+            "line_start": 180,
+            "path": "backend/app/agent/runner.py",
+            "role": "forbidden_condition",
+            "source_sha256": "15bcafe3f4d0f555cd0acb3fde1fc7fe104099f60ec1007a2dfe79873d158814"
+          }
+        ],
+        "forbidden_condition": "A retrieve_knowledge invocation dispatched from the advisor agent returning any RetrievalHit whose backing KnowledgeDoc has namespace == 'authoritative', i.e. dose/product/timing-bearing content entering the advisor's tool-result context or, via it, the farmer-facing answer.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "backend/app/schemas/knowledge.py is not supplied: whether RetrievalQuery itself validates or constrains the namespaces field is unknown.",
+          "The KnowledgeDoc model definition is not supplied; the set of existing namespace values (including 'authoritative') is asserted only by docstring commentary.",
+          "Whether any other module constructs a RetrievalQuery containing 'authoritative' and calls retrieve_knowledge_impl cannot be determined from the supplied views (caller enumeration unavailable).",
+          "Whether ADK's FunctionTool schema generation for the wrapper exposes any additional agent-controllable parameter beyond (query, top_k) is not verifiable from the supplied source."
+        ],
+        "protected_operation": "The advisor agent's retrieve_knowledge tool invocation during a farmer 'Tanya' question turn (run_advisor_question -> build_advisor_agent -> ADK FunctionTool dispatch of the wrapped retrieve_knowledge).",
+        "protected_resource": "The knowledge_docs corpus rows in the 'authoritative' namespace, and the advisor agent's tool-result/answer channel that must not carry authoritative dose/product/timing content.",
+        "protection_obligation": "The advisor agent's retrieve_knowledge tool must never return documents from the 'authoritative' namespace (which the supplied docstrings identify as the sole source of dose/product/timing); every retrieval executed on behalf of the advisor agent is confined to the 'advisory' and 'local' namespaces, at both tool registration (hard-coded RetrievalQuery namespaces) and query time (namespace IN-filter on the KnowledgeDoc SELECT).",
+        "scope_limits": [
+          "Covers only the wrapper registered in build_advisor_agent; any other code path calling app.tools.knowledge.retrieve_knowledge directly could pass different namespaces and is not covered by the wrapper-level hard-scoping (only by whatever namespaces that caller supplies).",
+          "The prompt-level instruction 'NEVER state a dose, product name, or treatment timing yourself' (advisor_agent.py:29-32) is advisory LLM-instruction text, not a code guard; this contract covers only the code-level namespace confinement.",
+          "Does not cover other tools available to the root agent (e.g., get_treatment, find_spray_window); build_root_agent's tool set is not in the supplied views.",
+          "Only supplied source views were used; behavior labels and repository enumeration are unavailable, so nothing here asserts runtime prevalence or violation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "return FileResponse(path, media_type=\"audio/mpeg\") at backend/app/routers/speech.py:219 \u2014 the HTTP response that streams the resolved audio bytes to the client (path construction and existence check at lines 216-218 immediately precede it).",
+        "contract_id": "ecological-contract:d162777e82875da29381533b81c50019",
+        "declared_mechanism": "Key shape check in fetch_audio: 'if not key.isalnum() or len(key) != 64: raise HTTPException(400, \"invalid audio key\")', executed before _audio_dir() / f\"{key}.mp3\" path construction, before the is_file() check, and before FileResponse (backend/app/routers/speech.py:214-215).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 213,
+            "line_start": 212,
+            "path": "backend/app/routers/speech.py",
+            "role": "protected_operation",
+            "source_sha256": "a54a26902bf8e7a139c51836f7e9c3936faca3387d75c36695e85cda61e5225f"
+          },
+          {
+            "line_end": 215,
+            "line_start": 214,
+            "path": "backend/app/routers/speech.py",
+            "role": "guard_registration",
+            "source_sha256": "a54a26902bf8e7a139c51836f7e9c3936faca3387d75c36695e85cda61e5225f"
+          },
+          {
+            "line_end": 219,
+            "line_start": 216,
+            "path": "backend/app/routers/speech.py",
+            "role": "commit_point",
+            "source_sha256": "a54a26902bf8e7a139c51836f7e9c3936faca3387d75c36695e85cda61e5225f"
+          }
+        ],
+        "forbidden_condition": "An HTTP GET /speech/audio/{key} request whose key is not exactly 64 alphanumeric characters (e.g., containing separators or traversal sequences interpolated via f\"{key}.mp3\") causing an unintended path under or beyond the speech audio directory to be resolved and its bytes served to the client.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Whether an agent turn's output flows through /speech/say or /speech/render and is then fetched at /speech/audio/{key} in a way the DEC study would classify as agent-mediated cannot be established from the supplied views.",
+          "The value of settings.media_root and the containment of _audio_dir() are not verifiable (backend/app/config.py not supplied)."
+        ],
+        "protected_operation": "Serving cached synthesized audio in response to GET /speech/audio/{key} via the fetch_audio handler.",
+        "protected_resource": "Files under settings.media_root/speech (the audio cache directory written by _audio_dir(), speech.py:42-45).",
+        "protection_obligation": "URL-served speech audio must never escape the speech audio directory: the GET /speech/audio/{key} handler must require a 64-character alphanumeric key before path resolution, so only '{key}.mp3' paths built from hash-shaped keys inside settings.media_root/speech can be served.",
+        "scope_limits": [
+          "No supplied source binds fetch_audio to an agent tool, agent lifecycle hook, or agent-generated key input: although the module docstring describes synthesizing agent-composed strings and the synthesis path returns audio_uri values of the form /speech/audio/{key} (speech.py:74, 115), the key served by this handler is client-supplied and the guard protects the serving operation, not the synthesis. Mediation is therefore left unresolved rather than inferred from the module's agent-output topic.",
+          "Only the audio-serving endpoint is covered; the synthesis side effects in _synthesize_cached (filesystem write at speech.py:94-95 and AudioCache database writes at speech.py:97-110) are distinct operations at different commit points/strata and were not raised as obligations by the reviewers, so no contract is compiled for them.",
+          "No claim is made about whether the alnum/length check is sufficient against all path-resolution behaviors at runtime."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Construction and add of each Recommendation row in run_root_agent (backend/app/agent/runner.py:157-167, session.add(Recommendation(...))); per the function's own contract (runner.py:115-116) the final session.commit() that makes these rows persistent is performed by the caller and lies outside the supplied view.",
+        "contract_id": "ecological-contract:de102ae12e232298ecb09830bc5c949f",
+        "declared_mechanism": "_reconcile_spray_deferrals (backend/app/agent/runner.py:46-105): a deterministic Python safety net that reads the last find_spray_window entry from tool_logger.calls (including _raw_result), overwrites rec['defer_cause'] with actual_defer_cause and rec['recommended_at'] with recommended_window['window_start'] for every rainfast-gated treatment rec (lines 71-88), and structurally inserts a clear_drain recommendation at sequence 1 when defer_cause == 'rainfast' and none exists (lines 90-103). It is wired into the persistence path at runner.py:142, before any Recommendation rows are constructed.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 43,
+            "line_start": 43,
+            "path": "backend/app/agent/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "15bcafe3f4d0f555cd0acb3fde1fc7fe104099f60ec1007a2dfe79873d158814"
+          },
+          {
+            "line_end": 61,
+            "line_start": 46,
+            "path": "backend/app/agent/runner.py",
+            "role": "forbidden_condition",
+            "source_sha256": "15bcafe3f4d0f555cd0acb3fde1fc7fe104099f60ec1007a2dfe79873d158814"
+          },
+          {
+            "line_end": 88,
+            "line_start": 71,
+            "path": "backend/app/agent/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "15bcafe3f4d0f555cd0acb3fde1fc7fe104099f60ec1007a2dfe79873d158814"
+          },
+          {
+            "line_end": 103,
+            "line_start": 90,
+            "path": "backend/app/agent/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "15bcafe3f4d0f555cd0acb3fde1fc7fe104099f60ec1007a2dfe79873d158814"
+          },
+          {
+            "line_end": 142,
+            "line_start": 126,
+            "path": "backend/app/agent/runner.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "15bcafe3f4d0f555cd0acb3fde1fc7fe104099f60ec1007a2dfe79873d158814"
+          },
+          {
+            "line_end": 167,
+            "line_start": 157,
+            "path": "backend/app/agent/runner.py",
+            "role": "commit_point",
+            "source_sha256": "15bcafe3f4d0f555cd0acb3fde1fc7fe104099f60ec1007a2dfe79873d158814"
+          },
+          {
+            "line_end": 116,
+            "line_start": 115,
+            "path": "backend/app/agent/runner.py",
+            "role": "commit_point",
+            "source_sha256": "15bcafe3f4d0f555cd0acb3fde1fc7fe104099f60ec1007a2dfe79873d158814"
+          }
+        ],
+        "forbidden_condition": "A Recommendation row being persisted for a rainfast-gated action whose defer_cause or recommended_at diverges from find_spray_window's actual recorded result (e.g., the observed failure mode named in the source: defer_cause=null despite find_spray_window returning rain_free=False, or a model-fabricated recommended_at date such as '2023-10-06'), or a deferred spray persisting with no preceding clear_drain recommendation when drainage-first is required.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The find_spray_window tool implementation is not supplied; the shape of _raw_result ({defer_cause, recommended_window:{window_start}}) is taken solely from this view's handling code.",
+          "backend/app/agent/logging_callbacks.py (ToolCallLogger) is not supplied; how _raw_result is captured and whether it is always present for find_spray_window calls is unknown.",
+          "The production caller of run_root_agent that performs session.commit() is not in the supplied views, so the ultimate database commit point cannot be line-cited.",
+          "Whether _extract_'s salvaged first {...} block can yield recommendation shapes the reconciler does not anticipate (e.g., missing block_id keys at runner.py:160) cannot be assessed from the supplied source."
+        ],
+        "protected_operation": "Persistence of the LLM-parsed recommendations list as Recommendation rows at the end of a run_root_agent turn.",
+        "protected_resource": "The recommendations table rows (app.models.agent.Recommendation) written for the agent run \u2014 specifically the defer_cause, recommended_at, and sequence/ordering fields for spray/drench treatment recommendations.",
+        "protection_obligation": "For persisted recommendations with action_type in {spray, drench} carrying a treatment_id, the persisted defer_cause and recommended_at must be derived deterministically from find_spray_window's actual last-called tool result, overriding whatever the LLM authored in its final JSON; additionally, when the actual defer_cause is 'rainfast', a clear_drain recommendation must be injected ahead of the deferred spray if the model did not already produce one.",
+        "scope_limits": [
+          "Reconciliation only applies when at least one find_spray_window call is recorded in tool_logger.calls; the function returns recommendations_data unchanged if there are no spray calls (runner.py:62-64), so turns lacking such a call leave parsed recommendations unreconciled.",
+          "Overrides apply only to recs with action_type in _RAINFAST_GATED_ACTIONS ({spray, drench}) that also carry a treatment_id (runner.py:78); other action types pass through untouched.",
+          "If find_spray_window's raw result lacks a parseable dict with 'defer_cause', the reconciler returns the data unchanged (runner.py:66-69).",
+          "The advisor question path (run_advisor_question) persists nothing and is out of scope for this contract.",
+          "No claim is made here about whether the override is sufficient or correct in all runtime cases; this contract records the declared guard and its wiring only."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "backend/app/schemas/knowledge.py: the RetrievalQuery definition (whether the namespaces field is validated/constrained anywhere beyond the advisor wrapper's hard-coded list).",
+      "backend/app/models/knowledge.py: the KnowledgeDoc model and the enumeration of valid namespace values, including 'authoritative'.",
+      "backend/app/agent/logging_callbacks.py: ToolCallLogger implementation \u2014 how calls and _raw_result are captured and the shape of public_calls().",
+      "The find_spray_window tool implementation (raw result contract: defer_cause, recommended_window.window_start).",
+      "backend/app/agent/root_agent.py: build_root_agent composition (full tool set, lifecycle hooks, any additional guards) \u2014 only the advisor's build path is supplied.",
+      "All callers of app.tools.knowledge.retrieve_knowledge and of run_root_agent (the commit-responsible caller named at runner.py:116).",
+      "backend/app/config.py: settings.media_root and related configuration values.",
+      "backend/app/models/agent.py: the Recommendation model definition (column constraints on defer_cause/recommended_at, if any).",
+      "Behavior/runtime labels for any supplied view are unavailable; no determination of guard sufficiency, violation, or prevalence is possible or attempted from the supplied source."
+    ],
+    "repository": "nathanyap17/huluhilir",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:980cfdc55686b376dbd05f1bb488c3b1"
+  },
+  "request_sha256": "d5aa1ab1aa77c652564329391f7837c0c31951c8f38fb4f80d16641094f1113e",
+  "response_sha256": "f39becd1464d3188eaf1551c1f232d0194bb2bb2b692df43b56cb2aa63f6bc9c",
+  "state": "completed",
+  "tokens": 22823,
+  "unit": "v24-screen:980cfdc55686b376dbd05f1bb488c3b1"
+}

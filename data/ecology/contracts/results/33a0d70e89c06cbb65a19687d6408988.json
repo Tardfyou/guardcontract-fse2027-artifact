@@ -1,0 +1,563 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "agent.graph.update_state(config, status='cancelled') at streaming_graph.py 217, after the get_current_user guard at 197.",
+        "contract_id": "ecological-contract:25f3b844f6f6d1b82d59ec1ae07a2681",
+        "declared_mechanism": "FastAPI Depends(get_current_user) on the cancel endpoint, enforced via HTTPBearer and SupabaseAuth.verify_token (HTTP 401 for missing/invalid/expired tokens) before the handler invokes agent.graph.update_state.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 198,
+            "line_start": 193,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 218,
+            "line_start": 199,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "protected_operation",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 79,
+            "line_start": 62,
+            "path": "backend/app/core/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f4f21621b517a2b20208b695f31e14bd5be0006a3edb482d03022f6de65e39a0"
+          },
+          {
+            "line_end": 218,
+            "line_start": 215,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "commit_point",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          }
+        ],
+        "forbidden_condition": "Writing status 'cancelled' into agent graph state for a thread without a valid authenticated request.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The LangGraph checkpointer/persistence backend for agent.graph state is not in supplied source.",
+          "Agent mediation of the user-initiated cancellation write is not established from supplied source."
+        ],
+        "protected_operation": "POST /graph/stream/cancel/{thread_id} cancellation write to the agent graph state.",
+        "protected_resource": "Agent graph state addressed by config with the requesting user's thread_id and user_id.",
+        "protection_obligation": "Unauthenticated cancellation writes to agent graph state are forbidden: POST /graph/stream/cancel/{thread_id} requires a valid Supabase JWT via Depends(get_current_user) before agent.graph.update_state marks a run's state as cancelled.",
+        "scope_limits": [
+          "The state write is wrapped in an inner try/except that logs and continues when the thread state does not exist (streaming_graph.py 215-221).",
+          "The run_configs deletion performed by the same handler is covered by a separate contract.",
+          "Stratum assumes the graph state write persists via a checkpointer; the checkpointer configuration is not in supplied source, though graph state is read across requests elsewhere."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Return of StateResponse containing state.values/next/config/metadata at agent.py 128-139; the 403 guard at 120-126 executes before any state data is returned.",
+        "contract_id": "ecological-contract:3cdcbe9d2721caa5070ed57e1f188f7d",
+        "declared_mechanism": "FastAPI dependency Depends(get_current_user); state fetched with a config carrying the requester's user_id, then ownership comparison (if state_user_id and state_user_id != user_id: raise HTTPException 403) before response construction.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 110,
+            "line_start": 105,
+            "path": "backend/app/api/v1/endpoints/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "772c6fb0c007f43bc3dbda7947d1e4e750deff930211b649a4376953bcc9cb39"
+          },
+          {
+            "line_end": 111,
+            "line_start": 106,
+            "path": "backend/app/api/v1/endpoints/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "772c6fb0c007f43bc3dbda7947d1e4e750deff930211b649a4376953bcc9cb39"
+          },
+          {
+            "line_end": 126,
+            "line_start": 120,
+            "path": "backend/app/api/v1/endpoints/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "772c6fb0c007f43bc3dbda7947d1e4e750deff930211b649a4376953bcc9cb39"
+          },
+          {
+            "line_end": 139,
+            "line_start": 128,
+            "path": "backend/app/api/v1/endpoints/agent.py",
+            "role": "commit_point",
+            "source_sha256": "772c6fb0c007f43bc3dbda7947d1e4e750deff930211b649a4376953bcc9cb39"
+          }
+        ],
+        "forbidden_condition": "Returning an agent thread's graph state to an authenticated user whose user_id differs from the user_id stored in state.values.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The agent.graph checkpoint backend is not in supplied source.",
+          "Whether agent state inspection is bound to an agent tool surface or lifecycle hook is not established from supplied source."
+        ],
+        "protected_operation": "GET /threads/{thread_id}/state inspection of the current agent graph state for a thread.",
+        "protected_resource": "Agent graph checkpoint state for thread_id, including state.values, next, config, and metadata.",
+        "protection_obligation": "Only the user to whom an agent thread state belongs may inspect it: GET /threads/{thread_id}/state (agent router) must reject with HTTP 403 when the state's stored user_id does not match the authenticated requester before state data is returned.",
+        "scope_limits": [
+          "The ownership check is conditional: when state.values contains no user_id (state_user_id falsy), the check passes and state data is returned (agent.py 121-126).",
+          "This contract covers state inspection only; sibling thread-state mutation endpoints without ownership guards in supplied source (agent.py 81-100, 153-170, 174-194, 197-210) are outside this obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Return of RestoreConversationResponse containing messages and data_context at conversation.py 435-446; the 403 guard at 395-401 precedes the state fetch (406) and response.",
+        "contract_id": "ecological-contract:3ce19f0e017e9f33390332c66f4a407a",
+        "declared_mechanism": "FastAPI dependency Depends(get_current_user) plus ownership comparison raising HTTP 403 (conversation.py 395-401) before the agent state fetch and response assembly.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 382,
+            "line_start": 376,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "guard_registration",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 383,
+            "line_start": 377,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "protected_operation",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 401,
+            "line_start": 395,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 446,
+            "line_start": 435,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "commit_point",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          }
+        ],
+        "forbidden_condition": "Returning a conversation's stored messages and the agent graph state's data_context to a requester whose user_id differs from thread.user_id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Agent mediation of this HTTP restore operation is not established from supplied source.",
+          "agent_service.get_current_state internals are not in supplied source."
+        ],
+        "protected_operation": "GET /conversation/{thread_id}/restore restoration of conversation content (messages plus agent state data_context).",
+        "protected_resource": "Conversation thread record, its stored messages, and the agent graph state data_context for thread_id.",
+        "protection_obligation": "Only the authenticated owner of a conversation thread may restore it: GET /conversation/{thread_id}/restore must reject cross-user requests with HTTP 403 before messages and agent state data_context are returned.",
+        "scope_limits": [
+          "The endpoint additionally exposes agent state via agent_service.get_current_state (conversation.py 406-419) after the ownership check; failures fetching state are logged and skipped.",
+          "Missing thread raises 404 before the ownership check (conversation.py 388-393)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "chat_service.update_thread_title(thread_id, request.title) at conversation.py 303, reached only after the 403 ownership guard at 296-301.",
+        "contract_id": "ecological-contract:435cb254c921b9be244e8644f65fe844",
+        "declared_mechanism": "FastAPI dependency Depends(get_current_user) plus ownership comparison raising HTTP 403 (conversation.py 296-301) before chat_service.update_thread_title is invoked.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 281,
+            "line_start": 276,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "guard_registration",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 283,
+            "line_start": 277,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "protected_operation",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 301,
+            "line_start": 296,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 309,
+            "line_start": 303,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "commit_point",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          }
+        ],
+        "forbidden_condition": "Modifying the title of a conversation thread whose thread.user_id differs from the authenticated requester's user_id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The persistence backend for ChatThreadService (database vs other store) is not shown in supplied source.",
+          "Agent mediation of this HTTP mutation is not established from supplied source."
+        ],
+        "protected_operation": "PATCH /conversation/{thread_id}/title update of a conversation thread's title.",
+        "protected_resource": "Persisted conversation thread record (title field) for thread_id.",
+        "protection_obligation": "Only the authenticated owner of a conversation thread may rename it: PATCH /conversation/{thread_id}/title must reject cross-user requests with HTTP 403 before the title mutation commits.",
+        "scope_limits": [
+          "Missing thread returns an error SuccessResponse (conversation.py 289-294) rather than an HTTP 404 before the ownership check.",
+          "Stratum reflects the persistent thread-record mutation evident from cross-request reads; the ChatThreadService storage backend is not in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "run_configs mutations per endpoint, each reachable only after get_current_user: start registration at streaming_graph.py 93-100 (guard at 84), resume overwrite at 166-181 (guard at 122), cancel deletion at 207-209 (guard at 197).",
+        "contract_id": "ecological-contract:5d7f5d76968ff5226a1c2ae58a01b640",
+        "declared_mechanism": "FastAPI Depends(get_current_user) backed by HTTPBearer credentials and SupabaseAuth.verify_token, which in non-development mode enforces HS256 signature and audience 'authenticated' and raises HTTP 401 for expired or invalid tokens before handler execution.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 85,
+            "line_start": 81,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 124,
+            "line_start": 119,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 198,
+            "line_start": 193,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 113,
+            "line_start": 100,
+            "path": "backend/app/core/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "f4f21621b517a2b20208b695f31e14bd5be0006a3edb482d03022f6de65e39a0"
+          },
+          {
+            "line_end": 60,
+            "line_start": 46,
+            "path": "backend/app/core/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f4f21621b517a2b20208b695f31e14bd5be0006a3edb482d03022f6de65e39a0"
+          },
+          {
+            "line_end": 79,
+            "line_start": 62,
+            "path": "backend/app/core/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f4f21621b517a2b20208b695f31e14bd5be0006a3edb482d03022f6de65e39a0"
+          },
+          {
+            "line_end": 100,
+            "line_start": 93,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "commit_point",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 181,
+            "line_start": 166,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "commit_point",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 209,
+            "line_start": 207,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "commit_point",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          }
+        ],
+        "forbidden_condition": "Creating, overwriting, or deleting a streaming run registration (run_configs entry keyed by thread_id, including its stored user_id binding) without a valid bearer JWT; missing, invalid, or expired tokens are rejected with HTTP 401 before the endpoint handler executes.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether run-lifecycle mutation constitutes agent mediation (tool dispatch or lifecycle hook) is not established; the staged configs are later consumed by the SSE handler that invokes agent.graph.stream (streaming_graph.py 252, 401), but that consumption path is a separate operation.",
+          "Application-level wiring (router inclusion, global dependencies) is not in supplied source."
+        ],
+        "protected_operation": "Streaming graph run lifecycle mutations: POST /graph/stream/start registration, POST /graph/stream/resume overwrite, POST /graph/stream/cancel/{thread_id} cleanup of run_configs entries.",
+        "protected_resource": "In-process streaming run registry run_configs keyed by thread_id, including the stored user_id binding.",
+        "protection_obligation": "Unauthenticated mutation of the streaming graph run registry is forbidden: POST /graph/stream/start, POST /graph/stream/resume, and POST /graph/stream/cancel/{thread_id} each require a valid Supabase JWT via Depends(get_current_user) before any run_configs registration, overwrite, or deletion commits.",
+        "scope_limits": [
+          "In development mode (ENVIRONMENT defaults to 'development'), verify_token decodes the JWT without signature verification (auth.py 40-44); the HS256 plus audience check applies only outside development (auth.py 46-60).",
+          "This contract covers only the in-process run_configs mutations; persistent side effects of the same handlers are compiled as separate contracts.",
+          "run_configs is a module-level in-process dict (streaming_graph.py 55)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Construction and return of ConversationResponse containing thread data at conversation.py 258-268; the 403 ownership guard at 251-256 executes before any thread data is returned.",
+        "contract_id": "ecological-contract:9d32c05ab8af8e8473581748ae19c15d",
+        "declared_mechanism": "FastAPI dependency Depends(get_current_user) (JWT bearer authentication) plus an explicit ownership comparison (if thread.user_id != user_id: raise HTTPException 403) executed after the thread fetch and before response construction.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 237,
+            "line_start": 232,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "guard_registration",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 238,
+            "line_start": 233,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "protected_operation",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 256,
+            "line_start": 250,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 268,
+            "line_start": 258,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "commit_point",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          }
+        ],
+        "forbidden_condition": "Serving a conversation thread's data to an authenticated requester whose user_id differs from thread.user_id (cross-user read of thread metadata).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source binds this HTTP read to an agent tool dispatch, agent lifecycle hook, or agent-generated input; agent mediation is not established.",
+          "Whether conversation threads are produced or consumed by agent runs is not shown in supplied source."
+        ],
+        "protected_operation": "GET /conversation/{thread_id} retrieval of a specific conversation thread.",
+        "protected_resource": "Conversation thread record identified by thread_id (thread_id, title, created_at, updated_at owned by thread.user_id).",
+        "protection_obligation": "Only the authenticated owner of a conversation thread may read its thread data: GET /conversation/{thread_id} must reject any request whose current_user.user_id does not match thread.user_id with HTTP 403 before thread data is returned.",
+        "scope_limits": [
+          "Ownership check operates on the thread fetched via chat_service.get_thread; missing threads return 404 before the check (conversation.py 243-248).",
+          "This response returns thread metadata with an empty messages list; message content and agent state exposure through other endpoints is covered by separate contracts."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "message_service.update_block_status(thread_id, message_id, block_id, needsApproval=False, [messageStatus]) at streaming_graph.py 156-161, after the get_current_user guard at 122.",
+        "contract_id": "ecological-contract:bac2b63071b6c58023662d8cbeb1695b",
+        "declared_mechanism": "FastAPI Depends(get_current_user) on the resume endpoint, enforced via HTTPBearer and SupabaseAuth.verify_token (HTTP 401 for missing/invalid/expired tokens) before the handler performs update_block_status calls.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 124,
+            "line_start": 119,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 161,
+            "line_start": 133,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "protected_operation",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 79,
+            "line_start": 62,
+            "path": "backend/app/core/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f4f21621b517a2b20208b695f31e14bd5be0006a3edb482d03022f6de65e39a0"
+          },
+          {
+            "line_end": 161,
+            "line_start": 151,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "commit_point",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          }
+        ],
+        "forbidden_condition": "Mutating stored message content blocks (setting needsApproval to False and messageStatus to the submitted decision) for a thread without a valid authenticated request.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the message store is a database is not shown in supplied source.",
+          "Agent mediation of the block-status clearing is not established from supplied source."
+        ],
+        "protected_operation": "POST /graph/stream/resume auto-clearing of approval flags on stored message blocks prior to staging the resume decision.",
+        "protected_resource": "Stored message content blocks with needsApproval True for (thread_id, message_id).",
+        "protection_obligation": "Unauthenticated clearing of approval block statuses during resume is forbidden: POST /graph/stream/resume requires a valid Supabase JWT via Depends(get_current_user) before message_service.update_block_status mutates stored content-block approval flags.",
+        "scope_limits": [
+          "Only blocks whose needsApproval is True are targeted (streaming_graph.py 137-140).",
+          "The update sequence is wrapped in try/except that logs and continues on failure (streaming_graph.py 162-164).",
+          "Persistence backend for MessageManagementService is not in supplied source; stratum reflects cross-request persistence of message blocks evident elsewhere in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "agent.graph.stream(input_state, config, stream_mode=['messages','updates']) at streaming_graph.py 401, where input_state is Command(resume=tool_response) (line 314) for tool_resume or Command(resume=feedback_response) (line 350) for plan resume.",
+        "contract_id": "ecological-contract:e0d66e2e7c891b539f4fb01982926751",
+        "declared_mechanism": "Human-approval gate wired into the agent run lifecycle: after the stream loop, check_for_interrupts inspects state.tasks for interrupts and the handler branches on 'human_feedback' in state.next; both gate handlers emit a user_feedback status without re-invoking the graph; resumption requires the decision staged in run_configs by /resume and passed as Command(resume=...) into agent.graph.stream.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 467,
+            "line_start": 451,
+            "path": "backend/app/api/v1/endpoints/streaming/streaming_utils.py",
+            "role": "guard_registration",
+            "source_sha256": "0ec4e86399859b93a1751c08ec57636233d43b8db7282a560c7868a04b0391d3"
+          },
+          {
+            "line_end": 581,
+            "line_start": 568,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "guard_registration",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 189,
+            "line_start": 160,
+            "path": "backend/app/api/v1/endpoints/streaming/streaming_utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ec4e86399859b93a1751c08ec57636233d43b8db7282a560c7868a04b0391d3"
+          },
+          {
+            "line_end": 234,
+            "line_start": 193,
+            "path": "backend/app/api/v1/endpoints/streaming/streaming_utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ec4e86399859b93a1751c08ec57636233d43b8db7282a560c7868a04b0391d3"
+          },
+          {
+            "line_end": 191,
+            "line_start": 119,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "protected_operation",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 401,
+            "line_start": 399,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "commit_point",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          },
+          {
+            "line_end": 350,
+            "line_start": 306,
+            "path": "backend/app/api/v1/endpoints/streaming_graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "27eeb314c50cdb54b28baee28fd0a6c83c7185ef934d4c466f09f489c46c00d7"
+          }
+        ],
+        "forbidden_condition": "Resuming agent graph execution of an interrupted tool call or a generated plan without an explicit user approval decision (review_action or tool_response) staged via POST /graph/stream/resume.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The in-graph side of the gate (nodes raising interrupts, the human_feedback node definition, interrupt() calls) is not in supplied source, so enforcement inside the graph cannot be verified.",
+          "The agent tools and plan steps that execute after resumption are not shown in supplied source.",
+          "Whether the interrupt-based gate is best characterized as a lifecycle hook versus agent-generated input reaching the guarded effect is left open for the study."
+        ],
+        "protected_operation": "Continuation of an interrupted agent run (tool-call interrupt or plan approval) by invoking agent.graph.stream with Command(resume=...) built from the staged decision.",
+        "protected_resource": "Agent graph execution for thread_id paused at a tool-call interrupt or at the human_feedback plan-approval node.",
+        "protection_obligation": "Assistant tool calls and generated plans must not resume execution until the user submits an explicit approval decision (review_action or tool_response) via POST /graph/stream/resume: the pause is detected by check_for_interrupts and the human_feedback next-node condition, and execution may continue only when the staged decision is passed to agent.graph.stream as Command(resume=...).",
+        "scope_limits": [
+          "Gate detection covers interrupts present in state.tasks (via check_for_interrupts) and the 'human_feedback' next-node condition; other pause conditions are not covered by supplied source.",
+          "The decision submitted to /resume only stages run_configs; resumption additionally requires a subsequent GET /graph/stream/{thread_id} request that consumes the staged config.",
+          "POST /resume authenticates the requester but performs no thread-ownership check on thread_id in supplied source, and GET /graph/stream/{thread_id} carries no get_current_user dependency (streaming_graph.py 236-241).",
+          "On replan, previous approvals are cleared via persistence.clear_previous_approvals before new approval blocks are saved (streaming_utils.py 205-207)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "chat_service.delete_thread(thread_id, delete_checkpoint=True, agent_service=agent_service) at conversation.py 350-354, reached only after the 403 ownership guard at 343-348.",
+        "contract_id": "ecological-contract:e8b6fd4b0b03863c6afc29940729f97b",
+        "declared_mechanism": "FastAPI dependency Depends(get_current_user) plus ownership comparison raising HTTP 403 (conversation.py 343-348) before chat_service.delete_thread is invoked with delete_checkpoint=True and agent_service.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 330,
+            "line_start": 324,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "guard_registration",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 331,
+            "line_start": 325,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "protected_operation",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 348,
+            "line_start": 343,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          },
+          {
+            "line_end": 354,
+            "line_start": 350,
+            "path": "backend/app/api/v1/endpoints/conversation.py",
+            "role": "commit_point",
+            "source_sha256": "14840b682a3aa24c06001e120ae3b0973a081afd003d3b4757bd4c176b59f496"
+          }
+        ],
+        "forbidden_condition": "Deleting a conversation thread, including deletion of its agent checkpoints, when thread.user_id differs from the authenticated requester's user_id.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The agent checkpoint persistence backend and the internals of agent_service.delete_thread are not in supplied source.",
+          "Agent mediation of the user-initiated delete operation is not established from supplied source."
+        ],
+        "protected_operation": "DELETE /conversation/{thread_id} deletion of a conversation thread and its associated checkpoints.",
+        "protected_resource": "Persisted conversation thread record and its associated agent checkpoint data for thread_id.",
+        "protection_obligation": "Only the authenticated owner of a conversation thread may delete it: DELETE /conversation/{thread_id} must reject cross-user requests with HTTP 403 before the thread and its agent checkpoints are deleted.",
+        "scope_limits": [
+          "Deletion cascades to agent checkpoints via delete_checkpoint=True and agent_service (conversation.py 350-354); the checkpoint store backend is not in supplied source.",
+          "Missing thread raises 404 before the ownership check (conversation.py 337-341)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Storage backends for ChatThreadService and MessageManagementService (thread and message persistence) are not in supplied source; the database strata for the title update, thread/checkpoint deletion, and block-status clearing contracts are inferred from cross-request persistence behavior visible in the endpoints.",
+      "The LangGraph checkpointer configuration and persistence backend for agent.graph state (get_state/update_state and checkpoint storage) are not in supplied source.",
+      "Agent graph internals are not supplied: nodes that raise interrupts, the human_feedback node definition, interrupt() invocations, and the tools or plan steps that execute after Command(resume=...) are all outside the provided views.",
+      "No supplied source binds the conversation or streaming HTTP endpoints to an agent tool dispatch, an agent lifecycle-hook registration, or agent-generated input reaching the guarded effect for the ownership and authentication contracts; agent mediation is not established for those obligations.",
+      "Request schema definitions (StartGraphRequest, ResumeGraphRequest, StateUpdateRequest, BlockStatusUpdateRequest, etc.) are not supplied; field semantics for review_action, tool_response, human_comment, and state_updates are taken from endpoint usage in supplied source only.",
+      "Application wiring outside the supplied endpoint/auth modules (router inclusion, global middleware or router-level dependencies) is not in supplied source, so the completeness of guard registration at those layers cannot be confirmed.",
+      "Endpoints visible in supplied source without authentication or ownership guards (e.g., agent.py /run, DELETE /threads/{thread_id}, POST /threads/{thread_id}/state, bulk-delete, cleanup, conversation message-status endpoints, and GET /graph/stream/{thread_id}) are not covered by any reviewer obligation and are recorded here only as unresolved context, not as compiled contracts."
+    ],
+    "repository": "fakhrulfaiz/data_exploration_agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:33a0d70e89c06cbb65a19687d6408988"
+  },
+  "request_sha256": "ff84fa425bccdd0970da42d2559339b66a86e4a11471707d86de251dfc02a9e5",
+  "response_sha256": "3e51c655cf243aa1dbb11e854d1295cd5311e911b19149cd5991f45f45e4c82e",
+  "state": "completed",
+  "tokens": 54038,
+  "unit": "v24-screen:33a0d70e89c06cbb65a19687d6408988"
+}

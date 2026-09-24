@@ -1,0 +1,273 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Signed decision returned in the HTTP response at collector/api.py:1252-1269 (sign + return ify(signed), 200); the fail-closed signed DENY is returned at collector/api.py:1230-1246 (503).",
+        "contract_id": "ecological-contract:27c167183e9551f36c0e22980dd068b0",
+        "declared_mechanism": "Flask route /api/decide builds a DecisionRequest with tool_registered=is_server_registered_tool(tool_name) (server policy state only), evaluates it via the process-wide DecisionEngine, and signs the result with DecisionSigner; on engine failure it returns a signed fail_closed DENY with 503 and never ALLOW (collector/api.py:1214-1246; decision_engine.py:220-472).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 44,
+            "line_start": 38,
+            "path": "collector/api.py",
+            "role": "guard_registration",
+            "source_sha256": "5daf9a759526701974dd7a3369033460b23e6be349065825297938a3406eede3"
+          },
+          {
+            "line_end": 1127,
+            "line_start": 1110,
+            "path": "collector/api.py",
+            "role": "guard_registration",
+            "source_sha256": "5daf9a759526701974dd7a3369033460b23e6be349065825297938a3406eede3"
+          },
+          {
+            "line_end": 1246,
+            "line_start": 1214,
+            "path": "collector/api.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5daf9a759526701974dd7a3369033460b23e6be349065825297938a3406eede3"
+          },
+          {
+            "line_end": 94,
+            "line_start": 75,
+            "path": "collector/api.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5daf9a759526701974dd7a3369033460b23e6be349065825297938a3406eede3"
+          },
+          {
+            "line_end": 262,
+            "line_start": 234,
+            "path": "decision_engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a729d6395451b5885dc9b270c780905f12c42c3ca82d3475ba0c18f69bd217b5"
+          },
+          {
+            "line_end": 352,
+            "line_start": 305,
+            "path": "decision_engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a729d6395451b5885dc9b270c780905f12c42c3ca82d3475ba0c18f69bd217b5"
+          },
+          {
+            "line_end": 1208,
+            "line_start": 1180,
+            "path": "collector/api.py",
+            "role": "protected_operation",
+            "source_sha256": "5daf9a759526701974dd7a3369033460b23e6be349065825297938a3406eede3"
+          },
+          {
+            "line_end": 1269,
+            "line_start": 1252,
+            "path": "collector/api.py",
+            "role": "commit_point",
+            "source_sha256": "5daf9a759526701974dd7a3369033460b23e6be349065825297938a3406eede3"
+          },
+          {
+            "line_end": 74,
+            "line_start": 68,
+            "path": "agentguard/sdk.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          },
+          {
+            "line_end": 198,
+            "line_start": 189,
+            "path": "agentguard/sdk.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          }
+        ],
+        "forbidden_condition": "(a) /api/decide returning any permissive signed decision when decision_engine.evaluate raises \u2014 it must instead sign and return action=DENY with policy_name 'fail_closed' (HTTP 503); (b) trusting a client-supplied tool_registered value or issuing a decision for a tool not listed in an active server-side policy's allowed_tools; (c) DecisionEngine.evaluate allowing requests with untrusted identity, unregistered tools, explicitly blocked tools, tools outside allowed_tools, MALICIOUS taint, or SECRET/UNTRUSTED taint combined with external_side_effect.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "collector/auth.py require_auth and the middleware populating g.org_id / g.agent_id are not supplied.",
+          "Where PolicyRule objects are registered into the collector's decision_engine in production is not shown (api.py:38-43 states policies should be registered there or via a policy provider, but no registration appears).",
+          "signing.py DecisionSigner implementation and the SDK-side verifier initialization (self._verifier, sdk.py:39) are not supplied.",
+          "risk_engine.py RiskEngine scoring implementation behind the block/-review thresholds is not supplied."
+        ],
+        "protected_operation": "Issuance of an authoritative, Ed25519-signed runtime decision for a requested agent tool action (DecisionEngine evaluation and signed HTTP response).",
+        "protected_resource": "The /api/decide signed-decision channel consumed by the agent-side guard to permit or deny tool execution.",
+        "protection_obligation": "The collector's /api/decide must remain the authoritative fail-closed decision authority for agent tool actions: it must never return a permissive decision when the DecisionEngine fails (signed fail-closed DENY instead), must derive tool registration solely from server-side policy state (never trusting client-supplied tool_registered), and its DecisionEngine must BLOCK untrusted identity, unregistered/non-allowlisted/explicitly blocked tools, and MALICIOUS/SECRET/UNTRUSTED taint reaching external side effects. This is the distinct http-stratum commit point named in the second-phase obligation.",
+        "scope_limits": [
+          "Applies only to the /api/decide endpoint; requires require_auth (401 otherwise) and a JSON body with a non-empty tool_name.",
+          "The process-wide DecisionEngine is created without policies in the supplied view (collector/api.py:44); with only the default policy (allowed_tools=None, allow_unknown_tools=False), is_server_registered_tool returns False for all tools unless policies are registered at runtime.",
+          "On engine failure the response is HTTP 503 with a signed DENY; if signing also fails, a generic non-permissive 503 error body is returned.",
+          "The endpoint only issues decisions; actual enforcement of DENY/REQUIRE_APPROVAL occurs client-side in AgentGuard.guard_tool_call (sdk.py:196-198)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "result = func(**params) at agentguard/sdk.py:203 \u2014 the wrapped tool function executes only after all denial paths are cleared.",
+        "contract_id": "ecological-contract:d020a8167a1287a03207fc4051e8f2ea",
+        "declared_mechanism": "AgentGuard.guard_tool_call evaluates PolicyEngine.check_tool_policy (with _check_email/_check_command content checks), RuntimeRiskEngine.evaluate, and the signed collector decision fetched via POST /api/decide, raising SecurityException before execution (sdk.py:187, 196, 197, 198, 201) with fail-closed behavior on unavailable signed decisions.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 175,
+            "line_start": 168,
+            "path": "agentguard/sdk.py",
+            "role": "guard_registration",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          },
+          {
+            "line_end": 129,
+            "line_start": 110,
+            "path": "agentguard/policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9925883146c94a363990abf79b7ee8f11a53ff6b0a5fb4aa1913f422186cb584"
+          },
+          {
+            "line_end": 201,
+            "line_start": 184,
+            "path": "agentguard/sdk.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          },
+          {
+            "line_end": 211,
+            "line_start": 203,
+            "path": "agentguard/sdk.py",
+            "role": "protected_operation",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          },
+          {
+            "line_end": 203,
+            "line_start": 203,
+            "path": "agentguard/sdk.py",
+            "role": "commit_point",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          },
+          {
+            "line_end": 78,
+            "line_start": 76,
+            "path": "agentguard/sdk.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          },
+          {
+            "line_end": 211,
+            "line_start": 209,
+            "path": "agentguard/sdk.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          }
+        ],
+        "forbidden_condition": "A tool invocation wrapped by guard_tool_call reaches execution while: (a) PolicyEngine.check_tool_policy returns a non-passing HIGH/CRITICAL check with block_on_high enabled \u2014 tool not in the configured whitelist, budget_remaining < 0, dangerous parameter patterns (delete_all, drop table, truncate, drop database, rm -rf, sudo, chmod 777, mkfs, dd if=), exfiltration content in send_email params, or dangerous command patterns in execute_command params; (b) the runtime risk engine disallows the tool/params; or (c) the signed server decision is unavailable, DENY, or REQUIRE_APPROVAL when the verifier path is active.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No concrete decorated tool function or agent-framework tool dispatch (e.g., MCP tool handlers in mcp_server.py, referenced at sdk.py:219-220) appears in the supplied views; direct_tool mediation rests on the guard's decorator registration plus per-invocation agent trajectory binding (sdk.py:76-78, 186, 210).",
+          "RuntimeRiskEngine and TrajectoryAnalyzer denial criteria (agentguard/runtime.py) are not supplied.",
+          "Whether guarded execute_command/send_email wrappers exist and what downstream effects they perform is not established by the supplied views."
+        ],
+        "protected_operation": "Invocation of a tool function registered through AgentGuard.guard_tool_call (decorator form @guard_tool_call(tool_name) or direct call form), i.e., execution of the wrapped callable with the supplied params.",
+        "protected_resource": "The guarded agent tool execution path \u2014 the wrapped tool callable and its parameters at agentguard/sdk.py func(**params).",
+        "protection_obligation": "Guarded agent tool invocations must be denied before the wrapped tool function executes whenever policy, runtime-risk, or signed server-decision checks fail; denial is enforced by AgentGuard.guard_tool_call raising SecurityException prior to func(**params). Merges both reviewer wordings (whitelist, dangerous command/parameter patterns, exfiltration content, runtime risk, unavailable/DENY/REQUIRE_APPROVAL signed decision) into the single supported commit point.",
+        "scope_limits": [
+          "Enforcement is client-side inside the agent SDK process; collector telemetry send failures are swallowed (sdk.py:62-66) and never block.",
+          "Policy-failure blocking requires risk_level HIGH/CRITICAL and block_on_high=True (constructor default true, sdk.py:27, 32).",
+          "Whitelist check applies only when a tool_whitelist policy defines allowed_tools (policy.py:40-43, 111).",
+          "Runtime-risk denial applies only when AGENTGUARD_RUNTIME_RISK_ENABLED is true (default, sdk.py:41, 181).",
+          "Signed-decision denial applies only when self._verifier is configured (sdk.py:189-190); activation is not shown in supplied views.",
+          "Only invocations routed through guard_tool_call are covered; tool execution that bypasses the decorator is not guarded.",
+          "The wrapped callable's concrete downstream effect (process, filesystem, email, network) is not shown in the supplied views; the supported commit point is the in-process guarded invocation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "result = func(*args, **kwargs) at agentguard/sdk.py:146.",
+        "contract_id": "ecological-contract:dd3c4ebe93c711bcd8fb2d3e26a367b9",
+        "declared_mechanism": "AgentGuard.guard_llm_call wrapper runs PolicyEngine.check_injection and check_pii on the extracted input and an AtomicBudgetManager.reserve before executing func; it raises SecurityException on high-risk input checks (sdk.py:130-133) or failed budget reservation (sdk.py:141-144).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 127,
+            "line_start": 121,
+            "path": "agentguard/sdk.py",
+            "role": "guard_registration",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          },
+          {
+            "line_end": 133,
+            "line_start": 127,
+            "path": "agentguard/sdk.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          },
+          {
+            "line_end": 144,
+            "line_start": 135,
+            "path": "agentguard/sdk.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          },
+          {
+            "line_end": 96,
+            "line_start": 77,
+            "path": "agentguard/policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9925883146c94a363990abf79b7ee8f11a53ff6b0a5fb4aa1913f422186cb584"
+          },
+          {
+            "line_end": 151,
+            "line_start": 146,
+            "path": "agentguard/sdk.py",
+            "role": "protected_operation",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          },
+          {
+            "line_end": 146,
+            "line_start": 146,
+            "path": "agentguard/sdk.py",
+            "role": "commit_point",
+            "source_sha256": "7725aa19920681abb720a9d665690a6e946b274306941c6581035f3f138dc916"
+          }
+        ],
+        "forbidden_condition": "A guarded LLM invocation proceeds while the extracted input messages fail PolicyEngine.check_injection (triple-judge DENY, ML HIGH with score >= 0.85, or strong injection regex match) or check_pii at HIGH/CRITICAL risk with block_on_high enabled, or while the budget manager returns no reservation (budget exhausted). Separately, high-risk output checks raise SecurityException only after the call has already executed (sdk.py:158-164), suppressing the result but not the call.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied view shows guard_llm_call being applied to a concrete LLM client function or wired as an agent lifecycle hook; agent mediation is therefore not established.",
+          "track_input (sdk.py:80) is an identity passthrough with no shown call sites, so an agent-generated-input dataflow into the guarded LLM effect is not established.",
+          "PolicyEngine.check_budget, called at sdk.py:158, is not defined in the supplied policy.py view (lines 1-143).",
+          "If the wrapped callable is confirmed to perform an external model API request, the underlying effect stratum would be http rather than invocation-only."
+        ],
+        "protected_operation": "Invocation of an LLM call function wrapped by AgentGuard.guard_llm_call (execution of the wrapped callable with model/messages kwargs).",
+        "protected_resource": "The guarded LLM invocation path and its prompt/messages input at agentguard/sdk.py func(*args, **kwargs).",
+        "protection_obligation": "Guarded LLM invocations must be denied before the wrapped LLM call executes when the extracted input prompt fails injection/PII checks at HIGH/CRITICAL risk (with block_on_high) or when the atomic budget reservation fails; enforced by AgentGuard.guard_llm_call raising SecurityException prior to func(*args, **kwargs).",
+        "scope_limits": [
+          "Input blocking requires HIGH/CRITICAL check results and block_on_high=True (constructor default).",
+          "Budget reservation is active only when budget.py is importable and a manager was constructed (sdk.py:18-24, 46-53).",
+          "Output-side PII/risk blocking (sdk.py:158-164) fires only after func has executed; the LLM call effect has already occurred and only the result return is suppressed.",
+          "ML detector and LLM-judge layers are optional fallbacks or env-gated (policy.py:12-17, 27-28).",
+          "The wrapped callable's concrete transport (e.g., external model API request) is not shown in the supplied views; the supported commit point is the in-process guarded invocation."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No call site applying @guard_tool_call or @guard_llm_call to a concrete tool or LLM client function appears in the supplied views; mcp_server.py (identified at sdk.py:219-220 as the real MCP entry point) is not supplied.",
+      "AgentGuard._verifier is initialized to None (sdk.py:39) and no supplied view shows where it is assigned, so the activation condition of the signed-decision path is unknown.",
+      "agentguard/runtime.py (TrajectoryAnalyzer, RuntimeRiskEngine, RuntimeRiskDecision semantics) is not supplied; runtime-risk denial criteria cannot be evaluated.",
+      "agentguard/models.py (SecurityCheck, SecurityAction, RiskLevel, SecurityException, GuardSpan, SpanPayload) is not supplied.",
+      "PolicyEngine.check_budget, called at sdk.py:158, is not defined in the supplied policy.py view (lines 1-143).",
+      "signing.py (DecisionSigner), risk_engine.py (RiskEngine), collector/auth.py (require_auth), collector/detection_patterns.py, and budget.py (AtomicBudgetManager) implementations are not supplied.",
+      "The concrete downstream transport/effects of the wrapped tool and LLM callables (e.g., external model API HTTP request, shell execution, email delivery) are not shown; only the in-process guarded invocations are source-supported.",
+      "Behavior labels and prevalence data are unavailable for this unit (per scope: only supplied source views; repository enumeration incomplete)."
+    ],
+    "repository": "chrismsmr-celcom/agentguard",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:918143ba6d9eac3f6ac7d59275386e5c"
+  },
+  "request_sha256": "70dc8b5cd285d52284286f90037d66bdc4457d752e543e6f1d05a27e09a13105",
+  "response_sha256": "7b9189a2082c99fc5f2f1578600472c9b89eb1d1e28a513957d73acb9c4e574d",
+  "state": "completed",
+  "tokens": 54934,
+  "unit": "v24-screen:918143ba6d9eac3f6ac7d59275386e5c"
+}

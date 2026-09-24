@@ -1,0 +1,106 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Registration commit: the read-only tool set is fixed when fs_middleware.tools is filtered (lines 227-229) and bound into the agent at create_agent (lines 232-238); after registration, only allowlisted tools can be dispatched during agent.stream runs (lines 266-273). The in-library effect commit of a would-be write tool call is not visible in supplied source.",
+        "contract_id": "ecological-contract:dec5a8b573a8ae3701fd23c38e8aab27",
+        "declared_mechanism": "Registration-time name allowlist: fs_middleware.tools is reassigned to only those tools whose name is in ALLOWED_TOOLS = {ls, glob, grep, read_file} (lines 225-229) before the middleware is passed to create_agent (lines 232-238); excluded tools are never registered on the agent and therefore cannot be dispatched by the model.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 6,
+            "line_start": 4,
+            "path": "code/run_single_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "2893cc046f5fbc7f241438f9d7b8061dae2b6b1c96e82d4f250d35cdc5fc53d8"
+          },
+          {
+            "line_end": 211,
+            "line_start": 206,
+            "path": "code/run_single_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2893cc046f5fbc7f241438f9d7b8061dae2b6b1c96e82d4f250d35cdc5fc53d8"
+          },
+          {
+            "line_end": 223,
+            "line_start": 219,
+            "path": "code/run_single_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "2893cc046f5fbc7f241438f9d7b8061dae2b6b1c96e82d4f250d35cdc5fc53d8"
+          },
+          {
+            "line_end": 229,
+            "line_start": 225,
+            "path": "code/run_single_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "2893cc046f5fbc7f241438f9d7b8061dae2b6b1c96e82d4f250d35cdc5fc53d8"
+          },
+          {
+            "line_end": 238,
+            "line_start": 232,
+            "path": "code/run_single_agent.py",
+            "role": "commit_point",
+            "source_sha256": "2893cc046f5fbc7f241438f9d7b8061dae2b6b1c96e82d4f250d35cdc5fc53d8"
+          },
+          {
+            "line_end": 238,
+            "line_start": 232,
+            "path": "code/run_single_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2893cc046f5fbc7f241438f9d7b8061dae2b6b1c96e82d4f250d35cdc5fc53d8"
+          },
+          {
+            "line_end": 273,
+            "line_start": 266,
+            "path": "code/run_single_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2893cc046f5fbc7f241438f9d7b8061dae2b6b1c96e82d4f250d35cdc5fc53d8"
+          },
+          {
+            "line_end": 371,
+            "line_start": 359,
+            "path": "code/run_single_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "2893cc046f5fbc7f241438f9d7b8061dae2b6b1c96e82d4f250d35cdc5fc53d8"
+          }
+        ],
+        "forbidden_condition": "Invocation of any filesystem tool outside ALLOWED_TOOLS by the analysis agent \u2014 specifically write_file, edit_file, or execute, which the source excludes as non-read-only 'write tools' \u2014 which would mutate files under the workspace rooted at workspace_path.resolve().",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The deepagents library (FilesystemMiddleware, FilesystemBackend) implementation is not supplied: the pre-filter tool inventory, and the concrete in-library effect and commit point of write_file/edit_file/execute, are unestablished.",
+          "The runtime effect class of the `execute` tool (OS process execution vs. another effect class) is not established by supplied source; it is grouped with 'write tools' only by the code comment at lines 209-210. If it commits a process-stratum effect, a separate process-stratum contract may be required.",
+          "Whether create_agent or FilesystemMiddleware applies any additional confirmation/hook layer at tool dispatch time is not shown in supplied source.",
+          "Whether the DREA-path agents (agent_builder.py, core/prompts.py, not supplied) carry an equivalent guard is undeterminable from supplied source."
+        ],
+        "protected_operation": "Model-driven read-only exploration and analysis of the checked-out repository workspace via the agent's filesystem tools during agent.stream runs.",
+        "protected_resource": "The checked-out repository checkout bound as FilesystemBackend root_dir = workspace_path.resolve() (repo_path for the item, checked out to the target commit) and exposed to the agent through FilesystemMiddleware.",
+        "protection_obligation": "The analysis agent built by build_single_agent must be registered with only the read-only filesystem tools {ls, glob, grep, read_file}: the FilesystemMiddleware tool list must be filtered to the ALLOWED_TOOLS set before create_agent registers the middleware, so that the model can never invoke the excluded write tools (write_file, edit_file, execute) against the workspace FilesystemBackend rooted at the checked-out repository (workspace_path.resolve()). [Merged wording of two reviewer opinions describing the same read-only-allowlist-at-registration obligation.]",
+        "scope_limits": [
+          "Covers only the single-agent path (build_single_agent / run_single_agent_analysis) in the supplied view of run_single_agent.py; no other agent entry points are evidenced in supplied source.",
+          "Enforcement is a registration-time name allowlist; no runtime per-invocation validation, path containment check, or effect-level guard is shown in supplied source.",
+          "Behavior of FilesystemBackend(virtual_mode=True) (e.g., whether any write would be sandboxed to root_dir) is not established by supplied source; the evidenced guard is tool exclusion, not a backend write policy.",
+          "The runner's own non-agent effects (git subprocess calls at lines 124-148 and 359-360) are outside this guard; the obligation concerns only the agent's model-dispatchable tool surface.",
+          "Whether the `execute` tool would commit an effect outside the file stratum is not resolved in this contract; see pending_binding_information."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Implementation of deepagents FilesystemMiddleware/FilesystemBackend (pre-filter tool inventory; concrete write/execute commit points inside the library) is not present in supplied source.",
+      "Runtime effect of the `execute` tool is not established by supplied source; only the comment at lines 209-210 groups it with the excluded write tools.",
+      "agent_builder.py and core/prompts.py are not supplied, so guard presence in the DREA path cannot be assessed from supplied source.",
+      "Behavior labels for the repository are unavailable per the supplied scope; repository enumeration is not complete."
+    ],
+    "repository": "huhusmang/DREA",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:fd0ba327b2a0d8a531f1e9e68945d254"
+  },
+  "request_sha256": "c083ebda7b4672c4e2347cd65fa6c3f1160c06e2e613cdcedd13940b4a346f2e",
+  "response_sha256": "278bfc29455178ed0a60a08f6e77a5e14f0bde8778f59b5a12a94871ea327a8b",
+  "state": "completed",
+  "tokens": 15269,
+  "unit": "v24-screen:fd0ba327b2a0d8a531f1e9e68945d254"
+}

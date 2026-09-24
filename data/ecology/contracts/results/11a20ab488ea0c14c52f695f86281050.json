@@ -1,0 +1,461 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Resolution of the Depends(yahoo_finance_aware_ticker) parameter, which raises HTTP 400 before the handler body executes (before YFStockData construction in ticker_information and before StockDataDB query construction in ticker_history).",
+        "contract_id": "ecological-contract:09aaafd591b41949fc1e00460291041e",
+        "declared_mechanism": "FastAPI dependency yahoo_finance_aware_ticker (raises HTTPException 400 when '[' or ']' is present in the ticker path param, otherwise returns the normalized YahooTickerIdentifier), attached via Depends(...) to both routes.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 21,
+            "line_start": 12,
+            "path": "stockdb/api/dependency/utils.py",
+            "role": "guard_registration",
+            "source_sha256": "8404ddb909fdc7b91d85f831144158c86fbba10f634c67d39e8bc91a5046c132"
+          },
+          {
+            "line_end": 26,
+            "line_start": 22,
+            "path": "stockdb/api/dependency/utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8404ddb909fdc7b91d85f831144158c86fbba10f634c67d39e8bc91a5046c132"
+          },
+          {
+            "line_end": 99,
+            "line_start": 97,
+            "path": "stockdb/api/routers/per_security.py",
+            "role": "guard_registration",
+            "source_sha256": "c5934c129654e3fa19d83dd8665ef8ff9dcc1b0104d6e6800dc399c619c11675"
+          },
+          {
+            "line_end": 114,
+            "line_start": 111,
+            "path": "stockdb/api/routers/per_security.py",
+            "role": "guard_registration",
+            "source_sha256": "c5934c129654e3fa19d83dd8665ef8ff9dcc1b0104d6e6800dc399c619c11675"
+          },
+          {
+            "line_end": 99,
+            "line_start": 97,
+            "path": "stockdb/api/routers/per_security.py",
+            "role": "commit_point",
+            "source_sha256": "c5934c129654e3fa19d83dd8665ef8ff9dcc1b0104d6e6800dc399c619c11675"
+          },
+          {
+            "line_end": 114,
+            "line_start": 111,
+            "path": "stockdb/api/routers/per_security.py",
+            "role": "commit_point",
+            "source_sha256": "c5934c129654e3fa19d83dd8665ef8ff9dcc1b0104d6e6800dc399c619c11675"
+          },
+          {
+            "line_end": 108,
+            "line_start": 100,
+            "path": "stockdb/api/routers/per_security.py",
+            "role": "protected_operation",
+            "source_sha256": "c5934c129654e3fa19d83dd8665ef8ff9dcc1b0104d6e6800dc399c619c11675"
+          },
+          {
+            "line_end": 121,
+            "line_start": 115,
+            "path": "stockdb/api/routers/per_security.py",
+            "role": "protected_operation",
+            "source_sha256": "c5934c129654e3fa19d83dd8665ef8ff9dcc1b0104d6e6800dc399c619c11675"
+          }
+        ],
+        "forbidden_condition": "A request whose `ticker` path parameter contains '[' or ']' proceeding past dependency resolution into execution of the ticker_information or ticker_history handler.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, lifecycle hook, or agent-generated input reaches /api/per-security/{exchange}/{ticker}/info|history \u2014 the supplied webapp only calls /per-security/nse/tcs/history with hardcoded values (webapp/state/shared.py lines 87-91) and /per-security/{exchange}/{index} (lines 216-218), neither demonstrating agent mediation for the guarded routes.",
+          "Source for YFStockData.get_ticker_info and StockDataDB internals to confirm which downstream strata a rejected ticker would otherwise have reached."
+        ],
+        "protected_operation": "Execution of the GET /api/per-security/{exchange}/{ticker}/info and /history handlers, which propagate the ticker into YFStockData ticker-info retrieval and StockDataDB ticker-history querying.",
+        "protected_resource": "The per-security ticker info/history endpoints of the stockdb API and the ticker-derived downstream effects they trigger.",
+        "protection_obligation": "Per-security ticker lookups must reject any `ticker` path parameter containing '[' or ']' with HTTP 400 before the ticker-information/ticker-history handlers execute, via the FastAPI dependency guard yahoo_finance_aware_ticker wired onto /api/per-security/{exchange}/{ticker}/info and /history.",
+        "scope_limits": [
+          "No supplied source binds these endpoints to an agent tool, agent lifecycle hook, or agent-generated input; absent such a binding this is ordinary web input validation and may fall outside the agent-DEC scope.",
+          "Only bracket characters are forbidden; all other ticker content passes validation.",
+          "Guard covers only the /info and /history per-security routes; sibling routes (e.g., /{exchange}/{index}) do not use this dependency.",
+          "The commit point is the HTTP-layer rejection; downstream effect strata of the guarded handlers are not confirmable from supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The check-and-set at handler entry (lines 168-176) preceding the fetch dispatch at 191-194.",
+        "contract_id": "ecological-contract:14b1f8fa0451df297b9d7d1baaec67cc",
+        "declared_mechanism": "Entry guard inside `async with self`: early return if fetch_state == RunState.generating.value, otherwise set fetch_state = generating and reset pipeline fields before dispatching the fetch.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 177,
+            "line_start": 165,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "guard_registration",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 171,
+            "line_start": 168,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 176,
+            "line_start": 168,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "commit_point",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 411,
+            "line_start": 402,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "protected_operation",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 436,
+            "line_start": 422,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "protected_operation",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 131,
+            "line_start": 127,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 380,
+            "line_start": 363,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          }
+        ],
+        "forbidden_condition": "fetch_data proceeding past entry while fetch_state is already RunState.generating.value (overlapping data-fetch workflows).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether concurrent invocations of a Reflex background event handler share one state instance such that the fetch_state check serializes triggers (framework behavior absent from source).",
+          "Whether the in-scope variant for the DEC study is only the agent-mediated AI-SQL fetch path or also purely manual fetches."
+        ],
+        "protected_operation": "The outbound stockdb HTTP fetches dispatched by fetch_data: _fetch_via_sql_api POST /bulk/ticker/query and _fetch_via_ticker_api POST /bulk/ticker/history.",
+        "protected_resource": "The stockdb API data-fetch endpoints and DataState's fetch pipeline (the fetch_state busy window).",
+        "protection_obligation": "DataState.fetch_data must refuse a second/re-entrant trigger while fetch_state == RunState.generating.value, enforced at handler entry, so at most one stockdb data-fetch HTTP call (SQL-based or ticker-history-based) is in flight per state.",
+        "scope_limits": [
+          "The guard applies to both manual and AI-driven fetches; the busy flag alone (not input provenance) gates entry.",
+          "Does not cover other stockdb calls outside fetch_data (e.g., register_dataset, prompt-cache calls).",
+          "Cancellation (cancel_fetching setting fetch_state to cancelled and _cancel_event) interacts with the busy window but is a separate control path.",
+          "Cross-event atomicity of the check-and-set depends on Reflex state-lock semantics not shown in source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The guard plus busy-mark at handler entry (lines 199-204) preceding the cache lookup (219), the agent stream (243-255), and the cache write (380).",
+        "contract_id": "ecological-contract:6876e736030bbdf19433ce3f8e2a3478",
+        "declared_mechanism": "Entry guard: early return if run_state == RunState.generating.value (in-code comment names it the active re-entrancy check), followed by setting run_state = generating inside `async with self` before the cache lookup and stream; reset to idle in finally.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 204,
+            "line_start": 196,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "guard_registration",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 201,
+            "line_start": 198,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 204,
+            "line_start": 202,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "commit_point",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 255,
+            "line_start": 243,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "protected_operation",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 255,
+            "line_start": 243,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 339,
+            "line_start": 324,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "protected_operation",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          },
+          {
+            "line_end": 361,
+            "line_start": 344,
+            "path": "stocksense-app/webapp/state/playground/_data.py",
+            "role": "protected_operation",
+            "source_sha256": "a229fe7a705c50e38c93254956d412ded72b45e9d07e8119c55af56db748b153"
+          }
+        ],
+        "forbidden_condition": "generate_text_to_sql proceeding to the cache lookup, agent stream, or cache write while run_state is already RunState.generating.value.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the read at 199 and the write at 204 are atomic under concurrent double-click events (Reflex state-lock semantics absent from source).",
+          "Whether error paths leaving run_state in a non-idle terminal value require additional guards beyond the finally reset (273-276)."
+        ],
+        "protected_operation": "The text-to-SQL agent stream via stream_agent_run(agent_id='text-to-sql', manage_lifecycle=False), the prompt-cache lookup POST /operation/prompt/search, and the prompt-cache write PUT /operation/prompt/cache.",
+        "protected_resource": "The text-to-sql agent run at the AI service and the stockdb prompt-cache endpoints.",
+        "protection_obligation": "DataState.generate_text_to_sql must refuse a second/re-entrant trigger while run_state == RunState.generating.value, marking its busy window up front (manage_lifecycle=False: it owns the lifecycle), so at most one text-to-SQL agent stream, one prompt-cache lookup, and one prompt-cache write is in flight per state.",
+        "scope_limits": [
+          "manage_lifecycle=False bypasses the mixin-level overlapping-run guard; this handler-level guard is the active re-entrancy check (comments at lines 200 and 252-253).",
+          "The initial check (199-201) occurs outside `async with self` while the busy-mark (202-204) is inside; cross-event atomicity is not verifiable from supplied source.",
+          "Does not serialize against fetch_data (separate fetch_state flag).",
+          "Cache write only occurs when the generated SQL is non-empty (lines 379-380)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The early return at the guard, taken before the run_state='generating' flip (419-426) and before the run_agent_stream iteration begins (428-431); the state flip is the recorded pre-commit marker for the stream start.",
+        "contract_id": "ecological-contract:a3756c670e468edecef9a5508e705aab",
+        "declared_mechanism": "Early-return guard inside stream_agent_run: when manage_lifecycle=True, if self.run_state == RunState.generating.value the call returns before the run_state='generating' flip and before the stream starts; the mixin owns the busy window (marking at 419-426, terminal-state cleanup in finally at 557-565).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 416,
+            "line_start": 394,
+            "path": "stocksense-app/webapp/state/shared.py",
+            "role": "guard_registration",
+            "source_sha256": "194376000b67606bb7ef51d4a9d91b921c5837277d668c22e4f4c2565f689ae4"
+          },
+          {
+            "line_end": 416,
+            "line_start": 411,
+            "path": "stocksense-app/webapp/state/shared.py",
+            "role": "forbidden_condition",
+            "source_sha256": "194376000b67606bb7ef51d4a9d91b921c5837277d668c22e4f4c2565f689ae4"
+          },
+          {
+            "line_end": 426,
+            "line_start": 419,
+            "path": "stocksense-app/webapp/state/shared.py",
+            "role": "commit_point",
+            "source_sha256": "194376000b67606bb7ef51d4a9d91b921c5837277d668c22e4f4c2565f689ae4"
+          },
+          {
+            "line_end": 431,
+            "line_start": 428,
+            "path": "stocksense-app/webapp/state/shared.py",
+            "role": "protected_operation",
+            "source_sha256": "194376000b67606bb7ef51d4a9d91b921c5837277d668c22e4f4c2565f689ae4"
+          },
+          {
+            "line_end": 355,
+            "line_start": 353,
+            "path": "stocksense-app/webapp/state/shared.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "194376000b67606bb7ef51d4a9d91b921c5837277d668c22e4f4c2565f689ae4"
+          },
+          {
+            "line_end": 18,
+            "line_start": 13,
+            "path": "stocksense-app/webapp/types.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5989f640b7c678965ccd9bcf157c0a07896ad1cb0a5d379e1b87a9f58d08a20b"
+          },
+          {
+            "line_end": 48,
+            "line_start": 45,
+            "path": "stocksense-app/webapp/state/ai.py",
+            "role": "guard_registration",
+            "source_sha256": "01fd6864e5ca2c550565c7e39a848f2c79406ac521e4144359d6edceb107b04f"
+          },
+          {
+            "line_end": 105,
+            "line_start": 102,
+            "path": "stocksense-app/webapp/state/ai.py",
+            "role": "guard_registration",
+            "source_sha256": "01fd6864e5ca2c550565c7e39a848f2c79406ac521e4144359d6edceb107b04f"
+          },
+          {
+            "line_end": 199,
+            "line_start": 196,
+            "path": "stocksense-app/webapp/state/playground/_strategy.py",
+            "role": "guard_registration",
+            "source_sha256": "bc4029c8a243a8926a3ad8595df908e428e489cff091cd9cc0fb67525d8c9eca"
+          }
+        ],
+        "forbidden_condition": "Starting a second/overlapping AI agent stream while self.run_state == RunState.generating.value (a run already in flight).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the guard read (lines 413-416, outside the `async with self` block) and the state flip (419-426, inside the lock) are atomic with respect to concurrent event handler invocations.",
+          "Confirmation that agent_lifecycle_hook is the intended mediation class: the guard sits inside the agent-run lifecycle owner (manage_lifecycle wiring) rather than a separately registered agent hook."
+        ],
+        "protected_operation": "Initiation of the outbound agent streaming request ai_client.run_agent_stream(**kwargs) against the AI agent service.",
+        "protected_resource": "The agent run pipeline managed by AgentRunMixin (the run_state/agent_run_id busy window) and the remote AI agent service stream.",
+        "protection_obligation": "AgentRunMixin.stream_agent_run must refuse to initiate a new AI agent stream when run_state is already 'generating' (the explicit overlapping-runs guard), returning before flipping state to 'generating' and before starting the external ai_client.run_agent_stream call; workflow handlers using manage_lifecycle=True (e.g., CompanySummaryState.generate_summary, CompanySummaryState.generate_answer, StrategyAIState.generate_answer) enforce the same refusal at handler entry.",
+        "scope_limits": [
+          "The mixin guard is active only when manage_lifecycle=True; callers passing manage_lifecycle=False (e.g., DataState.generate_text_to_sql) own the busy window and must guard themselves.",
+          "The guard only inspects the busy-state flag; it does not validate agent identity, session, or input provenance.",
+          "Atomicity of the check-then-set across concurrent Reflex events depends on framework behavior not shown in source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The precondition early-return immediately preceding the ai_client.cancel_agent_run call.",
+        "contract_id": "ecological-contract:eead7615afa69f8d68e773c4a90ac18d",
+        "declared_mechanism": "Entry precondition in cancel_agent_run: early return unless run_state == RunState.generating.value and agent_run_id is truthy, evaluated before the cancel request is issued.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 571,
+            "line_start": 567,
+            "path": "stocksense-app/webapp/state/shared.py",
+            "role": "guard_registration",
+            "source_sha256": "194376000b67606bb7ef51d4a9d91b921c5837277d668c22e4f4c2565f689ae4"
+          },
+          {
+            "line_end": 571,
+            "line_start": 570,
+            "path": "stocksense-app/webapp/state/shared.py",
+            "role": "forbidden_condition",
+            "source_sha256": "194376000b67606bb7ef51d4a9d91b921c5837277d668c22e4f4c2565f689ae4"
+          },
+          {
+            "line_end": 571,
+            "line_start": 570,
+            "path": "stocksense-app/webapp/state/shared.py",
+            "role": "commit_point",
+            "source_sha256": "194376000b67606bb7ef51d4a9d91b921c5837277d668c22e4f4c2565f689ae4"
+          },
+          {
+            "line_end": 579,
+            "line_start": 576,
+            "path": "stocksense-app/webapp/state/shared.py",
+            "role": "protected_operation",
+            "source_sha256": "194376000b67606bb7ef51d4a9d91b921c5837277d668c22e4f4c2565f689ae4"
+          },
+          {
+            "line_end": 579,
+            "line_start": 576,
+            "path": "stocksense-app/webapp/state/shared.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "194376000b67606bb7ef51d4a9d91b921c5837277d668c22e4f4c2565f689ae4"
+          }
+        ],
+        "forbidden_condition": "Sending a server-side cancellation request when no run is in flight (run_state != RunState.generating.value) or when agent_run_id is empty.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether _active_agent_id is always correctly populated for cancellation under manage_lifecycle=False flows (the up-front recording claim at lines 403-405 is a comment, not a verified invariant)."
+        ],
+        "protected_operation": "The outbound cancellation call ai_client.cancel_agent_run(agent_id=self._active_agent_id, run_id=self.agent_run_id).",
+        "protected_resource": "The active agent run at the AI agent service identified by (_active_agent_id, agent_run_id).",
+        "protection_obligation": "AgentRunMixin.cancel_agent_run must issue the external ai_client.cancel_agent_run request only while a run is generating (run_state == 'generating') with a valid agent_run_id; otherwise it must return without sending any cancellation request.",
+        "scope_limits": [
+          "The precondition relies on client-side run_state/agent_run_id bookkeeping; consistency with server-side run state is not verifiable from supplied source.",
+          "No dedup/idempotency guard: repeated triggers while generating each issue a cancel request; only the state/run_id precondition gates the call."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Client construction inside NSEAccessor._nse: the wrapper is installed before cls._client is cached, so every subsequent accessor call inherits the timeout.",
+        "contract_id": "ecological-contract:fd3777c15be8884c936e9a1d59b8bc36",
+        "declared_mechanism": "functools.partial wrapper around client.s.request injecting timeout=_REQUEST_TIMEOUT_SECONDS (15), applied once at lazy client creation in NSEAccessor._nse before the client is cached.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 21,
+            "line_start": 21,
+            "path": "core/src/stocksense/data/_nse.py",
+            "role": "guard_registration",
+            "source_sha256": "0a3e38ad49397c5a949e7c9cf301fb1b300585a7ac29f60071030ad6b46b5996"
+          },
+          {
+            "line_end": 57,
+            "line_start": 44,
+            "path": "core/src/stocksense/data/_nse.py",
+            "role": "guard_registration",
+            "source_sha256": "0a3e38ad49397c5a949e7c9cf301fb1b300585a7ac29f60071030ad6b46b5996"
+          },
+          {
+            "line_end": 55,
+            "line_start": 51,
+            "path": "core/src/stocksense/data/_nse.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0a3e38ad49397c5a949e7c9cf301fb1b300585a7ac29f60071030ad6b46b5996"
+          },
+          {
+            "line_end": 56,
+            "line_start": 49,
+            "path": "core/src/stocksense/data/_nse.py",
+            "role": "commit_point",
+            "source_sha256": "0a3e38ad49397c5a949e7c9cf301fb1b300585a7ac29f60071030ad6b46b5996"
+          },
+          {
+            "line_end": 88,
+            "line_start": 78,
+            "path": "core/src/stocksense/data/_nse.py",
+            "role": "protected_operation",
+            "source_sha256": "0a3e38ad49397c5a949e7c9cf301fb1b300585a7ac29f60071030ad6b46b5996"
+          }
+        ],
+        "forbidden_condition": "An NSE HTTP request executed via the shared NSELive session's requests.Session.request without the 15-second timeout \u2014 i.e., a throttled/stalled NSE connection hanging indefinitely.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether NSEAccessor methods are invoked from any agent tool or agent lifecycle in unsupplied source.",
+          "Whether NSELive internals issue all NSE HTTP requests through client.s.request (library code not supplied)."
+        ],
+        "protected_operation": "NSE HTTP requests issued through NSEAccessor._nse()'s shared NSELive client (e.g., stock_quote in get_stock_info, all_indices, live_index).",
+        "protected_resource": "The lazily created, cached NSELive client and its requests.Session (client.s) used for NSE API access.",
+        "protection_obligation": "Every NSE HTTP request issued through the shared NSELive session must execute with the hard 15-second timeout injected at client creation, so no accessor call (e.g., get_stock_info) can hang forever on a throttled/stalled NSE connection.",
+        "scope_limits": [
+          "Covers only requests routed through the wrapped client.s.request of the shared NSELive session.",
+          "get_stock_list uses module-level bhavcopy_raw directly (lines 62-64) and does not pass through the wrapped session, so it is outside this guard.",
+          "No supplied source ties NSEAccessor to an agent tool, lifecycle hook, or agent-generated input; absent that binding this is infrastructure robustness policy and may fall outside the agent-DEC scope.",
+          "The tenacity retry + _reset_nse_client client-reset behavior (lines 24-37, 79-85) is a separate robustness layer, not the timeout guard itself."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source shows any agent tool, agent lifecycle hook, or agent-generated input reaching stockdb's /api/per-security/{exchange}/{ticker}/info or /history endpoints; the agent mediation for the ticker bracket-character guard is unbound.",
+      "No supplied source shows NSEAccessor (core/src/stocksense/data/_nse.py) being invoked from any agent tool or agent lifecycle; mediation for the NSE timeout guard is unbound.",
+      "Implementations of YFStockData and StockDataDB (downstream effects of the guarded per-security handlers) are not supplied, so the strata of the downstream ticker effects cannot be confirmed.",
+      "Reflex framework state-lock semantics (atomicity of the check-then-set busy guards in fetch_data and generate_text_to_sql, and of the guard/state-flip pair in stream_agent_run) are not present in the supplied source.",
+      "jugaad_data NSELive internals (whether all NSE requests flow through client.s.request, and what session bhavcopy_raw uses) are not supplied.",
+      "The AI service side of AgentOSClient (run_agent_stream / cancel_agent_run request semantics) is an external library and is not supplied."
+    ],
+    "repository": "Akashdesarda/stock-research-platform",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:11a20ab488ea0c14c52f695f86281050"
+  },
+  "request_sha256": "c2a9e48aa6c6236c5a888b8fee98c04cc844f32281a79b401e7620fca0083c27",
+  "response_sha256": "e43cff31fd1e548cea5d6f4e4b8d7fef345e27e16228bed3758df91640c787d2",
+  "state": "completed",
+  "tokens": 51693,
+  "unit": "v24-screen:11a20ab488ea0c14c52f695f86281050"
+}

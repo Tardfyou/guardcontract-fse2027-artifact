@@ -1,0 +1,859 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The httpx request hook raising MCPEgressBlocked before bytes leave, fired once per hop including redirect targets (mcp.py:104-114); build-time refusal of the configured endpoint at mcp.py:459-464.",
+        "contract_id": "ecological-contract:07623e4333772ac362193e7be93fc8ae",
+        "declared_mechanism": "_network_block_reason classifies the configured endpoint host at build time and build_client omits refused servers (mcp.py:65-87, 459-464); _egress_httpx_client_factory appends _egress_request_hook to every httpx client's request event hooks, failing closed if the SDK helper moves (mcp.py:119-157, 465-477); the hook re-classifies request.url.host per hop via classify_host \u2014 the shared single source of truth (guard.py:303-318) \u2014 and raises MCPEgressBlocked (mcp.py:89-116).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 116,
+            "line_start": 89,
+            "path": "src/jarn/extensibility/mcp.py",
+            "role": "guard_registration",
+            "source_sha256": "7d833956f6303ec4c0d00baa8073315256aa22509b64f2755cd21c80815733c1"
+          },
+          {
+            "line_end": 157,
+            "line_start": 119,
+            "path": "src/jarn/extensibility/mcp.py",
+            "role": "guard_registration",
+            "source_sha256": "7d833956f6303ec4c0d00baa8073315256aa22509b64f2755cd21c80815733c1"
+          },
+          {
+            "line_end": 477,
+            "line_start": 459,
+            "path": "src/jarn/extensibility/mcp.py",
+            "role": "commit_point",
+            "source_sha256": "7d833956f6303ec4c0d00baa8073315256aa22509b64f2755cd21c80815733c1"
+          },
+          {
+            "line_end": 318,
+            "line_start": 303,
+            "path": "src/jarn/permissions/guard.py",
+            "role": "guard_registration",
+            "source_sha256": "8dff598b213ff2214fe9d34a1d4a884a1c30917669564f99accd80b2a35c1f54"
+          },
+          {
+            "line_end": 304,
+            "line_start": 285,
+            "path": "src/jarn/config/schema.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6a13b53d039cdcbf2b3c8e3668d7e5a8bd5be7361b5cfe554d0a7f3795d1f060"
+          },
+          {
+            "line_end": 9,
+            "line_start": 1,
+            "path": "src/jarn/extensibility/mcp.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7d833956f6303ec4c0d00baa8073315256aa22509b64f2755cd21c80815733c1"
+          },
+          {
+            "line_end": 667,
+            "line_start": 661,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          }
+        ],
+        "forbidden_condition": "An MCP client request reaching a host explicitly denied by permissions.network or not present on its non-empty allowlist \u2014 including a 3xx redirect from an allow-listed endpoint to a denied host.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The controller/MCP-refresh call sites that construct the NetworkPolicy and pass it to load_mcp_tools/build_client are not in the supplied views."
+        ],
+        "protected_operation": "Outgoing HTTP requests to MCP server endpoints (the transport for mcp__ agent tool calls; also prompt/resource fetches over the same client).",
+        "protected_resource": "The permissions.network per-host egress allow/deny policy as applied to MCP endpoints.",
+        "protection_obligation": "MCP HTTP/SSE (streamable_http) egress must be gated by the permissions.network policy: a connection to a host that is denied or not on the allowlist must be refused at client build, and every outgoing request \u2014 including each redirect hop \u2014 must raise MCPEgressBlocked before any bytes leave, via the httpx request hook.",
+        "scope_limits": [
+          "stdio MCP servers have no egress host and are never blocked here (mcp.py:74-77); an empty/inert policy leaves behavior unchanged.",
+          "The per-request factory is attached only to streamable_http/sse connections (mcp.py:472-477); websocket endpoints get the build-time host check but no per-request hook in the supplied code.",
+          "The hook covers all traffic on the MCP client (prompts, resources), not only agent tool invocations; the agent-tool path is the asserted mediation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The LangGraph resume in SessionDriver._stream_turn after the engine decision is produced \u2014 the network tool executes only on resume with the decision payload (session.py:1025-1041).",
+        "contract_id": "ecological-contract:2535afae2aef6db7b6ed6de135f1e96e",
+        "declared_mechanism": "build_runtime collects every non-identity-ungated tool name and calls interrupt_map(extra_gated, include_async=...) so web/MCP/async-subagent tools map to ActionKind.NETWORK and are gated (runtime.py:778-798); tool_to_action falls through unknown and mcp__-prefixed names to NETWORK with a diagnostic for unknown tools (permissions_bridge.py:184-195); MCP namespacing to mcp__<server>__<tool> preserves classification soundness (mcp.py:289-312, 557-560).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 798,
+            "line_start": 778,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          },
+          {
+            "line_end": 95,
+            "line_start": 87,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "guard_registration",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 41,
+            "line_start": 29,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "protected_operation",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 195,
+            "line_start": 184,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "protected_operation",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 133,
+            "line_start": 122,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 939,
+            "line_start": 929,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          },
+          {
+            "line_end": 264,
+            "line_start": 215,
+            "path": "src/jarn/agent/interrupts.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dea7ef1ce85ae25886f48315c5cc3fe1d9589f12191f8ff7b4719269b22b7779"
+          },
+          {
+            "line_end": 1041,
+            "line_start": 1027,
+            "path": "src/jarn/agent/session.py",
+            "role": "commit_point",
+            "source_sha256": "9cb98a237ce13ab989d4af3d138913f81a9bc0fee01b425dd49ac9bd5929b249"
+          }
+        ],
+        "forbidden_condition": "A web/MCP/async-subagent tool call issuing its network request without engine evaluation \u2014 e.g., an mcp__-prefixed or unknown tool silently inheriting a permissive classification, or an extra tool bypassing the gated path.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "jarn.agent.web_tools.build_web_tools is not supplied; the exact web tool set is inferred from permissions_bridge/engine references.",
+          "The loader path from load_mcp_tools results into build_runtime's extra_tools argument (controller call site) is not in the supplied views."
+        ],
+        "protected_operation": "Invocation of network-classified extra agent tools (web_search, web_fetch, mcp__* tools, ASYNC_SUBAGENT_TOOLS).",
+        "protected_resource": "Outbound network endpoints reached through those agent tools (web targets, MCP servers, Agent-Protocol deployments).",
+        "protection_obligation": "Every network-capable extra tool call \u2014 builtin web tools (web_search/web_fetch), MCP-loaded tools (mcp__<server>__<tool>), and the async-subagent tools when configured \u2014 must be registered in the deepagents interrupt map and pass a permission-engine decision before the network request is made; un-namespaced extras cannot bypass the engine.",
+        "scope_limits": [
+          "Locally built read-only extras (wiki_search/wiki_read, repo_map, background controls) are deliberately excluded from gating by object identity (runtime.py:783-793).",
+          "This contract covers pre-exec tool gating only; MCP transport-level egress policy enforcement is a separate contract.",
+          "spawn_parallel_tasks and the task tool are added after/outside the interrupt map by design (runtime.py:863-900); their internal subagent gating is not asserted here."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The approver invocation when an ASK reaches driver.approver during interrupt resolution \u2014 the raise converts the decision into a refusal before any resume payload is produced (interrupts.py:229-234 invoking the approver; headless.py:475-479 raising).",
+        "contract_id": "ecological-contract:4d6c45b203b3c0997e8f0f3923063fc8",
+        "declared_mechanism": "_make_fail_closed_approver returns an Approver whose callback raises HeadlessRefusal for every ASK reaching it (headless.py:464-481); _run_headless wires it as the session approver via run_agent_turn(approver=approver) (headless.py:589-590, 643-650); HeadlessRefusal carries kind='refusal' and exit_code=EXIT_PERMISSION_DENIED (headless.py:112-125); a second layer raises HeadlessRefusal on rejected/blocked/auto-denied approval events (headless.py:628-639).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 10,
+            "line_start": 4,
+            "path": "src/jarn/headless.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8252810654c6f90d5d0f5c23b1b557fc756bf11fd9143afa6f2e23de63b9da29"
+          },
+          {
+            "line_end": 474,
+            "line_start": 464,
+            "path": "src/jarn/headless.py",
+            "role": "guard_registration",
+            "source_sha256": "8252810654c6f90d5d0f5c23b1b557fc756bf11fd9143afa6f2e23de63b9da29"
+          },
+          {
+            "line_end": 481,
+            "line_start": 475,
+            "path": "src/jarn/headless.py",
+            "role": "commit_point",
+            "source_sha256": "8252810654c6f90d5d0f5c23b1b557fc756bf11fd9143afa6f2e23de63b9da29"
+          },
+          {
+            "line_end": 125,
+            "line_start": 112,
+            "path": "src/jarn/headless.py",
+            "role": "guard_registration",
+            "source_sha256": "8252810654c6f90d5d0f5c23b1b557fc756bf11fd9143afa6f2e23de63b9da29"
+          },
+          {
+            "line_end": 590,
+            "line_start": 589,
+            "path": "src/jarn/headless.py",
+            "role": "guard_registration",
+            "source_sha256": "8252810654c6f90d5d0f5c23b1b557fc756bf11fd9143afa6f2e23de63b9da29"
+          },
+          {
+            "line_end": 650,
+            "line_start": 643,
+            "path": "src/jarn/headless.py",
+            "role": "guard_registration",
+            "source_sha256": "8252810654c6f90d5d0f5c23b1b557fc756bf11fd9143afa6f2e23de63b9da29"
+          },
+          {
+            "line_end": 234,
+            "line_start": 229,
+            "path": "src/jarn/agent/interrupts.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "dea7ef1ce85ae25886f48315c5cc3fe1d9589f12191f8ff7b4719269b22b7779"
+          }
+        ],
+        "forbidden_condition": "A gated tool's ASK decision being satisfied without a human in a headless run (silent auto-approval), allowing the tool to execute unattended.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "jarn.agent.turn_runner.run_agent_turn is not supplied; the hand-off of the approver into the SessionDriver is known only via the call site."
+        ],
+        "protected_operation": "The approval decision for gated agent tool actions in headless turns.",
+        "protected_resource": "The Approver callback slot / approval gate in the headless turn pipeline.",
+        "protection_obligation": "In headless (non-interactive) mode, any gated action that reaches an ASK approval decision must be refused \u2014 the fail-closed approver raises HeadlessRefusal (exit kind refusal / EXIT_PERMISSION_DENIED) \u2014 so no gated tool is approved or executed without a human; unattended execution requires explicit auto-edit/yolo opt-in.",
+        "scope_limits": [
+          "Auto-approving modes (auto-edit/yolo) resolve most actions to ALLOW before the approver; the fail-closed approver still denies any residual ASK such as danger-guard DANGEROUS (headless.py:466-473).",
+          "The interactive REPL approver is a different wiring and out of scope; only the headless approver is asserted.",
+          "The approval verdict itself is the guarded state transition; the strata of tools that would have executed downstream are covered by the gating contracts."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The middleware wrapping of tool execution in the compiled graph \u2014 create_deep_agent(middleware=[read_filter_mw]) \u2014 where sensitive hits are stripped from results before the model sees them (runtime.py:929-939).",
+        "contract_id": "ecological-contract:531d7c6ff0355e3427ec1fd6ab906018",
+        "declared_mechanism": "ReadResultFilterMiddleware bound to the session's authoritative PermissionEngine is injected on the main agent and every jarn-built subagent spec (runtime.py:902-921, 293-328); the engine predicate read_content_blocked leads with the secret-store check, then deny rules, then allow, then sensitive globs \u2014 an allow rule can never unlock the store (engine.py:329-351); the same engine instance receives runtime deny_session/remember so session denials are honored by the filter (runtime.py:264-290).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 327,
+            "line_start": 308,
+            "path": "src/jarn/permissions/engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2f581998ca7eed3cb3fddacda420bfddf2e60232eb837737f7613253fc272364"
+          },
+          {
+            "line_end": 351,
+            "line_start": 329,
+            "path": "src/jarn/permissions/engine.py",
+            "role": "guard_registration",
+            "source_sha256": "2f581998ca7eed3cb3fddacda420bfddf2e60232eb837737f7613253fc272364"
+          },
+          {
+            "line_end": 921,
+            "line_start": 902,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          },
+          {
+            "line_end": 939,
+            "line_start": 929,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "commit_point",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          },
+          {
+            "line_end": 309,
+            "line_start": 293,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          }
+        ],
+        "forbidden_condition": "A broad read tool result containing secret-store (or denied/sensitive) file contents reaching the model because the pre-exec gate judged only the benign search scope.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "jarn.agent.read_filter.ReadResultFilterMiddleware source is not in the supplied views; the filtering behavior is characterized by runtime wiring/docstrings and the engine predicate only (drop vs. redact semantics unverified)."
+        ],
+        "protected_operation": "Post-execution filtering of read tool results before they enter model-visible session context.",
+        "protected_resource": "Secret-store file contents (and generally contents of read-denied/sensitive paths).",
+        "protection_obligation": "Broad-read tool results (grep/glob-style content searches) must be filtered so contents of jarn's secret store \u2014 and other denied/sensitive paths \u2014 are never surfaced to the model, even when the pre-exec gate auto-allowed the benign search scope.",
+        "scope_limits": [
+          "The guarded effect is content entering model-visible session state; the filesystem read itself is not mutated by this contract.",
+          "Remote out-of-process async subagents are out of scope \u2014 their reads are the remote harness's concern (runtime.py:313-316, 915-916)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The DENY verdict consumed in resolve_interrupts \u2014 the reject decision is yielded and the gated tool is never resumed (interrupts.py:223-228).",
+        "contract_id": "ecological-contract:5751a009099a04824117d0f79d6f1069",
+        "declared_mechanism": "evaluate() checks _touches_secret_store immediately after the danger-guard BLOCKED tier and before deny rules, allow rules, and any mode, returning the fixed _SECRET_STORE_DENIAL with dangerous=True and block_remember_always=True (engine.py:155-164, 207-220); _touches_secret_store judges READ over every candidate (target plus grep/glob read_targets) and WRITE on its target (engine.py:371-398); _is_secret_store_path binds the store by resolved-identity within secret_store_dirs and by casefolded lexical globs, widening with resolved symlinks (engine.py:400-435).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 164,
+            "line_start": 155,
+            "path": "src/jarn/permissions/engine.py",
+            "role": "guard_registration",
+            "source_sha256": "2f581998ca7eed3cb3fddacda420bfddf2e60232eb837737f7613253fc272364"
+          },
+          {
+            "line_end": 220,
+            "line_start": 207,
+            "path": "src/jarn/permissions/engine.py",
+            "role": "guard_registration",
+            "source_sha256": "2f581998ca7eed3cb3fddacda420bfddf2e60232eb837737f7613253fc272364"
+          },
+          {
+            "line_end": 398,
+            "line_start": 371,
+            "path": "src/jarn/permissions/engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2f581998ca7eed3cb3fddacda420bfddf2e60232eb837737f7613253fc272364"
+          },
+          {
+            "line_end": 435,
+            "line_start": 400,
+            "path": "src/jarn/permissions/engine.py",
+            "role": "guard_registration",
+            "source_sha256": "2f581998ca7eed3cb3fddacda420bfddf2e60232eb837737f7613253fc272364"
+          },
+          {
+            "line_end": 228,
+            "line_start": 223,
+            "path": "src/jarn/agent/interrupts.py",
+            "role": "commit_point",
+            "source_sha256": "dea7ef1ce85ae25886f48315c5cc3fe1d9589f12191f8ff7b4719269b22b7779"
+          },
+          {
+            "line_end": 215,
+            "line_start": 197,
+            "path": "src/jarn/agent/interrupts.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "dea7ef1ce85ae25886f48315c5cc3fe1d9589f12191f8ff7b4719269b22b7779"
+          }
+        ],
+        "forbidden_condition": "A READ or WRITE tool action whose target \u2014 or any grep/glob read candidate \u2014 resolves into the secret store being allowed by an allow rule, session approval, or coarse mode; or such an action being remembered as a persisted ALWAYS rule.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The concrete store directory list and glob patterns (engine.py:69-72) cannot be verified from the redacted source."
+        ],
+        "protected_operation": "Path-addressed read/write tool actions evaluated by PermissionEngine.evaluate (actions derived from gated agent tool calls).",
+        "protected_resource": "J.A.R.N.'s file-backed credential store (secret_store_dirs under ~/.jarn/secrets/).",
+        "protection_obligation": "Agent path-addressed READ/WRITE tool actions touching jarn's own secret store (~/.jarn/secrets/<service>/<account> under $JARN_HOME, plus project-level .jarn/secrets) must be hard-denied above the allow tier: un-allowlistable, never persisted as a remembered rule, and unreachable in any permission mode including yolo.",
+        "scope_limits": [
+          "SHELL and NETWORK actions are out of scope for _touches_secret_store; shell access to the store is covered by a separate danger-guard contract.",
+          "The store path constants and lexical globs are redacted in the supplied view; identity matching relies on jarn.config.paths.secret_store_dirs, which is referenced but not supplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The LangGraph resume in SessionDriver._stream_turn \u2014 the mutation gate explicitly covers SHELL-gated run_in_background starts alongside write_file/edit_file/execute (session.py:1027-1041).",
+        "contract_id": "ecological-contract:6c6ba312221a00c431902a627754ab72",
+        "declared_mechanism": "MUTATING_TOOLS includes execute (permissions_bridge.py:20-21); run_in_background is gated exactly like execute as a SHELL action (permissions_bridge.py:98-103, 138-140); the interrupt map plus engine.evaluate in resolve_interrupts must resolve approve/reject/edit before resume (interrupts.py:215-264).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 21,
+            "line_start": 20,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "guard_registration",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 103,
+            "line_start": 98,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "guard_registration",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 140,
+            "line_start": 135,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "protected_operation",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 939,
+            "line_start": 929,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          },
+          {
+            "line_end": 264,
+            "line_start": 215,
+            "path": "src/jarn/agent/interrupts.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dea7ef1ce85ae25886f48315c5cc3fe1d9589f12191f8ff7b4719269b22b7779"
+          },
+          {
+            "line_end": 1041,
+            "line_start": 1027,
+            "path": "src/jarn/agent/session.py",
+            "role": "commit_point",
+            "source_sha256": "9cb98a237ce13ab989d4af3d138913f81a9bc0fee01b425dd49ac9bd5929b249"
+          }
+        ],
+        "forbidden_condition": "A shell command (foreground execute or a background-process start) executing without a permission-engine decision on the SHELL action carrying that command.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The execution backend implementation that ultimately spawns the process (jarn backends factory) is not in the supplied views."
+        ],
+        "protected_operation": "Execution of the execute tool and run_in_background starts, mapped to ActionKind.SHELL with the command string as target.",
+        "protected_resource": "The host OS process/shell surface the execution backend runs commands on.",
+        "protection_obligation": "Every shell-executing agent tool call \u2014 the execute tool and run_in_background starts \u2014 must be registered in the deepagents interrupt map and pass a permission-engine decision (SHELL-classified, command inspected) before the command runs.",
+        "scope_limits": [
+          "Background control tools (check/kill/list_background) are intentionally ungated as read-only controls of agent-started processes (permissions_bridge.py:98-103).",
+          "Pattern-based guarding only; OS/docker sandbox enforcement is a separate layer not asserted by this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The drop in build_runtime's kept-list loop, executed before create_deep_agent is called (runtime.py:691-708, then 929-939).",
+        "contract_id": "ecological-contract:a7b8c6f80fefa168b1528eac8de20483",
+        "declared_mechanism": "_RESERVED_BUILTIN_NAMES collects every builtin tool name (runtime.py:82-106); the assembly loop drops any extra tool (identified by the pre-wiring object-identity set _extra_ids) whose name is un-prefixed and reserved, warning instead of raising (runtime.py:691-708); the MCP loader complements this by stamping mcp__<server>__<tool> provenance on every tool before it leaves the loader (mcp.py:289-312, 557-560).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 106,
+            "line_start": 82,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "forbidden_condition",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          },
+          {
+            "line_end": 672,
+            "line_start": 661,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "protected_operation",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          },
+          {
+            "line_end": 708,
+            "line_start": 691,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "commit_point",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          },
+          {
+            "line_end": 133,
+            "line_start": 122,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 560,
+            "line_start": 557,
+            "path": "src/jarn/extensibility/mcp.py",
+            "role": "guard_registration",
+            "source_sha256": "7d833956f6303ec4c0d00baa8073315256aa22509b64f2755cd21c80815733c1"
+          },
+          {
+            "line_end": 939,
+            "line_start": 929,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          }
+        ],
+        "forbidden_condition": "An un-namespaced extra tool carrying a reserved builtin name surviving into create_deep_agent's tool list, where tool_to_action would treat it as a (read-only) builtin and the engine would auto-ALLOW it in every mode including plan \u2014 letting a networked/mutating tool run without approval.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The deepagents-side handling of the tools list after create_deep_agent is external and not supplied."
+        ],
+        "protected_operation": "Agent tool registration/assembly in build_runtime \u2014 the construction of the tool list handed to create_deep_agent.",
+        "protected_resource": "The reserved builtin tool names / the tool-name namespace that permission classification is keyed on.",
+        "protection_obligation": "An un-namespaced extra tool (web/MCP-provided) whose name collides with a reserved jarn builtin name must be dropped at agent assembly, so it can never be registered under a name that name-keyed permission classification would misclassify and auto-allow.",
+        "scope_limits": [
+          "The affected state is the assembled agent tool registry; the drop happens at startup assembly, before any agent turn.",
+          "web_search/web_fetch are deliberately not reserved (they are jarn's own NETWORK-mapped tools and stay gated); identity-based un-gating of locally built read-only tools is unaffected (runtime.py:787-793).",
+          "Genuine builtins and correctly namespaced mcp__ tools are never dropped."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "handle_update's early return on a rejected decision, before any dispatch \u2014 backend.submit_verdict (bot.py:499-553) and backend.submit_turn (bot.py:680-685) are reachable only after authorization.",
+        "contract_id": "ecological-contract:a90e2cd9f075e1d10b8ee4227ffa3c35",
+        "declared_mechanism": "handle_update invokes authorize_update(update, self.allowed_user_ids) first and returns (logging the reason) on any not ok decision before callback or message handling (bot.py:434-444); authorize_update enforces not_private / no_principal / not_allowed with an empty allowlist denying everyone (auth.py:103-122); principal extraction fails closed (auth.py:46-72); gateway startup refuses to boot with an empty allowlist (cli.py:215-231).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 5,
+            "line_start": 1,
+            "path": "src/jarn/telegram/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "88db15d5d8221b2d83eb1056f5d296043d8ed22dacb416b206a54fda50084375"
+          },
+          {
+            "line_end": 122,
+            "line_start": 103,
+            "path": "src/jarn/telegram/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "88db15d5d8221b2d83eb1056f5d296043d8ed22dacb416b206a54fda50084375"
+          },
+          {
+            "line_end": 72,
+            "line_start": 46,
+            "path": "src/jarn/telegram/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "88db15d5d8221b2d83eb1056f5d296043d8ed22dacb416b206a54fda50084375"
+          },
+          {
+            "line_end": 444,
+            "line_start": 434,
+            "path": "src/jarn/telegram/bot.py",
+            "role": "commit_point",
+            "source_sha256": "972a817c7667c9fa6862466bf35411d7a39e152c2e819a2ffbc2f2722c540f10"
+          },
+          {
+            "line_end": 553,
+            "line_start": 499,
+            "path": "src/jarn/telegram/bot.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "972a817c7667c9fa6862466bf35411d7a39e152c2e819a2ffbc2f2722c540f10"
+          },
+          {
+            "line_end": 316,
+            "line_start": 310,
+            "path": "src/jarn/telegram/bot.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "972a817c7667c9fa6862466bf35411d7a39e152c2e819a2ffbc2f2722c540f10"
+          },
+          {
+            "line_end": 685,
+            "line_start": 680,
+            "path": "src/jarn/telegram/bot.py",
+            "role": "protected_operation",
+            "source_sha256": "972a817c7667c9fa6862466bf35411d7a39e152c2e819a2ffbc2f2722c540f10"
+          },
+          {
+            "line_end": 231,
+            "line_start": 215,
+            "path": "src/jarn/telegram/cli.py",
+            "role": "guard_registration",
+            "source_sha256": "baf1b15ecfe188d1c3e275f113a81d13387ecc676f6102271e36328f5329e814"
+          }
+        ],
+        "forbidden_condition": "An update from a non-private chat, an update with no extractable principal (including missing 'from' on a present envelope, never falling back to chat.id), or a sender not in allowed_user_ids reaching backend.submit_turn / backend.submit_verdict.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "GatewayBackend.submit_turn/submit_verdict implementations (jarn.telegram.backend) are not in the supplied views; downstream handling of an authorized dispatch is characterized only by these call sites."
+        ],
+        "protected_operation": "Dispatch of authorized inbound Telegram updates to the gateway backend (submit_turn for turns; submit_verdict for approval verdicts).",
+        "protected_resource": "The gateway backend / agent-session control channel reached through the Telegram transport.",
+        "protection_obligation": "Every inbound Telegram update must pass a deny-by-default, DM-only allowlist authorization \u2014 private chat, non-null from.id principal extracted fail-closed, sender id in allowed_user_ids, empty allowlist admits nobody \u2014 in TelegramBotApp.handle_update before the update may be dispatched to the gateway backend as a turn or an approval verdict.",
+        "scope_limits": [
+          "Applies to the Telegram long-poll transport's handle_update dispatch path; startup backlog updates are fetched, reported verbatim, and never executed (bot.py:172-232).",
+          "The turn-submission path is operator-initiated input that starts agent turns; the lifecycle binding rests on the approval-verdict path, which resolves the agent's HITL approval cards (tool/plan/memory/skill kinds)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The resulting DENY verdict consumed in resolve_interrupts \u2014 the reject decision prevents the shell tool from resuming (interrupts.py:223-228).",
+        "contract_id": "ecological-contract:aa45767dac17f9f2923bc777714cc90b",
+        "declared_mechanism": "inspect_command returns GuardLevel.BLOCKED on a _JARN_SECRET_PATH match, before the rm/network/rule scans (guard.py:63-71, 402-416); engine._guard_for threads SHELL actions through inspect_command (engine.py:462-466), and BLOCKED maps to an un-allowlistable DENY at the top of evaluate's precedence (engine.py:213-217).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 71,
+            "line_start": 63,
+            "path": "src/jarn/permissions/guard.py",
+            "role": "guard_registration",
+            "source_sha256": "8dff598b213ff2214fe9d34a1d4a884a1c30917669564f99accd80b2a35c1f54"
+          },
+          {
+            "line_end": 416,
+            "line_start": 402,
+            "path": "src/jarn/permissions/guard.py",
+            "role": "guard_registration",
+            "source_sha256": "8dff598b213ff2214fe9d34a1d4a884a1c30917669564f99accd80b2a35c1f54"
+          },
+          {
+            "line_end": 217,
+            "line_start": 213,
+            "path": "src/jarn/permissions/engine.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2f581998ca7eed3cb3fddacda420bfddf2e60232eb837737f7613253fc272364"
+          },
+          {
+            "line_end": 466,
+            "line_start": 462,
+            "path": "src/jarn/permissions/engine.py",
+            "role": "guard_registration",
+            "source_sha256": "2f581998ca7eed3cb3fddacda420bfddf2e60232eb837737f7613253fc272364"
+          },
+          {
+            "line_end": 228,
+            "line_start": 223,
+            "path": "src/jarn/agent/interrupts.py",
+            "role": "commit_point",
+            "source_sha256": "dea7ef1ce85ae25886f48315c5cc3fe1d9589f12191f8ff7b4719269b22b7779"
+          },
+          {
+            "line_end": 215,
+            "line_start": 197,
+            "path": "src/jarn/agent/interrupts.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "dea7ef1ce85ae25886f48315c5cc3fe1d9589f12191f8ff7b4719269b22b7779"
+          }
+        ],
+        "forbidden_condition": "A shell command matching the jarn secret-store path pattern (absolute, tilde, or environment spellings) executing \u2014 e.g., cat/sed-style reads of the store in full-access mode.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The literal store-path regex is redacted in the supplied view; only its documented match classes (absolute/tilde/env spellings) are verifiable."
+        ],
+        "protected_operation": "Shell command execution via SHELL-classified agent tool actions.",
+        "protected_resource": "The jarn credential store, accessed via shell commands.",
+        "protection_obligation": "Shell commands (execute / run_in_background) whose text names jarn's own credential store must be hard-blocked by the danger-guard \u2014 refused outright above modes and allowlists \u2014 so shell access cannot bypass the path-aware tool bridge.",
+        "scope_limits": [
+          "The guard is a pattern-based net, not a sandbox; obfuscated equivalents are an acknowledged residual (guard.py:7-19).",
+          "Other credential-bearing paths (.env, .ssh, .aws/credentials, *.pem/*.key) route to DANGEROUS (confirm), not BLOCKED \u2014 out of this contract's hard-deny scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The LangGraph resume in SessionDriver._stream_turn: ordinary reads resume silently on ALLOW (interrupts.py:217-222); sensitive/denied reads surface through the approver or reject path before the tool resumes (session.py:1027-1041).",
+        "contract_id": "ecological-contract:d34a71c76a5cdc1d69c4ece2d0997d90",
+        "declared_mechanism": "READONLY_TOOLS are registered in the interrupt map in every mode so reads reach the engine (permissions_bridge.py:43-49, 62-76); tool_to_action builds READ actions whose read_targets capture both the search path and the file glob (permissions_bridge.py:146-170); the engine's _read_decision returns ASK when any candidate is sensitive and not cleared by an allow matching that same candidate (engine.py:233-260).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 43,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "guard_registration",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 76,
+            "line_start": 70,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 170,
+            "line_start": 146,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "protected_operation",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 260,
+            "line_start": 233,
+            "path": "src/jarn/permissions/engine.py",
+            "role": "guard_registration",
+            "source_sha256": "2f581998ca7eed3cb3fddacda420bfddf2e60232eb837737f7613253fc272364"
+          },
+          {
+            "line_end": 939,
+            "line_start": 929,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          },
+          {
+            "line_end": 264,
+            "line_start": 215,
+            "path": "src/jarn/agent/interrupts.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dea7ef1ce85ae25886f48315c5cc3fe1d9589f12191f8ff7b4719269b22b7779"
+          },
+          {
+            "line_end": 1041,
+            "line_start": 1027,
+            "path": "src/jarn/agent/session.py",
+            "role": "commit_point",
+            "source_sha256": "9cb98a237ce13ab989d4af3d138913f81a9bc0fee01b425dd49ac9bd5929b249"
+          }
+        ],
+        "forbidden_condition": "A read of a sensitive path (or one matching a read-deny rule) executing without engine inspection \u2014 e.g., a grep whose glob narrows onto .env/id_rsa/.aws/credentials auto-allowing on a benign search scope, or a user's permissions.deny on a path being dead because reads never reach the engine.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The engine's sensitive-glob default list (DEFAULT_SENSITIVE_READ_GLOBS) is visible, but per-session rule resolution from config into PermissionEngine.rules is characterized only by type hints."
+        ],
+        "protected_operation": "Execution of gated read tool calls (read_file/ls/glob/grep), judged per candidate target (path plus glob).",
+        "protected_resource": "Sensitive files on the filesystem (paths matched by permissions.sensitive_read_globs or read-deny rules).",
+        "protection_obligation": "Read tool calls (read_file, ls, glob, grep) must be routed through the permission engine so their path and file-glob targets are inspected against sensitive-read globs and read-deny rules \u2014 a sensitive-path read must ASK (or be denied) rather than silently auto-allowing \u2014 before the read executes and its content is surfaced to the model.",
+        "scope_limits": [
+          "The gated effect is a filesystem read, not a mutation; the stratum denotes the filesystem access at the resume commit, and the harm addressed is sensitive-content disclosure.",
+          "Gating adds no prompt for ordinary reads \u2014 the engine auto-ALLOWs them and interrupts resumes ALLOW silently (permissions_bridge.py:43-48, interrupts.py:217-222).",
+          "Post-execution content filtering for broad searches is a separate contract; this contract asserts only pre-exec routing and per-candidate judgment."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The LangGraph resume in SessionDriver._stream_turn: the gated tool executes only when the graph is resumed at the top of the loop with the decision payload; the mutation gate at session.py:1041 guarantees the pre-mutation ordering on every resolution path.",
+        "contract_id": "ecological-contract:ddc49b30fc42a8100bbf1681b54f8115",
+        "declared_mechanism": "interrupt_map() registers MUTATING_TOOLS (plus wiki-mutating extras) in the interrupt_on dict for create_deep_agent in every mode (permissions_bridge.py:55-95); build_runtime passes the map to create_deep_agent(interrupt_on=...) (runtime.py:794-798, 929-939); on each HITL interrupt, resolve_interrupts maps the call via tool_to_action to a WRITE Action and calls driver.engine.evaluate, yielding approve/reject/edit decisions (interrupts.py:197, 215-264); rejection records a session deny (interrupts.py:259).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 95,
+            "line_start": 55,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "guard_registration",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 145,
+            "line_start": 143,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "protected_operation",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 175,
+            "line_start": 171,
+            "path": "src/jarn/agent/permissions_bridge.py",
+            "role": "protected_operation",
+            "source_sha256": "6971f15790c39166bd8b0d82521c94db1f97305c977e0194ec25b89e18fc3a57"
+          },
+          {
+            "line_end": 939,
+            "line_start": 929,
+            "path": "src/jarn/agent/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "03413eb8ac5d7e472d6d5493e70d99c5d4f8b4eed79e57e25d7dbb34f8d991fe"
+          },
+          {
+            "line_end": 264,
+            "line_start": 197,
+            "path": "src/jarn/agent/interrupts.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dea7ef1ce85ae25886f48315c5cc3fe1d9589f12191f8ff7b4719269b22b7779"
+          },
+          {
+            "line_end": 1044,
+            "line_start": 1027,
+            "path": "src/jarn/agent/session.py",
+            "role": "commit_point",
+            "source_sha256": "9cb98a237ce13ab989d4af3d138913f81a9bc0fee01b425dd49ac9bd5929b249"
+          }
+        ],
+        "forbidden_condition": "A file-mutating tool call reaching execution without a permission-engine verdict \u2014 i.e., a write/edit/wiki-write that runs without engine.evaluate having returned a decision and the corresponding approve/reject/edit resolution being applied.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "builtin_tools._wire_builtin_tools (which constructs the local write/edit tool instances and returns ungated_tools) is not in the supplied views.",
+          "The site that adds wiki_write/wiki_append to extra_tools when wiki is enabled is not supplied (permissions_bridge.py:90-94 states it relies on extra_tools)."
+        ],
+        "protected_operation": "Execution of gated file-mutating agent tool calls (write_file / edit_file / wiki_write / wiki_append).",
+        "protected_resource": "Files in the agent's write scope (write/edit targets on the project filesystem; wiki pages for wiki-mutating extras).",
+        "protection_obligation": "Every file-mutating agent tool call (write_file, edit_file, and wiki_write/wiki_append when configured as extra tools) must be registered in the deepagents interrupt map and pass a permission-engine decision (ALLOW, approver-answered ASK, or DENY) before it may execute; the tool runs only when the LangGraph graph is resumed with that decision.",
+        "scope_limits": [
+          "Covers only tool names registered in the interrupt map; locally built identity-ungated tools are excluded by object identity (permissions_bridge.py:105-119, runtime.py:787-793).",
+          "The content of per-mode decisions (plan/ask/auto-edit/yolo) and danger-guard levels is out of scope here; only the must-be-evaluated-before-execution invariant is asserted.",
+          "deepagents/HITL middleware internals (InterruptOnConfig semantics) are known only through jarn call sites."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The sanitize_project call in load_config, applied to project_raw before _deep_merge constructs the merged config (loader.py:333-341).",
+        "contract_id": "ecological-contract:e89804f79e4fc1c9aa2a2968996a4eaa",
+        "declared_mechanism": "load_config calls sanitize_project when project_trusted is False, before the merged config is built (loader.py:324-341); sanitize_project keeps only SAFE_PROJECT_KEYS, trims permissions to deny/network.deny, drops allow/sensitive_read_globs, and drops a null deny (trust.py:47-53, 144-183); the allowlist defaults new keys to stripped rather than honoured.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 31,
+            "line_start": 1,
+            "path": "src/jarn/config/trust.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d1a82698576b4c84b4408ad3dbb48a9831479f68c72c623f57f1bb8b226f10a6"
+          },
+          {
+            "line_end": 53,
+            "line_start": 47,
+            "path": "src/jarn/config/trust.py",
+            "role": "guard_registration",
+            "source_sha256": "d1a82698576b4c84b4408ad3dbb48a9831479f68c72c623f57f1bb8b226f10a6"
+          },
+          {
+            "line_end": 183,
+            "line_start": 144,
+            "path": "src/jarn/config/trust.py",
+            "role": "guard_registration",
+            "source_sha256": "d1a82698576b4c84b4408ad3dbb48a9831479f68c72c623f57f1bb8b226f10a6"
+          },
+          {
+            "line_end": 341,
+            "line_start": 324,
+            "path": "src/jarn/config/loader.py",
+            "role": "commit_point",
+            "source_sha256": "fd6a0072460249cec72e37535e3228f1aba35ce3d2a097dc682554b53e8adb59"
+          },
+          {
+            "line_end": 13,
+            "line_start": 8,
+            "path": "src/jarn/config/trust.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d1a82698576b4c84b4408ad3dbb48a9831479f68c72c623f57f1bb8b226f10a6"
+          },
+          {
+            "line_end": 213,
+            "line_start": 199,
+            "path": "src/jarn/agent/interrupts.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "dea7ef1ce85ae25886f48315c5cc3fe1d9589f12191f8ff7b4719269b22b7779"
+          }
+        ],
+        "forbidden_condition": "A capability-granting key from an untrusted project tier surviving into the merged effective config \u2014 e.g., project-declared hooks or MCP servers activating, project providers pointing base_url at an attacker to exfiltrate secret references, project permission_mode forcing yolo, project permissions.allow pre-approving commands, project network.allow widening egress, or project sensitive_read_globs dropping read protection.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The hook-runtime that would execute project-declared hooks (HookRunner construction from config) is not in the supplied views; the binding is established via the documented lifecycle semantics and the pre-tool hook dispatch path."
+        ],
+        "protected_operation": "Configuration load/merge \u2014 load_config building the effective merged Config from the global and project tiers.",
+        "protected_resource": "The effective merged Config that wires agent capabilities (lifecycle hooks, MCP tools, providers, permission mode, egress policy, sensitive-read globs).",
+        "protection_obligation": "An untrusted project's .jarn/config.yaml must not enable capability-granting settings: at the config-load commit point the project tier is stripped to the SAFE_PROJECT_KEYS allowlist ('ui' plus safety-increasing permissions.deny / network.deny) until the project is explicitly trusted \u2014 hooks, mcp_servers, async_subagents, providers, execution, permission_mode, policy, observability, permissions.allow, permissions.network.allow, and permissions.sensitive_read_globs must not take effect.",
+        "scope_limits": [
+          "Global-only keys (gateway) are stripped from every project tier whether trusted or not (loader.py:31-35, 79-93) \u2014 outside this trust-conditional contract.",
+          "Trusted projects bypass sanitization by design; trust is recorded per root with a fingerprint so gated-key changes re-trigger the prompt (trust.py:27-30, 222-243)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "jarn.agent.read_filter.ReadResultFilterMiddleware implementation is not in the supplied views; broad-read filtering behavior is characterized only by engine predicates and runtime wiring/docstrings.",
+      "jarn.agent.builtin_tools._wire_builtin_tools is not supplied; construction of local write/edit/read/background tool instances and the ungated_tools identity set is unverified.",
+      "jarn.config.paths.secret_store_dirs and the literal secret-store path patterns/globs are redacted or referenced-only in engine.py and guard.py; the concrete store locations cannot be confirmed.",
+      "jarn.agent.turn_runner.run_agent_turn is not supplied; the approver hand-off from _run_headless into the SessionDriver is known only via call sites.",
+      "jarn.telegram.backend.GatewayBackend.submit_turn/submit_verdict implementations are not supplied; downstream handling of authorized Telegram dispatches is unverified.",
+      "The controller/MCP-refresh call sites that construct NetworkPolicy and pass it to load_mcp_tools/build_client are not in the supplied views.",
+      "jarn.agent.web_tools.build_web_tools is not supplied; the exact builtin web tool set is inferred from permissions_bridge.py and engine.py references.",
+      "deepagents library internals (InterruptOnConfig semantics, HITL middleware resume handling, create_deep_agent) are external dependencies; only jarn call sites are supplied.",
+      "The numeric value of EXIT_PERMISSION_DENIED (jarn.exit_codes) is imported but not defined in the supplied views.",
+      "The registration site that adds wiki tools to extra_tools when wiki.enabled is true is not supplied (permissions_bridge.py:90-94 relies on it).",
+      "HookRunner construction from config hooks (the consumer of sanitized project/global hook specs) is not in the supplied views."
+    ],
+    "repository": "chayapats/jarn",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:9fe927be382e1cba6785a52e9cfa2401"
+  },
+  "request_sha256": "1bb069347bb5686caba1cdfd52bb14ce5ae9a390398a4f0f46f92cd8885559c8",
+  "response_sha256": "b431eefc7689d5fc8a51d2c1b253a88d91ed96135ec795397edeac37a93d3253",
+  "state": "completed",
+  "tokens": 164228,
+  "unit": "v24-screen:9fe927be382e1cba6785a52e9cfa2401"
+}

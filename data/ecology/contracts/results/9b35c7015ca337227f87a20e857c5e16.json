@@ -1,0 +1,120 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "conn.commit() at tools.py:165 inside save_ticket_summary, where the INSERT OR IGNORE into tickets (lines 121-127), the upsert into ticket_metadata (lines 130-148), and the INSERT into ticket_messages (lines 151-163) become durable.",
+        "contract_id": "ecological-contract:4864571fa3457e635025fc1f22b7ed03",
+        "declared_mechanism": "Deterministic identity gate in archivist_node ('No ID, No Archive', archivist.py:40-45): if state.user_id is falsy the node returns {\"archive_summary\": \"Skipped: User is anonymous.\"} and never reaches archivist_agent.invoke (archivist.py:66). archivist_agent is created via create_agent with tools=ARCHIVIST_TOOLS (archivist.py:23-33) and ARCHIVIST_TOOLS = [save_ticket_summary] (tools.py:174), making the guarded node the only supplied invocation path to the committing tool; workflow.py registers archivist as a graph node (line 56) and routes all terminal paths through it before END (lines 99-103).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 45,
+            "line_start": 40,
+            "path": "uda_hub/agentic/agents/archivist.py",
+            "role": "guard_registration",
+            "source_sha256": "ee1e6a2e0145cb352076764e9a8c2fc18acfe4cc3cdeccf9c894ad05125e6e21"
+          },
+          {
+            "line_end": 45,
+            "line_start": 42,
+            "path": "uda_hub/agentic/agents/archivist.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ee1e6a2e0145cb352076764e9a8c2fc18acfe4cc3cdeccf9c894ad05125e6e21"
+          },
+          {
+            "line_end": 171,
+            "line_start": 105,
+            "path": "uda_hub/agentic/tools/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "159012c27ebb4529c8bd61df36b53219fc0964104a253e1e6687ae42de819a39"
+          },
+          {
+            "line_end": 165,
+            "line_start": 165,
+            "path": "uda_hub/agentic/tools/tools.py",
+            "role": "commit_point",
+            "source_sha256": "159012c27ebb4529c8bd61df36b53219fc0964104a253e1e6687ae42de819a39"
+          },
+          {
+            "line_end": 33,
+            "line_start": 23,
+            "path": "uda_hub/agentic/agents/archivist.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ee1e6a2e0145cb352076764e9a8c2fc18acfe4cc3cdeccf9c894ad05125e6e21"
+          },
+          {
+            "line_end": 66,
+            "line_start": 64,
+            "path": "uda_hub/agentic/agents/archivist.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ee1e6a2e0145cb352076764e9a8c2fc18acfe4cc3cdeccf9c894ad05125e6e21"
+          },
+          {
+            "line_end": 105,
+            "line_start": 105,
+            "path": "uda_hub/agentic/tools/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "159012c27ebb4529c8bd61df36b53219fc0964104a253e1e6687ae42de819a39"
+          },
+          {
+            "line_end": 174,
+            "line_start": 174,
+            "path": "uda_hub/agentic/tools/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "159012c27ebb4529c8bd61df36b53219fc0964104a253e1e6687ae42de819a39"
+          },
+          {
+            "line_end": 56,
+            "line_start": 56,
+            "path": "uda_hub/agentic/workflow.py",
+            "role": "guard_registration",
+            "source_sha256": "6322ccb99fe24bad9331a5794cce22839cecd1921fe3dcf9283a1e391783010d"
+          },
+          {
+            "line_end": 103,
+            "line_start": 99,
+            "path": "uda_hub/agentic/workflow.py",
+            "role": "guard_registration",
+            "source_sha256": "6322ccb99fe24bad9331a5794cce22839cecd1921fe3dcf9283a1e391783010d"
+          }
+        ],
+        "forbidden_condition": "A session whose state lacks a truthy user_id (anonymous) reaching the save_ticket_summary tool path \u2014 i.e., archivist_agent being invoked and dispatching save_ticket_summary, causing INSERTs into tickets, ticket_metadata, and ticket_messages followed by conn.commit() in udahub.db.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Which component sets state.user_id (enricher/concierge source not supplied) and whether it can be trusted as an identity signal for the gate.",
+          "Whether save_ticket_summary or ARCHIVIST_TOOLS is wired to any agent or node other than archivist_agent/archivist in unsupplied files.",
+          "Whether any external entry point invokes archivist_node or save_ticket_summary directly, bypassing the compiled workflow gate.",
+          "Whether downstream enforcement (e.g., per-call validation of tool arguments against the authenticated user_id) exists elsewhere, since the current gate is presence-based only."
+        ],
+        "protected_operation": "Persistence of the final ticket resolution summary and metadata (ticket record creation/update, metadata upsert, summary message insert) performed by the save_ticket_summary agent tool.",
+        "protected_resource": "SQLite database at uda_hub/data/core/udahub.db (resolved via _get_db_path('udahub')), specifically the tickets, ticket_metadata, and ticket_messages tables.",
+        "protection_obligation": "Ticket archival persistence must be blocked for anonymous sessions: archivist_node must short-circuit and return 'Skipped: User is anonymous.' before invoking archivist_agent whenever state.user_id is absent, so that the save_ticket_summary tool never executes its SQLite writes and commit against udahub.db for anonymous users. (Merges the phase-one and phase-two reviewer wordings, which describe the same gate-protected persistence effect.)",
+        "scope_limits": [
+          "The guard is node-level in archivist_node; save_ticket_summary itself performs no identity check, so any invocation path outside archivist_node would bypass the gate (supplied views show no other caller, but repository enumeration is incomplete).",
+          "The gate tests only the presence/truthiness of state.user_id; it does not validate that the tool arguments (ticket_id, user_id, category, tags, summary), which the agent generates from a context string, match the gate-verified identity.",
+          "The nodes that populate state.user_id (e.g., enricher, concierge) are not included in the supplied views, so how identity is established and whether an anonymous state can be mutated before the archivist step is not verifiable here.",
+          "The __main__ blocks in archivist.py and workflow.py are test harnesses, not production entry points; production invocation sites of the compiled graph outside these views are not supplied.",
+          "Behavior labels are unavailable; conclusions are limited to the supplied line-numbered source views."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source for the enricher/concierge nodes that populate state.user_id is not supplied, so the provenance and trustworthiness of the identity signal used by the gate cannot be established.",
+      "No authentication/session-establishment mechanism is present in the supplied views; 'anonymous' is defined only as absence of state.user_id.",
+      "Repository enumeration is incomplete, so the absence of alternative callers of save_ticket_summary (or alternative assignments of ARCHIVIST_TOOLS) outside the supplied files cannot be confirmed.",
+      "Behavior/runtime labels are unavailable; whether the gate and commit behave as written under all execution contexts is not evidenced."
+    ],
+    "repository": "hsefati/uda_hub",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:9b35c7015ca337227f87a20e857c5e16"
+  },
+  "request_sha256": "c71377b80bfc2a5e8e4f0bf521cc5f3494cb0492a30fada9757d3c7c0887811d",
+  "response_sha256": "50f7d7e7d207326151134af3b1744ba1e5f0738c3873abe8a35ddf482f5c77c5",
+  "state": "completed",
+  "tokens": 15114,
+  "unit": "v24-screen:9b35c7015ca337227f87a20e857c5e16"
+}

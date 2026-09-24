@@ -1,0 +1,228 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The whitelist checks inside MathExpressionService._evaluate_node immediately before each effect application: the binary-operator check at lines 120-121 precedes operator application at line 127; the unary-operator check at lines 131-132 precedes application at line 134; the function-whitelist and keyword-argument checks at lines 138-141 precede the call at line 143; the catch-all raise at line 145 fires for any other node type; secondarily evaluate's parse gate (lines 98-101) and numeric-result gate (lines 104-105).",
+        "contract_id": "ecological-contract:243b4cc8c575a02bf8709027a82b2e34",
+        "declared_mechanism": "Module-level whitelists _ALLOWED_BINARY_OPERATORS, _ALLOWED_UNARY_OPERATORS, and _ALLOWED_FUNCTIONS (5_3_tools.py:36-56); ast.parse(normalized, mode='eval') builds a tree without executing it (line 99); MathExpressionService._evaluate_node recursively validates each node and raises ValueError for any construct outside the whitelists, any keyword-argument call, any |exponent| > max_exponent, and any unsupported node type before applying the operator or function (lines 114-145); evaluate raises on empty input, syntax errors, and non-numeric results (lines 93-106). The guarded service is bound to the agent via build_calculation_tool returning FunctionTool(func=calculate_expression_tool) (lines 159-176) and build_calculator_agent passing tools=[active_tool] to LlmAgent (lines 179-195).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 56,
+            "line_start": 36,
+            "path": "hands_one_code_examples/5_3_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "7b0fd447d3886f66727397e37509697c334cf5430a6f3c21fca412588e0d75ae"
+          },
+          {
+            "line_end": 145,
+            "line_start": 114,
+            "path": "hands_one_code_examples/5_3_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7b0fd447d3886f66727397e37509697c334cf5430a6f3c21fca412588e0d75ae"
+          },
+          {
+            "line_end": 127,
+            "line_start": 118,
+            "path": "hands_one_code_examples/5_3_tools.py",
+            "role": "commit_point",
+            "source_sha256": "7b0fd447d3886f66727397e37509697c334cf5430a6f3c21fca412588e0d75ae"
+          },
+          {
+            "line_end": 134,
+            "line_start": 129,
+            "path": "hands_one_code_examples/5_3_tools.py",
+            "role": "commit_point",
+            "source_sha256": "7b0fd447d3886f66727397e37509697c334cf5430a6f3c21fca412588e0d75ae"
+          },
+          {
+            "line_end": 145,
+            "line_start": 136,
+            "path": "hands_one_code_examples/5_3_tools.py",
+            "role": "commit_point",
+            "source_sha256": "7b0fd447d3886f66727397e37509697c334cf5430a6f3c21fca412588e0d75ae"
+          },
+          {
+            "line_end": 106,
+            "line_start": 93,
+            "path": "hands_one_code_examples/5_3_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "7b0fd447d3886f66727397e37509697c334cf5430a6f3c21fca412588e0d75ae"
+          },
+          {
+            "line_end": 156,
+            "line_start": 148,
+            "path": "hands_one_code_examples/5_3_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "7b0fd447d3886f66727397e37509697c334cf5430a6f3c21fca412588e0d75ae"
+          },
+          {
+            "line_end": 176,
+            "line_start": 159,
+            "path": "hands_one_code_examples/5_3_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7b0fd447d3886f66727397e37509697c334cf5430a6f3c21fca412588e0d75ae"
+          },
+          {
+            "line_end": 195,
+            "line_start": 179,
+            "path": "hands_one_code_examples/5_3_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7b0fd447d3886f66727397e37509697c334cf5430a6f3c21fca412588e0d75ae"
+          },
+          {
+            "line_end": 34,
+            "line_start": 29,
+            "path": "hands_one_code_examples/5_3_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7b0fd447d3886f66727397e37509697c334cf5430a6f3c21fca412588e0d75ae"
+          }
+        ],
+        "forbidden_condition": "During evaluation of a tool-supplied expression: application of any binary operator absent from _ALLOWED_BINARY_OPERATORS; application of any unary operator absent from _ALLOWED_UNARY_OPERATORS; invocation of any function name absent from the service's allowed_functions mapping; any call carrying keyword arguments; exponentiation with abs(right) > max_exponent (default 12); any AST node type other than a numeric Constant, BinOp, UnaryOp, or Call with an ast.Name func; an expression that fails to parse; or a result that is not int/float.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the google-adk runtime dispatches all LLM tool invocations solely through the FunctionTool registered at lines 159-176 (framework source not supplied).",
+          "Whether any other repository module calls MathExpressionService.evaluate/format_result or calculate_expression outside the registered tool path (repository enumeration incomplete).",
+          "Whether _ALLOWED_BINARY_OPERATORS, _ALLOWED_UNARY_OPERATORS, _ALLOWED_FUNCTIONS, or max_exponent are mutated, extended, or reconfigured anywhere else in the repository."
+        ],
+        "protected_operation": "Evaluation of an arithmetic expression string supplied as the expression argument of the registered calculate_expression tool, via MathExpressionService.evaluate/format_result.",
+        "protected_resource": "The in-process Python evaluation context of the calculator agent \u2014 the interpreter surface that applies operators and invokes functions on agent-tool expression input.",
+        "protection_obligation": "Expressions submitted to the calculator agent's calculate_expression tool may only be evaluated through the whitelist-based AST walk in MathExpressionService: every non-whitelisted binary or unary operator, function name, keyword-argument call, unsupported AST construct, and exponent whose magnitude exceeds max_exponent must raise ValueError before any operator or function is applied, and non-numeric results must be rejected \u2014 no arbitrary code execution is permitted during tool-handled expression evaluation.",
+        "scope_limits": [
+          "The guard covers only input that flows through MathExpressionService.evaluate/_evaluate_node; the whitelists and max_exponent are plain module-level/configurable values, and both calculate_expression (lines 148-156) and build_calculation_tool (lines 159-163) accept a caller-supplied MathExpressionService, so a differently configured service would change the enforced whitelist (no such alternate construction appears in supplied source).",
+          "Supplied source shows the FunctionTool registration and the LlmAgent tools list but not the google-adk runtime; that every model-generated tool call is dispatched exclusively through the registered tool is framework behavior not evidenced in these views.",
+          "DEFAULT_INSTRUCTION (lines 29-34) directs the model to translate natural language into an expression for the tool, so the expression argument is expected to be model-generated; the whitelist is the declared backstop for whatever string the model emits.",
+          "Normalization rewrites '^' to '**' before parsing (line 91); permitted functions are limited to abs, factorial, round, sqrt; name access, attribute access, subscripts, and all other constructs fall to the catch-all ValueError at line 145."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "execute_refund's approval check at lines 516-523: when the recorded decision is not 'approve', the node returns a skipped Event and issue_refund is never invoked; otherwise issue_refund(**execution_args) commits at line 530, followed by the STATE_EXECUTION_RESULT / STATE_EXECUTION_STATUS writes at lines 531-532.",
+        "contract_id": "ecological-contract:d83ffda94929277358f7121d2506fe62",
+        "declared_mechanism": "A human-in-the-loop approval gate: request_supervisor_review yields RequestInput(interrupt_id='refund-review-{order_id}', response_schema=SUPERVISOR_REVIEW_RESPONSE_SCHEMA) (lines 433-450; schema declared at lines 65-82); record_supervisor_review parses and validates the interrupt response via parse_supervisor_review and writes STATE_SUPERVISOR_REVIEW and STATE_EXECUTION_STATUS (lines 453-474); RefundDecisionRouter routes to execute_refund only when the recorded decision equals 'approve', otherwise to the summary node (lines 477-495); execute_refund independently re-checks state.get(STATE_SUPERVISOR_REVIEW).get('decision') != 'approve' and returns a skipped Event without invoking issue_refund (lines 516-523); build_refund_workflow's edges place execute_refund only downstream of the reviewed path (lines 599-613).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 82,
+            "line_start": 65,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "guard_registration",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 450,
+            "line_start": 433,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "guard_registration",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 474,
+            "line_start": 453,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "guard_registration",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 495,
+            "line_start": 477,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "guard_registration",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 407,
+            "line_start": 369,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 523,
+            "line_start": 516,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 505,
+            "line_start": 498,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "protected_operation",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 533,
+            "line_start": 516,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "commit_point",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 509,
+            "line_start": 508,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 614,
+            "line_start": 591,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 620,
+            "line_start": 617,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          },
+          {
+            "line_end": 962,
+            "line_start": 955,
+            "path": "hands_one_code_examples/13_1_human_in_the_loop.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8f6c215f94a0184bc29fc3aa2704634eb7c964723d3fa2789adf9ea3528f7c34"
+          }
+        ],
+        "forbidden_condition": "Invocation of issue_refund, and the accompanying STATE_EXECUTION_RESULT / STATE_EXECUTION_STATUS='executed' record, for a refund request whose workflow state lacks a validated supervisor review with decision == 'approve'; likewise, any supervisor response failing parse_supervisor_review's constraints (decision not in {'approve','reject'}, empty notes, approved_amount non-numeric, <= 0, or exceeding the requested amount) being accepted into execution.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether issue_refund is, or becomes, a wrapper for a real external refund/payment integration in any other repository module (not shown in supplied source).",
+          "How the ADK runtime resolves the RequestInput interrupt \u2014 including whether the response reaching record_supervisor_review is guaranteed to be human-supplied and replayed into the resumed run (framework source not supplied).",
+          "Whether any code path outside build_refund_workflow's edges pre-populates STATE_SUPERVISOR_REVIEW in session state or invokes execute_refund/issue_refund directly (repository enumeration incomplete)."
+        ],
+        "protected_operation": "Refund execution for a parsed refund request: the issue_refund(order_id, amount, notes) invocation at line 530 inside the RefundExecutionNode, together with the execution-status workflow-state record it produces (lines 531-532).",
+        "protected_resource": "The refund issuance path for the parsed order (the issue_refund result/transaction record) and the workflow's execution-status session state.",
+        "protection_obligation": "Refund execution \u2014 invocation of issue_refund within the RefundExecutionNode of the RefundHumanInTheLoopWorkflow \u2014 must occur only after a supervisor approval decision has been captured through the refund-review HITL RequestInput interrupt, parsed and validated by parse_supervisor_review, and recorded into workflow state under STATE_SUPERVISOR_REVIEW; execute_refund must skip execution whenever the recorded decision is not exactly 'approve', and no path in the registered workflow graph may reach execution except through the reviewed route.",
+        "scope_limits": [
+          "issue_refund (lines 498-505) is an in-process simulated stub returning a dict; no external payment, network, or database effect is visible in supplied source, so the gate as evidenced protects the invocation and the execution-status state record, not a demonstrated external refund transfer.",
+          "simulate_console_scenario (lines 841-914) invokes issue_refund outside the workflow graph after parse_supervisor_review validation and a decision == 'approve' branch (lines 871-877); it enforces the validation constraints but bypasses the HITL interrupt and the recorded-workflow-state routing path.",
+          "The guard reads STATE_SUPERVISOR_REVIEW from mutable session state; within supplied source that key is written by record_supervisor_review (line 463) and simulate_console_scenario (line 861), and in-graph enforcement depends on the ADK Workflow runner executing the registered edges \u2014 runner internals are not supplied.",
+          "The approval check at lines 516-523 is the single gate for both the issue_refund invocation and the executed-status state record, so no separate contract is emitted for the state stratum."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "google-adk framework internals (FunctionTool dispatch, Workflow edge execution, RequestInput interrupt resolution/replay) are not included in the supplied views; both contracts' agent-mediation bindings rest on the registration and wiring lines cited plus framework behavior not evidenced here.",
+      "Only two source files were supplied; the first-phase rationale contrasts this unit with other demo files whose refund/booking/lookup effects are simulated stubs, but those files are not in the supplied views and no contracts are compiled from them.",
+      "No runtime logs, tests, or behavior labels are supplied; whether the declared guards hold at runtime, and the prevalence of any violation, is not decidable from the supplied source.",
+      "Repository enumeration is incomplete, so other callers of MathExpressionService, calculate_expression, issue_refund, or execute_refund outside the cited paths cannot be excluded."
+    ],
+    "repository": "alfredsasko/agentic-design-patterns",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:ed1ddb630efea8f0538c898c2552c7e6"
+  },
+  "request_sha256": "ad29f46eb6b2c2820a00caf49b8f732fdb3b690fdd1aa3cb536420cd34265d40",
+  "response_sha256": "2793a75707616eaab90222cadd92cc58b0a7499330b3995ea8a501601b155085",
+  "state": "completed",
+  "tokens": 32787,
+  "unit": "v24-screen:ed1ddb630efea8f0538c898c2552c7e6"
+}

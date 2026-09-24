@@ -1,0 +1,552 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "service.files().update(fileId=..., body={'name': new_name}, ...).execute() inside DriveTool._rename_drive_file_with_token (drive_sheets_tool.py 109-117), reached via rename_drive_file (249-286).",
+        "contract_id": "ecological-contract:2d3a0fbf8546183d9e8eacb4027732bf",
+        "declared_mechanism": "FunctionTool(func=drive_tool.rename_drive_file, require_confirmation=drive_file_confirmation), where drive_file_confirmation = make_resource_confirmation('file_id') applies the offline / session-state / tool_confirmation decision logic at tool dispatch.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 365,
+            "line_start": 360,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 66,
+            "line_start": 63,
+            "path": "agents/schoopet/deep_research_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "5d2de934bf09c7e295ce5a8c7e8bfa93cb5e43e3039ba3d8debb203518fa5396"
+          },
+          {
+            "line_end": 138,
+            "line_start": 135,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "guard_registration",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 130,
+            "line_start": 61,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 286,
+            "line_start": 249,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 117,
+            "line_start": 109,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 437,
+            "line_start": 432,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 512,
+            "line_start": 503,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 230,
+            "line_start": 223,
+            "path": "agents/schoopet/deep_research_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5d2de934bf09c7e295ce5a8c7e8bfa93cb5e43e3039ba3d8debb203518fa5396"
+          }
+        ],
+        "forbidden_condition": "A rename_drive_file invocation proceeds to service.files().update(...).execute() while drive_file_confirmation's decision is require_confirmation: the normalized file_id has no truthy `_resource_confirmed_<file_id>` session-state key, tool_context.tool_confirmation is absent, and `_offline_mode` is not set.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ADK framework source implementing FunctionTool require_confirmation evaluation relative to tool-function dispatch is not supplied.",
+          "The gateway task executor hop seeding `_resource_confirmed_` keys from task allowed_resource_ids is asserted only in the resource_confirmation.py docstring (lines 12-16); the seeding implementation is not in supplied views.",
+          "Whether offline async task executions read the same session-state store the guard checks is not determinable from supplied source."
+        ],
+        "protected_operation": "ADK FunctionTool invocation of DriveTool.rename_drive_file and the Drive API metadata update it performs.",
+        "protected_resource": "The Google Drive file identified by the file_id argument (any Drive resource type \u2014 Doc, Sheet, PDF, etc.), after normalize_drive_id normalization.",
+        "protection_obligation": "Invocations of the mutating Drive tool rename_drive_file must not execute the Drive files().update write until the target file ID is approved \u2014 via the `_resource_confirmed_<file_id>` ADK session-state key, an explicit user tool_confirmation, or offline pre-authorization \u2014 as enforced by the drive_file_confirmation require_confirmation guard registered in both the root personal agent and the deep research agent.",
+        "scope_limits": [
+          "Only the file's name/title is mutated; contents, parents, and sharing are untouched (drive_sheets_tool.py 255-259).",
+          "Approval is per normalized file_id and persists in session state; the decline path proceeds to surface the real API error; a None tool_context requires confirmation (resource_confirmation.py 52-130).",
+          "Offline mode (`_offline_mode`) bypasses the interactive prompt (resource_confirmation.py 63-71).",
+          "ADK FunctionTool require_confirmation enforcement semantics are not visible in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The googleapiclient .execute() calls inside SheetsTool helpers issuing the mutating Sheets REST requests: spreadsheets().batchUpdate for add_sheet_tab (drive_sheets_tool.py 417-434), values().update plus batchUpdate formatting for ensure_sheet_headers (482-492, 548-581), values().append for append_record_to_sheet (453-463), values().batchUpdate for batch_update_sheet_rows (712-720), and values().update for update_sheet_cell (766-776).",
+        "contract_id": "ecological-contract:8920d187ada6bab3cc92a2714c31104e",
+        "declared_mechanism": "FunctionTool(func=..., require_confirmation=sheet_confirmation), where sheet_confirmation = make_resource_confirmation('sheet_id') is evaluated at tool dispatch: it returns False (allow) when `_offline_mode` is set, when the `_resource_confirmed_<sheet_id>` session-state key is truthy, or when tool_context.tool_confirmation.confirmed is True (in which case the approval is persisted to state for future calls); otherwise it returns True (confirmation required).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 386,
+            "line_start": 375,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 83,
+            "line_start": 74,
+            "path": "agents/schoopet/deep_research_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "5d2de934bf09c7e295ce5a8c7e8bfa93cb5e43e3039ba3d8debb203518fa5396"
+          },
+          {
+            "line_end": 29,
+            "line_start": 27,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "guard_registration",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 59,
+            "line_start": 41,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "guard_registration",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 138,
+            "line_start": 135,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "guard_registration",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 130,
+            "line_start": 61,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 867,
+            "line_start": 840,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 985,
+            "line_start": 939,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 1055,
+            "line_start": 1015,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 786,
+            "line_start": 730,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 434,
+            "line_start": 417,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 492,
+            "line_start": 482,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 581,
+            "line_start": 548,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 463,
+            "line_start": 453,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 720,
+            "line_start": 712,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 776,
+            "line_start": 766,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 457,
+            "line_start": 446,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 512,
+            "line_start": 503,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 230,
+            "line_start": 223,
+            "path": "agents/schoopet/deep_research_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5d2de934bf09c7e295ce5a8c7e8bfa93cb5e43e3039ba3d8debb203518fa5396"
+          },
+          {
+            "line_end": 114,
+            "line_start": 108,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 253,
+            "line_start": 241,
+            "path": "agents/schoopet/tools/async_task_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "cc149b7306ecf0c9a185f9a8a51953187e3e0aeee0e362250557e93914daaf27"
+          }
+        ],
+        "forbidden_condition": "A mutating Sheets tool invocation proceeds past tool dispatch to its Sheets API write while the registered guard's decision is require_confirmation: the normalized sheet_id has no truthy `_resource_confirmed_<sheet_id>` key in ADK session state, tool_context.tool_confirmation is absent (no explicit user confirmation), and `_offline_mode` is not set.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ADK framework source implementing FunctionTool require_confirmation evaluation relative to tool-function dispatch is not supplied.",
+          "The gateway task executor hop that seeds `_resource_confirmed_` session-state keys from a task document's allowed_resource_ids is asserted only in the resource_confirmation.py docstring (lines 12-16); the seeding implementation is not in supplied views.",
+          "Whether offline async task executions read the same session-state store that make_resource_confirmation checks is not determinable from supplied source."
+        ],
+        "protected_operation": "ADK FunctionTool invocation of SheetsTool.add_sheet_tab, ensure_sheet_headers, append_record_to_sheet, batch_update_sheet_rows, and update_sheet_cell, including the mutating Google Sheets API calls those methods perform.",
+        "protected_resource": "The Google Sheets spreadsheet identified by the sheet_id argument (tabs, header row, and data rows addressed through it), after normalize_drive_id URL/ID normalization.",
+        "protection_obligation": "Mutating Google Sheets tool invocations (add_sheet_tab, ensure_sheet_headers, append_record_to_sheet, batch_update_sheet_rows, update_sheet_cell) must not execute their underlying Google Sheets API writes until the target spreadsheet resource is approved \u2014 via the `_resource_confirmed_<sheet_id>` ADK session-state key, an explicit user tool_confirmation, or offline pre-authorization \u2014 as enforced by the sheet_confirmation require_confirmation guards registered on the wrapped FunctionTools in both the root personal agent and the deep research agent.",
+        "scope_limits": [
+          "Approval is per normalized resource ID and persists in ADK session state; once the key is set, later writes to the same spreadsheet skip the prompt (resource_confirmation.py 73-92).",
+          "After an explicit confirmation decline the guard returns False so the tool runs and surfaces the real API error \u2014 a declared execution-without-approval path (resource_confirmation.py 110-120).",
+          "If tool_context is None the guard returns True, i.e. confirmation is required (resource_confirmation.py 52-59).",
+          "create_spreadsheet is registered without a confirmation guard and self-approves the new spreadsheet by writing the `_resource_confirmed_` state key (drive_sheets_tool.py 833-835; root_agent.py 376; deep_research_agent.py 75).",
+          "Offline mode (`_offline_mode`) bypasses the interactive prompt (resource_confirmation.py 63-71); the deep research agent runs autonomously as a background async task whose destination resources are expected to be pre-authorized via allowed_resource_ids.",
+          "Enforcement semantics of ADK FunctionTool require_confirmation (how and when the callable gates dispatch) are framework behavior not visible in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The calendar event mutation performed inside CalendarTool.create_calendar_event / update_calendar_event / delete_calendar_event; the concrete API execute call is not visible because calendar_tool.py is not among supplied views (recorded in missing_information).",
+        "contract_id": "ecological-contract:90caba696ad74df08dc6900fc6e8e786",
+        "declared_mechanism": "Static FunctionTool require_confirmation=True registration on each of the three calendar tools (root_agent.py 355-357); unlike the Workspace resource guards, no resource-ID session-state key or offline bypass is registered for these tools in supplied source.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 358,
+            "line_start": 353,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 357,
+            "line_start": 355,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 431,
+            "line_start": 427,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 512,
+            "line_start": 503,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          }
+        ],
+        "forbidden_condition": "A create/update/delete calendar event FunctionTool invocation proceeding to the underlying calendar write without passing the registered require_confirmation=True confirmation gate.",
+        "missing_evidence_roles": [
+          "commit_point",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "calendar_tool.py is not supplied, so the commit-point API call for each calendar operation and the http stratum classification (assumed from the reviewer characterization of an underlying Google API write) are unverified.",
+          "ADK framework semantics for static require_confirmation=True (whether it always blocks pending user confirmation, and what satisfies the gate) are not visible in supplied source."
+        ],
+        "protected_operation": "ADK FunctionTool invocation of CalendarTool.create_calendar_event, CalendarTool.update_calendar_event, and CalendarTool.delete_calendar_event.",
+        "protected_resource": "The user's Google Calendar events (the created event, or the existing event identified by event_id for update/delete).",
+        "protection_obligation": "Invocations of the mutating calendar tools create_calendar_event, update_calendar_event, and delete_calendar_event must be gated by their registered require_confirmation=True guards so the calendar event write does not execute without passing the confirmation gate.",
+        "scope_limits": [
+          "Guard is an unconditional static flag (require_confirmation=True), not scoped to a resource ID; no `_resource_confirmed_` or `_offline_mode` bypass is registered for calendar tools in supplied source.",
+          "Calendar tools are registered only in the root personal agent; the deep research agent's tool list excludes them.",
+          "Registration evidence only: the CalendarTool implementation, its API calls, and ADK's handling of the static flag are outside supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "service.files().create(body=metadata, media_body=media, ...).execute() inside DriveTool._save_binary_with_token (drive_sheets_tool.py 89-97), reached via save_attachment_to_drive (199-247).",
+        "contract_id": "ecological-contract:dfbb03c9fdcccb18fc53a7e4b47f2277",
+        "declared_mechanism": "FunctionTool(func=drive_tool.save_attachment_to_drive, require_confirmation=drive_folder_confirmation), where drive_folder_confirmation = make_resource_confirmation('folder_id') applies the offline / session-state / tool_confirmation decision logic at tool dispatch.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 365,
+            "line_start": 360,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 138,
+            "line_start": 135,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "guard_registration",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 59,
+            "line_start": 41,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "guard_registration",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 130,
+            "line_start": 61,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 247,
+            "line_start": 199,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 97,
+            "line_start": 89,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 437,
+            "line_start": 432,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 512,
+            "line_start": 503,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          }
+        ],
+        "forbidden_condition": "A save_attachment_to_drive invocation proceeds to the service.files().create(...).execute() upload while drive_folder_confirmation's decision is require_confirmation: the normalized destination folder_id has no truthy `_resource_confirmed_<folder_id>` session-state key, tool_context.tool_confirmation is absent, and `_offline_mode` is not set.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ADK framework source implementing FunctionTool require_confirmation evaluation relative to tool-function dispatch is not supplied.",
+          "The gateway task executor hop seeding `_resource_confirmed_` keys from task allowed_resource_ids is asserted only in the resource_confirmation.py docstring (lines 12-16); the seeding implementation is not in supplied views."
+        ],
+        "protected_operation": "ADK FunctionTool invocation of DriveTool.save_attachment_to_drive and the binary Drive upload it performs from the artifact registry.",
+        "protected_resource": "The Google Drive destination folder identified by the folder_id argument (empty folder_id falls back to the `_default_` guard key) into which the attachment file is created.",
+        "protection_obligation": "Invocations of the mutating Drive tool save_attachment_to_drive must not execute the Drive files().create upload until the destination folder ID is approved \u2014 via the `_resource_confirmed_<folder_id>` ADK session-state key, an explicit user tool_confirmation, or offline pre-authorization \u2014 as enforced by the drive_folder_confirmation require_confirmation guard registered on the root personal agent's FunctionTool.",
+        "scope_limits": [
+          "The guard keys on the destination folder_id, not the created file: a new upload has no pre-existing resource ID, so approval scope is the destination folder (drive_sheets_tool.py 75-81; resource_confirmation.py 44-50).",
+          "When folder_id is empty the guard falls back to the `_default_` key (resource_confirmation.py 49).",
+          "save_attachment_to_drive is registered only in the root personal agent; the deep research agent's tool list does not include it.",
+          "Decline path proceeds to surface the real API error; None tool_context requires confirmation; offline mode bypasses the prompt (resource_confirmation.py 52-130).",
+          "ADK FunctionTool require_confirmation enforcement semantics are not visible in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The googleapiclient documents().batchUpdate(...).execute() calls inside DocsTool helpers: overwrite (drive_sheets_tool.py 1176-1179), append formatted content (1195-1198), and replaceAllText (1211-1230).",
+        "contract_id": "ecological-contract:f3f519960041e0bd844b5c61701a29be",
+        "declared_mechanism": "FunctionTool(func=..., require_confirmation=doc_confirmation), where doc_confirmation = make_resource_confirmation('document_id') is evaluated at tool dispatch with the same offline / session-state / tool_confirmation decision logic as make_resource_confirmation.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 373,
+            "line_start": 367,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 73,
+            "line_start": 67,
+            "path": "agents/schoopet/deep_research_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "5d2de934bf09c7e295ce5a8c7e8bfa93cb5e43e3039ba3d8debb203518fa5396"
+          },
+          {
+            "line_end": 29,
+            "line_start": 27,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "guard_registration",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 138,
+            "line_start": 135,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "guard_registration",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 130,
+            "line_start": 61,
+            "path": "agents/schoopet/resource_confirmation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f01eb89f5a60a04271542d885a5be5b3cc7195cdc250f0dbadbb7d6cd38a879d"
+          },
+          {
+            "line_end": 1324,
+            "line_start": 1295,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 1352,
+            "line_start": 1326,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 1381,
+            "line_start": 1354,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "protected_operation",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 1179,
+            "line_start": 1176,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 1198,
+            "line_start": 1195,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 1230,
+            "line_start": 1211,
+            "path": "agents/schoopet/drive_sheets_tool.py",
+            "role": "commit_point",
+            "source_sha256": "4e95338d7861e2de81c8018f3b6b10d5b5cb5107319f0d753796d4876f010561"
+          },
+          {
+            "line_end": 444,
+            "line_start": 438,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 512,
+            "line_start": 503,
+            "path": "agents/schoopet/root_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9ca43d1725789737dbd3f453000f3ed9d83a9d1538bdfe73410cb9dfe574fbf9"
+          },
+          {
+            "line_end": 230,
+            "line_start": 223,
+            "path": "agents/schoopet/deep_research_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5d2de934bf09c7e295ce5a8c7e8bfa93cb5e43e3039ba3d8debb203518fa5396"
+          }
+        ],
+        "forbidden_condition": "A mutating Docs tool invocation proceeds to its documents().batchUpdate write while doc_confirmation's decision is require_confirmation: the normalized document_id has no truthy `_resource_confirmed_<document_id>` session-state key, tool_context.tool_confirmation is absent, and `_offline_mode` is not set.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ADK framework source implementing FunctionTool require_confirmation evaluation relative to tool-function dispatch is not supplied.",
+          "The gateway task executor hop seeding `_resource_confirmed_` keys from task allowed_resource_ids is asserted only in the resource_confirmation.py docstring (lines 12-16); the seeding implementation is not in supplied views.",
+          "Whether offline async task executions read the same session-state store the guard checks is not determinable from supplied source."
+        ],
+        "protected_operation": "ADK FunctionTool invocation of DocsTool.append_formatted_to_doc, overwrite_google_doc, and replace_text_in_google_doc, including the documents().batchUpdate calls those methods perform.",
+        "protected_resource": "The Google Doc identified by the document_id argument (body content, paragraph/text formatting, and matched text), after normalize_drive_id normalization.",
+        "protection_obligation": "Mutating Google Docs tool invocations (append_formatted_to_doc, overwrite_google_doc, replace_text_in_google_doc) must not execute their Google Docs API writes until the target document ID is approved \u2014 via the `_resource_confirmed_<document_id>` ADK session-state key, an explicit user tool_confirmation, or offline pre-authorization \u2014 as enforced by the doc_confirmation require_confirmation guards registered in both the root personal agent and the deep research agent.",
+        "scope_limits": [
+          "Approval is per normalized document_id and persists in ADK session state (resource_confirmation.py 73-92).",
+          "After an explicit decline the guard returns False so the tool runs and surfaces the real API error (resource_confirmation.py 110-120).",
+          "If tool_context is None the guard requires confirmation (resource_confirmation.py 52-59).",
+          "create_google_doc is registered without a confirmation guard and self-approves the created document by writing the state key (drive_sheets_tool.py 1268-1270; root_agent.py 368; deep_research_agent.py 68).",
+          "Offline mode bypasses the interactive prompt (resource_confirmation.py 63-71), matching the deep research agent's autonomous background execution.",
+          "ADK FunctionTool require_confirmation enforcement semantics are not visible in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "calendar_tool.py is not among supplied views: the concrete commit-point API calls for create/update/delete calendar event, and confirmation of their http stratum, are unverified.",
+      "ADK framework implementation of FunctionTool require_confirmation (evaluation timing relative to tool dispatch, confirmation surfacing, and re-invocation flow) is not supplied for any contract.",
+      "The gateway task executor code that seeds `_resource_confirmed_` session-state keys from a task document's allowed_resource_ids is not supplied; that hop is asserted only in the resource_confirmation.py docstring (lines 12-16).",
+      "utils.normalize_drive_id and gcp_auth.get_workspace_service implementations are not supplied; guard ID normalization and credential acquisition are evidenced only at call sites.",
+      "root_agent.py line 361 registers save_file_to_drive with offline_aware_confirmation, and lines 351, 389, and 486-489 register cancel_task, set_timezone, and email-rule tools with require_confirmation=True; no reviewer opinion names these operations, so they were not compiled into contracts.",
+      "Whether offline async task executions read the same session-state store that make_resource_confirmation checks is not determinable from supplied source.",
+      "Behavior labels are unavailable and repository enumeration is incomplete; runtime prevalence of these guard paths cannot be assessed from supplied views."
+    ],
+    "repository": "schoopet/schoopet-ai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1b77a8113bca5d62c7a3ec17e4b02b5a"
+  },
+  "request_sha256": "6cd88354592c05997a656d4da81a873f94fac1b7fff6d977011f85294e494927",
+  "response_sha256": "2f8b3e954562b6ea22dd9fb8e66820e29c28ddb7984bb6e1a5b6b5b0440ab57e",
+  "state": "completed",
+  "tokens": 72327,
+  "unit": "v24-screen:1b77a8113bca5d62c7a3ec17e4b02b5a"
+}

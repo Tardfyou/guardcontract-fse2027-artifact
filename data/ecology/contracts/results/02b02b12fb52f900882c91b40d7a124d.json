@@ -1,0 +1,346 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "ResearchCrew().crew_for_sources(...).kickoff(inputs=inputs) at main.py:139-145 \u2014 the point where the vetted URL lists commit as crew inputs and the guarded outbound fetch effects proceed under run_research_crew, which is wired via @listen(validate_inputs) to run only after validation completes.",
+        "contract_id": "ecological-contract:331f1c8a88c6add67d50e0bc41319112",
+        "declared_mechanism": "validate_urls() in input_validation.py, invoked from the @start-decorated GuideGeneratorFlow.validate_inputs: for each URL it parses the hostname, calls _is_private_ip (security.py), and drops private-IP URLs with an error_log entry and an emit_input_rejected event before the reachability probe; the filtered lists replace flow state, and a ValueError is raised (no crew kickoff) if all buckets are empty.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 16,
+            "line_start": 8,
+            "path": "src/guide_creator_flow/security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2d3e0544c28949eab4107161f6910ef3850a254b789eadf317768c62521ad174"
+          },
+          {
+            "line_end": 31,
+            "line_start": 26,
+            "path": "src/guide_creator_flow/security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2d3e0544c28949eab4107161f6910ef3850a254b789eadf317768c62521ad174"
+          },
+          {
+            "line_end": 37,
+            "line_start": 31,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "guard_registration",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 90,
+            "line_start": 64,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 122,
+            "line_start": 121,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 138,
+            "line_start": 132,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 145,
+            "line_start": 139,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 65,
+            "line_start": 37,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          },
+          {
+            "line_end": 165,
+            "line_start": 153,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "protected_operation",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          }
+        ],
+        "forbidden_condition": "A URL in state.youtube_links, state.webpage_links, or state.research_paper_links whose parsed hostname resolves via socket.gethostbyname into one of the enumerated private ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16, ::1/128, fc00::/7) surviving validation and being passed to the crew for outbound fetching (SSRF).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Tool implementations behind TOOL_REGISTRY keys scrape_website, firecrawl_scrape, youtube_transcript, and arxiv_paper are not supplied; that validated URL strings become those tools' network-fetch arguments is inferred from agent tool registration and per-bucket task activation, not observed.",
+          "tasks_config YAML for analyse_youtube_sources, scrape_web_sources, and analyse_research_papers is not supplied; interpolation of the link lists into task inputs/prompts is not visible."
+        ],
+        "protected_operation": "Crew kickoff and the subsequent agent-tool fetch of the source URL buckets: ResearchCrew.crew_for_sources activates analyse_youtube_sources / scrape_web_sources / analyse_research_papers tasks (and their registered fetch tools on youtube_analyst, web_researcher, academic_analyst) only for non-empty URL buckets, with the link lists passed as kickoff inputs.",
+        "protected_resource": "Internal/private network address space reachable from the host running the flow, targeted by outbound fetches performed by the Research Crew's URL-based agent tools.",
+        "protection_obligation": "GuideGeneratorFlow.validate_inputs (the flow's @start step) must drop source URLs whose hostname resolves to a private/internal IP address before any crew kickoff, so that the Research Crew's outbound fetches operate only on vetted, non-private URLs; the flow fails closed with a ValueError if no sources survive validation.",
+        "scope_limits": [
+          "Hostname resolution happens once at validation time; no re-validation at fetch time is shown, leaving a TOCTOU/DNS-rebinding window between validation and tool fetch.",
+          "_is_private_ip returns False on any exception (security.py:30-31), so unresolvable or unparseable hostnames pass the SSRF check (fail-open for that predicate).",
+          "IPv6 link-local fe80::/10 is absent from _PRIVATE_RANGES; only ::1/128 and fc00::/7 cover IPv6.",
+          "validate_urls additionally drops unreachable URLs (ConnectionError/Timeout, input_validation.py:41-48) and treats non-network exceptions as reachable (input_validation.py:49-50); reachability filtering is outside the SSRF obligation.",
+          "The guard itself performs an outbound requests.head probe for each non-private URL (input_validation.py:40); the private-IP check precedes the probe.",
+          "Coverage of the EnrichmentCrew is not established: its kickoff (main.py:177-195) receives topic_hint and gap text, not the validated URL lists, and no equivalent URL guard is shown for it.",
+          "Only the flow's initial link lists are validated; no per-request egress enforcement at fetch time is shown in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "self.state.research_report = result.pydantic.report at main.py:153-154 \u2014 the downstream state commit reachable only if the guardrailed task output is accepted; the guardrail itself fires earlier, at task-output acceptance inside the guardrailed kickoff at main.py:139-145.",
+        "contract_id": "ecological-contract:5abb158e8adf9920e790a1d5a659f002",
+        "declared_mechanism": "Task-level guardrail=check_no_fabrication registered on analyse_research_papers both statically (research_crew.py:91-96) and in the dynamically assembled crew_for_sources path (research_crew.py:167-177); enforcement occurs at task-output acceptance during crew kickoff.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 96,
+            "line_start": 91,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "guard_registration",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          },
+          {
+            "line_end": 177,
+            "line_start": 167,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "guard_registration",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          },
+          {
+            "line_end": 177,
+            "line_start": 174,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          },
+          {
+            "line_end": 65,
+            "line_start": 58,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "protected_operation",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          },
+          {
+            "line_end": 145,
+            "line_start": 139,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 154,
+            "line_start": 153,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          }
+        ],
+        "forbidden_condition": "Acceptance of an analyse_research_papers task output that fails the registered check_no_fabrication guardrail; the guardrail's concrete detection criteria (reviewer-described 'training-data fabrication markers') are not verifiable from supplied source because no_fabrication_guardrail_tool.py is not provided.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "check_no_fabrication implementation (imported from guide_creator_flow.tools.no_fabrication_guardrail_tool) is not among supplied views: its forbidden-content criteria, accept/reject return contract, and retry behavior are unverified.",
+          "analyse_research_papers tasks_config YAML is not supplied."
+        ],
+        "protected_operation": "Acceptance of the academic_analyst-executed analyse_research_papers task output, which is appended to compile_context and thereby feeds the report content produced by compile_research_report.",
+        "protected_resource": "Research report content derived from the analyse_research_papers output, flowing transitively into GuideFlowState.research_report.",
+        "protection_obligation": "The Research Crew's analyse_research_papers task output must not be accepted unless it passes the registered check_no_fabrication guardrail, before its content can propagate (via the compile_research_report context chain) into the report committed to GuideFlowState.research_report.",
+        "scope_limits": [
+          "The guard applies only to analyse_research_papers; scrape_web_sources, analyse_youtube_sources, and process_documents outputs are not fabrication-guarded.",
+          "The analysed output reaches flow state only transitively through compile_research_report (whose own check_citations guardrail also applies); no direct state commit of the analyse output is shown.",
+          "Only the registration is supplied, not the implementation; the rejection, retry, and crew-kill semantics of check_no_fabrication cannot be characterized from supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "self.state.research_report = result.pydantic.report at main.py:153 (with source_citations at main.py:154) \u2014 executed only after the guardrailed ResearchCrew kickoff returns.",
+        "contract_id": "ecological-contract:a3063b9cc9a2abc49ab919a452f8cd77",
+        "declared_mechanism": "Task-level guardrail=check_citations registered on compile_research_report both statically (research_crew.py:102-108) and in the dynamically assembled crew_for_sources path (research_crew.py:186-198); check_citations normalizes newlines, splits H2 sections, groups claim blocks (code fences skipped, syntax-only lines ignored), and rejects with a retry-request reason or accepts with (True, report).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 108,
+            "line_start": 102,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "guard_registration",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          },
+          {
+            "line_end": 198,
+            "line_start": 186,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "guard_registration",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          },
+          {
+            "line_end": 20,
+            "line_start": 13,
+            "path": "src/guide_creator_flow/tools/citation_guardrail_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "26292fa5eb4e2ea37ffa5a266d285f873cdf8fe2d9f624253471332b89ca1287"
+          },
+          {
+            "line_end": 130,
+            "line_start": 87,
+            "path": "src/guide_creator_flow/tools/citation_guardrail_tool.py",
+            "role": "forbidden_condition",
+            "source_sha256": "26292fa5eb4e2ea37ffa5a266d285f873cdf8fe2d9f624253471332b89ca1287"
+          },
+          {
+            "line_end": 20,
+            "line_start": 16,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "protected_operation",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          },
+          {
+            "line_end": 153,
+            "line_start": 139,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 154,
+            "line_start": 153,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          }
+        ],
+        "forbidden_condition": "Acceptance of a compile_research_report output in which a required section ('Core Concepts' or 'Code Examples') is missing, or in which any claim block in those sections contains no citation line \u2014 check_citations returns (False, reason) in both cases, listing missing sections or the uncited blocks.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether CrewAI's guardrail (True, report) return value replaces the task output such that result.pydantic.report equals the guardrail-validated text is not determinable from supplied source.",
+          "compile_research_report tasks_config YAML (task description/prompt) is not supplied."
+        ],
+        "protected_operation": "Acceptance of the hierarchical manager's compile_research_report output (Task guardrail evaluation on the agent-produced report) and its downstream commit into flow state via result.pydantic.report.",
+        "protected_resource": "GuideFlowState.research_report, and the enrichment/writing inputs and saved outputs derived from it.",
+        "protection_obligation": "The Research Crew's compile_research_report task output must not be accepted unless every claim block in its '## Core Concepts' and '## Code Examples' sections carries a traceable citation (URL, (Source:/Src:) tag, or local file path) and both required sections are present; only the guardrailed-accepted report may be committed to GuideFlowState.research_report.",
+        "scope_limits": [
+          "Only '## Core Concepts' and '## Code Examples' are citation-enforced; all other report sections are unguarded (citation_guardrail_tool.py:13-14).",
+          "Citation checking is presence-based: any URL, (Source:/Src:) tag, or file-path pattern anywhere in a block satisfies it; no resolution or correctness verification of the citation is performed.",
+          "Lines inside code fences are skipped entirely (citation_guardrail_tool.py:65-69), so fenced content is neither counted as cited nor flagged as uncited.",
+          "The guardrail evaluates output.raw while the flow commits result.pydantic.report; whether the guardrail-accepted value is exactly what lands in pydantic.report is framework behavior not shown in supplied source.",
+          "Specialist task outputs feeding compile via context are not themselves citation-guarded; only the compile_research_report output is."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "ResearchCrew().crew_for_sources(...).kickoff(inputs=inputs) at main.py:139-145 \u2014 the point where the vetted document_paths commit as crew inputs and the guarded file-read effects proceed, reached only after the @start validation step completes or raises.",
+        "contract_id": "ecological-contract:d487412966a5d1c1df28b74ed68c3542",
+        "declared_mechanism": "validate_document_paths() invoked from validate_inputs: resolve()+relative_to() containment check (ValueError -> drop), exists() check, and stat().st_size > max_file_bytes check; DOCUMENT_INPUT_DIR and MAX_FILE_BYTES are read from environment (defaults 'documents' / 52428800) and the surviving list replaces state.document_paths before kickoff.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 65,
+            "line_start": 58,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "guard_registration",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 74,
+            "line_start": 67,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 80,
+            "line_start": 75,
+            "path": "src/guide_creator_flow/input_validation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ed497f22b7fccee0eb58d3d030d1c3d5796702d0cc6a7244786ee2c4d15e932"
+          },
+          {
+            "line_end": 92,
+            "line_start": 71,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 122,
+            "line_start": 121,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 138,
+            "line_start": 132,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 145,
+            "line_start": 139,
+            "path": "src/guide_creator_flow/main.py",
+            "role": "commit_point",
+            "source_sha256": "a6ca4d20f0f300ebfc8f5893093d98551bd05f5e0ed3af38daa12505df46875a"
+          },
+          {
+            "line_end": 77,
+            "line_start": 67,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          },
+          {
+            "line_end": 184,
+            "line_start": 179,
+            "path": "src/guide_creator_flow/crews/research_crew/research_crew.py",
+            "role": "protected_operation",
+            "source_sha256": "b5c26cd70921d961ab95b66da4dbf78cc8c5c94415359b968d616e7fd469e0fa"
+          }
+        ],
+        "forbidden_condition": "A path string in state.document_paths whose Path.resolve() is not relative to document_input_dir.resolve() (path traversal, rejected as 'path traversal rejected'), or whose file size exceeds max_file_bytes (rejected as 'file too large'), surviving validation and being passed to the crew's file-read tool.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The implementation behind TOOL_REGISTRY['file_read'] is not supplied; that validated path strings become the tool's read arguments is inferred from the document_analyst tool registration, not observed.",
+          "process_documents tasks_config YAML is not supplied; how document_paths are interpolated into the task prompt is not visible."
+        ],
+        "protected_operation": "Crew kickoff and the document_analyst agent's file_read tool execution over state.document_paths; the process_documents task is activated only when the document bucket is non-empty.",
+        "protected_resource": "Local filesystem outside DOCUMENT_INPUT_DIR (traversal containment boundary) and host read bounds (MAX_FILE_BYTES cap) accessed via the file_read tool; the guarded effect is a filesystem read (containment/disclosure), not a mutation.",
+        "protection_obligation": "GuideGeneratorFlow.validate_inputs must drop local document paths that resolve outside DOCUMENT_INPUT_DIR (path traversal), are missing, or exceed MAX_FILE_BYTES before any crew kickoff, so the Research Crew's document reads operate only on contained, existing, size-bounded files; the flow fails closed if no sources survive validation.",
+        "scope_limits": [
+          "Containment and size are enforced at validation time only; a file swapped, replaced by a symlink, or grown after validation but before the crew's read is not re-checked (TOCTOU on existence and size).",
+          "The trust boundary moves with configuration: DOCUMENT_INPUT_DIR and MAX_FILE_BYTES come from environment variables with defaults (main.py:71-72).",
+          "Missing-file drops (input_validation.py:75-77) are availability filtering; the traversal and size checks carry the containment obligation.",
+          "The guard covers only the flow's initial document_paths state; no per-read enforcement inside file_read is shown in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "src/guide_creator_flow/tools/no_fabrication_guardrail_tool.py is not among supplied views: check_no_fabrication's forbidden-content criteria (reviewer-described 'training-data fabrication markers'), accept/reject contract, and retry/kill behavior are unverified for the analyse_research_papers contract.",
+      "Tool implementations behind TOOL_REGISTRY keys scrape_website, firecrawl_scrape, youtube_transcript, arxiv_paper, and file_read are not supplied; the argument-level binding from validated URL/path strings to the network or filesystem effects is inferred from agent tool registration and per-bucket task activation, not observed.",
+      "Research Crew tasks_config YAML (task descriptions/prompts) is not supplied; how validated link/path lists are interpolated into task inputs is not visible.",
+      "CrewAI framework behavior mapping a passed guardrail's (True, report) return onto result.pydantic.report (i.e., whether the guardrail-validated text is exactly what main.py:153 commits) is not shown in supplied source.",
+      "guide_creator_flow.event_listeners.emit_input_rejected implementation is not supplied; whether rejection emission is telemetry-only or has any enforcement role is unverified.",
+      "guide_creator_flow.cli.get_inputs is not supplied; user-controlled provenance of the validated inputs is implied by the run_with_trigger JSON-payload path (main.py:242-252) but the CLI input path is not shown."
+    ],
+    "repository": "aiwithsiddhesh/ai-guide-creator",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:02b02b12fb52f900882c91b40d7a124d"
+  },
+  "request_sha256": "6f96d47d96faa40556ad18b3f23e8f778ebf6a135aba52da410990ec21614e3f",
+  "response_sha256": "eb9544201f1ef99f72e2b796ce21f9c8753382c7b6da8e29f122f4daef468e90",
+  "state": "completed",
+  "tokens": 32099,
+  "unit": "v24-screen:02b02b12fb52f900882c91b40d7a124d"
+}

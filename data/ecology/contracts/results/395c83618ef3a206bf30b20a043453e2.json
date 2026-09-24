@@ -1,0 +1,913 @@
+{
+  "attempt": "complete_shard_reconciliation",
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "session.commit() of the fenced UPDATE at app/repositories/generation.py:244 (statement built at 232-243).",
+        "contract_id": "ecological-contract:23aa25b4813c908ae3ec22b635fbc5b6",
+        "declared_mechanism": "One UPDATE ... WHERE id/user_id/conversation_id/version = expected/status IN expected with server-owned version increment and RETURNING; caller-supplied 'version' values rejected; committed row of None signals the fence moved.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 13,
+            "line_start": 1,
+            "path": "app/repositories/generation.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0ba1fd5fd87c77c2dddecf076bfdafb3ae1cf031d3beaa9b9ccec3835d39256d"
+          },
+          {
+            "line_end": 229,
+            "line_start": 212,
+            "path": "app/repositories/generation.py",
+            "role": "guard_registration",
+            "source_sha256": "0ba1fd5fd87c77c2dddecf076bfdafb3ae1cf031d3beaa9b9ccec3835d39256d"
+          },
+          {
+            "line_end": 252,
+            "line_start": 231,
+            "path": "app/repositories/generation.py",
+            "role": "commit_point",
+            "source_sha256": "0ba1fd5fd87c77c2dddecf076bfdafb3ae1cf031d3beaa9b9ccec3835d39256d"
+          }
+        ],
+        "forbidden_condition": "A stale or non-owner lifecycle command advancing a generation (read-then-write racing two Continues into two epochs/answers for one question), or id-only reads revealing another user's generation.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Callers wiring atransition into the agent turn lifecycle (who issues Continue/Stop transitions and how) are not in the supplied views, so agent mediation is not established."
+        ],
+        "protected_operation": "Generation lifecycle state transitions (epoch-advancing pause/resume/continue transitions) on the generations table via GenerationRepository.atransition.",
+        "protected_resource": "Generation rows (id, user_id, conversation_id, status, version).",
+        "protection_obligation": "Lifecycle writes to the generations table must be owner-scoped compare-and-set: atransition commits its UPDATE only when generation_id, user_id, conversation_id, expected status set, and expected version all match, forbidding any stale or non-owner command (e.g., a second Continue on a paused turn) from advancing the epoch; the fence loser receives None rather than an error, and reads are filtered by owner and conversation, never id alone.",
+        "scope_limits": [
+          "aget_active_producer_tokens is deliberately not owner-scoped (reaper/deployment use) and is outside this obligation.",
+          "Only atransition is in view as the fenced write path; other repository methods' fencing is not shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "service.read_text(record) delivering blob text at app/ai/tool_result_read_tool.py:220, or the not-found/unavailable refusal at lines 225/228.",
+        "contract_id": "ecological-contract:24e8fada0e8b159e4a001b7bb5a42e74",
+        "declared_mechanism": "_scoped_identity returning None unless user_id and conversation_id are present and UUID-parseable.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 252,
+            "line_start": 238,
+            "path": "app/ai/tool_result_read_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "216185a78547a4d89077ca457ac3dd4d697001b6b75089c0157ffae3b713f11e"
+          },
+          {
+            "line_end": 228,
+            "line_start": 218,
+            "path": "app/ai/tool_result_read_tool.py",
+            "role": "commit_point",
+            "source_sha256": "216185a78547a4d89077ca457ac3dd4d697001b6b75089c0157ffae3b713f11e"
+          }
+        ],
+        "forbidden_condition": "Resolving a tool-result blob read without a complete (blob_id, user_id, conversation_id) identity (missing user or conversation context).",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Registration of read_tool_result as an agent tool and the invocation path from model tool calls are not in the supplied view."
+        ],
+        "protected_operation": "read_tool_result retrieval of stored tool-result blob text.",
+        "protected_resource": "The tool-result blob store (repository/service-backed blob records, possibly legacy on-disk).",
+        "protection_obligation": "The read_tool_result blob read must be identity-scoped: blob access is keyed by (blob_id, user_id, conversation_id) and resolves to nothing when the authenticated user_id or the conversation_id is absent or unparseable, so stored tool-result content cannot be addressed outside a complete user/conversation scope.",
+        "scope_limits": [
+          "The call site wiring _scoped_identity into the read path and the exact refusal behavior when it returns None are not shown in the supplied view."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "ClientDeviceService.dispatch_tool_call(...) awaited at app/ai/client_runtime_tools.py:267-279 \u2014 the tool-call message sent to the bound device session.",
+        "contract_id": "ecological-contract:29a6b160eeae209e9039d240795c8fc6",
+        "declared_mechanism": "Dispatch-time guard in _dispatch_client_tool returning _ERR_TOOL_NOT_THIS_SESSION / _ERR_CLIENT_DISCONNECTED / _ERR_CLIENT_RECONNECTED instead of dispatching, with RuntimeError from dispatch degraded to a tool error; binding-time exact-identity matching via client_ref_matches_metadata over _CLIENT_MATCH_KEYS in filter_tools_for_custom_agent; rebase_client_tool_refs rebinds persisted refs only onto live tools sharing stable identity (device_id + qualified_tool_id); get_loaded_client_tools returns nothing without a full (device_id, session_id) scope.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 206,
+            "line_start": 199,
+            "path": "app/ai/client_runtime_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9839b892ed2eeea38650fcbfe5be1c88bea6c848b887b619a88eaf254b586b6a"
+          },
+          {
+            "line_end": 216,
+            "line_start": 209,
+            "path": "app/ai/client_runtime_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "9839b892ed2eeea38650fcbfe5be1c88bea6c848b887b619a88eaf254b586b6a"
+          },
+          {
+            "line_end": 253,
+            "line_start": 217,
+            "path": "app/ai/client_runtime_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "9839b892ed2eeea38650fcbfe5be1c88bea6c848b887b619a88eaf254b586b6a"
+          },
+          {
+            "line_end": 279,
+            "line_start": 267,
+            "path": "app/ai/client_runtime_tools.py",
+            "role": "commit_point",
+            "source_sha256": "9839b892ed2eeea38650fcbfe5be1c88bea6c848b887b619a88eaf254b586b6a"
+          },
+          {
+            "line_end": 314,
+            "line_start": 310,
+            "path": "app/ai/client_runtime_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9839b892ed2eeea38650fcbfe5be1c88bea6c848b887b619a88eaf254b586b6a"
+          },
+          {
+            "line_end": 68,
+            "line_start": 60,
+            "path": "app/ai/custom_agent_runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "e18b2425418a2005030e1135af40f5b1871b6ce9e6e4fe67c4d68993b310e63b"
+          },
+          {
+            "line_end": 285,
+            "line_start": 248,
+            "path": "app/ai/custom_agent_runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "e18b2425418a2005030e1135af40f5b1871b6ce9e6e4fe67c4d68993b310e63b"
+          },
+          {
+            "line_end": 325,
+            "line_start": 308,
+            "path": "app/ai/custom_agent_runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "e18b2425418a2005030e1135af40f5b1871b6ce9e6e4fe67c4d68993b310e63b"
+          },
+          {
+            "line_end": 555,
+            "line_start": 520,
+            "path": "app/ai/deferred_tool_state.py",
+            "role": "guard_registration",
+            "source_sha256": "6d71b63f4314ebfe1d557dc7acb2e0f9bba2bae073fa10778a7725de015501d0"
+          }
+        ],
+        "forbidden_condition": "Client tool dispatch from a different device, a disconnected client (no active session for the bound device/user), a rotated session (session_id changed after binding), dispatch rejection between guard and dispatch, or a custom agent using a client tool whose persisted ref disagrees on device_id/session_id/catalog_version/tool_instance_id/qualified_tool_id or whose stored device differs from the request device.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The agent framework dispatch path that invokes the StructuredTool (model tool-call loop) is not shown; the cited binding is the StructuredTool.from_function registration itself."
+        ],
+        "protected_operation": "Agent-invoked execution of a client device runtime tool (the StructuredTool coroutine _dispatch_client_tool dispatching to the bound device).",
+        "protected_resource": "The bound (user_id, device_id, session_id, catalog_version, tool_instance_id) client tool instance and its device session.",
+        "protection_obligation": "A client-bound runtime tool call may execute only on the device session it was bound to: dispatch is refused with a typed tool-error result unless the executing turn's device_id equals the bound device_id, an active session exists for the bound user, and the device's session_id is unchanged (with bound session_id and catalog_version forwarded to the dispatcher), enforced inside _dispatch_client_tool immediately before ClientDeviceService.dispatch_tool_call; binding-time authorization additionally requires a custom agent's allowed client-tool ref to agree on every exact-identity key (_CLIENT_MATCH_KEYS) and, when supplied, the request device, and deferred client-tool lookup is strictly scoped to one (device_id, session_id) pair with no cross-device fallback.",
+        "scope_limits": [
+          "Covers server-side dispatch of client-bound tools; any second validation inside ClientDeviceService or on the device client is not in the supplied views.",
+          "catalog_version is not re-checked inside the guard itself; it is forwarded to dispatch_tool_call (line 276) for downstream enforcement.",
+          "rebase_client_tool_refs intentionally relaxes session/catalog fields at binding time after reconnect by copying live runtime fields; the dispatch-time device/session checks still apply."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "PlainTextResponse(text, media_type=record.content_type or 'text/plain') at app/api/tool_result_blobs.py:66, after the owner-scoped lookup and read.",
+        "contract_id": "ecological-contract:2d4859a2e6bf515ca7946d467fc26d5e",
+        "declared_mechanism": "Depends(get_current_user_id) plus ToolResultBlobRepository.get_for_user(blob_id, current_user_id) with HTTPException 404 when None; read failures mapped to 404.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 45,
+            "path": "app/api/tool_result_blobs.py",
+            "role": "guard_registration",
+            "source_sha256": "3cd7f5a3b88636c12cf7f177495628a90484467ab25c5654b9f4654b96651964"
+          },
+          {
+            "line_end": 66,
+            "line_start": 55,
+            "path": "app/api/tool_result_blobs.py",
+            "role": "commit_point",
+            "source_sha256": "3cd7f5a3b88636c12cf7f177495628a90484467ab25c5654b9f4654b96651964"
+          }
+        ],
+        "forbidden_condition": "Serving tool-result blob text for a blob owned by a different user, or leaking storage internals on corrupt/vanished blobs.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The writer path creating ToolResultBlob rows from agent tool executions is not in the supplied views; the shared container accessors with the read_tool_result tool link readers, not writers, so agent mediation is not established."
+        ],
+        "protected_operation": "GET /{blob_id} (PlainTextResponse) delivery of tool-result blob text.",
+        "protected_resource": "Stored tool-result blob records and their text content.",
+        "protection_obligation": "No caller may read a stored tool-result blob's text unless the ToolResultBlob row is owned by the caller's authenticated user id; non-owner or missing reads are refused with HTTP 404, and unreadable blobs are reported as 404 rather than disclosing storage internals.",
+        "scope_limits": [
+          "Corrupt/vanished blobs return the same 404 as non-ownership, so the refusal condition is deliberately indistinguishable to callers."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "return hasher.hexdigest() at shared/skills/hashing.py:105 \u2014 the only point at which a digest is released; every detected unsafe or mutated condition raises before this line.",
+        "contract_id": "ecological-contract:2fb1a3ebb9b01b830e13b1472352c783",
+        "declared_mechanism": "Fail-closed guard inside compute_skill_bundle_hash: link_checker (default is_link_like) rejects symlink/Windows-junction/reparse-point entries at root, directory, and file level; path.resolve().relative_to(root) escape check; os.open with O_NOFOLLOW/O_NONBLOCK; stat.S_ISREG check; before/after fstat/stat comparison of dev/ino/size/mtime_ns/mode plus a post-read link_checker re-check, each raising UnsafeSkillBundleError before the hexdigest is returned.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 36,
+            "line_start": 19,
+            "path": "shared/skills/hashing.py",
+            "role": "guard_registration",
+            "source_sha256": "d916e58a3165e7e6de57ae40feadf3c567eb6dc560a3e01dea3aea5466bfb613"
+          },
+          {
+            "line_end": 58,
+            "line_start": 41,
+            "path": "shared/skills/hashing.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d916e58a3165e7e6de57ae40feadf3c567eb6dc560a3e01dea3aea5466bfb613"
+          },
+          {
+            "line_end": 88,
+            "line_start": 64,
+            "path": "shared/skills/hashing.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d916e58a3165e7e6de57ae40feadf3c567eb6dc560a3e01dea3aea5466bfb613"
+          },
+          {
+            "line_end": 105,
+            "line_start": 92,
+            "path": "shared/skills/hashing.py",
+            "role": "commit_point",
+            "source_sha256": "d916e58a3165e7e6de57ae40feadf3c567eb6dc560a3e01dea3aea5466bfb613"
+          },
+          {
+            "line_end": 33,
+            "line_start": 26,
+            "path": "shared/skills/commands.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4181a3f734c47898b0a0db0c0752ccce68d011dc3111d52c100e78c0c7048891"
+          }
+        ],
+        "forbidden_condition": "Producing (returning) a bundle digest for an unsafe or mutating bundle: a missing or link-like bundle root; a linked directory or file entry; a path whose resolution escapes the bundle root; a non-regular file; an OSError during open/read; or any before/after mismatch in (st_dev, st_ino), size, mtime_ns, mode, or link-like status \u2014 i.e., hashing completing while the bundle is unverified or changed mid-hash.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "No call site of compute_skill_bundle_hash is supplied; the binding from its digest to the staged preview's sourceHash / install-time expectedSourceHash is asserted by the reviewer rationale but not demonstrated in supplied code.",
+          "The downstream authorized effect (skill installation: file writes and/or approved setup process execution) and its commit implementation are outside the supplied views.",
+          "No agent tool, agent lifecycle hook, or agent-generated input is shown reaching bundle hashing, so agent mediation is not established."
+        ],
+        "protected_operation": "Canonical, collision-safe hashing of a standard Agent Skill bundle that yields the authorization digest (the source-hash value used to gate/validate skill installation).",
+        "protected_resource": "The skill bundle directory tree on disk (paths, modes, sizes, contents) and the digest derived from it.",
+        "protection_obligation": "compute_skill_bundle_hash must fail closed: it must raise UnsafeSkillBundleError instead of returning a digest whenever the bundle root is missing or link-like, any walked directory or file entry is a symlink/junction/reparse point, a path escapes the bundle root, an entry is not a regular file, or a file's identity/size/mtime/mode/link status changes between open and re-stat, so only a verified, unmutated bundle can ever yield the digest that serves as the skill's source hash.",
+        "scope_limits": [
+          "The digest deliberately excludes install., *.pyc files, and .git/__pycache__/.venv directories (hashing.py 15-16, 45, 51), so the authorization digest does not cover those entries.",
+          "link_checker is an injectable parameter defaulting to is_link_like; a call site could alter strictness (hashing.py 31).",
+          "Windows junction/reparse detection depends on os.lstat st_file_attributes and path.is_junction availability (shared/skills/commands.py 10-33).",
+          "The mutation check narrows the window (O_NOFOLLOW open, before/after stats) but the supplied source does not claim atomicity beyond that checked window.",
+          "The module itself is a pure in-process computation performing no network, database, process, or message effects; classification as other_external reflects the digest's role as the authorization value for a downstream external installation effect whose concrete stratum is not shown in the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "areserve's committed insert/claim (app/repositories/tool_execution_receipt.py:73-81) before, and acomplete/afail/amark_outcome_unknown CAS transitions (app/repositories/tool_execution_receipt.py:123-178) after, the provider invoke in _invoke_and_record (app/services/tool_execution_receipt_service.py:197-218).",
+        "contract_id": "ecological-contract:3ef7bd59100c4d00dda1d1c8b2ef54a6",
+        "declared_mechanism": "execution_key = sha256(separator-joined thread/dispatch/task/tool_call); repository.areserve attempts the insert first with IntegrityError branching to an owner-scoped existing-row read (a foreign-owned row is reported fresh so the caller runs its own mutation); _replay answers COMPLETED from stored result and raises on OUTCOME_UNKNOWN; _atransition updates only WHERE execution_key + status IN expected with rowcount==0 logged as an overwite refusal.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 12,
+            "line_start": 1,
+            "path": "app/repositories/tool_execution_receipt.py",
+            "role": "forbidden_condition",
+            "source_sha256": "195d3afa21163b38fe47eef07ea2e38ec85b5bdbeccef94e52d5dc6dd53333cf"
+          },
+          {
+            "line_end": 103,
+            "line_start": 82,
+            "path": "app/services/tool_execution_receipt_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "781b9ecb809a9636e665eacd08724679f8734e1f93ad1d80f2969854f4984b8a"
+          },
+          {
+            "line_end": 178,
+            "line_start": 153,
+            "path": "app/services/tool_execution_receipt_service.py",
+            "role": "guard_registration",
+            "source_sha256": "781b9ecb809a9636e665eacd08724679f8734e1f93ad1d80f2969854f4984b8a"
+          },
+          {
+            "line_end": 218,
+            "line_start": 197,
+            "path": "app/services/tool_execution_receipt_service.py",
+            "role": "commit_point",
+            "source_sha256": "781b9ecb809a9636e665eacd08724679f8734e1f93ad1d80f2969854f4984b8a"
+          },
+          {
+            "line_end": 81,
+            "line_start": 50,
+            "path": "app/repositories/tool_execution_receipt.py",
+            "role": "guard_registration",
+            "source_sha256": "195d3afa21163b38fe47eef07ea2e38ec85b5bdbeccef94e52d5dc6dd53333cf"
+          },
+          {
+            "line_end": 178,
+            "line_start": 155,
+            "path": "app/repositories/tool_execution_receipt.py",
+            "role": "guard_registration",
+            "source_sha256": "195d3afa21163b38fe47eef07ea2e38ec85b5bdbeccef94e52d5dc6dd53333cf"
+          }
+        ],
+        "forbidden_condition": "A second claim of the same provider mutation effect (two replays both observing reserved and both calling the provider), overwriting an already-terminal receipt outcome, or adopting another owner's recorded effect as one's own.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The concrete agent tool dispatch site that constructs MutationExecutionScope and invokes execute_mutation is not in the supplied view; the binding cited is the scope's tool-call identity fields and key derivation."
+        ],
+        "protected_operation": "Execution of one mutating agent tool call identified by (thread_id, dispatch_id, task_id, tool_call_id) via ToolExecutionReceiptService.execute_mutation.",
+        "protected_resource": "The external provider mutation effect fenced by the ToolExecutionReceipt row.",
+        "protection_obligation": "A mutating tool call must execute at most once per derived execution key: a receipt RESERVED row is claimed by insert-first areserve; a completed receipt replays the stored result without re-invoking the provider; an outcome_unknown receipt is never retried (MutationOutcomeUnknown raised); terminal transitions occur only from RESERVED via one atomic compare-and-set UPDATE whose rowcount==0 refuses to overwrite a recorded outcome; the durable reservation before and completion after the provider call are the commit points fencing the mutation.",
+        "scope_limits": [
+          "The fenced provider call's transport/stratum is not shown; provider_idempotency only controls whether the key is offered to the invoke.",
+          "GraphBubbleUp control flow leaves the receipt RESERVED so a resumed turn recognizes the call it already started.",
+          "The receipt state machine itself is database-stratum CAS; this contract's protected effect is the external provider mutation it fences."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The skipped tool-execution step for the current model tool call (loop `continue` at app/ai/tool_execution.py:2076); the concrete server web provider call site is not in the supplied view.",
+        "contract_id": "ecological-contract:4551e7a8e2d5ce6bb4602a5bcb25157f",
+        "declared_mechanism": "Pre-execution scope check `if client_only_scope and tool_name in SERVER_ONLY_WEB_TOOL_NAMES` producing ToolErrorSummary(PERMISSION) payloads appended as tool error output, followed by `continue` so the tool never executes.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 2053,
+            "line_start": 2040,
+            "path": "app/ai/tool_execution.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f4fdf2ec3d722b49e782e770e2f682b9efb57d8341b4cae4b0cc834b9de1dfea"
+          },
+          {
+            "line_end": 2062,
+            "line_start": 2055,
+            "path": "app/ai/tool_execution.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f4fdf2ec3d722b49e782e770e2f682b9efb57d8341b4cae4b0cc834b9de1dfea"
+          },
+          {
+            "line_end": 2076,
+            "line_start": 2063,
+            "path": "app/ai/tool_execution.py",
+            "role": "guard_registration",
+            "source_sha256": "f4fdf2ec3d722b49e782e770e2f682b9efb57d8341b4cae4b0cc834b9de1dfea"
+          }
+        ],
+        "forbidden_condition": "Executing a tool in SERVER_ONLY_WEB_TOOL_NAMES while client_only_scope is active (server web access from a client-only tool scope).",
+        "missing_evidence_roles": [
+          "commit_point",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The actual execution site for the denied server web tools (to pin the refused commit line) is not in the supplied view."
+        ],
+        "protected_operation": "Model tool-call dispatch of server web tools within the agent tool-execution loop.",
+        "protected_resource": "The server-side web access surface.",
+        "protection_obligation": "Server-only web tools must not be executed when the active tool scope is client-only: the tool-execution loop must refuse the call with a PERMISSION tool error and continue without any server web access for that tool call.",
+        "scope_limits": [
+          "Applies only when client_only_scope is set and the tool name is in SERVER_ONLY_WEB_TOOL_NAMES.",
+          "The refusal commit is the loop skip; the refused effect's provider commit line is not shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "initialize_client_environment() invoked in lifespan before serving (client_backend/main.py:45) and CORSMiddleware registration in create_app (client_backend/main.py:91-98).",
+        "contract_id": "ecological-contract:57428d1af3cf0dc611aa6436e4380e7a",
+        "declared_mechanism": "initialize_client_environment raising ValueError for a non-loopback backend_host without allow_non_loopback_backend (with _is_loopback_host treating unresolvable hostnames as remote-reachable); allowed_origins field validator rejecting '*' and non scheme://host[:port] entries; CORSMiddleware registered with the validated explicit origins.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 384,
+            "line_start": 355,
+            "path": "client_backend/core/config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7946600e7d0c487e12b5a9edbf6cfa572c4747b0389a5f6811d73045317258a1"
+          },
+          {
+            "line_end": 427,
+            "line_start": 403,
+            "path": "client_backend/core/config.py",
+            "role": "guard_registration",
+            "source_sha256": "7946600e7d0c487e12b5a9edbf6cfa572c4747b0389a5f6811d73045317258a1"
+          },
+          {
+            "line_end": 50,
+            "line_start": 40,
+            "path": "client_backend/main.py",
+            "role": "commit_point",
+            "source_sha256": "2fb747acdf757398a1a4616aabc5b7f5443aefa0a799f1edda97209e43f3d580"
+          },
+          {
+            "line_end": 98,
+            "line_start": 87,
+            "path": "client_backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "2fb747acdf757398a1a4616aabc5b7f5443aefa0a799f1edda97209e43f3d580"
+          }
+        ],
+        "forbidden_condition": "Binding the sidecar to a remote-reachable interface without explicit opt-in, or wildcard CORS origins for a process that executes local shell commands, filesystem operations, and skill runtimes.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "No supplied line binds the sidecar's HTTP surface to agent tool dispatch (e.g., which endpoints dispatch agent tool calls), so agent mediation is not established; the guard's rationale text names local tool/skill execution as the protected surface."
+        ],
+        "protected_operation": "Client backend startup/bind and HTTP serving (FastAPI lifespan initialization and CORSMiddleware registration).",
+        "protected_resource": "The local tool/skill execution surface exposed by the sidecar's HTTP server.",
+        "protection_obligation": "The client backend sidecar must refuse to bind to a non-loopback interface unless allow_non_loopback_backend=true is explicitly set \u2014 enforced at startup in initialize_client_environment() before the server serves \u2014 and must serve CORS only to explicit scheme://host[:port] origins with '*' rejected, protecting the local tool/skill execution surface from network and browser exposure.",
+        "scope_limits": [
+          "Explicit allow_non_loopback_backend=true bypasses the bind guard; allow_private_network=True with allow_credentials=False in the CORS configuration.",
+          "Enforcement is at construction/startup; per-request origin behavior is delegated to CORSMiddleware."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "manager.connect(widget_id, websocket) and the initial widget_state_sync send at app/api/widgets.py:617-628, reached only after token, claims, and record checks pass.",
+        "contract_id": "ecological-contract:6f281c18f74f01a2559abc5b0f983e7b",
+        "declared_mechanism": "token_service.verify(token) with pyjwt.InvalidTokenError \u2192 1008 close; claims wid/sid equality check; widget store record existence check; only then manager.connect accepts the socket.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 609,
+            "line_start": 599,
+            "path": "app/api/widgets.py",
+            "role": "guard_registration",
+            "source_sha256": "68312873498ed68c3114237283dde2fa79ac130a6ea7fe7a7196818ee043c8e3"
+          },
+          {
+            "line_end": 615,
+            "line_start": 611,
+            "path": "app/api/widgets.py",
+            "role": "guard_registration",
+            "source_sha256": "68312873498ed68c3114237283dde2fa79ac130a6ea7fe7a7196818ee043c8e3"
+          },
+          {
+            "line_end": 618,
+            "line_start": 617,
+            "path": "app/api/widgets.py",
+            "role": "commit_point",
+            "source_sha256": "68312873498ed68c3114237283dde2fa79ac130a6ea7fe7a7196818ee043c8e3"
+          }
+        ],
+        "forbidden_condition": "Opening a widget state stream with an invalid/unverifiable token, mismatched widget_id/session_id claims, or for a nonexistent widget record.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The writer path that mutates widget state from agent operations (binding the streamed state to agent-generated changes) is not in the supplied views; the docstring's 'state changed (by agent or user patch)' is not code-level wiring."
+        ],
+        "protected_operation": "WebSocket connection to /{widget_id}/connect and subsequent widget state event streaming.",
+        "protected_resource": "The per-widget real-time state stream (widget store record and connection manager).",
+        "protection_obligation": "A widget WebSocket stream may be opened only with a signed token whose widget id and session id match the connection target and whose widget record exists; all failures close the socket with WS_1008_POLICY_VIOLATION before any widget state is streamed.",
+        "scope_limits": [
+          "Token claims validated in the cited view are wid/sid equality; any user/device identity inside the token is not shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "asyncio.create_subprocess_exec in _spawn_contained_process (client_backend/services/skill_runtime/execution.py:566-577), reached via _run_and_collect (execution.py:285-287).",
+        "contract_id": "ecological-contract:71be51815ae538e7b875c33c631f7195",
+        "declared_mechanism": "Engine gate raising SkillRuntimeError(PERMISSION_REQUIRED) with an approve_skill_command repair hint when call_context['mutation_approved'] is not True, placed before source-hash staleness checks, secret resolution, environment build, and _run_and_collect; runtime_bridge._execute_skill_capability passes request.mutation_approved into the engine context.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 253,
+            "line_start": 244,
+            "path": "client_backend/services/skill_runtime/execution.py",
+            "role": "guard_registration",
+            "source_sha256": "29033ed07e0c30056f4400b5ecfc8a5ee1984f8bd984133b1faaafb0b8a35205"
+          },
+          {
+            "line_end": 287,
+            "line_start": 275,
+            "path": "client_backend/services/skill_runtime/execution.py",
+            "role": "protected_operation",
+            "source_sha256": "29033ed07e0c30056f4400b5ecfc8a5ee1984f8bd984133b1faaafb0b8a35205"
+          },
+          {
+            "line_end": 577,
+            "line_start": 566,
+            "path": "client_backend/services/skill_runtime/execution.py",
+            "role": "commit_point",
+            "source_sha256": "29033ed07e0c30056f4400b5ecfc8a5ee1984f8bd984133b1faaafb0b8a35205"
+          },
+          {
+            "line_end": 698,
+            "line_start": 671,
+            "path": "client_backend/services/runtime_bridge.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "6d1ce0236bce5313bb6402550c3a7301ff6f94f96dde0709391f7b3e4cbf229f"
+          }
+        ],
+        "forbidden_condition": "Spawning a skill-owned process (argv, cwd, environment including injected skill secrets) for a skill command capability when call_context mutation_approved is not True.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Agent-invoked skill command execution (skill::<name>::run_skill_command) through SkillExecutionEngine.execute.",
+        "protected_resource": "The skill-owned OS process spawn (contained subprocess with argv/cwd/env).",
+        "protection_obligation": "SkillExecutionEngine.execute must refuse to spawn any process for skill::<name>::run_skill_command unless the request context carries mutation_approved=true, enforced before secrets are resolved and the contained subprocess is spawned; the runtime bridge independently forwards the same approval bit from the tool-call request so the gate holds at the engine boundary.",
+        "scope_limits": [
+          "Adjacent co-located integrity guard: the live source hash must still match the published skill.source_hash before spawn (execution.py:255-271); this is a separate obligation not asserted by the packet's obligation text.",
+          "The gate covers the run_skill_command capability path; skill activation and read_resource take other bridge branches."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "make_api_request(\"POST\", f\"/skills/uploads/{quote(str(upload_id), safe='')}/install\", payload) inside start_skill_install (demo.py 5404-5408), invoked from the Install skill button handler (demo.py 9496-9501).",
+        "contract_id": "ecological-contract:85aaa26cbfef9d839c2bc0ad957651d8",
+        "declared_mechanism": "Approval gate plus hash binding: st.checkbox consents rendered with value=False (skill_install_approve_setup, skill_install_approve_replace); install button disabled while blocked/needs_replacement/needs_setup; start_skill_install transmits expectedSourceHash (preview sourceHash), approveSetup, and optionally replaceSourceHash (existing skill's sourceHash) to POST /skills/uploads/{quote(upload_id)}/install; errors.py documents SKILL_SOURCE_CHANGED as the code raised when a guarded upload or installed bundle no longer matches what the client previewed, requiring re-preview rather than retry.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 9493,
+            "line_start": 9465,
+            "path": "demo.py",
+            "role": "guard_registration",
+            "source_sha256": "c91a8584f265c6198ed55585f84a41a5f577bce2dd3db0e5d7df39e350a75726"
+          },
+          {
+            "line_end": 9501,
+            "line_start": 9496,
+            "path": "demo.py",
+            "role": "protected_operation",
+            "source_sha256": "c91a8584f265c6198ed55585f84a41a5f577bce2dd3db0e5d7df39e350a75726"
+          },
+          {
+            "line_end": 5403,
+            "line_start": 5391,
+            "path": "demo.py",
+            "role": "guard_registration",
+            "source_sha256": "c91a8584f265c6198ed55585f84a41a5f577bce2dd3db0e5d7df39e350a75726"
+          },
+          {
+            "line_end": 5409,
+            "line_start": 5404,
+            "path": "demo.py",
+            "role": "commit_point",
+            "source_sha256": "c91a8584f265c6198ed55585f84a41a5f577bce2dd3db0e5d7df39e350a75726"
+          },
+          {
+            "line_end": 19,
+            "line_start": 16,
+            "path": "shared/skills/errors.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0c90cd943853f6b1cb9632adac5c74e0436bed50151cc56099062f1a40f3e655"
+          },
+          {
+            "line_end": 9227,
+            "line_start": 9223,
+            "path": "demo.py",
+            "role": "protected_operation",
+            "source_sha256": "c91a8584f265c6198ed55585f84a41a5f577bce2dd3db0e5d7df39e350a75726"
+          },
+          {
+            "line_end": 9581,
+            "line_start": 9557,
+            "path": "demo.py",
+            "role": "guard_registration",
+            "source_sha256": "c91a8584f265c6198ed55585f84a41a5f577bce2dd3db0e5d7df39e350a75726"
+          },
+          {
+            "line_end": 9591,
+            "line_start": 9584,
+            "path": "demo.py",
+            "role": "protected_operation",
+            "source_sha256": "c91a8584f265c6198ed55585f84a41a5f577bce2dd3db0e5d7df39e350a75726"
+          }
+        ],
+        "forbidden_condition": "Committing installation while a required consent is ungranted (the install button must remain disabled while blocked, needs_replacement, or needs_setup) or with a hash that no longer matches the bundle: an uploaded bundle or installed bundle that changed since the client previewed it must be refused as SKILL_SOURCE_CHANGED with the client required to re-preview rather than retry.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Server-side handler for POST /skills/uploads/{upload_id}/install: whether and how it verifies expectedSourceHash/replaceSourceHash, enforces approveSetup/approveReplace, and raises SKILL_SOURCE_CHANGED.",
+          "Whether any agent pathway (agent tool dispatch, lifecycle hook, or agent-generated input) can trigger staging or the install commit; none is shown in the supplied views.",
+          "Whether the preview's sourceHash consumed at demo.py 9498 is produced by compute_skill_bundle_hash in shared/skills/hashing.py."
+        ],
+        "protected_operation": "Human-approved commit of a staged skill installation for local execution; per the supplied trust warning, approved setup and skill commands run locally with the user's filesystem and network access and ZIP validation does not sandbox installed code.",
+        "protected_resource": "The staged skill upload bundle identified by upload_id and, for updates, the existing installed skill identified by its previewed sourceHash.",
+        "protection_obligation": "Committing a staged skill ZIP installation (the POST /skills/uploads/{upload_id}/install issued by start_skill_install) is forbidden unless the required default-off human consents are explicitly granted \u2014 setup execution when setup.confirmationRequired, replacement when an existing skill would be overwritten \u2014 and the request carries the previewed source hashes (expectedSourceHash from the shown preview; replaceSourceHash from the existing installed skill) so that any bundle that changed after preview is refused (SKILL_SOURCE_CHANGED) instead of installed.",
+        "scope_limits": [
+          "Only the client (Streamlit UI) side is supplied: consent defaults, button disabling, and payload construction are demonstrated; the sidecar's server-side enforcement of consents and hash comparison is not among the supplied views.",
+          "The flow is human UI-driven (file_uploader, checkboxes, buttons); no agent tool, agent lifecycle hook, or agent-generated input is shown reaching this commit, so agent mediation is not established.",
+          "Collection variant (demo.py 9557-9591) sends replaceSourceHash='collection' as a sentinel; per-skill installed-hash guarding is asserted only in an inline comment (demo.py 9588-9589), not demonstrated.",
+          "SKILL_SOURCE_CHANGED refusal semantics come from the error-code documentation (shared/skills/errors.py 16-19), not from a supplied implementation.",
+          "Ordinary web authentication, CORS, generic request validation, and unrelated infrastructure policy are out of scope."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "web_search: `raw = await _call_provider(...)` at app/ai/web_tools.py:258; image_search: `await _discover(...)` at app/ai/web_tools.py:386-392.",
+        "contract_id": "ecological-contract:bc69177e379bf6bf910fff369269892a",
+        "declared_mechanism": "Lock-guarded reserve_search/reserve_image_search compare-and-claim in ResearchBudget (check and claim as one step); web_search returns _budget_spent_payload and image_search returns a repeated-subject payload without contacting the provider when the reserve is refused; failed queries release the slot but remain refused for retry.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 167,
+            "line_start": 150,
+            "path": "app/ai/research_budget.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9b8861533aa6a48ecb6febf3510e5a11536f2cc75f3e0363f968afcaabd52048"
+          },
+          {
+            "line_end": 211,
+            "line_start": 169,
+            "path": "app/ai/research_budget.py",
+            "role": "guard_registration",
+            "source_sha256": "9b8861533aa6a48ecb6febf3510e5a11536f2cc75f3e0363f968afcaabd52048"
+          },
+          {
+            "line_end": 280,
+            "line_start": 257,
+            "path": "app/ai/research_budget.py",
+            "role": "guard_registration",
+            "source_sha256": "9b8861533aa6a48ecb6febf3510e5a11536f2cc75f3e0363f968afcaabd52048"
+          },
+          {
+            "line_end": 255,
+            "line_start": 239,
+            "path": "app/ai/web_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "d8d148e640c9dbe64f4cdd683ed36dce182dfb8049f27bf3a24610abd2927e53"
+          },
+          {
+            "line_end": 258,
+            "line_start": 257,
+            "path": "app/ai/web_tools.py",
+            "role": "commit_point",
+            "source_sha256": "d8d148e640c9dbe64f4cdd683ed36dce182dfb8049f27bf3a24610abd2927e53"
+          },
+          {
+            "line_end": 384,
+            "line_start": 376,
+            "path": "app/ai/web_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "d8d148e640c9dbe64f4cdd683ed36dce182dfb8049f27bf3a24610abd2927e53"
+          },
+          {
+            "line_end": 392,
+            "line_start": 386,
+            "path": "app/ai/web_tools.py",
+            "role": "commit_point",
+            "source_sha256": "d8d148e640c9dbe64f4cdd683ed36dce182dfb8049f27bf3a24610abd2927e53"
+          },
+          {
+            "line_end": 278,
+            "line_start": 276,
+            "path": "app/ai/web_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d8d148e640c9dbe64f4cdd683ed36dce182dfb8049f27bf3a24610abd2927e53"
+          }
+        ],
+        "forbidden_condition": "Exceeding max_search_calls/max_image_searches for the turn, or issuing a provider search that exactly or near-duplicates a completed, prior-epoch, failed, or in-flight query/subject (including a Continue re-running a query a prior epoch's budget refused).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Agent-invoked web_search and image_search provider research calls.",
+        "protected_resource": "The per-turn research budget (provider search quota and dedup memory) keyed by logical_turn_id/conversation_id.",
+        "protection_obligation": "A turn must not spend provider research calls beyond its per-turn caps or repeat a near-duplicate query/subject: ResearchBudget.reserve_search and reserve_image_search atomically claim or refuse a slot inside one lock \u2014 refusing reused, prior-epoch, failed, in-flight near-duplicates and over-cap claims \u2014 and web_search/image_search return the refusal in place of the provider call.",
+        "scope_limits": [
+          "Enforced only when settings.research_budget_enabled; find_reuse short-circuits with the reused result without consuming a slot.",
+          "Budget scope derives from tool context logical_turn_id/conversation_id; image slots are per subject rather than per turn."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Response(content=service.read_bytes(record), ...) at app/api/chat_images.py:33, produced only after the per-user lookup succeeds.",
+        "contract_id": "ecological-contract:dabe1aab453c8845348bc9c93d60e3be",
+        "declared_mechanism": "Route dependency Depends(get_current_user_id) (JWT bearer verification) plus ChatImageRepository.get_for_user filtering id + user_id + deleted_at IS NULL, raising HTTPException 404 when no row matches.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 33,
+            "line_start": 23,
+            "path": "app/api/chat_images.py",
+            "role": "guard_registration",
+            "source_sha256": "bee0c635755f94f4cee28e85ce65e37c896bd867ec522620f1305d2e53570cf2"
+          },
+          {
+            "line_end": 32,
+            "line_start": 25,
+            "path": "app/repositories/chat_image.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2d03c2284c4dc46dd2ba02835adfe4a92215c417981ba0121c633342ce998271"
+          },
+          {
+            "line_end": 53,
+            "line_start": 36,
+            "path": "app/core/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "e5b1dfa3f34d09d6b7bf391c1525e17948de330dc9f7325978ce02e96b78f971"
+          },
+          {
+            "line_end": 33,
+            "line_start": 30,
+            "path": "app/api/chat_images.py",
+            "role": "commit_point",
+            "source_sha256": "bee0c635755f94f4cee28e85ce65e37c896bd867ec522620f1305d2e53570cf2"
+          }
+        ],
+        "forbidden_condition": "Serving chat image bytes for an image owned by a different user, or for a soft-deleted image.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The writer path that persists generated images into ChatImage (which would bind the guarded bytes to agent generation) is not in the supplied views; agent mediation of this HTTP read is therefore not established."
+        ],
+        "protected_operation": "GET /chat-images/{image_id} byte delivery.",
+        "protected_resource": "Stored chat image bytes (ChatImage rows plus the storage service).",
+        "protection_obligation": "No caller may read a stored chat image's bytes unless the ChatImage row is owned by the caller's authenticated user id and is not soft-deleted; cross-user and deleted-image reads are refused with HTTP 404 before any bytes are served.",
+        "scope_limits": [
+          "The get_by_user_and_sha storage idempotency path is adjacent but is not part of this read guard.",
+          "404 deliberately masks non-ownership, deletion, and absence identically."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The in-process retrieval invocations, e.g., rag_agent.scan_all_documents(...) at app/ai/rag_tool_actions.py:385-392, reachable only after the guard.",
+        "contract_id": "ecological-contract:dc13e688bebe29e478a3fb0df967abf8",
+        "declared_mechanism": "Pre-action validation in execute_search_documents_action returning compact_rag_tool_error(ToolErrorKind.VALIDATION) when user_id or conversation_id is missing for any action in _RAG_ACTION_TOOL_NAMES, plus per-action re-checks (scan_all/read_document require conversation_id).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 371,
+            "line_start": 356,
+            "path": "app/ai/rag_tool_actions.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "af63b708ffae8f16565acbcbda4124d63f3ab92386bd81d01ccb202716d6ef1f"
+          },
+          {
+            "line_end": 382,
+            "line_start": 373,
+            "path": "app/ai/rag_tool_actions.py",
+            "role": "guard_registration",
+            "source_sha256": "af63b708ffae8f16565acbcbda4124d63f3ab92386bd81d01ccb202716d6ef1f"
+          },
+          {
+            "line_end": 392,
+            "line_start": 385,
+            "path": "app/ai/rag_tool_actions.py",
+            "role": "commit_point",
+            "source_sha256": "af63b708ffae8f16565acbcbda4124d63f3ab92386bd81d01ccb202716d6ef1f"
+          },
+          {
+            "line_end": 398,
+            "line_start": 393,
+            "path": "app/ai/rag_tool_actions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "af63b708ffae8f16565acbcbda4124d63f3ab92386bd81d01ccb202716d6ef1f"
+          }
+        ],
+        "forbidden_condition": "Executing a RAG retrieval action without authenticated user context, or without the owning conversation context (e.g., scan_all with no conversation to scan).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Registration of execute_search_documents_action as an agent tool (decorator/registry entry) is not in the supplied view; the agent binding cited is the tool_args dataflow."
+        ],
+        "protected_operation": "Agent-invoked search_documents tool actions (scan_all, read_document, etc.) against a conversation's documents.",
+        "protected_resource": "The conversation's document corpus / RAG retrieval pipeline.",
+        "protection_obligation": "Every search_documents document-retrieval action must be refused with a validation error unless an authenticated user_id and the owning conversation_id are present, enforced at execute_search_documents_action before any retrieval call (scan_all_documents, document/chunk reads) is reached.",
+        "scope_limits": [
+          "The guard checks presence of user_id/conversation_id, not proof of conversation ownership; conversation access control is elsewhere.",
+          "Applies to the actions listed in _RAG_ACTION_TOOL_NAMES."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "try_transition_to_resolving's committed UPDATE (app/repositories/hitl_interrupt.py:76-91), invoked at app/services/message_service.py:2316-2320 as the sole-claim decision before the resume stream executes.",
+        "contract_id": "ecological-contract:e2b8c0a1c71369f42be01f12abf3c52d",
+        "declared_mechanism": "_validate_and_claim_interrupt_resume layered gates (validate_conversation_access, interrupt lookup and conversation/thread/device match, expiry/failed/resolved refusals with typed error codes, runtime provenance session/catalog/tool-instance validation with scope-change expiry) ending in the repository CAS try_transition_to_resolving (UPDATE WHERE id + conversation_id + status = PENDING + expires_at > now).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 2100,
+            "line_start": 2091,
+            "path": "app/services/message_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a111eabd49229c2473cc0adb8c063a1dc4517f4d168bf214cb0cc947a9cb2247"
+          },
+          {
+            "line_end": 2126,
+            "line_start": 2091,
+            "path": "app/services/message_service.py",
+            "role": "guard_registration",
+            "source_sha256": "a111eabd49229c2473cc0adb8c063a1dc4517f4d168bf214cb0cc947a9cb2247"
+          },
+          {
+            "line_end": 2174,
+            "line_start": 2127,
+            "path": "app/services/message_service.py",
+            "role": "guard_registration",
+            "source_sha256": "a111eabd49229c2473cc0adb8c063a1dc4517f4d168bf214cb0cc947a9cb2247"
+          },
+          {
+            "line_end": 2326,
+            "line_start": 2316,
+            "path": "app/services/message_service.py",
+            "role": "commit_point",
+            "source_sha256": "a111eabd49229c2473cc0adb8c063a1dc4517f4d168bf214cb0cc947a9cb2247"
+          },
+          {
+            "line_end": 91,
+            "line_start": 61,
+            "path": "app/repositories/hitl_interrupt.py",
+            "role": "guard_registration",
+            "source_sha256": "fb89475a6d94d5563b70eae7a11fb3080b394269aed3daf424cf84c582192c2c"
+          }
+        ],
+        "forbidden_condition": "Resuming from a missing or foreign interrupt, a thread or device mismatch, an expired/failed/already-resolved interrupt, a changed device session/catalog/tool capability, or racing a concurrent claimant to the same interrupt.",
+        "missing_evidence_roles": [
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The resumed-workflow component that re-dispatches the approved tool decisions (the replay executor) is not in the supplied view."
+        ],
+        "protected_operation": "Resume of a durable HITL approval (validation and claim gate before the resumed agent run replays approved interrupt decisions).",
+        "protected_resource": "The HITLInterrupt record and the paused agent workflow it gates.",
+        "protection_obligation": "A paused HITL workflow must not be resumed \u2014 replaying approved tool decisions \u2014 unless the durable interrupt record exists and is owned (conversation/thread match, device match when both known), is not expired, failed, or already resolved/resolving, its runtime provenance (session_id, catalog_version, qualified tool id / tool instance id) still matches the device's active session, and it is atomically claimed PENDING\u2192RESOLVING first-write-wins via try_transition_to_resolving before the resume stream executes; a concurrent claimant receives 409 INTERRUPT_CONFLICT.",
+        "scope_limits": [
+          "Covers the durable repository path; the Redis fallback branch (app/services/message_service.py:2328+) is a separate timestamp-based mechanism outside this claim.",
+          "Downstream effects of the resumed stream (replayed tool executions) belong to other strata and contracts."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Agent-tool registration/decorator wiring for execute_search_documents_action and read_tool_result into the agent tool registry is not in the supplied views.",
+      "Callers of GenerationRepository.atransition within the agent turn lifecycle (who issues Continue/Stop transitions) are not supplied, so its agent mediation is unbound.",
+      "Internal re-validation performed by ClientDeviceService.dispatch_tool_call (catalog_version enforcement) is not in the supplied views.",
+      "No agent tool registration, agent lifecycle hook, or agent-generated-input dataflow appears anywhere in the supplied views; agent mediation for both obligations is therefore not_established rather than direct_tool, agent_lifecycle_hook, or agent_generated_input_to_guarded_effect.",
+      "No call sites for compute_skill_bundle_hash or stage_skill_zip are supplied, so the digest-to-preview-sourceHash-to-expectedSourceHash dataflow cannot be confirmed from source.",
+      "Per the packet scope, repository enumeration is incomplete and behavior labels are unavailable, so prevalence or completeness of these guards across the repository cannot be assessed.",
+      "The call site and refusal behavior when _scoped_identity returns None in the read_tool_result path are not supplied.",
+      "The concrete provider-call site for server-only web tools denied under client_only_scope is not supplied, so the refused commit line cannot be pinned.",
+      "The sidecar/route implementation of POST /skills/uploads/{upload_id}/install (hash comparison, consent enforcement, SKILL_SOURCE_CHANGED raise, replaceability checks) is not among the supplied views; only the client payload and error-code documentation are.",
+      "The transport/stratum of receipt-fenced provider mutations is not supplied (the fenced effect is classified other_external).",
+      "Which client-backend HTTP endpoints dispatch agent tool calls (binding the loopback/CORS guard surface to agent mediation) is not supplied.",
+      "Writer paths persisting chat images, tool-result blobs, and widget state from agent operations are not supplied; agent mediation for the three resource-read HTTP guards is unbound."
+    ],
+    "repository": "Tox1cCoder/AgenticChatbot",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:395c83618ef3a206bf30b20a043453e2"
+  },
+  "request_sha256": "aba8dfeb86f05f657aa8d1b517265409510b95cdfe9f01757867465f984c0e8b",
+  "response_sha256": "ed940245d4f36067b7c4d6baf75cf692dcf7108ebe593503c9b7fb6a333801cf",
+  "shard_provenance": [
+    {
+      "attempt": 0,
+      "request_sha256": "4f2c8a82ced0388920d19c75a6e327913b3bcfaae0f81751c4f9f853555aa917",
+      "response_sha256": "188b195f05b923344536cfd5e7ceeb258aa1b6cad18b4a364344c51191a152b7",
+      "result_sha256": "c945c44be2583bd37562900bce39a1000c499e0ed30c388c779af9ba046f9863",
+      "tokens": 72741,
+      "unit": "v24-screen:395c83618ef3a206bf30b20a043453e2-p000"
+    },
+    {
+      "attempt": 0,
+      "request_sha256": "70cd3e160eebf06380b9ffe1c71cd56449b9b04c01fbfc8c47c5f02b4ae6cbaa",
+      "response_sha256": "18a77a9c22d9be1e01fcfc81751738141a9ce9806b1032525fea7aa12b156d46",
+      "result_sha256": "20f0c676a5e048af2bb745e009b24046e1cdd08335f2de011e3090bddac9dbda",
+      "tokens": 24429,
+      "unit": "v24-screen:395c83618ef3a206bf30b20a043453e2-p001"
+    }
+  ],
+  "state": "completed",
+  "tokens": 97170,
+  "unit": "v24-screen:395c83618ef3a206bf30b20a043453e2"
+}

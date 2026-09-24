@@ -1,0 +1,208 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "await db.delete(task) followed by await db.commit() inside delete_task (backend/app/skills/tasks/tools.py:200-201); the guard commits earlier at the tool-dispatch boundary by returning a blocking dict that prevents the tool call from running at all.",
+        "contract_id": "ecological-contract:56221720912323198fef8ab14ff7f03c",
+        "declared_mechanism": "check_tool_call (async before_tool_callback) registered as before_tool_callback=check_tool_call on root_agent (agent.py:48) and inherited by every skill clone; its HITL branch (b) returns {\"error\": ..., \"needs_confirmation\": True} when tool_name is in HITL_REQUIRED_TOOLS.get(skill_id) and _CONFIRMATION_RE.search(_current_user_text(tool_context)) fails; per the ADK convention documented in agent_hooks.py:8-10 and the function docstring, a non-None return skips the actual tool execution entirely and substitutes the error dict as the tool result.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 50,
+            "line_start": 44,
+            "path": "backend/app/core/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "645c0e707971f1291bcb13f093f83056970a2f5b04073177202bd1255dae7749"
+          },
+          {
+            "line_end": 184,
+            "line_start": 179,
+            "path": "backend/app/core/agent_hooks.py",
+            "role": "guard_registration",
+            "source_sha256": "06cd31900fd5671f0b2551d67571f5aa5153db43e7853272a3c4ea128927c976"
+          },
+          {
+            "line_end": 108,
+            "line_start": 95,
+            "path": "backend/app/core/agent_hooks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "06cd31900fd5671f0b2551d67571f5aa5153db43e7853272a3c4ea128927c976"
+          },
+          {
+            "line_end": 120,
+            "line_start": 113,
+            "path": "backend/app/core/agent_hooks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "06cd31900fd5671f0b2551d67571f5aa5153db43e7853272a3c4ea128927c976"
+          },
+          {
+            "line_end": 208,
+            "line_start": 199,
+            "path": "backend/app/core/agent_hooks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "06cd31900fd5671f0b2551d67571f5aa5153db43e7853272a3c4ea128927c976"
+          },
+          {
+            "line_end": 202,
+            "line_start": 187,
+            "path": "backend/app/skills/tasks/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "f06584b9979e32b05464b5296f944a3c5474c2f8b676fdc70697cfe964cc28dc"
+          },
+          {
+            "line_end": 201,
+            "line_start": 200,
+            "path": "backend/app/skills/tasks/tools.py",
+            "role": "commit_point",
+            "source_sha256": "f06584b9979e32b05464b5296f944a3c5474c2f8b676fdc70697cfe964cc28dc"
+          },
+          {
+            "line_end": 49,
+            "line_start": 48,
+            "path": "backend/app/core/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "645c0e707971f1291bcb13f093f83056970a2f5b04073177202bd1255dae7749"
+          },
+          {
+            "line_end": 95,
+            "line_start": 87,
+            "path": "backend/app/core/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "645c0e707971f1291bcb13f093f83056970a2f5b04073177202bd1255dae7749"
+          },
+          {
+            "line_end": 206,
+            "line_start": 205,
+            "path": "backend/app/skills/tasks/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f06584b9979e32b05464b5296f944a3c5474c2f8b676fdc70697cfe964cc28dc"
+          }
+        ],
+        "forbidden_condition": "delete_task proceeding to execution (reaching db.delete/commit) when the current turn's user message text contains no phrase matching _CONFIRMATION_RE (yes/yeah/yep/confirm(ed)/go ahead/do it/please delete/sure/correct, case-insensitive); i.e., execution of a HITL_REQUIRED_TOOLS entry ('tasks' -> {'delete_task'}) without same-turn confirmation.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Where/how tool_context.state['active_skill'] is populated is not shown in supplied sources; the HITL key lookup (HITL_REQUIRED_TOOLS.get(skill_id)) depends on it (a defaulted 'general' skill would bypass the HITL branch, though the allow-list branch would then block delete_task).",
+          "Whether tool_context.user_content reliably reflects the latest user turn is asserted only as 'best-effort' in code (agent_hooks.py:113-115); the ADK ToolContext implementation is not supplied."
+        ],
+        "protected_operation": "Agent-invoked execution of the tasks.delete_task tool, which permanently deletes a Task row from the application database.",
+        "protected_resource": "Task rows in the persistent application database (Task model via AsyncSessionLocal), deletable through the delete_task agent tool.",
+        "protection_obligation": "The agent-reachable destructive tool tasks.delete_task (permanent DB deletion of a task) must not execute unless the current user turn contains an explicit confirmation phrase; enforcement is the check_tool_call before_tool_callback registered once on root_agent (inherited by all per-skill clones via get_agent_for_skill's deep copy), which short-circuits the tool call before execution.",
+        "scope_limits": [
+          "Applies only to tools listed in HITL_REQUIRED_TOOLS for the active skill; today that is exactly 'tasks' -> {'delete_task'} (agent_hooks.py:101-103).",
+          "Confirmation is detected as a generic affirmative phrase anywhere in the current turn's user_content text; the guard does not bind the phrase to the specific task_id or action beyond the tool call itself, and a confirmation in a prior turn does not satisfy it.",
+          "The check fires only on the agent tool-dispatch path (before_tool_callback); any non-agent (e.g., REST) path to task deletion is outside this contract.",
+          "This contract covers only the database-deletion effect of delete_task; the separate allow-list gate over tool execution is compiled as its own contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The blocking return at backend/app/core/agent_hooks.py:196-197, which per the module's documented short-circuit convention (agent_hooks.py:8-10) causes ADK to skip the tool's execution \u2014 the contract commits at the tool-invocation boundary itself.",
+        "contract_id": "ecological-contract:60d519509b39fc15b04788663afc4bf3",
+        "declared_mechanism": "check_tool_call branch (a): for skills not in _SKILLS_WITHOUT_STATIC_ALLOWLIST, computes allowed = UNIVERSAL_TOOLS | ALLOWED_TOOLS.get(skill_id, set()), and on a miss logs the block via _log_blocked and returns {\"error\": reason} from the before_tool_callback; per the ADK convention documented in agent_hooks.py:8-10, the non-None return skips the actual tool execution entirely and uses the dict as the tool's result.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 50,
+            "line_start": 44,
+            "path": "backend/app/core/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "645c0e707971f1291bcb13f093f83056970a2f5b04073177202bd1255dae7749"
+          },
+          {
+            "line_end": 184,
+            "line_start": 179,
+            "path": "backend/app/core/agent_hooks.py",
+            "role": "guard_registration",
+            "source_sha256": "06cd31900fd5671f0b2551d67571f5aa5153db43e7853272a3c4ea128927c976"
+          },
+          {
+            "line_end": 93,
+            "line_start": 38,
+            "path": "backend/app/core/agent_hooks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "06cd31900fd5671f0b2551d67571f5aa5153db43e7853272a3c4ea128927c976"
+          },
+          {
+            "line_end": 197,
+            "line_start": 188,
+            "path": "backend/app/core/agent_hooks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "06cd31900fd5671f0b2551d67571f5aa5153db43e7853272a3c4ea128927c976"
+          },
+          {
+            "line_end": 10,
+            "line_start": 8,
+            "path": "backend/app/core/agent_hooks.py",
+            "role": "commit_point",
+            "source_sha256": "06cd31900fd5671f0b2551d67571f5aa5153db43e7853272a3c4ea128927c976"
+          },
+          {
+            "line_end": 197,
+            "line_start": 196,
+            "path": "backend/app/core/agent_hooks.py",
+            "role": "commit_point",
+            "source_sha256": "06cd31900fd5671f0b2551d67571f5aa5153db43e7853272a3c4ea128927c976"
+          },
+          {
+            "line_end": 49,
+            "line_start": 48,
+            "path": "backend/app/core/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "645c0e707971f1291bcb13f093f83056970a2f5b04073177202bd1255dae7749"
+          },
+          {
+            "line_end": 95,
+            "line_start": 87,
+            "path": "backend/app/core/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "645c0e707971f1291bcb13f093f83056970a2f5b04073177202bd1255dae7749"
+          },
+          {
+            "line_end": 206,
+            "line_start": 205,
+            "path": "backend/app/skills/tasks/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f06584b9979e32b05464b5296f944a3c5474c2f8b676fdc70697cfe964cc28dc"
+          }
+        ],
+        "forbidden_condition": "A tool call dispatched by the agent whose tool_name is not in the active skill's allowed set (UNIVERSAL_TOOLS | ALLOWED_TOOLS.get(skill_id, set())) for any skill not in _SKILLS_WITHOUT_STATIC_ALLOWLIST, proceeding past the before_tool_callback into actual tool execution.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "How tool_context.state['active_skill'] is set is not shown in supplied sources; the allow-list key depends on it, and a defaulted 'general' skill would reduce the allowed set to the universal tools.",
+          "The ADK framework source implementing the short-circuit convention (google/adk/agents/llm_agent.py, cited in the module docstring) is not supplied."
+        ],
+        "protected_operation": "Agent-mediated tool dispatch/execution through the agent's before_tool_callback tool-calling path (the point at which a registered tool would otherwise be invoked).",
+        "protected_resource": "The agent's tool execution surface: every tool registered on the active skill's agent clone (per-skill TOOLS lists plus the universal tools remember/recall/get_skill_instructions).",
+        "protection_obligation": "Any agent tool outside the active skill's allow-list must be blocked entirely from execution: a dispatched tool call whose name is not in UNIVERSAL_TOOLS | ALLOWED_TOOLS[active_skill] (with the 'finance' skill deliberately exempted from the static list) must be short-circuited by check_tool_call before the tool runs.",
+        "scope_limits": [
+          "'finance' is exempt from the static allow-list check (_SKILLS_WITHOUT_STATIC_ALLOWLIST = {'finance'}) because its tools are discovered dynamically from the buddy-mcp MCP server; no static list in this source binds finance tool execution.",
+          "ALLOWED_TOOLS is a hand-maintained mirror of per-skill TOOLS lists and docs/guardrails/ sections; the source comments acknowledge drift risk, and this contract cannot verify the lists match the actually registered tools for skills whose tools.py is not supplied.",
+          "Downstream effects a blocked tool would have produced span multiple strata (database, communication, etc.); this contract pins only the invocation boundary, and delete_task's database effect is covered by the separate HITL contract.",
+          "Non-agent invocations of the same underlying functions are outside this contract; the guard fires only on the agent tool-dispatch path via before_tool_callback."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The ADK framework source (google/adk/agents/llm_agent.py) that implements the before_tool_callback/after_tool_callback short-circuit and response-replacement conventions is not among the supplied sources; the skip-on-non-None-return behavior underpinning both contracts' commit points is asserted only by comments/docstrings in backend/app/core/agent_hooks.py.",
+      "No supplied source shows where or how tool_context.state['active_skill'] is written; both the allow-list lookup and the HITL key lookup in check_tool_call depend on this value.",
+      "docs/guardrails/ROOT_AGENT.md and the per-skill SKILL.md files (referenced for 'Allowed tools' and 'Zero Ambient Authority' cross-checks) are not supplied.",
+      "The second reviewer's rationale references send_email_guarded (cited as notifications.py:42-69, allegedly withholding PII-bearing outbound email); that file/view is not among the supplied sources, so no contract could be compiled for it.",
+      "Other skills' tools.py modules are not supplied, so the docstring claim that tasks.delete_task is the only agent-reachable destructive tool across all skills (agent_hooks.py:97-100) cannot be verified from supplied source, nor can ALLOWED_TOOLS be cross-checked against every skill's actual TOOLS list."
+    ],
+    "repository": "mayankmittal29/Buddy.ai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d7bcb1b44435cf2a179aaf237675299d"
+  },
+  "request_sha256": "3e05fb7bc7802ac6869f0b8a562faed8f3626e215969551e2ac819b43eebdbc8",
+  "response_sha256": "0a166551434e770a27c49213237b0e25fc24f1d003c72d7b231d7666146aa825",
+  "state": "completed",
+  "tokens": 19737,
+  "unit": "v24-screen:d7bcb1b44435cf2a179aaf237675299d"
+}

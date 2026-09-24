@@ -1,0 +1,315 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "CLI: the validation sequence in _run_command (benchmarks/__main__.py:71-79) completes before _ensure_output_parent may create the output parent directory (line 79; mkdir at line 233) and before run_benchmarks is invoked (line 84). Runner: _validate_run_paths (benchmarks/runner.py:199, 283-292) completes before AnchoredPublication.open(config.output) (line 200) and _RunWorkspace.create(config.work_root) (line 201), which performs the first directory creations shown in supplied source (lines 180-187, 336-352).",
+        "contract_id": "ecological-contract:181b7693d0df8479bde9ce294e80b0c7",
+        "declared_mechanism": "Two redundant ancestor-marker guards: _reject_workspace_output (benchmarks/__main__.py:169-173) invoked on the resolved output and resolved work root during _run_command (lines 77-78), and _reject_bundlewalker_workspace_path (benchmarks/runner.py:295-305) invoked on the output and the resolved intended work root inside _validate_run_paths (lines 289-290); each scans (candidate, *candidate.parents) for a bundlewalker.toml whose stat mode is S_ISREG and aborts via parser.error or BenchmarkRunError before any filesystem write.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 173,
+            "line_start": 169,
+            "path": "benchmarks/__main__.py",
+            "role": "guard_registration",
+            "source_sha256": "4a380a9f051195d954bca49984fa6f87cbb783cf5109b38ba9fb44a34ea0d005"
+          },
+          {
+            "line_end": 173,
+            "line_start": 170,
+            "path": "benchmarks/__main__.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4a380a9f051195d954bca49984fa6f87cbb783cf5109b38ba9fb44a34ea0d005"
+          },
+          {
+            "line_end": 79,
+            "line_start": 71,
+            "path": "benchmarks/__main__.py",
+            "role": "commit_point",
+            "source_sha256": "4a380a9f051195d954bca49984fa6f87cbb783cf5109b38ba9fb44a34ea0d005"
+          },
+          {
+            "line_end": 305,
+            "line_start": 295,
+            "path": "benchmarks/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "eb487302cee485245c83e34439ef09c3a0a1ce6266bd34772b0af2b00e3655b5"
+          },
+          {
+            "line_end": 292,
+            "line_start": 283,
+            "path": "benchmarks/runner.py",
+            "role": "commit_point",
+            "source_sha256": "eb487302cee485245c83e34439ef09c3a0a1ce6266bd34772b0af2b00e3655b5"
+          },
+          {
+            "line_end": 201,
+            "line_start": 195,
+            "path": "benchmarks/runner.py",
+            "role": "protected_operation",
+            "source_sha256": "eb487302cee485245c83e34439ef09c3a0a1ce6266bd34772b0af2b00e3655b5"
+          }
+        ],
+        "forbidden_condition": "Creating benchmark output or a benchmark work root at a path where the candidate itself or any ancestor directory contains a bundlewalker.toml that lstat reports as a regular, non-symlink file; refused as parser.error(\"output is inside a workspace\") at the CLI and BenchmarkRunError(\"benchmark paths must be outside BundleWalker workspaces\") at the runner.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the benchmarks CLI or run_benchmarks is ever exposed to an AI agent as a tool, or receives agent-generated --output/--work-root/--run-id values, is not shown in supplied source.",
+          "Whether the shared path helpers (_ensure_output_parent, _require_unaliased_directory) are intended as agent-facing guards is not established.",
+          "Write effects inside the unsupplied benchmarks.fixtures and benchmarks.evidence modules that rely on this guard cannot be enumerated."
+        ],
+        "protected_operation": "The `python -m benchmarks run` subcommand creating its evidence output artifact (AnchoredPublication.open plus publication.publish/write_evidence) and creating the benchmark work-root tree (_RunWorkspace.create and the directories it materializes).",
+        "protected_resource": "The benchmark output path and the benchmark work-root path, on behalf of the BundleWalker workspace subtree identified by a regular bundlewalker.toml ancestor marker.",
+        "protection_obligation": "Benchmark run output and work-root paths must never be created inside a BundleWalker workspace: both the benchmarks CLI (before dispatching the run) and the benchmark runner (before output anchoring or work-root creation) must reject any output or work-root candidate that is itself, or has any ancestor directory holding, a regular non-symlink bundlewalker.toml marker.",
+        "scope_limits": [
+          "Restricted to the supplied views of benchmarks/__main__.py and benchmarks/runner.py; downstream benchmark writes in benchmarks.worker, benchmarks.fixtures, and benchmarks.evidence are not supplied and are not claimed.",
+          "The workspace boundary is defined only by the regular non-symlink bundlewalker.toml ancestor-marker test as implemented; no other definition of workspace is claimed.",
+          "The runner-layer check re-runs inside run_benchmarks after the CLI check, but supplied source does not establish atomicity between validation and later writes; TOCTOU properties are unclaimed.",
+          "Only the run subcommand's output and work root are covered here; the report subcommand's output exclusion is compiled as a separate contract.",
+          "Agent mediation is absent from supplied source: no tool registration, lifecycle hook, or agent-controlled argument dataflow for this CLI appears in the provided views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Each mutation's filesystem effects occur only inside the locked region acquired at the `with workspace_lock(...)` entries: prepare staging writes (src/bundlewalker/transactions.py:512-571 under the lock taken at 475), the accepted-phase commit swap (transactions.py:680-704 under the locks at 606/619), and transaction cleanup (_cleanup_transaction, transactions.py:1473-1487, reached under the locks at 719/736).",
+        "contract_id": "ecological-contract:35502e2d56e279bc83d86ad65ac1b631",
+        "declared_mechanism": "workspace_lock context manager (src/bundlewalker/coordination.py:61-98): opens .bundlewalker via the O_DIRECTORY|O_NOFOLLOW workspace-relative walk of open_workspace_directory (coordination.py:19-58), opens transaction.lock with O_RDWR|O_NOFOLLOW plus O_CREAT|O_EXCL mode 0o600 on first creation, fstat-verifies stat.S_ISREG, then fcntl.flock(descriptor, LOCK_EX); releases with LOCK_UN and close in finally.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 98,
+            "line_start": 61,
+            "path": "src/bundlewalker/coordination.py",
+            "role": "guard_registration",
+            "source_sha256": "95f6869ba6bf54a516a9a342767bca8c1a44cfadc5661ab50265b76655dcfcbb"
+          },
+          {
+            "line_end": 90,
+            "line_start": 84,
+            "path": "src/bundlewalker/coordination.py",
+            "role": "forbidden_condition",
+            "source_sha256": "95f6869ba6bf54a516a9a342767bca8c1a44cfadc5661ab50265b76655dcfcbb"
+          },
+          {
+            "line_end": 489,
+            "line_start": 465,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "guard_registration",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 624,
+            "line_start": 604,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "guard_registration",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 742,
+            "line_start": 717,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "guard_registration",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 641,
+            "line_start": 627,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "protected_operation",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 571,
+            "line_start": 512,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "commit_point",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 704,
+            "line_start": 680,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "commit_point",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 1487,
+            "line_start": 1473,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "commit_point",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          }
+        ],
+        "forbidden_condition": "Performing a transactional mutation of workspace state without holding the exclusive LOCK_EX flock on .bundlewalker/transaction.lock, or acquiring the lock through a symlink or non-regular lock file; refused as TransactionError(\"workspace transaction lock is not a regular file\") and TransactionError(\"could not acquire workspace transaction lock\").",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Callers of these transaction APIs (CLI, service, or agent runtime) are not supplied; whether any invocation is agent-dispatched is not established.",
+          "Whether prepare/apply/commit/discard are ever wrapped by an agent tool registration or lifecycle hook is not shown."
+        ],
+        "protected_operation": "The live-workspace and private-state mutation flows shown in supplied source: prepare_transaction staging/recovery writes, commit_transaction and apply_pending_review accepted-phase commit, and discard_transaction / discard_pending_review cleanup.",
+        "protected_resource": "The BundleWalker workspace (the configured live wiki directory and the .bundlewalker private transaction state, including .bundlewalker/transactions staging) and the lock file .bundlewalker/transaction.lock.",
+        "protection_obligation": "Every live-workspace mutation entry point (transaction prepare, review apply/commit, discard) must execute only while holding an exclusive flock on the workspace's .bundlewalker/transaction.lock, which must be opened O_NOFOLLOW through the O_NOFOLLOW workspace-relative directory walk and verified by fstat to be a regular file.",
+        "scope_limits": [
+          "Applies to the mutation entry points shown: prepare_transaction (lock at 475), commit_transaction (606), apply_pending_review (619), discard_transaction (719), discard_pending_review (736); other supplied helpers that also take the lock (recover_transactions 760, get_pending_review 769, quiescent_workspace 785, diagnostic inspection) are not separately claimed.",
+          "flock is the mechanism as written; supplied source does not state guarantees beyond advisory locking, and no claim is made about platforms lacking O_NOFOLLOW (flags use getattr fallbacks).",
+          "Whether these are the complete set of live-workspace mutation entry points cannot be verified from the supplied views.",
+          "Agent mediation is absent from supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "benchmarks/__main__.py:107 validation precedes AnchoredPublication.open(output) at line 112 and publication.publish at line 125, which performs the descriptor-anchored report write via write_new_text.",
+        "contract_id": "ecological-contract:5cb0553aa633f6a355be9feb5361732c",
+        "declared_mechanism": "_reject_workspace_output(parser, resolved_output) at benchmarks/__main__.py:107, reusing the ancestor-marker scan defined at lines 169-173, aborting via parser.error before the publication descriptor is opened.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 173,
+            "line_start": 169,
+            "path": "benchmarks/__main__.py",
+            "role": "guard_registration",
+            "source_sha256": "4a380a9f051195d954bca49984fa6f87cbb783cf5109b38ba9fb44a34ea0d005"
+          },
+          {
+            "line_end": 112,
+            "line_start": 104,
+            "path": "benchmarks/__main__.py",
+            "role": "commit_point",
+            "source_sha256": "4a380a9f051195d954bca49984fa6f87cbb783cf5109b38ba9fb44a34ea0d005"
+          },
+          {
+            "line_end": 125,
+            "line_start": 110,
+            "path": "benchmarks/__main__.py",
+            "role": "protected_operation",
+            "source_sha256": "4a380a9f051195d954bca49984fa6f87cbb783cf5109b38ba9fb44a34ea0d005"
+          }
+        ],
+        "forbidden_condition": "Publishing the benchmark report at an output path where the candidate itself or any ancestor directory contains a regular, non-symlink bundlewalker.toml marker; refused as parser.error(\"output is inside a workspace\") from _reject_workspace_output.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Whether report output paths can be agent-supplied, and whether the report flow is agent-exposed, is not shown in supplied source.",
+          "The implementation of write_new_text (benchmarks.evidence) is not supplied; its write behavior is unclaimed."
+        ],
+        "protected_operation": "The `python -m benchmarks report` subcommand publishing the rendered report at --output via AnchoredPublication.open(output) and publication.publish(write_new_text).",
+        "protected_resource": "The benchmark report output file path, on behalf of the BundleWalker workspace subtree identified by a regular bundlewalker.toml ancestor marker.",
+        "protection_obligation": "Benchmark report output must never be created inside a BundleWalker workspace: the report subcommand must reject any --output path that is itself inside, or descends from, a directory holding a regular non-symlink bundlewalker.toml marker before opening the anchored publication or writing the report.",
+        "scope_limits": [
+          "Covers only the report subcommand's --output publication path in benchmarks/__main__.py:100-133; the evidence-directory checks (_require_unaliased_directory, _has_symlink_file) are separate generic path-safety mechanisms and are not claimed as the workspace guard.",
+          "The workspace-marker scan runs once at CLI validation; AnchoredPublication later re-validates parent-directory identity (benchmarks/runner.py:118-143) but no second workspace-marker scan appears after line 107 in supplied source.",
+          "Agent mediation is absent from supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The swap sequence in _resume_accepted_commit_locked: _rename_workspace_entry(workspace.wiki_dir -> backup) at transactions.py:684, base re-check 686-689, prospective-to-live rename at 690, phase write at 693, and the final re-check 701-704 before _quarantine_backup_and_cleanup at 705-710.",
+        "contract_id": "ecological-contract:ffd133018cb5f1d468dfddc854237efa",
+        "declared_mechanism": "Layered digest checks: (1) apply_pending_review raises ReviewStaleError when the loaded review status is STALE (transactions.py:622-623), with staleness computed from live_matches_base in _pending_review_from_manifest (959-973); (2) _verify_pending_transaction invokes _verify_live_base before accepting (1027; 1854-1863); (3) after the live-to-backup rename, the materialized backup digest is re-checked against identity.base_wiki_digest and, on mismatch, _restore_concurrent_backup rolls back and _ConcurrentLiveEditError aborts (686-689), repeated for the final re-check before quarantine (701-704).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 624,
+            "line_start": 617,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "guard_registration",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 973,
+            "line_start": 959,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "guard_registration",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 1032,
+            "line_start": 1014,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "guard_registration",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 1863,
+            "line_start": 1854,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "guard_registration",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 689,
+            "line_start": 686,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 704,
+            "line_start": 701,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 693,
+            "line_start": 683,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "protected_operation",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          },
+          {
+            "line_end": 704,
+            "line_start": 680,
+            "path": "src/bundlewalker/transactions.py",
+            "role": "commit_point",
+            "source_sha256": "dd77d10ea1c01c09ca2bd9b612c807e76f1f594998b7e5b496f1d9fa31b9a52e"
+          }
+        ],
+        "forbidden_condition": "Swapping the reviewed prospective wiki over a live wiki whose materialized digest differs from the reviewed base_wiki_digest; refused as TransactionError(\"live wiki changed since preparation\") from _verify_live_base, as ReviewStaleError when the durable review status is STALE, and as _ConcurrentLiveEditError(\"live wiki changed during swap\") after the post-rename re-checks, each accompanied by _restore_concurrent_backup rollback.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether review approval/application decisions originate from an agent tool call or lifecycle hook is not shown in supplied source.",
+          "How ReviewKind values (ingestion/synthesis/refresh) are produced and by whom is not established by supplied source."
+        ],
+        "protected_operation": "Applying or committing a pending review onto the live wiki: apply_pending_review and commit_transaction proceeding through _accept_and_commit_locked into _resume_accepted_commit_locked's live-wiki swap.",
+        "protected_resource": "The live wiki directory (workspace.config.wiki_dir) and the reviewed base_wiki_digest recorded in the transaction identity and manifest.",
+        "protection_obligation": "A review commit must be refused, with rollback, if the live wiki no longer matches the transaction's reviewed base_wiki_digest at any point of the accept or swap sequence.",
+        "scope_limits": [
+          "Digest equivalence is materialized-tree SHA-256 as implemented (_tree_digest 2628-2653, _materialized_tree_digest 2656-2672); no other equivalence notion is claimed.",
+          "Covers the schema-v2 prepared-to-swapping commit path shown; legacy schema-v1 recovery branches are partially shown and not separately claimed.",
+          "The checks execute while the exclusive workspace lock is held per the companion lock contract; behavior of processes that bypass the lock is out of scope for this contract.",
+          "Agent mediation is absent from supplied source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source binds any of these operations to an AI-agent tool registration, agent lifecycle hook, or agent-generated input dataflow; agent_entry_binding evidence is therefore omitted and agent_mediation is not_established for every contract.",
+      "The modules benchmarks.worker, benchmarks.fixtures, benchmarks.evidence, benchmarks.profiles, benchmarks.scenarios, and bundlewalker.workspace/changes/okf/domain/errors are referenced but not supplied; their write effects and callers cannot be enumerated from supplied views.",
+      "The complete set of callers of run_benchmarks and of the bundlewalker transaction API (prepare/apply/commit/discard) is unknown from the supplied views.",
+      "Repository enumeration is incomplete per the supplied scope, and behavior labels are unavailable; no prevalence or runtime-behavior claim is made.",
+      "Whether the bundlewalker.toml marker semantics match the workspace configuration consumed elsewhere (unsupplied workspace/config code) is not verifiable from supplied source."
+    ],
+    "repository": "HendrikReh/BundleWalker",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1d503149d870ff3c681a9dbd08bd1fb6"
+  },
+  "request_sha256": "95b2c6507250850869d154a09605e9b57e4de2bef42b4c2dbd682fea06b2eeca",
+  "response_sha256": "cf1b239b718b72ae6a9598cc037790bdf3b73bb82cfe23506f1b143e32864d99",
+  "state": "completed",
+  "tokens": 72359,
+  "unit": "v24-screen:1d503149d870ff3c681a9dbd08bd1fb6"
+}

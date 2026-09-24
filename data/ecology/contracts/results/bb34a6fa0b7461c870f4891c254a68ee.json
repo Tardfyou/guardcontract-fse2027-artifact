@@ -1,0 +1,366 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Context assembly in _format_context (lines 426-446) whose output becomes augmented_query passed to stream_agent.run_stream (lines 365-370) in the streaming path; in the blocking path the formatted context_text is passed to run_judge (lines 250-255).",
+        "contract_id": "ecological-contract:12e15358ad02ac9b51e8aa8789eb8467",
+        "declared_mechanism": "ConfidenceAwarePipeline._format_context calls contains_injection(content) for each retrieved chunk and silently drops matching chunks (warning logged with chunk_id and document_title) while joining surviving chunks into <document>-tagged context text.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 446,
+            "line_start": 426,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 434,
+            "line_start": 427,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "protected_operation",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 444,
+            "line_start": 436,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 71,
+            "line_start": 65,
+            "path": "rag/v2/knowledge/validation/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "039578f90449af4086062f2543aa26265c05a29288599a3371a8d674e4bdccba"
+          },
+          {
+            "line_end": 370,
+            "line_start": 356,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 370,
+            "line_start": 365,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 255,
+            "line_start": 248,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          }
+        ],
+        "forbidden_condition": "Chunk content matching an _INJECTION_PATTERNS regex being included in the assembled LLM context text (poisoned-document injection reaching the model).",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Whether the blocking-path generation call traced_agent_run consumes _format_context output is not established: in run() the formatted context is shown passed only to run_judge (lines 250-255), while traced_agent_run receives query and state (lines 202-206); knowledge/agent/agent.py is not supplied.",
+          "Whether other consumers of HookContext.retrieved_chunks apply equivalent filtering is not established (hooks registry and context implementations are not supplied)."
+        ],
+        "protected_operation": "Assembly of retrieval-derived context text by _format_context and its downstream use in LLM calls.",
+        "protected_resource": "The LLM context text consumed by stream_agent.run_stream (streaming generation, via augmented_query) and by run_judge (blocking-path judge call).",
+        "protection_obligation": "Retrieved chunk content matching a known prompt-injection pattern must be excluded from LLM context: ConfidenceAwarePipeline._format_context must drop poisoned chunks (with a logged warning) when assembling context text, before that context reaches any LLM call (stream_agent.run_stream in the streaming path; run_judge in the blocking path).",
+        "scope_limits": [
+          "Chunk content is scanned only after truncation to its first 2000 characters (line 437).",
+          "Uses the same fixed regex pattern list as the V4 query gate (validation/pipeline.py:29-36).",
+          "If every retrieved chunk is dropped, an empty context string is still produced; downstream behavior with an empty context is not specified in the supplied source.",
+          "Exclusion is observable only via warning log; no abstention or error is surfaced to the caller when chunks are dropped."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "conn.execute(sql) inside _execute_with_timeout (line 116), reached from run_query at lines 554-558 where _execute_with_timeout(self.conn, safe_sql, self.query_timeout) is called; the read-only guard must complete before this point.",
+        "contract_id": "ecological-contract:3c45a73c2076e97214c1ed35a0089d47",
+        "declared_mechanism": "_WRITE_PATTERN regex plus _check_readonly(), invoked in ConversationManager.run_query (lines 516-521) before row-cap, SQLGlot validation, caching, and execution; on a match the attempt records last_error, logs 'Guardrail (read-only)', and continues the retry loop so _execute_with_timeout is never reached.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 87,
+            "line_start": 75,
+            "path": "nl2sql/nlp_sql_postgres_v2.py",
+            "role": "guard_registration",
+            "source_sha256": "10342e1052662d20fb5d3fcb87f2d519fb94b431814f42b64a34ea96a0e6478c"
+          },
+          {
+            "line_end": 78,
+            "line_start": 75,
+            "path": "nl2sql/nlp_sql_postgres_v2.py",
+            "role": "forbidden_condition",
+            "source_sha256": "10342e1052662d20fb5d3fcb87f2d519fb94b431814f42b64a34ea96a0e6478c"
+          },
+          {
+            "line_end": 521,
+            "line_start": 516,
+            "path": "nl2sql/nlp_sql_postgres_v2.py",
+            "role": "guard_registration",
+            "source_sha256": "10342e1052662d20fb5d3fcb87f2d519fb94b431814f42b64a34ea96a0e6478c"
+          },
+          {
+            "line_end": 123,
+            "line_start": 98,
+            "path": "nl2sql/nlp_sql_postgres_v2.py",
+            "role": "protected_operation",
+            "source_sha256": "10342e1052662d20fb5d3fcb87f2d519fb94b431814f42b64a34ea96a0e6478c"
+          },
+          {
+            "line_end": 558,
+            "line_start": 554,
+            "path": "nl2sql/nlp_sql_postgres_v2.py",
+            "role": "commit_point",
+            "source_sha256": "10342e1052662d20fb5d3fcb87f2d519fb94b431814f42b64a34ea96a0e6478c"
+          },
+          {
+            "line_end": 119,
+            "line_start": 115,
+            "path": "nl2sql/nlp_sql_postgres_v2.py",
+            "role": "commit_point",
+            "source_sha256": "10342e1052662d20fb5d3fcb87f2d519fb94b431814f42b64a34ea96a0e6478c"
+          },
+          {
+            "line_end": 514,
+            "line_start": 504,
+            "path": "nl2sql/nlp_sql_postgres_v2.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "10342e1052662d20fb5d3fcb87f2d519fb94b431814f42b64a34ea96a0e6478c"
+          },
+          {
+            "line_end": 191,
+            "line_start": 178,
+            "path": "nl2sql/app/rest_api/api.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5bc4629e0af0aad2686230025d3a892acc0d5b0a59eb679c15e8eb8a6e5be09e"
+          },
+          {
+            "line_end": 186,
+            "line_start": 174,
+            "path": "nl2sql/evals/run_eval.py",
+            "role": "protected_operation",
+            "source_sha256": "35b18803a2813a66ceb8ecf038dd5191f40a4ce0c82c844c383e425387faf49d"
+          }
+        ],
+        "forbidden_condition": "A statement containing any write/DDL keyword (DROP, DELETE, INSERT, UPDATE, TRUNCATE, ALTER, CREATE, GRANT, REVOKE as a whole word, case-insensitive per _WRITE_PATTERN) being executed on the shared DuckDB connection.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the discovery_query path (which executes agent-proposed SQL without the readonly guard) is reachable from any registered endpoint, agent tool, or lifecycle hook is not established from the supplied source.",
+          "Whether any deployed configuration attaches a writable catalog to the DuckDB connection (api.py:79 and attach_postgres_dbs both attach Postgres READ_ONLY) \u2014 the realized persistence impact of a violating statement is not established."
+        ],
+        "protected_operation": "Execution of NL-generated SQL via _execute_with_timeout, reached only after _check_readonly passes in ConversationManager.run_query.",
+        "protected_resource": "The shared DuckDB connection held by ConversationManager (in-memory DuckDB with the Postgres catalog attached READ_ONLY in api.py).",
+        "protection_obligation": "Every SQL statement generated by the LLM agent inside ConversationManager.run_query must be rejected unless it is read-only: the _check_readonly guard (keyword blocklist DROP, DELETE, INSERT, UPDATE, TRUNCATE, ALTER, CREATE, GRANT, REVOKE) must reject any write/DDL statement before it executes on the shared DuckDB connection via _execute_with_timeout. The guarded pipeline is wired to the FastAPI POST /v1/query endpoint and is asserted as a protected obligation by the eval suite's write-guard expectations (readonly expected_error rows, 100% Write-Guard Rate target). (Merges duplicate first-phase and second-phase reviewer wording for the same obligation.)",
+        "scope_limits": [
+          "Guard covers only statements flowing through ConversationManager.run_query; other supplied execution paths (run_eval.py _run_sql lines 81-86; UnifiedDataSource.discovery_query lines 752-802 executing agent-proposed response.sql) do not pass through _check_readonly.",
+          "Detection is a word-boundary, case-insensitive regex over the generated SQL string; resistance to obfuscation, keywords embedded in identifiers, or non-keyword write vectors is not established by the source.",
+          "On a guard trip the attempt records last_error and continues the retry loop; the caller receives a QueryResult with error set rather than an exception (lines 584-598).",
+          "Adjacent guardrails on the same path (row cap via _apply_row_cap, SQLGlot validation via _validate_sql, query timeout) are separate mechanisms outside this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "stream_agent.run_stream(augmented_query, ...) at rag/v2/knowledge/agent/pipeline.py lines 365-370 \u2014 the first point the query text reaches the LLM; the V4 gate at lines 320-324 precedes retrieval (lines 337-341) and this call.",
+        "contract_id": "ecological-contract:78538c563cbf3c146e3f188343434089",
+        "declared_mechanism": "ValidationPipeline.validate (V2-V6 chain) stage V4: _v4_injection_guard calls contains_injection against _INJECTION_PATTERNS and returns ValidationError(code='PROMPT_INJECTION_DETECTED', status_code=422); run_stream instantiates ValidationPipeline, calls validate(ctx), and on error yields an abstention SSE event and returns before retrieval or the LLM call.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 36,
+            "line_start": 29,
+            "path": "rag/v2/knowledge/validation/pipeline.py",
+            "role": "forbidden_condition",
+            "source_sha256": "039578f90449af4086062f2543aa26265c05a29288599a3371a8d674e4bdccba"
+          },
+          {
+            "line_end": 81,
+            "line_start": 65,
+            "path": "rag/v2/knowledge/validation/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "039578f90449af4086062f2543aa26265c05a29288599a3371a8d674e4bdccba"
+          },
+          {
+            "line_end": 205,
+            "line_start": 200,
+            "path": "rag/v2/knowledge/validation/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "039578f90449af4086062f2543aa26265c05a29288599a3371a8d674e4bdccba"
+          },
+          {
+            "line_end": 15,
+            "line_start": 4,
+            "path": "rag/v2/knowledge/validation/pipeline.py",
+            "role": "protected_operation",
+            "source_sha256": "039578f90449af4086062f2543aa26265c05a29288599a3371a8d674e4bdccba"
+          },
+          {
+            "line_end": 324,
+            "line_start": 318,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 370,
+            "line_start": 356,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 370,
+            "line_start": 365,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          }
+        ],
+        "forbidden_condition": "A user query whose text matches one of the _INJECTION_PATTERNS regexes proceeding past validation into retrieval or the LLM call.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The HTTP route that invokes ConfidenceAwarePipeline.run_stream (streaming chat endpoint) is not in the supplied views; binding of the raw HTTP request body to the query parameter is not shown.",
+          "Whether the blocking chat path applies ValidationPipeline.validate at a route layer before run() is not established from the supplied source."
+        ],
+        "protected_operation": "Processing of a user chat query by the RAG streaming pipeline (retrieval plus LLM generation), which in the supplied source is gated by ValidationPipeline.validate in run_stream before any DB or LLM use of the query.",
+        "protected_resource": "The agent LLM streaming call stream_agent.run_stream in ConfidenceAwarePipeline.run_stream and the downstream retrieval/LLM flow it feeds.",
+        "protection_obligation": "User chat queries matching known prompt-injection patterns must be rejected before any retrieval or LLM call: the ValidationPipeline V4 injection guard (_v4_injection_guard via contains_injection) must return a PROMPT_INJECTION_DETECTED ValidationError, and the streaming chat path (ConfidenceAwarePipeline.run_stream) must abstain before retrieval and before invoking stream_agent.run_stream.",
+        "scope_limits": [
+          "In the supplied source the V4 gate is wired only in ConfidenceAwarePipeline.run_stream (lines 318-324); the blocking run() path (lines 114-295) contains no ValidationPipeline.validate call.",
+          "Detection uses a fixed regex list (_INJECTION_PATTERNS); coverage beyond those six patterns is not established.",
+          "V5 content-policy and V6 RBAC stages in the same validation chain are distinct obligations not covered by this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "registry.fire(HookPoint.PRE_LLM, ctx) at pipeline.py line 191 (blocking run) and line 350 (run_stream) immediately before traced_agent_run (lines 202-206) and stream_agent.run_stream (lines 365-370); the guarded effect is the LLM call itself.",
+        "contract_id": "ecological-contract:9212e50b8baf5be5472aee74eae7c661",
+        "declared_mechanism": "check_cost_circuit_breaker reads Redis counters and raises TenantBudgetExceeded or SystemBudgetExceeded when a limit is reached; it is declared to fire at the HookPoint.PRE_LLM lifecycle point via registry.fire immediately preceding the LLM call (pipeline.py:190-191 commented 'PRE_LLM hook (cost guard fires here)'; pipeline.py:350 in run_stream); record_cost increments both counters after successful calls.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 15,
+            "line_start": 4,
+            "path": "rag/v2/knowledge/agent/cost_guard.py",
+            "role": "guard_registration",
+            "source_sha256": "010a9e92bd835eb9b725c5c8050f6ee83b38b39050e709d8e868c685d684f792"
+          },
+          {
+            "line_end": 59,
+            "line_start": 44,
+            "path": "rag/v2/knowledge/agent/cost_guard.py",
+            "role": "guard_registration",
+            "source_sha256": "010a9e92bd835eb9b725c5c8050f6ee83b38b39050e709d8e868c685d684f792"
+          },
+          {
+            "line_end": 41,
+            "line_start": 27,
+            "path": "rag/v2/knowledge/agent/cost_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "010a9e92bd835eb9b725c5c8050f6ee83b38b39050e709d8e868c685d684f792"
+          },
+          {
+            "line_end": 89,
+            "line_start": 64,
+            "path": "rag/v2/knowledge/agent/cost_guard.py",
+            "role": "forbidden_condition",
+            "source_sha256": "010a9e92bd835eb9b725c5c8050f6ee83b38b39050e709d8e868c685d684f792"
+          },
+          {
+            "line_end": 111,
+            "line_start": 92,
+            "path": "rag/v2/knowledge/agent/cost_guard.py",
+            "role": "guard_registration",
+            "source_sha256": "010a9e92bd835eb9b725c5c8050f6ee83b38b39050e709d8e868c685d684f792"
+          },
+          {
+            "line_end": 191,
+            "line_start": 186,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 350,
+            "line_start": 350,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "guard_registration",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 206,
+            "line_start": 190,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 370,
+            "line_start": 350,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 206,
+            "line_start": 202,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          },
+          {
+            "line_end": 370,
+            "line_start": 365,
+            "path": "rag/v2/knowledge/agent/pipeline.py",
+            "role": "commit_point",
+            "source_sha256": "56f95a0705d572f40afbb4603c37a4990354bb0e0159c4c4bc7b55924070c95e"
+          }
+        ],
+        "forbidden_condition": "An agent LLM generation call proceeding when the tenant's recorded monthly cost has reached tenant_limit (monthly_cost >= tenant_limit) or the system's recorded daily cost has reached system_daily_cost_limit_usd (daily_spent >= system_limit), i.e., LLM spend beyond configured limits.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The registration that binds check_cost_circuit_breaker (or a wrapper) as a HookPoint.PRE_LLM handler in knowledge.hooks.registry is not present in the supplied source; only the fire sites and docstring/comment assertions (cost_guard.py:4, 52; pipeline.py:190) exist.",
+          "How tenant_limit is supplied to the guard at hook time is not established: run() has no tenant_limit parameter and HookContext fields are not shown in the supplied views.",
+          "The post-run record_cost invocation site in the chat pipeline is not shown (RAGResponse note at pipeline.py:290 says estimated_cost_usd is 'computed by cost_guard post-run')."
+        ],
+        "protected_operation": "Agent LLM generation calls in the chat pipeline: traced_agent_run in the blocking path and stream_agent.run_stream in the streaming path.",
+        "protected_resource": "Tenant and system LLM spend budgets tracked in Redis keys quota:{tenant_id}:cost_usd:{month} and system:cost_usd:daily, gating the LLM calls.",
+        "protection_obligation": "LLM generation calls in the chat pipeline must be blocked when a tenant's monthly LLM budget or the system-wide daily LLM budget is exhausted: the Redis-backed cost circuit breaker (check_cost_circuit_breaker raising TenantBudgetExceeded / SystemBudgetExceeded) must fire at the PRE_LLM hook point immediately before every agent LLM call (traced_agent_run in ConfidenceAwarePipeline.run(); stream_agent.run_stream in run_stream()), with record_cost incrementing both counters after successful calls.",
+        "scope_limits": [
+          "Per cost_guard.py:53 the guard is not invoked on cache hits; zero-cost cache paths bypass the check.",
+          "tenant_limit = 0.0 means unlimited and system_daily_cost_limit_usd = 0.0 disables the daily cap (cost_guard.py:13-14, 65, 79).",
+          "Enforcement is only as current as the Redis counters maintained by record_cost; PostgreSQL token_usage is declared the billing source of truth (cost_guard.py:10-11).",
+          "record_cost failures are logged but not raised (best-effort), per cost_guard.py:99-111."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied view shows a handler registration (e.g., registry.register(HookPoint.PRE_LLM, ...)) binding check_cost_circuit_breaker into the hook system; the PRE_LLM wiring is asserted only by docstrings (cost_guard.py:4, 52) and a comment (agent/pipeline.py:190).",
+      "No supplied view shows the blocking ConfidenceAwarePipeline.run() path invoking ValidationPipeline.validate; V4 injection-gate coverage of the blocking chat path is unbound.",
+      "knowledge/agent/agent.py (traced_agent_run, stream_agent, RAGState) and the knowledge/hooks implementations are not supplied; internal consumption of context_text and HookContext.retrieved_chunks cannot be verified.",
+      "The HTTP routes for the RAG chat pipeline (blocking and streaming) are not in the supplied views, so request-to-query parameter binding is not shown.",
+      "The record_cost call site after successful LLM calls is not in the supplied views.",
+      "Whether the nl2sql discovery_query path (executing agent-proposed SQL without the readonly guard) is reachable from any registered endpoint, tool, or hook is not established from the supplied source."
+    ],
+    "repository": "rohanvazir123/pydantic-ai-experiments",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:bb34a6fa0b7461c870f4891c254a68ee"
+  },
+  "request_sha256": "d7282e67faed5a001a3044507ece8b389851cd98206cc8a79d5a07d1be262889",
+  "response_sha256": "7e071d0f2935024a6783a6190fb8af503eed5840ad347af76e535610f1e65d41",
+  "state": "completed",
+  "tokens": 54217,
+  "unit": "v24-screen:bb34a6fa0b7461c870f4891c254a68ee"
+}

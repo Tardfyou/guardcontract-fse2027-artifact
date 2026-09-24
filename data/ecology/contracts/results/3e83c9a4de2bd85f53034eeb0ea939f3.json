@@ -1,0 +1,354 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The execute_tool dispatch in the ALLOW branch (orcestrator/nodes.py:357-361) followed by the outbound HTTP requests at mcp_tools.py:156 (gateway stream read) and mcp_tools.py:212-216 (A5 RAG query).",
+        "contract_id": "ecological-contract:6934e77e2d1b606532903397181764ee",
+        "declared_mechanism": "The same _bdh_audit pre-flight gate with the BLOCK branch that skips execute_tool and feeds 'BDH_WATCHDOG_BLOCKED: <reason>' back to the LLM (orcestrator/nodes.py:346-356).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 44,
+            "path": "orcestrator/nodes.py",
+            "role": "guard_registration",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          },
+          {
+            "line_end": 356,
+            "line_start": 348,
+            "path": "orcestrator/nodes.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          },
+          {
+            "line_end": 13,
+            "line_start": 1,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 338,
+            "line_start": 325,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 156,
+            "line_start": 147,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 216,
+            "line_start": 203,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 361,
+            "line_start": 357,
+            "path": "orcestrator/nodes.py",
+            "role": "commit_point",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          },
+          {
+            "line_end": 157,
+            "line_start": 153,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "commit_point",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 216,
+            "line_start": 211,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "commit_point",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 346,
+            "line_start": 333,
+            "path": "orcestrator/nodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          },
+          {
+            "line_end": 325,
+            "line_start": 318,
+            "path": "orcestrator/nodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          }
+        ],
+        "forbidden_condition": "Invoking execute_tool for a BLOCKed get_account_details or query_compliance_rules call, causing the executor's outbound HTTP request (_http_get to {GATEWAY_URL}/stream/recent or _http_post to {A5_RAG_URL}) to be issued despite the BDH block.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the fail-open ALLOW policy question raised for the critical-tool contract applies identically here (it does textually, via the same _bdh_audit wrapper) but no separate policy statement exists for non-critical tools.",
+          "Whether the A5 RAG POST or gateway stream GET could trigger side effects on those services is not determinable from the supplied views (they are presented as reads)."
+        ],
+        "protected_operation": "Dispatch and execution of LLM-proposed get_account_details and query_compliance_rules tool calls from the llm_escalation_node agent loop.",
+        "protected_resource": "The TOOL_EXECUTORS-dispatched executors _execute_get_account_details (GET {GATEWAY_URL}/stream/recent?n=200) and _execute_query_compliance_rules (POST {A5_RAG_URL} compliance query).",
+        "protection_obligation": "BDH BLOCK verdicts must likewise prevent execution of LLM-proposed non-critical tool calls (get_account_details, query_compliance_rules) in the escalation node, so that no outbound HTTP effect \u2014 the gateway /stream/recent GET or the A5 compliance-RAG POST \u2014 is issued for a blocked call.",
+        "scope_limits": [
+          "Same client-side, fail-open, single-call-site limits as the critical-tool gating contract: enforcement exists only in the audited llm_escalation_node loop and defaults to ALLOW when BDH is unreachable (orcestrator/nodes.py:68-70).",
+          "These are read-only outbound lookups; blocking them prevents information retrieval, not persistent mutation \u2014 the consequential state-changing stratum for this guard is covered by the database-stratum contract.",
+          "Which BDH rules apply differs by tool: Rules 1 (context), 2 (registry/schema), and 4 (loop) apply to both; Rule 3 (drift) applies to get_account_details (account_id present in args) but not to query_compliance_rules; Rule 5 (idempotency) applies to neither (not in CRITICAL_TOOLS, bdh_service/main.py:83)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The execute_tool(tool_name, tool_args) call in the ALLOW branch of llm_escalation_node (orcestrator/nodes.py:357-361), followed by the persistent Redis commits inside the executors (mcp_tools.py:260-276 XADD+HSET for block_account; mcp_tools.py:298-310 XADD for escalate_to_investigator).",
+        "contract_id": "ecological-contract:dcee73beb498ce4b1124c8ef614cc95b",
+        "declared_mechanism": "_bdh_audit pre-flight POST to the BDH watchdog /audit endpoint invoked for every proposed tool call before dispatch (orcestrator/nodes.py:44-67, 346), with an explicit audit_res.get('status') == 'BLOCK' branch (nodes.py:348-356) that skips execute_tool and instead appends a 'BDH_WATCHDOG_BLOCKED: <reason>' tool message to the conversation.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 44,
+            "path": "orcestrator/nodes.py",
+            "role": "guard_registration",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          },
+          {
+            "line_end": 348,
+            "line_start": 345,
+            "path": "orcestrator/nodes.py",
+            "role": "guard_registration",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          },
+          {
+            "line_end": 356,
+            "line_start": 348,
+            "path": "orcestrator/nodes.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          },
+          {
+            "line_end": 338,
+            "line_start": 325,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 257,
+            "line_start": 251,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 294,
+            "line_start": 290,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 361,
+            "line_start": 357,
+            "path": "orcestrator/nodes.py",
+            "role": "commit_point",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          },
+          {
+            "line_end": 276,
+            "line_start": 260,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "commit_point",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 310,
+            "line_start": 298,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "commit_point",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 325,
+            "line_start": 318,
+            "path": "orcestrator/nodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          },
+          {
+            "line_end": 346,
+            "line_start": 333,
+            "path": "orcestrator/nodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          }
+        ],
+        "forbidden_condition": "Invoking execute_tool \u2014 and thereby the executor's persistent Redis writes \u2014 for a tool call whose _bdh_audit result has status BLOCK; i.e., any BLOCKed block_account or escalate_to_investigator call reaching the dispatch at nodes.py:361 and committing its pathway:events XADD or blocked:{account_id} HSET.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether fail-open ALLOW on BDH unreachability (orcestrator/nodes.py:68-70) is an accepted policy or itself constitutes violation of this gating obligation is unspecified in source.",
+          "Whether a swallowed Redis write failure (persisted=False) should still count as a committed critical action for BDH idempotency is undetermined.",
+          "Whether pathway:events writes should ultimately be classified as database persistence or message delivery to downstream consumers is a classification judgment the supplied source does not settle."
+        ],
+        "protected_operation": "Dispatch and execution of LLM-proposed critical MCP tool calls from the llm_escalation_node agent loop: block_account (pathway:events 'account_blocked' XADD plus blocked:{account_id} HSET) and escalate_to_investigator (pathway:events 'investigator_escalation' XADD).",
+        "protected_resource": "The TOOL_EXECUTORS-dispatched executors _execute_block_account and _execute_escalate_to_investigator and the persistent Redis records they write: pathway:events stream entries (account_blocked / investigator_escalation) and the blocked:{account_id} hash.",
+        "protection_obligation": "In the LLM escalation node (Node 4), a BDH BLOCK verdict on an LLM-proposed critical tool call (block_account or escalate_to_investigator) must prevent the call from reaching execute_tool, so that no account-block or investigator-escalation effect is committed to persistent Redis storage; a blocked call may only be surfaced back to the LLM as a 'BDH_WATCHDOG_BLOCKED' tool message.",
+        "scope_limits": [
+          "Client-side enforcement: applies only to the audited loop in llm_escalation_node; any other code path invoking execute_tool or TOOL_EXECUTORS directly is outside the cited guard.",
+          "Fails open: when the BDH service is unreachable, _bdh_audit returns ALLOW (orcestrator/nodes.py:68-70), so the BLOCK-prevents-execution guarantee holds only while BDH responds within the 3s timeout.",
+          "The gate precedes dispatch only; there is no independent interlock between BDH idempotency state and actual persistence success \u2014 executors swallow Redis write failures and return persisted=False (mcp_tools.py:278-279, 312-313), while BDH already marked the critical action executed at audit-ALLOW time (bdh_service/main.py:201-202).",
+          "Classification: pathway:events XADD is modeled here as a persistent database mutation (Redis stream with maxlen); the same records also function as a message stream consumed downstream (BDH consumer, A8 SAR drafter, A10 feedback loop per mcp_tools.py:255-256, 292-293)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Construction and return of the AuditResponse verdict by audit_endpoint \u2014 the finish() status computed by audit_llm_tool_call after rule evaluation \u2014 which the gateway consults before executing the tool.",
+        "contract_id": "ecological-contract:f5ccb798faf42ab59f2fee264cc037b4",
+        "declared_mechanism": "Deterministic five-rule audit in audit_llm_tool_call (context-exhaustion, tool-registry/schema validation, state-drift, infinite-loop, critical-tool idempotency) over per-anomaly Redis SessionState (_get_session/_save_session), registered as the FastAPI handler for POST /audit returning AuditResponse(status, reason); each BLOCK also emits a bdh_alert event to pathway:events via _emit_bdh_alert.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 350,
+            "line_start": 342,
+            "path": "bdh_service/main.py",
+            "role": "guard_registration",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 138,
+            "line_start": 130,
+            "path": "bdh_service/main.py",
+            "role": "guard_registration",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 83,
+            "line_start": 76,
+            "path": "bdh_service/main.py",
+            "role": "protected_operation",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 14,
+            "line_start": 11,
+            "path": "bdh_service/main.py",
+            "role": "protected_operation",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 13,
+            "line_start": 1,
+            "path": "orcestrator/mcp_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "162f3e805017fef692d867bdb3a16ab5fe7cc500811c5eec877784c6750c4d9d"
+          },
+          {
+            "line_end": 155,
+            "line_start": 151,
+            "path": "bdh_service/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 169,
+            "line_start": 157,
+            "path": "bdh_service/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 178,
+            "line_start": 171,
+            "path": "bdh_service/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 193,
+            "line_start": 180,
+            "path": "bdh_service/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 202,
+            "line_start": 195,
+            "path": "bdh_service/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 149,
+            "line_start": 147,
+            "path": "bdh_service/main.py",
+            "role": "commit_point",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 205,
+            "line_start": 204,
+            "path": "bdh_service/main.py",
+            "role": "commit_point",
+            "source_sha256": "3769d573e0364b0f805f1cc5a9b9ab2dc362582d23452679504cf0aa04bd314f"
+          },
+          {
+            "line_end": 346,
+            "line_start": 333,
+            "path": "orcestrator/nodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          },
+          {
+            "line_end": 67,
+            "line_start": 52,
+            "path": "orcestrator/nodes.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3c491b03d01128d042cc88895743bdfe28e4dcd478054587d64d5a74a2138a7c"
+          }
+        ],
+        "forbidden_condition": "audit_llm_tool_call or the /audit endpoint returning ALLOW (or any non-BLOCK verdict) when the audited LLM tool call: exceeds the 5-step context (main.py:152-155); names a tool not in ALLOWED_TOOLS or raises ValidationError against its schema (main.py:158-169); carries an account_id that drifts from session.target_account_id (main.py:172-178); repeats the exact same tool+args call a 3rd time (main.py:190-193); or names a critical tool already present in session.executed_critical_actions (main.py:196-200).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether callers other than orcestrator/nodes.py llm_escalation_node POST /audit (the bdh_service docstring says 'the gateway's LangGraph Node 4') cannot be fully confirmed from the supplied views.",
+          "Whether the 300s session TTL can expire mid-anomaly (long-running escalations) and reset step/idempotency counters is undetermined.",
+          "Concurrency semantics of simultaneous audits for the same anomaly_id (read-modify-write race on bdh:session:{anomaly_id} with no locking in source) are unspecified and could weaken the five-rule guarantees."
+        ],
+        "protected_operation": "Pre-flight audit decision (ALLOW/BLOCK with reason) for every LLM-proposed tool call, performed before the gateway's LangGraph Node 4 executes the tool.",
+        "protected_resource": "The five-rule verdict path of audit_llm_tool_call exposed at POST /audit, backed by per-anomaly session state persisted at bdh:session:{anomaly_id}; the verdict gates execution of the four registered MCP tools (get_account_details, query_compliance_rules, block_account, escalate_to_investigator).",
+        "protection_obligation": "The BDH watchdog's POST /audit pre-flight check must return BLOCK with a reason (never ALLOW) for any LLM-proposed tool call that violates any of the five deterministic audit rules \u2014 (1) context exhaustion: session tool_call_count exceeding 5 per anomaly; (2) hallucinated tool: tool_name absent from ALLOWED_TOOLS or args failing the tool's Pydantic schema; (3) state drift: tool_args.account_id differing from the session's target_account_id; (4) infinite loop: the identical call reaching repeat_count 3; (5) idempotency: a CRITICAL_TOOLS member (block_account, escalate_to_investigator) already recorded as executed for the anomaly \u2014 and must return ALLOW only when all five checks pass.",
+        "scope_limits": [
+          "Verdict-only obligation: this contract covers the ALLOW/BLOCK decision returned by the BDH service; enforcement that the caller actually skips execution is a separate orchestrator-side contract.",
+          "State-drift (Rule 3) fires only when 'account_id' is present in tool_args (bdh_service/main.py:172), so escalate_to_investigator calls keyed on transaction_id are not drift-checked.",
+          "Rule 5 marks a critical tool as executed at audit-ALLOW time (bdh_service/main.py:201-202), not at the actual tool-effect commit, so the idempotency ledger tracks audited-allowed proposals rather than committed effects.",
+          "Session state expires after 300 seconds (bdh_service/main.py:125), bounding the context-exhaustion and idempotency windows per anomaly.",
+          "The /audit endpoint is unauthenticated with permissive CORS (bdh_service/main.py:315-320); agent mediation rests on the orchestrator dataflow, not on any authenticated caller binding.",
+          "Fail-open behavior lives caller-side (orcestrator/nodes.py:68-70); this contract does not govern callers that ignore or never obtain the verdict."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No supplied view shows deployment or service-discovery guarantees that BDH_URL (orcestrator/nodes.py:41) resolves to the bdh_service/main.py instance; the binding is by environment-variable convention only.",
+      "Repository enumeration is not complete: whether any other module invokes execute_tool, TOOL_EXECUTORS, or the _execute_* executors without passing through the _bdh_audit gate cannot be ruled out from the supplied views.",
+      "No retry, fail-closed circuit breaker, or queueing policy for BDH unreachability appears in the supplied source \u2014 only the immediate fail-open ALLOW at orcestrator/nodes.py:68-70; whether this is sanctioned policy is unsupported.",
+      "No behavior labels or runtime telemetry are available: the prevalence of BLOCK verdicts, rule hits, or fail-open events in operation cannot be assessed.",
+      "Atomicity/concurrency controls for BDH session state (concurrent read-modify-write of bdh:session:{anomaly_id}, bdh_service/main.py:115-125) are absent from source; their impact on the five-rule guarantees is undetermined.",
+      "Whether the 300s session TTL (bdh_service/main.py:125) is aligned with a defined anomaly-resolution SLA is unsupported by the supplied views."
+    ],
+    "repository": "sanchit1707/FraudDetectionUsingPathway",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:3e83c9a4de2bd85f53034eeb0ea939f3"
+  },
+  "request_sha256": "bcdb547e50f879de38c6722731a2fc19461813d903663dae26529f66dc15bbaa",
+  "response_sha256": "c0ad43a5c6fd52f48031279c7fe4bca385ea51957b5926f6f5770bb412358ab9",
+  "state": "completed",
+  "tokens": 37098,
+  "unit": "v24-screen:3e83c9a4de2bd85f53034eeb0ea939f3"
+}

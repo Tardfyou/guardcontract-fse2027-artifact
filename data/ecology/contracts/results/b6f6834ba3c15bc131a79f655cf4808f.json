@@ -1,0 +1,110 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Inside bind_selected_model at the guard_disable_tools branch and the subsequent request.override(model=model) / handler(request) return (backend/core/middleware.py:277-282): when the flag is set, the model is bound without any tools for the current and all subsequent inferences of the request (comment: This and subsequent inferences will no longer show the model any tool); this branch is evaluated at each wrapped model call, making the commit point recur per intercepted model call.",
+        "contract_id": "ecological-contract:996c7246c3f6dc807f42b67c396d2072",
+        "declared_mechanism": "loop_guard, a @wrap_model_call middleware (backend/core/middleware.py:135-163): reads the per-request tool-call history populated by record_tool_call_mw (@wrap_tool_call, via record_tool_call), evaluates _detect_guard_phase against REACT_MAX_TOOL_CALLS and LOOP_GUARD_REPEAT_THRESHOLD, and on detection (or if get_guard_fired() shows it already fired) sets state flags guard_disable_tools=True with fsm_phase='abort_with_summary' and guard_reason, and appends a forced-convergence SystemMessage directive; bind_selected_model, a @wrap_model_call middleware (backend/core/middleware.py:260-282), then skips raw.bind_tools(get_runtime_tools()) and binds the bare model whenever request.state['guard_disable_tools'] is set.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 241,
+            "line_start": 233,
+            "path": "backend/services/agent_service.py",
+            "role": "guard_registration",
+            "source_sha256": "ae605cd0c962354f4bc2374e8749d30ec3b77a1fb86ebff86ac8ae53f3575ddc"
+          },
+          {
+            "line_end": 163,
+            "line_start": 135,
+            "path": "backend/core/middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "9a1d7b0aae400f0ed1a8684fc7c5bf71a9380c7a00247b149c5b5b724d4652e0"
+          },
+          {
+            "line_end": 118,
+            "line_start": 97,
+            "path": "backend/core/middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9a1d7b0aae400f0ed1a8684fc7c5bf71a9380c7a00247b149c5b5b724d4652e0"
+          },
+          {
+            "line_end": 83,
+            "line_start": 78,
+            "path": "backend/core/config.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ee49d9c8cb1e270a27415f53ee3472203df23b433b73e275192ea28d1f3747c7"
+          },
+          {
+            "line_end": 229,
+            "line_start": 224,
+            "path": "backend/services/agent_service.py",
+            "role": "protected_operation",
+            "source_sha256": "ae605cd0c962354f4bc2374e8749d30ec3b77a1fb86ebff86ac8ae53f3575ddc"
+          },
+          {
+            "line_end": 282,
+            "line_start": 277,
+            "path": "backend/core/middleware.py",
+            "role": "commit_point",
+            "source_sha256": "9a1d7b0aae400f0ed1a8684fc7c5bf71a9380c7a00247b149c5b5b724d4652e0"
+          },
+          {
+            "line_end": 79,
+            "line_start": 65,
+            "path": "backend/core/middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9a1d7b0aae400f0ed1a8684fc7c5bf71a9380c7a00247b149c5b5b724d4652e0"
+          },
+          {
+            "line_end": 241,
+            "line_start": 233,
+            "path": "backend/services/agent_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ae605cd0c962354f4bc2374e8749d30ec3b77a1fb86ebff86ac8ae53f3575ddc"
+          }
+        ],
+        "forbidden_condition": "Further tool invocation by the ReAct agent after the guard has fired: any additional model-inference tool call once the per-request tool-call history length exceeds max(settings.REACT_MAX_TOOL_CALLS, 1), or once the last max(settings.LOOP_GUARD_REPEAT_THRESHOLD, 2) history entries all share the same tool name and identical args_hash (_detect_guard_phase returning budget_exceeded or repeat_detected).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Implementation of backend/services/tool_context.py (get_guard_fired, set_guard_fired, get_tool_call_history, record_tool_call, append_tool_trace, including args_hash computation) is not supplied; the per-request scoping, lifetime, and cross-request isolation of guard state are unbound.",
+          "Framework semantics of create_agent middleware composition \u2014 execution order of the middleware list and whether the state override set by loop_guard is visible to bind_selected_model within the same wrapped inference \u2014 are not established by the supplied source (the _build_agent docstring ordering comments conflict with the actual list order).",
+          "Contents of get_runtime_tools() (backend/runtime/tool_registry.py) and get_agent_tools() (backend/services.tools) are not supplied; the concrete tools whose invocation is barred are unidentified, so any downstream real-world effect class of specific tools is unbound.",
+          "Whether PAE sub-flow model calls (backend/runtime/workflow) pass through the same middleware chain and are therefore covered by the guard is not shown.",
+          "Whether the tool-less model binding fully prevents the framework from surfacing/executing tool calls is framework runtime behavior not demonstrated in the supplied source."
+        ],
+        "protected_operation": "The ReAct main loop's model-inference tool-calling cycle: each intercepted model call (@wrap_model_call) at which the runtime tool set (get_runtime_tools()) would normally be bound to the request's selected model, enabling the model to emit and execute agent tool calls.",
+        "protected_resource": "The runtime tool set bound to the selected model (raw.bind_tools(get_runtime_tools())) inside the create_agent ReAct loop for the current request/thread.",
+        "protection_obligation": "The loop_guard middleware registered in create_agent's middleware chain must fire once the request's tool-call history exceeds REACT_MAX_TOOL_CALLS (budget_exceeded) or contains LOOP_GUARD_REPEAT_THRESHOLD consecutive identical (tool, args_hash) entries (repeat_detected), and once fired must remain fired for the remainder of the request, so that bind_selected_model honors the guard_disable_tools flag and binds a tool-less model that is physically barred from invoking any further tools for the current and all subsequent inferences of the request.",
+        "scope_limits": [
+          "Applies only to the agent constructed by _build_agent/create_agent whose middleware list registers loop_guard and bind_selected_model (backend/services/agent_service.py:233-241); supplied source does not show the guard applying to the PAE sub-flow (stream_plan_and_execute in backend/runtime/workflow) or any other model invocation path.",
+          "Detection consumes the per-request tool-call history recorded by record_tool_call_mw; the guard does not undo or block tool calls already executed before it fired \u2014 it only prevents subsequent tool binding for later inferences.",
+          "The budget check is strict: total > max(settings.REACT_MAX_TOOL_CALLS, 1); the repeat check requires the trailing max(settings.LOOP_GUARD_REPEAT_THRESHOLD, 2) history entries to have both identical tool and identical args_hash.",
+          "REACT_MAX_NO_PROGRESS_CALLS and LOOP_GUARD_STAGNATION_THRESHOLD are defined in settings but are not referenced by _detect_guard_phase in the supplied source; stagnation-based guard firing is not supported by the supplied code.",
+          "Once fired, get_guard_fired() keeps the guard active for the remainder of the request independent of subsequent history; supplied source does not show when this flag is cleared.",
+          "Enforcement is at model-binding time; supplied source does not establish whether the framework could still execute a tool call emitted before the tool-less binding took effect."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source of backend/services/tool_context.py (get_guard_fired, set_guard_fired, get_tool_call_history, record_tool_call, append_tool_trace) \u2014 needed to confirm per-request scoping and stickiness of the guard flag and history, and how args_hash is computed.",
+      "Source of backend/runtime/tool_registry.py (get_runtime_tools, get_tool_names) and backend/services/tools (get_agent_tools) \u2014 needed to identify the concrete tools whose invocation is barred at the commit point.",
+      "Framework behavior of langchain create_agent middleware ordering and state-override visibility between wrap_model_call hooks \u2014 needed to confirm loop_guard's guard_disable_tools flag is honored by bind_selected_model on the same inference versus only on later inferences.",
+      "Whether the PAE sub-flow (backend/runtime/workflow.stream_plan_and_execute / run_plan_and_execute_once) routes model calls through the same middleware chain and is thus covered by the guard.",
+      "Any usage of REACT_MAX_NO_PROGRESS_CALLS and LOOP_GUARD_STAGNATION_THRESHOLD in guard logic \u2014 these thresholds are configured but never referenced in the supplied middleware source.",
+      "Framework behavior regarding tool calls emitted before the tool-less model binding takes effect (whether any in-flight tool call can still execute after the commit point)."
+    ],
+    "repository": "CenturyL/InsightAgentMax",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b6f6834ba3c15bc131a79f655cf4808f"
+  },
+  "request_sha256": "0e87d4977913c68110e1263f876789ec639df79995710062ab71194ce0c42cef",
+  "response_sha256": "518f75928a48b4ab4a3ff02e072c1ba15cc9b9cb950cc69aa101cc6c01fd07b5",
+  "state": "completed",
+  "tokens": 27166,
+  "unit": "v24-screen:b6f6834ba3c15bc131a79f655cf4808f"
+}

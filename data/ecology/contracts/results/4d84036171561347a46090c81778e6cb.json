@@ -1,0 +1,99 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Invocation of the tool function: tool.use(query) inside Agent.act (agent.py 240-242), which reaches the executor's func(**params) call (tools_register.py 83-102); no concrete downstream commit point outside this invocation is identified in the supplied shard.",
+        "contract_id": "ecological-contract:b29c3f1e946abe5c24cc625faf8b946c",
+        "declared_mechanism": "register_as_tool(roles) decorator registering each decorated function only into the registries of its declared roles and unconditionally into admin_tools (tools_register.py 126-149); run() selecting student_tools/teacher_tools/admin_tools by the role argument and registering only that set via Agent.register (agent.py 299-304); Agent.act resolving tool_name against self.tools and logging a refusal for unregistered names (agent.py 240-249).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 149,
+            "line_start": 126,
+            "path": "app/react/tools_register.py",
+            "role": "guard_registration",
+            "source_sha256": "3618efd91111210de19d2f787c9a466d165eda82981a205438bb042570dea484"
+          },
+          {
+            "line_end": 145,
+            "line_start": 138,
+            "path": "app/react/tools_register.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3618efd91111210de19d2f787c9a466d165eda82981a205438bb042570dea484"
+          },
+          {
+            "line_end": 304,
+            "line_start": 299,
+            "path": "app/react/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "e9d07d671a6500609212bf752de311e63a1937f9a1eb5852302cb6066e5c540f"
+          },
+          {
+            "line_end": 216,
+            "line_start": 208,
+            "path": "app/react/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "e9d07d671a6500609212bf752de311e63a1937f9a1eb5852302cb6066e5c540f"
+          },
+          {
+            "line_end": 242,
+            "line_start": 232,
+            "path": "app/react/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e9d07d671a6500609212bf752de311e63a1937f9a1eb5852302cb6066e5c540f"
+          },
+          {
+            "line_end": 242,
+            "line_start": 240,
+            "path": "app/react/agent.py",
+            "role": "commit_point",
+            "source_sha256": "e9d07d671a6500609212bf752de311e63a1937f9a1eb5852302cb6066e5c540f"
+          },
+          {
+            "line_end": 102,
+            "line_start": 83,
+            "path": "app/react/tools_register.py",
+            "role": "commit_point",
+            "source_sha256": "3618efd91111210de19d2f787c9a466d165eda82981a205438bb042570dea484"
+          }
+        ],
+        "forbidden_condition": "Dispatch of a tool function to execution when that function was not registered in the registry selected for the caller's role \u2014 i.e., a tool_name supplied to Agent.act resolving to a tool outside the role's mounted toolset (self.tools).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Origin and trustworthiness of the role argument to run(query, role, history): no supplied source shows run()'s caller or binds role to the session-authenticated user.",
+          "Identity of the tools actually registered via register_as_tool and their downstream effect strata; if any registered tool commits database, file, communication, or process effects, separate per-stratum contracts will be required once those tools are supplied.",
+          "Whether any additional authorization layer (e.g., a role re-check inside act() or the tool executor) exists outside the supplied shard."
+        ],
+        "protected_operation": "Agent tool dispatch and invocation during run() -> Agent.execute -> think -> decide -> act: name-based selection and invocation of a registered tool function.",
+        "protected_resource": "Role-scoped tool registries student_tools/teacher_tools/admin_tools (tools_register.py) and the agent instance's self.tools mapping consulted at dispatch in Agent.act.",
+        "protection_obligation": "The ReAct agent may only execute tool functions that were registered for the requesting user's role: register_as_tool must place each function only into the registries of its declared roles (admin receives all), run() must mount only the caller-role registry onto the agent, and Agent.act must decline tool names absent from the mounted set before any tool function is invoked.",
+        "scope_limits": [
+          "Coverage is registration-time static scoping only; the shard shows no per-call verification that the run()-level role argument matches the authenticated session principal (session is read at agent.py 183 only to build the prompt).",
+          "admin_tools unconditionally receives every registered function and run() maps every role value other than 'student' or 'teacher' to admin_tools, so as written the declared restriction differentiates only the student and teacher registries.",
+          "No concrete function decorated with @register_as_tool appears in the supplied shard, so no specific tool effect beyond the invocation itself is identified here.",
+          "The mechanism gates tool identity/registration, not tool input: parameters parsed from model output in decide() (agent.py 208-216) are passed through to tools unvalidated by this mechanism.",
+          "The reviewers' HTTP-endpoint authorization obligation for /admin views (admin_required before User.save(), UserRole.delete()/create(), Role.create()) is excluded from this contract as out of scope: no supplied source binds those views to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Both reviewers propose an HTTP-endpoint authorization obligation: admin_required must reject unauthenticated or non-admin sessions before edit_user/add_role commit User.save(), UserRole.delete()/create(), or Role.create(). The guard registration and database commit points are source-supported (app/views/admin.py 8-21, 34-57, 65-79), but the obligation is out of DEC scope because no supplied source binds these Flask views to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; it is recorded here rather than emitted as a contract.",
+      "No concrete @register_as_tool-decorated tool function appears in the supplied shard. The first-phase rationale's example of a 'teacher-only grade_assignment' tool is not present in any supplied line, so the identity of gated tools and their downstream effect strata is unsupported.",
+      "The caller of run(query, role, history) (app/react/agent.py 287-308) is not shown; whether the role argument is bound to an authenticated principal or client-controllable is unsupported by the shard.",
+      "The /admin/initialize route (app/views/admin.py 81-121) carries no admin_required registration in the supplied source; any classification of that route (in-scope obligation or otherwise) is unsupported because no guard mechanism is declared for it in the shard.",
+      "Whether run() itself is exposed through an authenticated HTTP route or agent lifecycle hook that binds the session user to the role argument is not determinable from the supplied sources."
+    ],
+    "repository": "1787152643/EduAssistant",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4d84036171561347a46090c81778e6cb"
+  },
+  "request_sha256": "d50b5ff441ac3527e1a0cf5113a726f6d7a434fa79333789692496dcffc70e7f",
+  "response_sha256": "d8d28cd026cf91c1eec650c8868d494336b2a000c9488c894a8b8cab4dcab28e",
+  "state": "completed",
+  "tokens": 19381,
+  "unit": "v24-screen:4d84036171561347a46090c81778e6cb"
+}

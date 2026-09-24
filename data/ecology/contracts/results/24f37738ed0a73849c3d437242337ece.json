@@ -1,0 +1,254 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The .execute() call at tools.py:169 dispatching the Drive API v3 files().list HTTP request.",
+        "contract_id": "ecological-contract:37e28c990a64210eb29d2d471fd25d3e",
+        "declared_mechanism": "ADK before_tool_callback (callbacks.py:44-122) wired onto the LlmAgent as before_tool_callback=before_tool_callback (agent.py:54). For tool names matching the startswith tuple including 'list_files' (callbacks.py:56-61), it loads cached token info from tool_context.state['CREDS_CACHE_KEY'], builds google.oauth2 Credentials with the Drive SCOPES (callbacks.py:50-54), refreshes expired tokens when a refresh token exists (callbacks.py:72-76), clears unusable state (callbacks.py:78-84), and returns None only when creds.valid (callbacks.py:86-88); otherwise it attempts tool_context.get_auth_response (callbacks.py:91-96) and, if absent, calls tool_context.request_credential(AuthConfig) and returns {'pending': True, 'message': 'Awaiting user authentication.'} (callbacks.py:111-120).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 48,
+            "path": "gdrive-agent/gdrive_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "aec4e97fd695529c573d220f17e7171f9113960da24f8dd0e14510591a789098"
+          },
+          {
+            "line_end": 54,
+            "line_start": 54,
+            "path": "gdrive-agent/gdrive_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "aec4e97fd695529c573d220f17e7171f9113960da24f8dd0e14510591a789098"
+          },
+          {
+            "line_end": 61,
+            "line_start": 44,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "guard_registration",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 88,
+            "line_start": 62,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 120,
+            "line_start": 111,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 64,
+            "line_start": 57,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          },
+          {
+            "line_end": 169,
+            "line_start": 160,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          }
+        ],
+        "forbidden_condition": "list_files proceeding to service.files().list(...).execute() while the session credential cache holds no usable token, the cached credential is expired without a refresh token, credential validation raises an exception, or creds.valid is false and no auth response can be exchanged.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ADK framework semantics \u2014 that a non-None return from before_tool_callback (callbacks.py:117-120) suppresses tool execution and a None return (callbacks.py:88, 109, 122) permits it \u2014 are not demonstrated in the supplied views; confirm against the ADK tool-dispatch implementation.",
+          "Identity of the redacted tool-name prefix at callbacks.py:57 (possibly the commented-out authenticate tool at tools.py:14-55) and whether any registered tool matches it.",
+          "Whether the exchanged credential at callbacks.py:98-109 must pass a validity check before returning None; the supplied code performs none in that branch.",
+          "Whether any session bootstrap outside the callback pre-populates CREDS_CACHE_KEY; none is visible in supplied source."
+        ],
+        "protected_operation": "Agent-initiated invocation of the registered list_files tool through root_agent's tool dispatch.",
+        "protected_resource": "The user's Google Drive file listing accessed via the Drive API v3 (read-only query of Drive files).",
+        "protection_obligation": "The before_tool_callback registered on root_agent must gate the agent-mediated list_files tool invocation so that it does not proceed to the Google Drive API v3 files().list request unless valid OAuth2 credentials scoped to drive.file, drive.readonly, and drive.metadata.readonly are present; the callback returns None only after credentials are validated (from the CREDS_CACHE_KEY session cache or a completed auth exchange), and otherwise invokes tool_context.request_credential and returns a pending-authentication result instead of allowing execution.",
+        "scope_limits": [
+          "The gate applies only to tool names matched by the startswith tuple at callbacks.py:56-61; a further redacted prefix (callbacks.py:57) is unresolvable in supplied source, and non-matching tools fall through to return None at callbacks.py:122 with no authentication gate.",
+          "The auth-exchange branch (callbacks.py:98-109) returns None after caching the exchanged OAuth2 response without re-checking creds.valid; strict validity enforcement is demonstrable only in the cached-credential branch (callbacks.py:62-88).",
+          "This is an authentication gate only: it does not constrain list_files arguments (max_results, keyword, order_by, spaces, drive_id), which Drive resources are readable, or any authorization decision beyond OAuth2 credential presence/validity.",
+          "list_files is read-only; the claimed effect is limited to the Drive API request/response at the http stratum, with no persistent-mutation claim.",
+          "The tool independently re-reads CREDS_CACHE_KEY (tools.py:156-157); this contract covers the callback gate, not the tool's internal handling of malformed or missing credential state."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The .execute() call at tools.py:276 dispatching the Drive API v3 files().create HTTP request.",
+        "contract_id": "ecological-contract:96cad4ae67a9d7bb42cc9bbb632fbe9c",
+        "declared_mechanism": "ADK before_tool_callback (callbacks.py:44-122) wired onto the LlmAgent as before_tool_callback=before_tool_callback (agent.py:54). For tool names matching the startswith tuple including 'create_file' (callbacks.py:56-61), it loads cached token info from tool_context.state['CREDS_CACHE_KEY'], builds google.oauth2 Credentials with the Drive SCOPES (callbacks.py:50-54), refreshes expired tokens when a refresh token exists (callbacks.py:72-76), clears unusable state (callbacks.py:78-84), and returns None only when creds.valid (callbacks.py:86-88); otherwise it attempts tool_context.get_auth_response (callbacks.py:91-96) and, if absent, calls tool_context.request_credential(AuthConfig) and returns {'pending': True, 'message': 'Awaiting user authentication.'} (callbacks.py:111-120).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 48,
+            "path": "gdrive-agent/gdrive_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "aec4e97fd695529c573d220f17e7171f9113960da24f8dd0e14510591a789098"
+          },
+          {
+            "line_end": 54,
+            "line_start": 54,
+            "path": "gdrive-agent/gdrive_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "aec4e97fd695529c573d220f17e7171f9113960da24f8dd0e14510591a789098"
+          },
+          {
+            "line_end": 61,
+            "line_start": 44,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "guard_registration",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 88,
+            "line_start": 62,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 120,
+            "line_start": 111,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 198,
+            "line_start": 191,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          },
+          {
+            "line_end": 276,
+            "line_start": 271,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          }
+        ],
+        "forbidden_condition": "create_file proceeding to service.files().create(...).execute() while the session credential cache holds no usable token, the cached credential is expired without a refresh token, credential validation raises an exception, or creds.valid is false and no auth response can be exchanged.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ADK framework semantics \u2014 that a non-None return from before_tool_callback (callbacks.py:117-120) suppresses tool execution and a None return (callbacks.py:88, 109, 122) permits it \u2014 are not demonstrated in the supplied views; confirm against the ADK tool-dispatch implementation.",
+          "Identity of the redacted tool-name prefix at callbacks.py:57 (possibly the commented-out authenticate tool at tools.py:14-55) and whether any registered tool matches it.",
+          "Whether the exchanged credential at callbacks.py:98-109 must pass a validity check before returning None; the supplied code performs none in that branch.",
+          "Whether any session bootstrap outside the callback pre-populates CREDS_CACHE_KEY; none is visible in supplied source."
+        ],
+        "protected_operation": "Agent-initiated invocation of the registered create_file tool through root_agent's tool dispatch.",
+        "protected_resource": "The user's Google Drive storage \u2014 creation of a new Drive file (with optional parent folder placement) via the Drive API v3.",
+        "protection_obligation": "The before_tool_callback registered on root_agent must gate the agent-mediated create_file tool invocation so that it does not proceed to the Google Drive API v3 files().create request unless valid OAuth2 credentials scoped to drive.file, drive.readonly, and drive.metadata.readonly are present; the callback returns None only after credentials are validated (from the CREDS_CACHE_KEY session cache or a completed auth exchange), and otherwise invokes tool_context.request_credential and returns a pending-authentication result instead of allowing execution.",
+        "scope_limits": [
+          "The gate applies only to tool names matched by the startswith tuple at callbacks.py:56-61; a further redacted prefix (callbacks.py:57) is unresolvable in supplied source, and non-matching tools fall through to return None at callbacks.py:122 with no authentication gate.",
+          "The auth-exchange branch (callbacks.py:98-109) returns None after caching the exchanged OAuth2 response without re-checking creds.valid; strict validity enforcement is demonstrable only in the cached-credential branch (callbacks.py:62-88).",
+          "This is an authentication gate only: it does not constrain create_file arguments (file_name, target_mime_type, folder_id, enforce_single_parent, use_content_as_indexable_text), which Drive resources are writable, or any authorization decision beyond OAuth2 credential presence/validity.",
+          "The durable mutation occurs server-side in Google Drive; the contract claims only the API request dispatch as the commit point, at the http stratum.",
+          "The tool independently re-reads CREDS_CACHE_KEY (tools.py:265-266); this contract covers the callback gate, not the tool's internal handling of malformed or missing credential state."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The .execute() call at tools.py:338 dispatching the Drive API v3 files().delete HTTP request.",
+        "contract_id": "ecological-contract:fca90cead2e40a41567e43d27d7bf954",
+        "declared_mechanism": "ADK before_tool_callback (callbacks.py:44-122) wired onto the LlmAgent as before_tool_callback=before_tool_callback (agent.py:54). For tool names matching the startswith tuple including 'delete_file' (callbacks.py:56-61), it loads cached token info from tool_context.state['CREDS_CACHE_KEY'], builds google.oauth2 Credentials with the Drive SCOPES (callbacks.py:50-54), refreshes expired tokens when a refresh token exists (callbacks.py:72-76), clears unusable state (callbacks.py:78-84), and returns None only when creds.valid (callbacks.py:86-88); otherwise it attempts tool_context.get_auth_response (callbacks.py:91-96) and, if absent, calls tool_context.request_credential(AuthConfig) and returns {'pending': True, 'message': 'Awaiting user authentication.'} (callbacks.py:111-120).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 48,
+            "path": "gdrive-agent/gdrive_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "aec4e97fd695529c573d220f17e7171f9113960da24f8dd0e14510591a789098"
+          },
+          {
+            "line_end": 54,
+            "line_start": 54,
+            "path": "gdrive-agent/gdrive_agent/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "aec4e97fd695529c573d220f17e7171f9113960da24f8dd0e14510591a789098"
+          },
+          {
+            "line_end": 61,
+            "line_start": 44,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "guard_registration",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 88,
+            "line_start": 62,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 120,
+            "line_start": 111,
+            "path": "gdrive-agent/gdrive_agent/callbacks.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e22a0bab53abec2cafd5185fab4921aff85acce6b1236d6d330afbad231e309e"
+          },
+          {
+            "line_end": 306,
+            "line_start": 292,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          },
+          {
+            "line_end": 338,
+            "line_start": 335,
+            "path": "gdrive-agent/gdrive_agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "99f8f85c674fa8e35d5a1dfe55c8d14608fd2b3e19a1e5663ad6af4cd40fa070"
+          }
+        ],
+        "forbidden_condition": "delete_file proceeding to service.files().delete(...).execute() while the session credential cache holds no usable token, the cached credential is expired without a refresh token, credential validation raises an exception, or creds.valid is false and no auth response can be exchanged.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ADK framework semantics \u2014 that a non-None return from before_tool_callback (callbacks.py:117-120) suppresses tool execution and a None return (callbacks.py:88, 109, 122) permits it \u2014 are not demonstrated in the supplied views; confirm against the ADK tool-dispatch implementation.",
+          "Identity of the redacted tool-name prefix at callbacks.py:57 (possibly the commented-out authenticate tool at tools.py:14-55) and whether any registered tool matches it.",
+          "Whether the exchanged credential at callbacks.py:98-109 must pass a validity check before returning None; the supplied code performs none in that branch.",
+          "Whether any session bootstrap outside the callback pre-populates CREDS_CACHE_KEY; none is visible in supplied source."
+        ],
+        "protected_operation": "Agent-initiated invocation of the registered delete_file tool through root_agent's tool dispatch.",
+        "protected_resource": "The user's Google Drive files \u2014 permanent removal of a Drive file by ID (supported for both My Drive and Shared Drives) via the Drive API v3.",
+        "protection_obligation": "The before_tool_callback registered on root_agent must gate the agent-mediated delete_file tool invocation so that it does not proceed to the Google Drive API v3 files().delete request unless valid OAuth2 credentials scoped to drive.file, drive.readonly, and drive.metadata.readonly are present; the callback returns None only after credentials are validated (from the CREDS_CACHE_KEY session cache or a completed auth exchange), and otherwise invokes tool_context.request_credential and returns a pending-authentication result instead of allowing execution.",
+        "scope_limits": [
+          "The gate applies only to tool names matched by the startswith tuple at callbacks.py:56-61; a further redacted prefix (callbacks.py:57) is unresolvable in supplied source, and non-matching tools fall through to return None at callbacks.py:122 with no authentication gate.",
+          "The auth-exchange branch (callbacks.py:98-109) returns None after caching the exchanged OAuth2 response without re-checking creds.valid; strict validity enforcement is demonstrable only in the cached-credential branch (callbacks.py:62-88).",
+          "This is an authentication gate only: it does not constrain delete_file arguments (which file_id may be deleted), which Drive resources are deletable, or any authorization decision beyond OAuth2 credential presence/validity.",
+          "The durable mutation occurs server-side in Google Drive; the contract claims only the API request dispatch as the commit point, at the http stratum.",
+          "The tool independently re-reads CREDS_CACHE_KEY (tools.py:329-330); this contract covers the callback gate, not the tool's internal handling of malformed or missing credential state."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The ADK before_tool_callback dispatch semantics (google.adk framework internals) are not among the supplied views; the block-vs-allow effect of the callback's return values rests on framework behavior asserted by the reviewer obligations and cannot be verified from the provided source alone.",
+      "The first entry of the startswith tuple at callbacks.py:57 and the commented-out tool name at tools.py:15 are redacted; the full set of tool names matched by the guard cannot be enumerated from supplied source.",
+      "The OAuth2 scheme authorization URL, token URL, and scheme-level scope keys at callbacks.py:24-29 are redacted; they cannot be compared against the SCOPES constant at callbacks.py:50-54.",
+      "No code path outside before_tool_callback that populates CREDS_CACHE_KEY (initial login/bootstrap flow) appears in the supplied views; the initial credential-acquisition path is unobserved.",
+      "No runtime behavior labels, traces, or prevalence data are supplied (scope is limited to the supplied source views); the frequency of uncredentialed tool-call attempts cannot be assessed."
+    ],
+    "repository": "thisisashwinraj/agent-after-dark",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:24f37738ed0a73849c3d437242337ece"
+  },
+  "request_sha256": "3a4726b73795b36b49e77f7adeeb2f7228d8aaecaf2e85ad0a0d6f0ca05bd77e",
+  "response_sha256": "4e289a8caf3dd0195f6a7dffe5e4e25b7927bbb0fd63eb8b2293f40fb2db8ad3",
+  "state": "completed",
+  "tokens": 22328,
+  "unit": "v24-screen:24f37738ed0a73849c3d437242337ece"
+}

@@ -1,0 +1,306 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The pwsh run block invoking ./scripts/concierge-alm.ps1 -Operation Import -Target TEST in the 'Import managed package into TEST' step of the import-test job.",
+        "contract_id": "ecological-contract:21984621f1326a4953741fdb7c2cfff9",
+        "declared_mechanism": "The 'Verify trusted package artifact' composite-action step (inputs: github-token, source-run-id, source-sha, artifact-name, artifact-file, expected-repository, signer-workflow), backed by validate_source_run in src/contoso_foundry/concierge_alm.py, which raises ValueError on any untrusted run/artifact metadata field and emits artifact_id and artifact_digest GitHub outputs; plus the contract-job 'Validate promotion inputs' format gate applied to every non-package operation.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 171,
+            "line_start": 162,
+            "path": ".github/workflows/concierge-alm.yml",
+            "role": "guard_registration",
+            "source_sha256": "8111279a4ab2f2f71873511b912914508defba7c651a87e2c15af5e6a6f862e8"
+          },
+          {
+            "line_end": 71,
+            "line_start": 64,
+            "path": ".github/workflows/concierge-alm.yml",
+            "role": "guard_registration",
+            "source_sha256": "8111279a4ab2f2f71873511b912914508defba7c651a87e2c15af5e6a6f862e8"
+          },
+          {
+            "line_end": 87,
+            "line_start": 78,
+            "path": "src/contoso_foundry/concierge_alm.py",
+            "role": "guard_registration",
+            "source_sha256": "36db040942562a3d9a2f1b8b34fd779b32b7fd1994e124368322381d94e4ab03"
+          },
+          {
+            "line_end": 102,
+            "line_start": 88,
+            "path": "src/contoso_foundry/concierge_alm.py",
+            "role": "forbidden_condition",
+            "source_sha256": "36db040942562a3d9a2f1b8b34fd779b32b7fd1994e124368322381d94e4ab03"
+          },
+          {
+            "line_end": 128,
+            "line_start": 104,
+            "path": "src/contoso_foundry/concierge_alm.py",
+            "role": "forbidden_condition",
+            "source_sha256": "36db040942562a3d9a2f1b8b34fd779b32b7fd1994e124368322381d94e4ab03"
+          },
+          {
+            "line_end": 198,
+            "line_start": 191,
+            "path": ".github/workflows/concierge-alm.yml",
+            "role": "protected_operation",
+            "source_sha256": "8111279a4ab2f2f71873511b912914508defba7c651a87e2c15af5e6a6f862e8"
+          },
+          {
+            "line_end": 198,
+            "line_start": 194,
+            "path": ".github/workflows/concierge-alm.yml",
+            "role": "commit_point",
+            "source_sha256": "8111279a4ab2f2f71873511b912914508defba7c651a87e2c15af5e6a6f862e8"
+          }
+        ],
+        "forbidden_condition": "Importing into TEST while trusted-run verification fails: promotion inputs are not a numeric run ID and 40-character hex SHA; the source run's id/path/event/status/conclusion/head_branch/head_sha deviates from a completed, successful workflow_dispatch run of the signer workflow path on the main branch with the claimed SHA; the run's repository full_name differs from the expected repository; the run lacks exactly one non-expired artifact of the expected name; the artifact metadata is not bound to the claimed run ID and SHA; or the artifact metadata lacks a SHA-256 digest.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "How the composite action invokes the validate-source CLI path and whether a validator failure (exit code 1 on ValueError) fails the job before the import step.",
+          "Where the downloaded artifact file's SHA-256 is compared against the metadata digest emitted as artifact_digest, and whether that comparison completes before the import step.",
+          "Whether the manual Publish gate described in the echo step imposes any additional enforced control (not visible in supplied source)."
+        ],
+        "protected_operation": "Executing the 'Import managed package into TEST' step (concierge-alm.ps1 -Operation Import -Target TEST with the managed artifact and TEST deployment settings) in the import-test job, which is sequenced after the 'Verify trusted package artifact' gate in the same job.",
+        "protected_resource": "The TEST Power Platform environment (concierge-test environment) that receives the managed solution import built from ./artifacts/$env:MANAGED_ARTIFACT.",
+        "protection_obligation": "The concierge ALM pipeline must refuse to import the managed Concierge solution package into the TEST Power Platform environment unless the artifact is proven to originate from a completed, successful workflow_dispatch run of the trusted signer workflow on the main branch of the expected repository \u2014 with matching run ID, 40-character lowercase source SHA, exactly one non-expired artifact of the expected name bound to that run and SHA, and a sha256:<64-hex> digest \u2014 with the verification registered to run immediately before the TEST import.",
+        "scope_limits": [
+          "Guard covers only the import-test job shown; the DEV import inside the package job (workflow lines 125-129) is the provenance source and is not gated by trusted-run verification.",
+          "The composite verify action's implementation is not in the supplied views (its invocation path is redacted), so download and digest-comparison mechanics are not asserted here.",
+          "scripts/concierge-alm.ps1 and Power Platform import behavior are not supplied; no runtime behavior claims are made about the import effect itself.",
+          "No DEC violation, safety, or prevalence determination is made; this records a source-supported operational obligation only."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "project_client.agents.update_details(agent_name=name, body={...version_selector...}, retry_total=0) inside pin_agent_version, immediately followed by the in-function rules readback and, in release.py, the post-commit routing-after readback and contract-unchanged checks.",
+        "contract_id": "ecological-contract:2d41eef5634bd6e9b032bc6204c50a8a",
+        "declared_mechanism": "governed_pin_agent_version, which requires a clean live boundary (boundary.require_clean_live) and a passing gateway status (gateway.collect_status) immediately before delegating to pin_agent_version; pin_agent_version re-reads the live endpoint snapshot and refuses on any change before issuing project_client.agents.update_details with retry_total=0, then verifies the returned rules; release.py additionally re-reads the live route via routed_version(before), validates tool bundles for expected and target versions (including ownership-boundary declaration, provisioned immutable image, scoped identities, and role assignments), verifies the candidate definition digest, and after commit re-reads routing-after and the endpoint contract.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 310,
+            "line_start": 294,
+            "path": "agents/travel/src/contoso_travel_agent/operations.py",
+            "role": "guard_registration",
+            "source_sha256": "8a4012283a789391c4f0e0f17dcd5c53ec502910ea8dd10eb6eb71be6439b896"
+          },
+          {
+            "line_end": 275,
+            "line_start": 274,
+            "path": "agents/travel/src/contoso_travel_agent/operations.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8a4012283a789391c4f0e0f17dcd5c53ec502910ea8dd10eb6eb71be6439b896"
+          },
+          {
+            "line_end": 309,
+            "line_start": 308,
+            "path": "agents/travel/src/contoso_travel_agent/operations.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8a4012283a789391c4f0e0f17dcd5c53ec502910ea8dd10eb6eb71be6439b896"
+          },
+          {
+            "line_end": 291,
+            "line_start": 289,
+            "path": "agents/travel/src/contoso_travel_agent/operations.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8a4012283a789391c4f0e0f17dcd5c53ec502910ea8dd10eb6eb71be6439b896"
+          },
+          {
+            "line_end": 46,
+            "line_start": 39,
+            "path": "agents/travel/src/contoso_travel_agent/release.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b975fe1bffe4d35ec89e933b8541bccefdb015f5b9f1724d525549191b8d6dfe"
+          },
+          {
+            "line_end": 187,
+            "line_start": 185,
+            "path": "agents/travel/src/contoso_travel_agent/release.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b975fe1bffe4d35ec89e933b8541bccefdb015f5b9f1724d525549191b8d6dfe"
+          },
+          {
+            "line_end": 198,
+            "line_start": 192,
+            "path": "agents/travel/src/contoso_travel_agent/release.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b975fe1bffe4d35ec89e933b8541bccefdb015f5b9f1724d525549191b8d6dfe"
+          },
+          {
+            "line_end": 216,
+            "line_start": 212,
+            "path": "agents/travel/src/contoso_travel_agent/release.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b975fe1bffe4d35ec89e933b8541bccefdb015f5b9f1724d525549191b8d6dfe"
+          },
+          {
+            "line_end": 207,
+            "line_start": 204,
+            "path": "agents/travel/src/contoso_travel_agent/release.py",
+            "role": "protected_operation",
+            "source_sha256": "b975fe1bffe4d35ec89e933b8541bccefdb015f5b9f1724d525549191b8d6dfe"
+          },
+          {
+            "line_end": 366,
+            "line_start": 362,
+            "path": "agents/travel/src/contoso_travel_agent/operations.py",
+            "role": "protected_operation",
+            "source_sha256": "8a4012283a789391c4f0e0f17dcd5c53ec502910ea8dd10eb6eb71be6439b896"
+          },
+          {
+            "line_end": 291,
+            "line_start": 284,
+            "path": "agents/travel/src/contoso_travel_agent/operations.py",
+            "role": "commit_point",
+            "source_sha256": "8a4012283a789391c4f0e0f17dcd5c53ec502910ea8dd10eb6eb71be6439b896"
+          },
+          {
+            "line_end": 211,
+            "line_start": 208,
+            "path": "agents/travel/src/contoso_travel_agent/release.py",
+            "role": "commit_point",
+            "source_sha256": "b975fe1bffe4d35ec89e933b8541bccefdb015f5b9f1724d525549191b8d6dfe"
+          }
+        ],
+        "forbidden_condition": "Changing the named route while any of the following holds: the live endpoint snapshot no longer equals the expected endpoint captured before the operation (operations.py 'the named endpoint changed; refusing to overwrite another decision'); the live route is not exactly one FixedRatio rule at 100% for the expected accepted version (release.py 'The named route changed; refusing to overwrite another decision'); the live boundary is not clean or the gateway status is not ok ('live governance preflight failed; the accepted route was not changed'); the rollback dependency bundle changed after promotion or the passing candidate no longer matches the checked-in definition; or, after commit, the readback does not show the selected version at 100%, or authorization_schemes/protocols/protocol_configuration changed.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "What boundary.require_clean_live and gateway.collect_status concretely assert (module sources not supplied).",
+          "Whether any CI workflow or automation wires the release.py/operations.py CLIs, which would be needed to bind this operation to an agent lifecycle.",
+          "Whether the Azure AI Projects update_details API supports conditional/optimistic-concurrency writes; the supplied code narrows the pre-check-to-commit window with retry_total=0 but shows no conditional write token."
+        ],
+        "protected_operation": "Repinning the named Travel agent endpoint's version selector to route 100% of traffic to the target accepted agent version via governed_pin_agent_version, invoked from the release promote/rollback path and from the operations evaluate path.",
+        "protected_resource": "The named Travel agent's endpoint configuration (agent_endpoint.version_selector) in the Azure AI Foundry project for the owned Travel project.",
+        "protection_obligation": "The Contoso Travel agent's named endpoint route may only be repinned (promoted to a target accepted version at 100% traffic, or rolled back to the receipt's previous version) when the live endpoint still routes 100% to the expected accepted version, the recorded dependency bundles and checked-in definition still match, and live ownership-boundary and gateway preflights pass immediately before the change; overwriting a different routing decision is forbidden, and the commit must be followed by readback verification that the pinned version at 100% took effect without altering the endpoint's authorization or protocol contract.",
+        "scope_limits": [
+          "The boundary and gateway module implementations are not supplied; the concrete assertions behind require_clean_live and collect_status are not visible.",
+          "The guarded effect is invoked from operator-driven CLI entry points (operations.main, release.main); no agent tool, agent lifecycle hook, or agent-generated input is shown reaching update_details.",
+          "The guard covers the promote/rollback and evaluate paths shown; other code paths that could mutate the endpoint are outside the supplied views.",
+          "No DEC violation, safety, or prevalence determination is made."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The pwsh run block invoking ./scripts/concierge-alm.ps1 -Operation Import -Target PROD in the 'Import TEST-accepted package into PROD' step.",
+        "contract_id": "ecological-contract:f2e7c977989ab169501ca5724374d3df",
+        "declared_mechanism": "The 'Verify trusted TEST-accepted artifact' composite-action step (artifact-name bound to ACCEPTED_ARTIFACT_NAME; source-run-id and source-sha from workflow_dispatch inputs; expected-repository and signer-workflow pinned to the current repository and concierge-alm.yml), backed by validate_source_run; the job is declared under the concierge-prod-approval environment, with the contract-job promotion-input format checks applying to this operation.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 22,
+            "line_start": 15,
+            "path": ".github/workflows/concierge-alm.yml",
+            "role": "guard_registration",
+            "source_sha256": "8111279a4ab2f2f71873511b912914508defba7c651a87e2c15af5e6a6f862e8"
+          },
+          {
+            "line_end": 255,
+            "line_start": 251,
+            "path": ".github/workflows/concierge-alm.yml",
+            "role": "guard_registration",
+            "source_sha256": "8111279a4ab2f2f71873511b912914508defba7c651a87e2c15af5e6a6f862e8"
+          },
+          {
+            "line_end": 71,
+            "line_start": 64,
+            "path": ".github/workflows/concierge-alm.yml",
+            "role": "guard_registration",
+            "source_sha256": "8111279a4ab2f2f71873511b912914508defba7c651a87e2c15af5e6a6f862e8"
+          },
+          {
+            "line_end": 271,
+            "line_start": 262,
+            "path": ".github/workflows/concierge-alm.yml",
+            "role": "guard_registration",
+            "source_sha256": "8111279a4ab2f2f71873511b912914508defba7c651a87e2c15af5e6a6f862e8"
+          },
+          {
+            "line_end": 87,
+            "line_start": 78,
+            "path": "src/contoso_foundry/concierge_alm.py",
+            "role": "guard_registration",
+            "source_sha256": "36db040942562a3d9a2f1b8b34fd779b32b7fd1994e124368322381d94e4ab03"
+          },
+          {
+            "line_end": 102,
+            "line_start": 88,
+            "path": "src/contoso_foundry/concierge_alm.py",
+            "role": "forbidden_condition",
+            "source_sha256": "36db040942562a3d9a2f1b8b34fd779b32b7fd1994e124368322381d94e4ab03"
+          },
+          {
+            "line_end": 128,
+            "line_start": 104,
+            "path": "src/contoso_foundry/concierge_alm.py",
+            "role": "forbidden_condition",
+            "source_sha256": "36db040942562a3d9a2f1b8b34fd779b32b7fd1994e124368322381d94e4ab03"
+          },
+          {
+            "line_end": 298,
+            "line_start": 291,
+            "path": ".github/workflows/concierge-alm.yml",
+            "role": "protected_operation",
+            "source_sha256": "8111279a4ab2f2f71873511b912914508defba7c651a87e2c15af5e6a6f862e8"
+          },
+          {
+            "line_end": 298,
+            "line_start": 294,
+            "path": ".github/workflows/concierge-alm.yml",
+            "role": "commit_point",
+            "source_sha256": "8111279a4ab2f2f71873511b912914508defba7c651a87e2c15af5e6a6f862e8"
+          }
+        ],
+        "forbidden_condition": "Importing into PROD while trusted-run verification fails: any deviation of the source run's id/path/event/status/conclusion/head_branch/head_sha from a completed, successful main-branch workflow_dispatch of the signer workflow; a source SHA that is not 40 lowercase hex characters; a repository full_name mismatch; absence, duplication, or expiry of the accepted-name artifact; artifact metadata not bound to the claimed run ID and SHA; missing SHA-256 digest in artifact metadata; or promotion inputs failing the numeric run ID / 40-hex SHA format gate.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the gate or validator restricts the PROD source run to operation=accept-test versus any successful signer-workflow run on main.",
+          "How the composite action downloads the artifact and compares its digest to the metadata digest before the PROD import step.",
+          "Whether the concierge-prod-approval environment has protection rules and what they require (not visible in supplied source)."
+        ],
+        "protected_operation": "Executing the 'Import TEST-accepted package into PROD' step (concierge-alm.ps1 -Operation Import -Target PROD with the managed artifact and PROD deployment settings) in the import-prod job, sequenced after the 'Verify trusted TEST-accepted artifact' gate in the same job.",
+        "protected_resource": "The PROD Power Platform environment registered under the concierge-prod-approval environment that receives the TEST-accepted managed solution.",
+        "protection_obligation": "The concierge ALM pipeline must refuse to import the TEST-accepted package into the PROD Power Platform environment unless the artifact is proven to originate from a completed, successful workflow_dispatch run of the trusted signer workflow on the main branch of the expected repository \u2014 with matching run ID, 40-character source SHA, the exact accepted artifact name, and SHA-256 digest \u2014 with the verification registered to run immediately before the PROD import.",
+        "scope_limits": [
+          "validate_source_run checks run path/event/status/conclusion/branch/SHA and repository but not the source run's operation input, so the 'TEST-acceptance run for PROD' distinction declared in the workflow input description is not shown to be machine-enforced.",
+          "The composite verify action's implementation is not supplied (invocation path redacted); only its declared inputs are visible.",
+          "scripts/concierge-alm.ps1 behavior and the manual runtime/tenant gates referenced in the echo steps are outside the supplied source.",
+          "No DEC violation, safety, or prevalence determination is made."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Implementation of the composite 'Verify trusted ... artifact' actions (invoked via redacted local action paths in concierge-alm.yml) is not supplied; artifact download, digest comparison, and failure semantics are unbound.",
+      "scripts/concierge-alm.ps1 is not supplied; the actual PAC CLI import construction and its failure behavior are not visible.",
+      "contoso_foundry.boundary and contoso_foundry.gateway module implementations are not supplied; require_clean_live and collect_status assertions are unknown.",
+      "contoso_foundry.patterns (GUID patterns imported by concierge_alm.py) is not supplied.",
+      "No CI workflow, agent tool registration, agent lifecycle hook, or agent-generated dataflow that binds either protected effect to agent mediation appears in the supplied views; all contracts are marked not_established for agent mediation.",
+      "Whether validate_source_run or its caller enforces that a PROD source run used operation=accept-test is not visible in the supplied validator or workflow steps.",
+      "Whether the Azure AI Projects endpoint update supports conditional writes that would close the pre-check-to-commit window in pin_agent_version is not visible in supplied source.",
+      "Repository enumeration is not complete and behavior labels are unavailable; additional mutation paths to the named Travel endpoint or the Power Platform environments may exist outside the supplied views."
+    ],
+    "repository": "ericchansen/microsoft-foundry",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:3b6b2d7062528946cd1e8dc01bc777e2"
+  },
+  "request_sha256": "4bda6ed23946d4febf0b0e3011e31b31c40e9189706a4293f918bd3d9aeec0f4",
+  "response_sha256": "7ec1bf8bb44abfc6827698b2fb4567c7e79ee9bafafaad8e7859571f09edef5b",
+  "state": "completed",
+  "tokens": 35594,
+  "unit": "v24-screen:3b6b2d7062528946cd1e8dc01bc777e2"
+}

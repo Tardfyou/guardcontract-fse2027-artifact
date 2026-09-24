@@ -1,0 +1,811 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The ValueError raises at base.py:391-397 (max_tokens) and 403-407 (api_key); the kwargs dict is built only afterwards (408-424).",
+        "contract_id": "ecological-contract:0c0a1b2fda530c8d7ef2deade465d55f",
+        "declared_mechanism": "Precondition checks at the top of BaseProvider.llm_kwargs raising ValueError with resolver guidance (381-407); the docstring states production callers must pre-resolve via OutputLimitResolution before calling (384-389).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 389,
+            "line_start": 381,
+            "path": "core/providers/base.py",
+            "role": "guard_registration",
+            "source_sha256": "2f32cfaaa0995f509c08a89ac72454cba37a01c4d8ac2bb16971fa8bbc72ce54"
+          },
+          {
+            "line_end": 407,
+            "line_start": 390,
+            "path": "core/providers/base.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2f32cfaaa0995f509c08a89ac72454cba37a01c4d8ac2bb16971fa8bbc72ce54"
+          },
+          {
+            "line_end": 424,
+            "line_start": 408,
+            "path": "core/providers/base.py",
+            "role": "protected_operation",
+            "source_sha256": "2f32cfaaa0995f509c08a89ac72454cba37a01c4d8ac2bb16971fa8bbc72ce54"
+          },
+          {
+            "line_end": 397,
+            "line_start": 391,
+            "path": "core/providers/base.py",
+            "role": "commit_point",
+            "source_sha256": "2f32cfaaa0995f509c08a89ac72454cba37a01c4d8ac2bb16971fa8bbc72ce54"
+          }
+        ],
+        "forbidden_condition": "Missing, non-int, or non-positive resolved_max_tokens (core/providers/base.py:390-397) or an api_key that is a str with empty/whitespace content (core/providers/base.py:399-407).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Confirmation that every production LLM-construction path passes through BaseProvider/AnthropicProvider.llm_kwargs."
+        ],
+        "protected_operation": "Construction of ChatOpenAI constructor kwargs (model/api_key/base_url/max_tokens/retries/streaming).",
+        "protected_resource": "Outbound LLM API request construction inputs (credential presence and resolved output limit).",
+        "protection_obligation": "BaseProvider.llm_kwargs must fail closed with ValueError unless model_config carries a positive-int resolved_max_tokens produced by the output-limit resolver, and must reject an explicitly empty (whitespace-only) api_key string, before any LLM client kwargs are produced.",
+        "scope_limits": [
+          "Only explicit empty-string credentials are rejected; omitted/None api_key is left to callers per the inline comment (base.py:399-402).",
+          "The resolver itself (OutputLimitResolution / resolve_configured_max_tokens) is outside the supplied views."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "api_server.py:2224-2240 \u2014 configure_api_access applies the socket-peer/token policy and uvicorn.run(app, **options) binds the (TLS) listener.",
+        "contract_id": "ecological-contract:15e06877fdcd57a48da3f4e3ba6bcc09",
+        "declared_mechanism": "run_api_server pre-start gate (api_server.py:2194-2240): _is_loopback_bind_host classification, _remote_api_opted_in() env check, _validate_remote_token entropy/placeholder rejection, TLS cert/key resolution and existence checks, then configure_api_access(allow_remote=True, token=...) and uvicorn.run with ssl_certfile/ssl_keyfile.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 102,
+            "line_start": 96,
+            "path": "api_server.py",
+            "role": "guard_registration",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 117,
+            "line_start": 105,
+            "path": "api_server.py",
+            "role": "guard_registration",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 2223,
+            "line_start": 2205,
+            "path": "api_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 843,
+            "line_start": 837,
+            "path": "api_server.py",
+            "role": "protected_operation",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 2240,
+            "line_start": 2224,
+            "path": "api_server.py",
+            "role": "commit_point",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 895,
+            "line_start": 890,
+            "path": "api_server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          }
+        ],
+        "forbidden_condition": "A non-loopback bind without the opt-in environment flag (RuntimeError, api_server.py:2205-2209); a remote bind whose token is missing, short, low-entropy, or a placeholder; a remote bind without existing TLS cert/key files (api_server.py:2210-2223) \u2014 each must abort startup.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any production entry point starts the app without run_api_server (bypassing this gate) is not determinable from the supplied views."
+        ],
+        "protected_operation": "Binding and serving the FastAPI app (whose handlers drive the agent) via uvicorn.run.",
+        "protected_resource": "The API server network listener for the agent-driving FastAPI app.",
+        "protection_obligation": "run_api_server must refuse to start the API server on a non-loopback bind unless remote access is explicitly opted in via RXYCODE_ALLOW_REMOTE_API=1, the token passes _validate_remote_token (>=32 chars, >=10 distinct chars, no placeholder markers), and TLS cert/key files exist and are configured, so the agent-driving app is exposed remotely only over authenticated TLS; every refusal must commit before uvicorn.run binds the socket.",
+        "scope_limits": [
+          "Guards only startup through run_api_server; alternative launch paths (direct uvicorn in embedders) are outside supplied evidence.",
+          "Loopback binds take the else branch configure_api_access(allow_remote=False, token=token) (api_server.py:2225-2226).",
+          "Token thresholds (32 chars / 10 distinct chars / placeholder marker list) are fixed in _validate_remote_token (api_server.py:105-117)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The ValueError raise at anthropic.py:361-364 terminates kwargs construction before client instantiation; the downstream network submission site is not in the supplied views.",
+        "contract_id": "ecological-contract:4d6cea3163bb885d4685e9222335fdc8",
+        "declared_mechanism": "_SAMPLING_RESTRICTED frozenset plus _sampling_restricted() canonical-id lookup (174-190); the llm_kwargs override merges sampling keys from model_config and user extra_body, raises ValueError for non-default values, and passes explicit Anthropic defaults through (345-364); the accepts_temperature capability mirrors the restriction (448).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 190,
+            "line_start": 174,
+            "path": "core/providers/anthropic.py",
+            "role": "guard_registration",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 327,
+            "line_start": 310,
+            "path": "core/providers/anthropic.py",
+            "role": "guard_registration",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 364,
+            "line_start": 345,
+            "path": "core/providers/anthropic.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 299,
+            "line_start": 283,
+            "path": "core/providers/anthropic.py",
+            "role": "protected_operation",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 364,
+            "line_start": 361,
+            "path": "core/providers/anthropic.py",
+            "role": "commit_point",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          }
+        ],
+        "forbidden_condition": "Any of temperature/top_p/top_k present for a _sampling_restricted model whose value is not the Anthropic default (temperature==1.0, top_p==1.0, top_k unset/None) after merging model_config and user extra_body (anthropic.py:345-364).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Concrete agent-side call chain into llm_kwargs (docstrings reference agent_v2._build_llm_from_config, which is not in the supplied views)."
+        ],
+        "protected_operation": "Construction of ChatAnthropic request kwargs for Anthropic models (llm_kwargs / anthropic_llm_kwargs).",
+        "protected_resource": "Outbound Anthropic LLM API request sampling parameters.",
+        "protection_obligation": "AnthropicProvider.llm_kwargs must raise ValueError, before any LLM client construction or network submission, whenever a non-default temperature/top_p/top_k (from model_config or merged extra_body) would be sent for a sampling-restricted model (claude-fable-5, claude-mythos-5, claude-mythos-5-preview, claude-opus-5, claude-opus-4-8, claude-opus-4-7, claude-sonnet-5), because those models reject custom sampling with HTTP 400.",
+        "scope_limits": [
+          "Only the seven canonical ids in _SAMPLING_RESTRICTED are restricted; Haiku and unresearched variants are deliberately excluded (anthropic.py:167-173, 187-190).",
+          "Explicit Anthropic-default values pass through the gate (anthropic.py:351-360)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Return of the pinned transport tuple at anthropic.py:274 (exact-host branch) versus the super().transport_candidates fallback at 281.",
+        "contract_id": "ecological-contract:6adf31e128926ac8ed4229e1c1b19d5f",
+        "declared_mechanism": "_is_native_anthropic_host urlparse exact-match gate (scheme https, hostname api.anthropic.com, port 443 or unspecified) (243-258); AnthropicProvider.transport_candidates consults it before returning the pinned (ANTHROPIC_MESSAGES_TRANSPORT,) tuple and raises on conflicting explicit candidates (264-281).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 258,
+            "line_start": 243,
+            "path": "core/providers/anthropic.py",
+            "role": "guard_registration",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 24,
+            "line_start": 19,
+            "path": "core/providers/anthropic.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 281,
+            "line_start": 264,
+            "path": "core/providers/anthropic.py",
+            "role": "protected_operation",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 275,
+            "line_start": 269,
+            "path": "core/providers/anthropic.py",
+            "role": "commit_point",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          }
+        ],
+        "forbidden_condition": "Selecting ANTHROPIC_MESSAGES_TRANSPORT for a base_url failing the exact scheme/hostname/port test (anthropic.py:243-258), or an explicit transport override that disagrees with the pinned native candidate (anthropic.py:272-280).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The consumption site of transport_candidates (LLM client construction) is outside the supplied views."
+        ],
+        "protected_operation": "transport_candidates selection that decides which API transport (and endpoint contract) serves the model.",
+        "protected_resource": "Anthropic model network transport/endpoint selection (native Messages vs OpenAI-compatible).",
+        "protection_obligation": "Native Anthropic Messages transport may be selected only when the configured base_url is exactly https://api.anthropic.com on port 443 or unset; any other URL (pseudo-native substrings such as api.anthropic.com.evil.example, proxy paths containing the host, http/ftp schemes, non-standard ports) must fall back to the non-native transport policy, and an explicit api_transport conflicting with the pinned native transport must raise ValueError.",
+        "scope_limits": [
+          "Governs native Messages transport eligibility only; OpenAI-compatible proxy transports remain under BaseProvider.transport_candidates policy.",
+          "The supports_prompt_cache capability derived from the same host fact (anthropic.py:423-483) is capability metadata, not contracted here."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "execution/tool_orchestrator.py:1142-1151 \u2014 await self._invoke_and_finish(...) executes the tool only after every gate passes; the audit entry is written via audit.log in _finish (377-378).",
+        "contract_id": "ecological-contract:8005b08775de770709f2c18cf8b05dc4",
+        "declared_mechanism": "execute_tool as the single correlated choke point (759-777); _execute_tool_gated ordered fail-closed pipeline: SensitiveActionPolicy decision (986-993, DENY 995-1017), Plan-mode capability boundary (1028-1034), legacy safety-disabled opt-out that still audits (1038-1049), path-arg whitelist plus bash absolute-target scan (1055-1078), dry-run (1081-1086), approval with auto_approve/full_auto/auto_edit expansions and explicit_command authorization (1088-1138), then execute+audit (1140-1151); SseApproval fail-closed timeout broker (core/safety/approval.py:118-129, 166-197); audit.log in _finish (375-379).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 777,
+            "line_start": 759,
+            "path": "execution/tool_orchestrator.py",
+            "role": "guard_registration",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 973,
+            "line_start": 954,
+            "path": "execution/tool_orchestrator.py",
+            "role": "guard_registration",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 379,
+            "line_start": 375,
+            "path": "execution/tool_orchestrator.py",
+            "role": "guard_registration",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 993,
+            "line_start": 986,
+            "path": "execution/tool_orchestrator.py",
+            "role": "protected_operation",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 1017,
+            "line_start": 995,
+            "path": "execution/tool_orchestrator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 1034,
+            "line_start": 1028,
+            "path": "execution/tool_orchestrator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 1078,
+            "line_start": 1055,
+            "path": "execution/tool_orchestrator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 1086,
+            "line_start": 1081,
+            "path": "execution/tool_orchestrator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 1134,
+            "line_start": 1108,
+            "path": "execution/tool_orchestrator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 1151,
+            "line_start": 1142,
+            "path": "execution/tool_orchestrator.py",
+            "role": "commit_point",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 509,
+            "line_start": 506,
+            "path": "execution/tool_orchestrator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "445c908c87e1decd2b3649c816530007fb7866fcbfb7ad600e17e1effa132c8b"
+          },
+          {
+            "line_end": 68,
+            "line_start": 60,
+            "path": "core/safety/approval.py",
+            "role": "guard_registration",
+            "source_sha256": "83cc45a23207d0a0d146e38eb0b28cf21bc3769d2e9fae6336d07f5355ca36b6"
+          },
+          {
+            "line_end": 129,
+            "line_start": 118,
+            "path": "core/safety/approval.py",
+            "role": "guard_registration",
+            "source_sha256": "83cc45a23207d0a0d146e38eb0b28cf21bc3769d2e9fae6336d07f5355ca36b6"
+          },
+          {
+            "line_end": 187,
+            "line_start": 182,
+            "path": "core/safety/approval.py",
+            "role": "forbidden_condition",
+            "source_sha256": "83cc45a23207d0a0d146e38eb0b28cf21bc3769d2e9fae6336d07f5355ca36b6"
+          }
+        ],
+        "forbidden_condition": "Any WRITE/DANGER tool execution proceeding without passing classification, whitelist, dry-run, and approval checks (execution/tool_orchestrator.py:995-1134), including invocations with no approval broker available (1115-1121), broker decisions of REJECTED (1124-1134), and SseApproval deadline expiry resolving to REJECTED (core/safety/approval.py:182-187).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any production tool is invoked outside the execute_tool proxy path (e.g., raw tool.invoke elsewhere) cannot be verified from the supplied views."
+        ],
+        "protected_operation": "Side-effecting tool invocation and its audit record inside the orchestrator gate.",
+        "protected_resource": "The agent tool execution pipeline (all tools routed through execute_tool).",
+        "protection_obligation": "Every tool invocation must traverse the ToolOrchestrator.execute_tool/_execute_tool_gated safety choke point, which fail-closes before execution on: governance DENY (including plan_mode_read_only and write_path_not_allowed), the hard Plan-mode boundary for WRITE+ tools, non-whitelisted write-path args and bash mutating targets outside the whitelist (is_write_allowed / find_bash_disallowed_write_paths), dry-run mode, and unapproved WRITE/DANGER risk classification (ApprovalBroker; SseApproval times out to REJECTED) \u2014 with an audit record appended for the executed outcome.",
+        "scope_limits": [
+          "safety.enabled=false bypasses only the confirmation leg; policy, plan boundary, and audit still apply (execution/tool_orchestrator.py:1038-1049).",
+          "approval_source='explicit_command' counts as user authorization for literal slash-command tool calls while still passing policy/dry-run/audit (1108-1111).",
+          "Unknown tools default to WRITE risk (core/safety/policy.py:74-76).",
+          "The live dedup cache may short-circuit identical repeat calls before the gate (832-857) by returning prior results; no new effect executes in that path."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "api_server.py:249 \u2014 'return await call_next(request)'; a request reaches any handler only after both checks pass.",
+        "contract_id": "ecological-contract:a3d0d99fc5a116a2525e04612faf1e45",
+        "declared_mechanism": "@app.middleware('http') require_local_bearer (api_server.py:228-249): loopback check via _is_loopback_client plus the _allow_remote_api flag set atomically by configure_api_access; constant-time hmac.compare_digest bearer validation for all non-OPTIONS methods; CORSMiddleware registered with an explicit origin allowlist and a comment forbidding any wildcard localhost-port allowance because it would let local web pages drive a file-write/shell-capable agent.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 229,
+            "line_start": 228,
+            "path": "api_server.py",
+            "role": "guard_registration",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 126,
+            "line_start": 120,
+            "path": "api_server.py",
+            "role": "guard_registration",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 248,
+            "line_start": 231,
+            "path": "api_server.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 843,
+            "line_start": 837,
+            "path": "api_server.py",
+            "role": "protected_operation",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 1888,
+            "line_start": 1883,
+            "path": "api_server.py",
+            "role": "protected_operation",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 728,
+            "line_start": 722,
+            "path": "api_server.py",
+            "role": "protected_operation",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 249,
+            "line_start": 249,
+            "path": "api_server.py",
+            "role": "commit_point",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 195,
+            "line_start": 187,
+            "path": "api_server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          },
+          {
+            "line_end": 989,
+            "line_start": 984,
+            "path": "api_server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e10e756a58f7d54aceffc876e1f699cfd0f84168eb97605cb14239fc7dbe09ea"
+          }
+        ],
+        "forbidden_condition": "A request whose client host is not loopback while _allow_remote_api is false, or a non-OPTIONS request whose Authorization header is not 'Bearer <credential>' with hmac.compare_digest(credential, _api_token) true; both must be short-circuited with a 403/401 JSONResponse instead of reaching any handler.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any embedding caller can enable _allow_remote_api via configure_api_access without the run_api_server TLS/token gate is not shown in supplied views.",
+          "Handler implementations behind models_router are unsupplied, so their agent relevance cannot be evidenced."
+        ],
+        "protected_operation": "Per-request dispatch to the API server's agent-driving HTTP handlers (agent chat runs, slash-command execution, tool-approval resolution).",
+        "protected_resource": "The FastAPI app's HTTP surface (routes /chat, /chat/stream, /command, /approve, /question/respond, /status, /log, plus the mounted models_router).",
+        "protection_obligation": "HTTP requests to the RxyCode API server's agent-driving endpoints (/chat, /chat/stream, /command, /approve, and every other route on the module-level FastAPI app) must originate from a loopback client unless remote access is explicitly opted in, and every non-OPTIONS request must carry a Bearer credential exactly matching the configured _api_token; the registered require_local_bearer middleware must reject violators (403 loopback / 401 token) before call_next dispatches to any handler.",
+        "scope_limits": [
+          "OPTIONS preflight requests are deliberately exempt from bearer authentication (api_server.py:235).",
+          "Remote clients are permitted, not forbidden, when _allow_remote_api is enabled via configure_api_access with a token passing _validate_remote_token (api_server.py:96-126).",
+          "The middleware is app-wide; handlers mounted via models_router (api_server.py:71) are covered by registration but their code is not in the supplied views.",
+          "This contract covers only the per-request dispatch gate; the pre-start bind/TLS/token gate in run_api_server is compiled as a separate contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Return of the sanitized kwargs at anthropic.py:414; client construction and network send are downstream and unsupplied.",
+        "contract_id": "ecological-contract:ca640e27e32005d385309503770d5fb1",
+        "declared_mechanism": "llm_kwargs override: kwargs.pop('reasoning_effort') (329); user_body reasoning_effort removal (338-340); merge loop that pops injected thinking/reasoning_effort when the user supplied none and reassigns or removes extra_body outright (388-410); Fable disabled-thinking ValueError (372-380); anthropic_llm_kwargs forwards only sanctioned extra_body keys (thinking/top_k/top_p/output_config) (303-307).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 327,
+            "line_start": 310,
+            "path": "core/providers/anthropic.py",
+            "role": "guard_registration",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 340,
+            "line_start": 336,
+            "path": "core/providers/anthropic.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 380,
+            "line_start": 372,
+            "path": "core/providers/anthropic.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 410,
+            "line_start": 388,
+            "path": "core/providers/anthropic.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 308,
+            "line_start": 299,
+            "path": "core/providers/anthropic.py",
+            "role": "protected_operation",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          },
+          {
+            "line_end": 414,
+            "line_start": 402,
+            "path": "core/providers/anthropic.py",
+            "role": "commit_point",
+            "source_sha256": "e38c8498a450d891c42b901a3a875c4d5ba12544751b1f5140a9f70618abc582"
+          }
+        ],
+        "forbidden_condition": "A base-injected extra_body.thinking surviving when the user did not supply thinking (anthropic.py:388-410); any reasoning_effort key surviving the merge (anthropic.py:329, 338-340, 397, 405); claude-fable-5 configured with thinking type 'disabled' (anthropic.py:372-380).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Agent-side caller chain into llm_kwargs is unsupplied (docstrings reference agent_v2._build_llm_from_config)."
+        ],
+        "protected_operation": "Assembly of the final LLM kwargs dict returned by AnthropicProvider.llm_kwargs.",
+        "protected_resource": "Anthropic LLM API request body (thinking / reasoning parameters).",
+        "protection_obligation": "For Anthropic models, llm_kwargs must never inject extra_body.thinking of type enabled or reasoning_effort (top level or inside merged extra_body) on its own initiative \u2014 Anthropic thinking lives in content blocks \u2014 and must strip any base-injected thinking/reasoning_effort unless the user explicitly supplied extra_body.thinking; additionally claude-fable-5 must reject an explicit thinking type 'disabled' with ValueError (HTTP 400 contract), all before the sanitized kwargs are returned for client construction.",
+        "scope_limits": [
+          "User-explicit extra_body.thinking is honored verbatim, including None (anthropic.py:366-383); the contract forbids unsolicited injection only.",
+          "User-supplied extra_body keys other than thinking (and sampling keys on restricted models) are merged with user precedence (anthropic.py:388-400)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tools/change_directory.py:40 \u2014 resolved = set_working_directory(target), reached only when the containment check passes.",
+        "contract_id": "ecological-contract:d53c2df56289f24f09396fc718c7484f",
+        "declared_mechanism": "change_directory resolves the target via resolve_session_path, loads execution.sandbox_mode/workspace_root, resolves workspace_root against initial_working_directory, and enforces target.relative_to(workspace_root) inside try/except, returning '[error: directory escapes execution.workspace_root: ...]' on violation (tools/change_directory.py:11-43).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 31,
+            "line_start": 24,
+            "path": "tools/change_directory.py",
+            "role": "guard_registration",
+            "source_sha256": "e778e332ec967e91d1ce7d755b2d10c87f64e5f06945652559b0aa0fca65b7a3"
+          },
+          {
+            "line_end": 39,
+            "line_start": 32,
+            "path": "tools/change_directory.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e778e332ec967e91d1ce7d755b2d10c87f64e5f06945652559b0aa0fca65b7a3"
+          },
+          {
+            "line_end": 23,
+            "line_start": 19,
+            "path": "tools/change_directory.py",
+            "role": "protected_operation",
+            "source_sha256": "e778e332ec967e91d1ce7d755b2d10c87f64e5f06945652559b0aa0fca65b7a3"
+          },
+          {
+            "line_end": 41,
+            "line_start": 40,
+            "path": "tools/change_directory.py",
+            "role": "commit_point",
+            "source_sha256": "e778e332ec967e91d1ce7d755b2d10c87f64e5f06945652559b0aa0fca65b7a3"
+          },
+          {
+            "line_end": 57,
+            "line_start": 51,
+            "path": "tools/change_directory.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e778e332ec967e91d1ce7d755b2d10c87f64e5f06945652559b0aa0fca65b7a3"
+          },
+          {
+            "line_end": 51,
+            "line_start": 49,
+            "path": "core/safety/policy.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "adc9d505c68c32b99c98ee57f4134b8c2ffeaf759c0f47d1e416cc528fc26bec"
+          }
+        ],
+        "forbidden_condition": "A resolved target directory failing target.relative_to(workspace_root) under workspace/docker sandbox modes (tools/change_directory.py:32-39); the commit must not proceed for such targets.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Runtime registration of change_directory_tool into the ToolOrchestrator/agent toolset (tools/registry is not supplied)."
+        ],
+        "protected_operation": "The session working-directory change committed by set_working_directory.",
+        "protected_resource": "Session-level current-working-directory state that scopes subsequent command execution.",
+        "protection_obligation": "The cd (change_directory) agent tool must refuse, when execution.sandbox_mode is workspace or docker, to commit a session working-directory change to any target outside execution.workspace_root, returning an error result instead of invoking set_working_directory.",
+        "scope_limits": [
+          "Only sandbox_mode workspace/docker enforce containment; other modes fall through to the commit (tools/change_directory.py:32).",
+          "Refusal is by error-string return (fail-closed result) rather than exception.",
+          "Containment uses resolved-path relative_to; symlink-escape handling beyond Path.resolve of the root (lines 29-31) is not shown."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The boolean decision returned at base.py:303-307; the consuming retry site (AgentV2 per docstring, including its no-fallback-after-output guarantee) is not in the supplied views.",
+        "contract_id": "ecological-contract:e70e50e0d5430543beeb0e429212e9ab",
+        "declared_mechanism": "_classify_transport_error status/phrase classifier with deliberate bare-word exclusion (147-187); should_fallback_transport gate returning True only on the TRANSPORT_UNSUPPORTED class (288-307); _RESPONSES_FIRST_PRESET_IDS affect candidate ordering only, never fallback eligibility (38-41).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 187,
+            "line_start": 147,
+            "path": "core/providers/base.py",
+            "role": "guard_registration",
+            "source_sha256": "2f32cfaaa0995f509c08a89ac72454cba37a01c4d8ac2bb16971fa8bbc72ce54"
+          },
+          {
+            "line_end": 294,
+            "line_start": 288,
+            "path": "core/providers/base.py",
+            "role": "guard_registration",
+            "source_sha256": "2f32cfaaa0995f509c08a89ac72454cba37a01c4d8ac2bb16971fa8bbc72ce54"
+          },
+          {
+            "line_end": 307,
+            "line_start": 295,
+            "path": "core/providers/base.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2f32cfaaa0995f509c08a89ac72454cba37a01c4d8ac2bb16971fa8bbc72ce54"
+          },
+          {
+            "line_end": 307,
+            "line_start": 303,
+            "path": "core/providers/base.py",
+            "role": "commit_point",
+            "source_sha256": "2f32cfaaa0995f509c08a89ac72454cba37a01c4d8ac2bb16971fa8bbc72ce54"
+          }
+        ],
+        "forbidden_condition": "should_fallback_transport returning True for any _TransportErrorClass other than TRANSPORT_UNSUPPORTED (core/providers/base.py:288-307) \u2014 AUTH_OR_POLICY, MODEL_ERROR, REQUEST_VALIDATION, TRANSIENT_ERROR, and UNKNOWN must not fall back.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The runtime call site that consumes should_fallback_transport and the AgentV2 output-observation guard."
+        ],
+        "protected_operation": "The transport-fallback retry decision for an untouched LLM request.",
+        "protected_resource": "Provider LLM API requests (prevents duplicate billable submissions after non-transport failures).",
+        "protection_obligation": "A failed LLM request may only be retried on the alternate transport when the error classifies as endpoint/protocol TRANSPORT_UNSUPPORTED; authentication, policy, rate-limit, timeout, server, content-safety, and ordinary request-body failures must propagate their original error instead of triggering a hidden second (potentially billable) request, and classification must rely on complete named error phrases only.",
+        "scope_limits": [
+          "Docstring-asserted guarantees that fallback never follows observed output and that AgentV2 enforces this (base.py:295-302) are not evidenced by supplied code.",
+          "Borderline error phrasings classify to UNKNOWN (no fallback) by design (base.py:174-187)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "File-effect commits: os.replace at trash_service.py:132 (_safe_write), checked.unlink() at 249, shutil.rmtree(checked) at 257; the record-purge commit at sessions.purge (line 290) is reached only after the leftover check passes.",
+        "contract_id": "ecological-contract:e782a424a767d8471eb019a0333f2ef7",
+        "declared_mechanism": "Path-boundary guards registered on the service: _resolve_in_workspace/canonicalize plus _guard is_inside containment refusing root and outside paths (156-160); _ensure_dir_inside per-part symlink refusal (99-117); _safe_write pre- and post-write symlink re-checks, mkstemp+os.replace, and post-write containment assertion (119-142); _remove_path root/symlink/associated-dir confinement around unlink and rmtree (244-257); purge confirmation and soft-delete preconditions (259-268); leftover scan raising PURGE_INCOMPLETE before sessions.purge (286-294).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 160,
+            "line_start": 156,
+            "path": "appserver/trash_service.py",
+            "role": "guard_registration",
+            "source_sha256": "404d719bf62caf946b01763b6815d75d957148bb4c0c2670752260ba1dd93d6f"
+          },
+          {
+            "line_end": 117,
+            "line_start": 99,
+            "path": "appserver/trash_service.py",
+            "role": "guard_registration",
+            "source_sha256": "404d719bf62caf946b01763b6815d75d957148bb4c0c2670752260ba1dd93d6f"
+          },
+          {
+            "line_end": 142,
+            "line_start": 119,
+            "path": "appserver/trash_service.py",
+            "role": "guard_registration",
+            "source_sha256": "404d719bf62caf946b01763b6815d75d957148bb4c0c2670752260ba1dd93d6f"
+          },
+          {
+            "line_end": 257,
+            "line_start": 244,
+            "path": "appserver/trash_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "404d719bf62caf946b01763b6815d75d957148bb4c0c2670752260ba1dd93d6f"
+          },
+          {
+            "line_end": 268,
+            "line_start": 259,
+            "path": "appserver/trash_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "404d719bf62caf946b01763b6815d75d957148bb4c0c2670752260ba1dd93d6f"
+          },
+          {
+            "line_end": 294,
+            "line_start": 286,
+            "path": "appserver/trash_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "404d719bf62caf946b01763b6815d75d957148bb4c0c2670752260ba1dd93d6f"
+          },
+          {
+            "line_end": 285,
+            "line_start": 276,
+            "path": "appserver/trash_service.py",
+            "role": "protected_operation",
+            "source_sha256": "404d719bf62caf946b01763b6815d75d957148bb4c0c2670752260ba1dd93d6f"
+          },
+          {
+            "line_end": 132,
+            "line_start": 130,
+            "path": "appserver/trash_service.py",
+            "role": "commit_point",
+            "source_sha256": "404d719bf62caf946b01763b6815d75d957148bb4c0c2670752260ba1dd93d6f"
+          },
+          {
+            "line_end": 249,
+            "line_start": 248,
+            "path": "appserver/trash_service.py",
+            "role": "commit_point",
+            "source_sha256": "404d719bf62caf946b01763b6815d75d957148bb4c0c2670752260ba1dd93d6f"
+          },
+          {
+            "line_end": 257,
+            "line_start": 251,
+            "path": "appserver/trash_service.py",
+            "role": "commit_point",
+            "source_sha256": "404d719bf62caf946b01763b6815d75d957148bb4c0c2670752260ba1dd93d6f"
+          }
+        ],
+        "forbidden_condition": "Deleting or overwriting any path outside the canonical workspace (PATH_OUTSIDE_WORKSPACE), writing through symlinks, rmtree of workspace dirs outside the associated directory (trash_service.py:244-257); purge with confirm_purge not exactly True (PURGE_UNCONFIRMED) or on a thread lacking deleted_at/trashed_at (THREAD_NOT_DELETED) (trash_service.py:259-266); record purge while associated files remain (PURGE_INCOMPLETE, trash_service.py:286-294).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which agent tool, appserver route, or lifecycle hook invokes TrashService.delete/restore/purge.",
+          "Whether the durable session store behind sessions.purge (line 290) is file- or database-backed."
+        ],
+        "protected_operation": "TrashService.delete/purge filesystem writes and removals (tempfile write + os.replace, unlink, shutil.rmtree) over the thread inventory.",
+        "protected_resource": "Session workspace filesystem under record.workspace_root, including .rxy-thread/<session_id>/ and inventoried associated files.",
+        "protection_obligation": "TrashService file mutations must be confined to the canonical session workspace: every write (marker/manifest/journal via _safe_write) and every removal (unlink/rmtree via _remove_path after _guard) must resolve inside record.workspace_root, refusing the workspace root itself, symlink write-through, and recursive directory removal outside the thread's .rxy-thread associated directory; purge of a thread's files is additionally forbidden unless confirm_purge is exactly True and the thread is already soft-deleted, with the durable record purge (sessions.purge) reached only after all removals succeed (PURGE_INCOMPLETE otherwise).",
+        "scope_limits": [
+          "Bounds are computed against record.workspace_root per call; guarantees across multiple workspaces are not established.",
+          "Purge ordering guarantees only that the record purge follows successful removals within this method; the journal file (270-275) is declared but not contracted here.",
+          "The storage stratum of sessions.purge (line 290) is unknown from supplied views (see missing_information).",
+          "No caller of TrashService appears in the supplied views; mediation is unbound."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "asyncio.create_subprocess_exec at utils/shell.py:1054-1057 \u2014 reached only after _execution_policy succeeds; the escape rejection commits at 828-832 / 1026-1030 before any spawn.",
+        "contract_id": "ecological-contract:e80b6633eb669ce89d48499d62869aea",
+        "declared_mechanism": "_execution_policy config resolution (793-835): sandbox_mode whitelist (801-805), workspace_root resolution via _resolve_path, containment via _is_within resolved-path relative_to (150-155), candidate resolution against session_base, and existence checks; _execute_controlled wraps policy evaluation and returns _failure('[sandbox_error] ...', error_type='sandbox_error') without spawning (1025-1030).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 155,
+            "line_start": 150,
+            "path": "utils/shell.py",
+            "role": "guard_registration",
+            "source_sha256": "ed1b9a1e36aaed5dda2efa4a32f2b1f4dbbb9650bddc144a0dea2b4c0874a45e"
+          },
+          {
+            "line_end": 835,
+            "line_start": 793,
+            "path": "utils/shell.py",
+            "role": "guard_registration",
+            "source_sha256": "ed1b9a1e36aaed5dda2efa4a32f2b1f4dbbb9650bddc144a0dea2b4c0874a45e"
+          },
+          {
+            "line_end": 1030,
+            "line_start": 1025,
+            "path": "utils/shell.py",
+            "role": "guard_registration",
+            "source_sha256": "ed1b9a1e36aaed5dda2efa4a32f2b1f4dbbb9650bddc144a0dea2b4c0874a45e"
+          },
+          {
+            "line_end": 832,
+            "line_start": 828,
+            "path": "utils/shell.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ed1b9a1e36aaed5dda2efa4a32f2b1f4dbbb9650bddc144a0dea2b4c0874a45e"
+          },
+          {
+            "line_end": 994,
+            "line_start": 966,
+            "path": "utils/shell.py",
+            "role": "protected_operation",
+            "source_sha256": "ed1b9a1e36aaed5dda2efa4a32f2b1f4dbbb9650bddc144a0dea2b4c0874a45e"
+          },
+          {
+            "line_end": 1057,
+            "line_start": 1053,
+            "path": "utils/shell.py",
+            "role": "commit_point",
+            "source_sha256": "ed1b9a1e36aaed5dda2efa4a32f2b1f4dbbb9650bddc144a0dea2b4c0874a45e"
+          }
+        ],
+        "forbidden_condition": "A resolved workdir candidate outside workspace_root (utils/shell.py:828-832), or a configured workspace_root that is not an existing directory (813-817), under sandbox_mode workspace/docker.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The concrete binding from an agent tool (e.g., the bash tool implementation) to ShellExecutor.execute_async/execute_argv_async.",
+          "Whether execute_argv_async is reachable from any supplied agent path."
+        ],
+        "protected_operation": "Subprocess spawn for shell commands via ShellExecutor.execute/execute_async/execute_argv_async into _execute_controlled.",
+        "protected_resource": "OS process creation with its working directory (host workspace sandbox boundary).",
+        "protection_obligation": "When execution.sandbox_mode is workspace or docker, every command executed through ShellExecutor must run with a working directory inside execution.workspace_root: _execution_policy must raise ValueError for any resolved workdir candidate escaping the root (via resolved-path _is_within containment) and _execute_controlled must convert that rejection into a sandbox_error failure result before any subprocess is spawned at asyncio.create_subprocess_exec.",
+        "scope_limits": [
+          "Applies only under sandbox_mode workspace|docker; host mode skips containment entirely (utils/shell.py:836-839).",
+          "Docker-mode container restrictions (default network none, pids/memory limits, bind mount, 913-949) are declared alongside but this contract covers the workdir boundary only.",
+          "The supplied views do not include the tool wrapper that routes agent bash tool calls into ShellExecutor; mediation is unbound (see pending questions)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied view contains the agent tool wrapper that dispatches into ShellExecutor (e.g., the bash tool implementation); the ShellExecutor workdir contract is therefore compiled with agent_mediation=not_established.",
+      "No supplied view shows any caller of TrashService (agent tool, appserver route, or lifecycle hook); its contract uses agent_mediation=not_established.",
+      "The backing store of sessions.purge / the session record (appserver/trash_service.py:290) is not supplied, so the durable record purge's effect stratum cannot be classified.",
+      "Provider LLM network submission sites (ChatAnthropic/ChatOpenAI invocation and the consumer of should_fallback_transport) are not in the supplied views; provider contracts commit at their in-source pre-network guard/decision points, and agent mediation rests only on docstring references to agent_v2._build_llm_from_config / AgentV2 that are not included in the supplied sources.",
+      "Handlers mounted via models_router (api_server.py:54-59, 71) are not supplied, so the middleware contract's coverage of those endpoints is evidenced only by registration.",
+      "tools/registry (default_registry) and any runtime wiring of change_directory_tool into ToolOrchestrator are not supplied, so runtime registration of the cd StructuredTool is unverified."
+    ],
+    "repository": "xin-yi33/RxyCode",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1ba2ec1988f7d626cee61fdbc97f072c"
+  },
+  "request_sha256": "d5132501e95615e90f733ed0d40f4de3a8a885a3c87375b04fddab02d18b9b6e",
+  "response_sha256": "db69ae2e24151588f7129f7711eee9d6c0e91c1e557fe9d8537209bfd44aec0f",
+  "state": "completed",
+  "tokens": 134770,
+  "unit": "v24-screen:1ba2ec1988f7d626cee61fdbc97f072c"
+}

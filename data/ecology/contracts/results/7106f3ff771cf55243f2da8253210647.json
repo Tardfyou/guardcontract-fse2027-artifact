@@ -1,0 +1,116 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Guard release: scheduling of background_tasks.add_task(deploy_after_approval, project_id) at line 2471 in the approval handler's deployment branch; effect commit: the authenticated POST session.post('https://api.netlify.com/api/v1/sites', ...) inside deploy_to_netlify at lines 1242-1246 (aiohttp path; httpx fallback POST at lines 1272-1276), which creates the live Netlify site.",
+        "contract_id": "ecological-contract:e2d7836867bd1569fac5e3cbcd748474",
+        "declared_mechanism": "Human-in-the-loop approval state machine over the in-memory projects_store: process_project_with_agents halts at 'awaiting_approval' (return at line 424); continue_after_approval writes a pending_deployment_approval record and sets status/current_phase to 'awaiting_deployment_approval' (lines 889-902) and halts; POST /api/approvals/approve with approval_type='deployment' rejects with HTTP 400 unless status == 'awaiting_deployment_approval' (lines 2461-2464), deletes the pending_deployment_approval record (lines 2466-2468), and only then schedules background_tasks.add_task(deploy_after_approval, project_id) (line 2471); deploy_after_approval then calls deploy_to_netlify (line 988).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 424,
+            "line_start": 399,
+            "path": "src/agentic_web_app_builder/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5dd725f0c1bc9985e96e5ba167d9da7b48229ba0ac59c9722fcc03940f9ddbfc"
+          },
+          {
+            "line_end": 902,
+            "line_start": 889,
+            "path": "src/agentic_web_app_builder/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5dd725f0c1bc9985e96e5ba167d9da7b48229ba0ac59c9722fcc03940f9ddbfc"
+          },
+          {
+            "line_end": 2473,
+            "line_start": 2461,
+            "path": "src/agentic_web_app_builder/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5dd725f0c1bc9985e96e5ba167d9da7b48229ba0ac59c9722fcc03940f9ddbfc"
+          },
+          {
+            "line_end": 2464,
+            "line_start": 2463,
+            "path": "src/agentic_web_app_builder/api/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5dd725f0c1bc9985e96e5ba167d9da7b48229ba0ac59c9722fcc03940f9ddbfc"
+          },
+          {
+            "line_end": 988,
+            "line_start": 976,
+            "path": "src/agentic_web_app_builder/api/main.py",
+            "role": "protected_operation",
+            "source_sha256": "5dd725f0c1bc9985e96e5ba167d9da7b48229ba0ac59c9722fcc03940f9ddbfc"
+          },
+          {
+            "line_end": 1117,
+            "line_start": 1116,
+            "path": "src/agentic_web_app_builder/api/main.py",
+            "role": "protected_operation",
+            "source_sha256": "5dd725f0c1bc9985e96e5ba167d9da7b48229ba0ac59c9722fcc03940f9ddbfc"
+          },
+          {
+            "line_end": 1246,
+            "line_start": 1241,
+            "path": "src/agentic_web_app_builder/api/main.py",
+            "role": "commit_point",
+            "source_sha256": "5dd725f0c1bc9985e96e5ba167d9da7b48229ba0ac59c9722fcc03940f9ddbfc"
+          },
+          {
+            "line_end": 757,
+            "line_start": 753,
+            "path": "src/agentic_web_app_builder/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5dd725f0c1bc9985e96e5ba167d9da7b48229ba0ac59c9722fcc03940f9ddbfc"
+          },
+          {
+            "line_end": 1158,
+            "line_start": 1156,
+            "path": "src/agentic_web_app_builder/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "5dd725f0c1bc9985e96e5ba167d9da7b48229ba0ac59c9722fcc03940f9ddbfc"
+          }
+        ],
+        "forbidden_condition": "The external deployment effect executing without a validated pending deployment approval: deploy_to_netlify creating a live Netlify site for a project that is not in the 'awaiting_deployment_approval' state with its pending_deployment_approval record being consumed by the deployment branch of /api/approvals/approve. The guard expresses this by returning HTTP 400 'Project is not awaiting deployment approval' when project status != 'awaiting_deployment_approval' (lines 2463-2464).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether POST /api/projects/{project_id}/deploy/{version_id} (ungated direct deploy_to_netlify call at line 3786) is intended to fall inside this approval obligation's scope.",
+          "Whether the 'feedback_review' approval path (deployment initiated from 'awaiting_feedback' at line 2443) counts as a valid variant of deployment approval or a guard gap relative to the 'awaiting_deployment_approval' requirement.",
+          "Whether the synthetic demo-URL fallback (no token, lines 1139-1142 and 1256-1257) counts as 'deployment' for this obligation, given that no external POST occurs.",
+          "Whether deployment is intended to be exclusively human-triggered: no agent tool registry, tool dispatch table, or agent lifecycle hook wiring appears in the supplied source, so agent mediation rests solely on the LLM-generated payload dataflow.",
+          "Whether the approver must be the project owner or any caller is acceptable; no identity binding is present in the supplied source."
+        ],
+        "protected_operation": "Deployment of the project's generated website content to Netlify via deploy_after_approval -> deploy_to_netlify (lines 976-988 and 1116-1117).",
+        "protected_resource": "The Netlify site-creation API endpoint https://api.netlify.com/api/v1/sites (authenticated with the configured Netlify access token) and the publicly hosted live site created from the project's agent-generated code.",
+        "protection_obligation": "A generated project must not be deployed to Netlify unless the project record is in the explicit 'awaiting_deployment_approval' state carrying a pending_deployment_approval record and the pending deployment has been explicitly approved via POST /api/approvals/approve with approval_type='deployment'; only after that handler's status check passes may it schedule background_tasks.add_task(deploy_after_approval, project_id), which performs the external Netlify deployment (merges the first-phase state-check wording and the second-phase explicit-approval wording of the same obligation).",
+        "scope_limits": [
+          "The gate as worded binds only the approval_type='deployment' branch of POST /api/approvals/approve; the same endpoint's 'feedback_review' branch also schedules deploy_after_approval (line 2443) from status 'awaiting_feedback' without requiring the 'awaiting_deployment_approval' state.",
+          "POST /api/approvals/{request_id}/respond (lines 2505-2538) schedules deploy_after_approval (line 2531) after matching only a pending_deployment_approval approval_id, without verifying status 'awaiting_deployment_approval'.",
+          "POST /api/projects/{project_id}/deploy/{version_id} (lines 3736-3786) invokes deploy_to_netlify directly (line 3786) with no approval-state check, bypassing the declared mechanism entirely.",
+          "If no Netlify token is configured, deploy_to_netlify short-circuits and returns a synthetic 'https://demo-<id>.netlify.app' URL without performing the external POST (lines 1139-1142); deployment failures also degrade to the demo URL (lines 1256-1257), so no external effect occurs on those paths.",
+          "No authentication or authorization protects the approval endpoints in the supplied source; the guard checks workflow state, not approver identity.",
+          "The status check and background-task scheduling are non-transactional operations over the in-memory projects_store dict; no lock or atomicity guarantee appears in the supplied source.",
+          "The guard is declared only within the supplied module src/agentic_web_app_builder/api/main.py; deployment or approval entry points outside this view are unverified."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Approver identity and authorization requirements for POST /api/approvals/approve are unsupported by the supplied source: no authentication middleware, token check, or user-role validation is visible.",
+      "No agent tool registry, tool-dispatch table, or agent lifecycle hook configuration is present in the supplied source; whether the deployment effect is also exposed as an agent-invocable tool cannot be determined.",
+      "Behavior/runtime labels (e.g., whether the ungated /api/projects/{project_id}/deploy/{version_id} path or the 'feedback_review' deploy path are exercised in practice) are unavailable; analysis is static over a single supplied file.",
+      "Whether additional deployment entry points or approval enforcement exist outside src/agentic_web_app_builder/api/main.py is unknown because repository enumeration is incomplete."
+    ],
+    "repository": "Ron-Madan/Agentic-AI-Website-Builder",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7106f3ff771cf55243f2da8253210647"
+  },
+  "request_sha256": "482d10c84d8eb995ddde0d5898f132da2d026912029a4dea0793ee868cf54fb9",
+  "response_sha256": "73baab02b8dabbad88d6a9fa1af296cbce77b96df328ce056fe461f8cc371036",
+  "state": "completed",
+  "tokens": 63844,
+  "unit": "v24-screen:7106f3ff771cf55243f2da8253210647"
+}

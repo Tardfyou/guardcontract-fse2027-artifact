@@ -1,0 +1,723 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The resource.setrlimit calls in apply_rlimits (guards.py:221-229), reached via install_guards(spec) in worker_main before the cell op loop (worker.py:435-437).",
+        "contract_id": "ecological-contract:1950dc6d6b57f1b175acfeaaaa84cc65",
+        "declared_mechanism": "apply_rlimits() sets RLIMIT_AS and RLIMIT_CPU with soft == hard (clamped to any existing hard limit); sequenced first by install_guards(spec) in worker_main before the cell op loop; check_enforceable + SandboxedExecutor.__init__ raise SandboxUnavailable when the rlimit probe fails and config.require is set; the parent classifies SIGXCPU/SIGKILL worker deaths as CellTimeoutError/CellMemoryError.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 214,
+            "line_start": 207,
+            "path": "src/nooa/runtime/sandbox/guards.py",
+            "role": "forbidden_condition",
+            "source_sha256": "41bf5d21d832bba055551d65feef5359f3fd7fe71806084a0903e69f2b9953b0"
+          },
+          {
+            "line_end": 229,
+            "line_start": 207,
+            "path": "src/nooa/runtime/sandbox/guards.py",
+            "role": "guard_registration",
+            "source_sha256": "41bf5d21d832bba055551d65feef5359f3fd7fe71806084a0903e69f2b9953b0"
+          },
+          {
+            "line_end": 229,
+            "line_start": 221,
+            "path": "src/nooa/runtime/sandbox/guards.py",
+            "role": "commit_point",
+            "source_sha256": "41bf5d21d832bba055551d65feef5359f3fd7fe71806084a0903e69f2b9953b0"
+          },
+          {
+            "line_end": 443,
+            "line_start": 429,
+            "path": "src/nooa/runtime/sandbox/worker.py",
+            "role": "commit_point",
+            "source_sha256": "cd99b8dc048104378262af5742902eba3ce0ae6cb97dcd4c6ba7e44ee06e7ac0"
+          },
+          {
+            "line_end": 116,
+            "line_start": 107,
+            "path": "src/nooa/runtime/sandbox/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "b866c8d4467762de5d1f250de160fb531ac4a8a068c854074467fab146bc2ef0"
+          },
+          {
+            "line_end": 1429,
+            "line_start": 1422,
+            "path": "src/nooa/runtime/actor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "430696455f91fd9825d842ca49fe146484a7823540d677cbf8cbe6ee68c233a6"
+          }
+        ],
+        "forbidden_condition": "Worker memory allocation beyond (current VmSize + max_memory_mb) or CPU consumption beyond max_cpu_seconds, under RLIMIT_AS/RLIMIT_CPU limits installed with soft equal to hard.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Configured max_memory_mb / max_cpu_seconds values come from SandboxConfig resolution whose source is not supplied."
+        ],
+        "protected_operation": "Execution of LLM-generated cells inside the resource-capped sandbox worker process.",
+        "protected_resource": "The sandbox worker process's address space and CPU time.",
+        "protection_obligation": "The sandboxed CodeAct worker must not exceed its configured address-space and CPU-time caps, enforced irrevocably by RLIMIT_AS/RLIMIT_CPU (soft == hard) before any cell runs; the parent must fail closed via SandboxUnavailable when rlimit enforcement is unavailable and sandbox.require is set.",
+        "scope_limits": [
+          "max_memory_mb is headroom above the worker's current virtual size, not an absolute cap (guards.py:207-214).",
+          "With sandbox.require=False on a host lacking rlimit, the caps are pruned and the executor runs degraded (executor.py:116-125)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "scrub_value inside _safe_msg_to_dict (src/nooa/tracing/_litellm_journal.py:76-79), executed in the log_pre_api_call fallback skeletoning (line 562) and log_success_event output handling (line 595), before _send_new_blocks/_send_call issue the HTTP POSTs (lines 522-527, 627-632).",
+        "contract_id": "ecological-contract:5e99b3781944aa937a8418058c739540",
+        "declared_mechanism": "_safe_msg_to_dict applies scrub_value to every message dict before it enters the skeleton/blocks; MessageJournalCallback (a litellm CustomLogger) sends only scrubbed content via _post_ with apply_viewer_auth headers to each destination.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 79,
+            "line_start": 59,
+            "path": "src/nooa/tracing/_litellm_journal.py",
+            "role": "guard_registration",
+            "source_sha256": "7dbb0209b3e6c74aa12143f960f82343231d36d4c1354e6a7f119444c09600ea"
+          },
+          {
+            "line_end": 566,
+            "line_start": 544,
+            "path": "src/nooa/tracing/_litellm_journal.py",
+            "role": "guard_registration",
+            "source_sha256": "7dbb0209b3e6c74aa12143f960f82343231d36d4c1354e6a7f119444c09600ea"
+          },
+          {
+            "line_end": 598,
+            "line_start": 585,
+            "path": "src/nooa/tracing/_litellm_journal.py",
+            "role": "commit_point",
+            "source_sha256": "7dbb0209b3e6c74aa12143f960f82343231d36d4c1354e6a7f119444c09600ea"
+          },
+          {
+            "line_end": 632,
+            "line_start": 627,
+            "path": "src/nooa/tracing/_litellm_journal.py",
+            "role": "commit_point",
+            "source_sha256": "7dbb0209b3e6c74aa12143f960f82343231d36d4c1354e6a7f119444c09600ea"
+          },
+          {
+            "line_end": 66,
+            "line_start": 28,
+            "path": "src/nooa/tracing/_secret_scrubber.py",
+            "role": "forbidden_condition",
+            "source_sha256": "90c9ea18270aeeb930970275141b478962139ac70e881ce9f2957a873b0fd4b6"
+          },
+          {
+            "line_end": 3020,
+            "line_start": 3010,
+            "path": "src/nooa/runtime/actor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "430696455f91fd9825d842ca49fe146484a7823540d677cbf8cbe6ee68c233a6"
+          }
+        ],
+        "forbidden_condition": "Posting or writing a journal message/block whose content contains credential material that scrub_value would redact (secret patterns or sensitive/opaque-provider-state keys); every message must pass through _safe_msg_to_dict before skeletonization and delivery.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Scrubbing of journal sideband blocks is not established: when the sideband payload exists, log_pre_api_call posts payload.blocks directly without _safe_msg_to_dict (_litellm_journal.py:553-557); the sideband builder (nooa.tracing._journal_builder) is not in supplied source."
+        ],
+        "protected_operation": "Journal delivery of agent LLM call inputs/outputs: MessageJournalCallback.log_pre_api_call / log_success_event building skeletons and blocks and dispatching _send_new_blocks / _send_call.",
+        "protected_resource": "Viewer journal HTTP endpoints (/v1/journal/blocks, /v1/journal/calls) and file journal writers.",
+        "protection_obligation": "Credential material (API keys, tokens, private keys, sensitive keys) must be scrubbed from LiteLLM journal message dicts before they are delivered to external telemetry sinks \u2014 the viewer journal HTTP endpoints and file journal writers \u2014 during agent LLM calls.",
+        "scope_limits": [
+          "FileMessageJournalCallback reuses payloads scrubbed on the shared message path; writer.append_blocks/append_call internals are not in supplied source.",
+          "_post_ itself (fire-and-forget daemon thread with retries) is transport and not part of the scrub decision."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "seccomp(SET_MODE_FILTER) inside _seccomp_install via apply_seccomp_no_inet (guards.py:340-352), reached via install_guards(spec) in worker_main before the op loop (worker.py:435-437).",
+        "contract_id": "ecological-contract:93ae9ffedd1900a727e939affba4e18a",
+        "declared_mechanism": "apply_seccomp_no_inet() installs PR_SET_NO_NEW_PRIVS and a seccomp-BPF filter (SET_MODE_FILTER) returning EACCES for socket(AF_INET/AF_INET6); sequenced by install_guards(spec) in worker_main before the cell op loop; check_enforceable + SandboxedExecutor.__init__ raise SandboxUnavailable when the seccomp probe fails and config.require is set.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 337,
+            "line_start": 303,
+            "path": "src/nooa/runtime/sandbox/guards.py",
+            "role": "guard_registration",
+            "source_sha256": "41bf5d21d832bba055551d65feef5359f3fd7fe71806084a0903e69f2b9953b0"
+          },
+          {
+            "line_end": 352,
+            "line_start": 347,
+            "path": "src/nooa/runtime/sandbox/guards.py",
+            "role": "commit_point",
+            "source_sha256": "41bf5d21d832bba055551d65feef5359f3fd7fe71806084a0903e69f2b9953b0"
+          },
+          {
+            "line_end": 443,
+            "line_start": 429,
+            "path": "src/nooa/runtime/sandbox/worker.py",
+            "role": "commit_point",
+            "source_sha256": "cd99b8dc048104378262af5742902eba3ce0ae6cb97dcd4c6ba7e44ee06e7ac0"
+          },
+          {
+            "line_end": 81,
+            "line_start": 69,
+            "path": "src/nooa/runtime/sandbox/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "b866c8d4467762de5d1f250de160fb531ac4a8a068c854074467fab146bc2ef0"
+          },
+          {
+            "line_end": 1429,
+            "line_start": 1422,
+            "path": "src/nooa/runtime/actor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "430696455f91fd9825d842ca49fe146484a7823540d677cbf8cbe6ee68c233a6"
+          }
+        ],
+        "forbidden_condition": "Creation of an internet socket inside the worker process \u2014 socket(AF_INET) or socket(AF_INET6) \u2014 which the installed BPF filter rejects with EACCES; AF_UNIX and all other syscalls are untouched by the filter.",
+        "missing_evidence_roles": [
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether network-adjacent syscalls other than socket() (e.g. connect on pre-existing descriptors) are restricted is not established by supplied source."
+        ],
+        "protected_operation": "Execution of LLM-generated cells inside the sandbox worker without internet socket access.",
+        "protected_resource": "The sandbox worker process's internet-socket creation capability.",
+        "protection_obligation": "Code running in the sandboxed CodeAct worker must be unable to create internet sockets (AF_INET/AF_INET6), enforced irrevocably by seccomp-BPF before any cell runs; the parent must fail closed via SandboxUnavailable when seccomp is unenforceable and sandbox.require is set.",
+        "scope_limits": [
+          "Only socket creation for AF_INET/AF_INET6 is denied; the filter allows foreign-arch and all other syscalls, and AF_UNIX IPC for the broker pipe keeps working.",
+          "With sandbox.require=False on a host lacking seccomp, the network guard is pruned and the executor runs degraded (executor.py:116-125)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "validator.validate(code, context) in ActorRuntime.execute_code (actor.py:1414-1417), whose failure path returns ExecutionResult with the error (actor.py:1418-1420); ValidationError is raised in UnifiedCodeValidator.validate (code_validator.py:1466-1468).",
+        "contract_id": "ecological-contract:93b7ab2f98a26164411b5850fb858e9e",
+        "declared_mechanism": "UnifiedCodeValidator.validate() runs SecurityValidator (E001/E002/E003/E005 checks) over the parsed AST and raises RestrictedCodeError (ValidationError) with IPython-style formatting; invoked in ActorRuntime.execute_code inside the time_code_validation timer.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 169,
+            "line_start": 148,
+            "path": "src/nooa/runtime/code_validator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b7a5146f369eea5a593a53360078a6597771d3eb85294670f3427f61c6dbed81"
+          },
+          {
+            "line_end": 294,
+            "line_start": 280,
+            "path": "src/nooa/runtime/code_validator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b7a5146f369eea5a593a53360078a6597771d3eb85294670f3427f61c6dbed81"
+          },
+          {
+            "line_end": 466,
+            "line_start": 435,
+            "path": "src/nooa/runtime/code_validator.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b7a5146f369eea5a593a53360078a6597771d3eb85294670f3427f61c6dbed81"
+          },
+          {
+            "line_end": 1468,
+            "line_start": 1426,
+            "path": "src/nooa/runtime/code_validator.py",
+            "role": "guard_registration",
+            "source_sha256": "b7a5146f369eea5a593a53360078a6597771d3eb85294670f3427f61c6dbed81"
+          },
+          {
+            "line_end": 1420,
+            "line_start": 1373,
+            "path": "src/nooa/runtime/actor.py",
+            "role": "guard_registration",
+            "source_sha256": "430696455f91fd9825d842ca49fe146484a7823540d677cbf8cbe6ee68c233a6"
+          },
+          {
+            "line_end": 1417,
+            "line_start": 1414,
+            "path": "src/nooa/runtime/actor.py",
+            "role": "commit_point",
+            "source_sha256": "430696455f91fd9825d842ca49fe146484a7823540d677cbf8cbe6ee68c233a6"
+          },
+          {
+            "line_end": 1600,
+            "line_start": 1583,
+            "path": "src/nooa/runtime/actor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "430696455f91fd9825d842ca49fe146484a7823540d677cbf8cbe6ee68c233a6"
+          }
+        ],
+        "forbidden_condition": "Generated code containing calls to FORBIDDEN_BUILTINS (exec, eval, compile, __import__, input, breakpoint, globals, locals, vars, exit, quit, set_restricted_imports, get_restricted_imports) or their aliases (E001), imports matching the restricted_imports/blocked_modules deny lists (E002), 'from ... import *' (E003), or process termination via raise SystemExit/KeyboardInterrupt or sys.exit/os._exit/os.abort (E005).",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "In-process execution of LLM-generated code via ActorRuntime.execute_code (validation runs on the shared path before compilation/exec and before sandbox run_cell delegation).",
+        "protected_resource": "The agent process interpreter/runtime that would execute the generated cell.",
+        "protection_obligation": "LLM-generated cell code must pass unified AST validation before execution: code containing forbidden builtins/attribute calls, restricted or blocked imports, wildcard imports, or process-termination calls must raise ValidationError (surfaced as the cell's execution error) before any exec of the cell.",
+        "scope_limits": [
+          "The validator module explicitly declares these checks to be guardrails, not a security boundary \u2014 static AST checks are bypassable and containment is delegated to OS-level sandboxing (code_validator.py:11-24); this contract makes no containment claim.",
+          "On the execute_code path a validation failure is returned as ExecutionResult.error rather than raised.",
+          "Blocking-call prevention (E310) and REPL policy checks are separate validators within the same framework."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The middleware's 400 JSONResponse returned instead of call_next (main.py:320-334).",
+        "contract_id": "ecological-contract:b2d6389d0c7ce5563591af32fc084fe1",
+        "declared_mechanism": "@app.middleware('http') _enforce_host_header checks the Host header for browser-shaped requests and returns a 400 JSONResponse before call_next; disabled entirely by NOOA_VIEWER_ALLOWED_HOSTS='*'.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 319,
+            "line_start": 304,
+            "path": "src/nooa/viewer/main.py",
+            "role": "guard_registration",
+            "source_sha256": "053c6dd2c6664a43aa3502ace306219e516a66538c03f24df56b54253732f78e"
+          },
+          {
+            "line_end": 267,
+            "line_start": 261,
+            "path": "src/nooa/viewer/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "053c6dd2c6664a43aa3502ace306219e516a66538c03f24df56b54253732f78e"
+          },
+          {
+            "line_end": 334,
+            "line_start": 320,
+            "path": "src/nooa/viewer/main.py",
+            "role": "commit_point",
+            "source_sha256": "053c6dd2c6664a43aa3502ace306219e516a66538c03f24df56b54253732f78e"
+          },
+          {
+            "line_end": 632,
+            "line_start": 627,
+            "path": "src/nooa/tracing/_litellm_journal.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7dbb0209b3e6c74aa12143f960f82343231d36d4c1354e6a7f119444c09600ea"
+          },
+          {
+            "line_end": 558,
+            "line_start": 553,
+            "path": "src/nooa/viewer/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "053c6dd2c6664a43aa3502ace306219e516a66538c03f24df56b54253732f78e"
+          }
+        ],
+        "forbidden_condition": "A browser-shaped request (any of sec-fetch-site/sec-fetch-mode/sec-fetch-dest/origin headers present) whose Host is neither localhost, an IP literal, this machine's own hostname (or hostname.* prefix), nor a configured NOOA_VIEWER_ALLOWED_HOSTS entry (unless set to '*').",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Serving the viewer API \u2014 including agent trace/journal data returned from the store \u2014 in response to browser requests.",
+        "protected_resource": "The viewer HTTP surface and the agent-generated trace/journal data it serves from the SQLite store.",
+        "protection_obligation": "The viewer must reject browser-shaped requests whose Host header is not this server (DNS rebinding defense) before they reach any handler, while never rejecting programmatic exporter traffic (the agent span/journal export path).",
+        "scope_limits": [
+          "Non-browser-shaped requests \u2014 including the agent exporters, which set neither Sec-Fetch-* nor Origin \u2014 are exempt by design; the guard does not authenticate and complements _require_viewer_authorization for loopback browser traffic.",
+          "Loopback programmatic ingest is intentionally allowed through this middleware."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "self._turn_claimed = True executed under _state_lock inside SessionRuntime.turn() (packages/nooa-acp/src/nooa_acp/_runtime.py:71); the protocol-visible rejection commits when prompt() raises RequestError.invalid_request / RequestError.resource_not_found (server.py:360-368).",
+        "contract_id": "ecological-contract:b514bd218713ef49ee1d0d573781657b",
+        "declared_mechanism": "SessionRuntime.turn() checks state and _turn_claimed under _state_lock before setting _turn_claimed = True (released in finally); CodingACPAdapter.prompt wraps the whole turn in runtime.turn() and maps SessionBusyError to RequestError.invalid_request ({'reason': 'A prompt is already running'}) and SessionRuntimeClosedError to RequestError.resource_not_found; InteractiveSessionDispatcher._ensure_idle/_run_active add a redundant idle check.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 71,
+            "line_start": 63,
+            "path": "packages/nooa-acp/src/nooa_acp/_runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "c35f023c8edc90cfc2e36d3f4e376633df9438be20aa6b45aa599d9e44b1b000"
+          },
+          {
+            "line_end": 26,
+            "line_start": 21,
+            "path": "packages/nooa-acp/src/nooa_acp/_runtime.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c35f023c8edc90cfc2e36d3f4e376633df9438be20aa6b45aa599d9e44b1b000"
+          },
+          {
+            "line_end": 71,
+            "line_start": 71,
+            "path": "packages/nooa-acp/src/nooa_acp/_runtime.py",
+            "role": "commit_point",
+            "source_sha256": "c35f023c8edc90cfc2e36d3f4e376633df9438be20aa6b45aa599d9e44b1b000"
+          },
+          {
+            "line_end": 281,
+            "line_start": 264,
+            "path": "packages/nooa-acp/src/nooa_acp/server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ae27952eaad90ff4956bfdbca2dd179731ca60d8e7b1faa94e37f2a74888b1ff"
+          },
+          {
+            "line_end": 368,
+            "line_start": 360,
+            "path": "packages/nooa-acp/src/nooa_acp/server.py",
+            "role": "guard_registration",
+            "source_sha256": "ae27952eaad90ff4956bfdbca2dd179731ca60d8e7b1faa94e37f2a74888b1ff"
+          },
+          {
+            "line_end": 56,
+            "line_start": 49,
+            "path": "packages/nooa-acp/src/nooa_acp/dispatcher.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8d494b3aca14f17bd1fc1ef4ee4dbef9eebc41c6845da063dd9c9e6dee1d7484"
+          }
+        ],
+        "forbidden_condition": "A second concurrent foreground turn claiming a SessionRuntime whose _turn_claimed flag is already set (SessionBusyError), or a turn claim while the runtime state is not OPEN (SessionRuntimeClosedError); redundantly, InteractiveSessionDispatcher.submit/_run_active while the dispatcher's active task is not done (RuntimeError 'A prompt is already running').",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The acp.run_agent JSON-RPC router internals that dispatch session/prompt to CodingACPAdapter.prompt are not in supplied source."
+        ],
+        "protected_operation": "ACP session/prompt turn execution: CodingACPAdapter.prompt entering the SessionRuntime.turn() context and driving the session's InteractiveSessionDispatcher (submit/invoke_slash) around the CodingAgent turn.",
+        "protected_resource": "The per-session foreground turn slot of a live SessionRuntime held in the nooa-acp adapter's SessionRuntimePool.",
+        "protection_obligation": "A live ACP session must run at most one foreground prompt turn at a time: SessionRuntime.turn() must reject a second concurrent turn claim and any claim on a closing/closed session, and CodingACPAdapter.prompt must map those rejections to ACP RequestError responses at the JSON-RPC boundary.",
+        "scope_limits": [
+          "Covers only foreground prompt turns on a single live session runtime; cancel() and session close paths have their own serialization and are not protected by this claim guard.",
+          "The dispatcher idle check raises a plain RuntimeError; the ACP error mapping exists only at the adapter boundary.",
+          "SessionRuntimePool duplicate-registration and closed-pool rejection (_runtime.py:136-153, 212-224) is adjacent adapter behavior and is not compiled as a separate contract."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "provider.add_span_processor(SecretScrubSpanProcessor(inner)) in _add_exporters (src/nooa/tracing/__init__.py:395); the per-span scrub commits in SecretScrubSpanProcessor.on_end before inner.on_end (src/nooa/tracing/_secret_scrubber.py:332-364).",
+        "contract_id": "ecological-contract:ce7dd27d66b2f87c6fc7f53049492333",
+        "declared_mechanism": "_add_exporters wraps every non-local exporter's SimpleSpanProcessor/BatchSpanProcessor in SecretScrubSpanProcessor; its on_end redacts sensitive keys and regex-matched secrets from span attributes (adding secrets.redacted_count) before delegating to the inner processor.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 395,
+            "line_start": 374,
+            "path": "src/nooa/tracing/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "7e28775f8216a47e8c044756cf5309a17164cf1f17438238825c43423618dc29"
+          },
+          {
+            "line_end": 447,
+            "line_start": 424,
+            "path": "src/nooa/tracing/__init__.py",
+            "role": "protected_operation",
+            "source_sha256": "7e28775f8216a47e8c044756cf5309a17164cf1f17438238825c43423618dc29"
+          },
+          {
+            "line_end": 66,
+            "line_start": 28,
+            "path": "src/nooa/tracing/_secret_scrubber.py",
+            "role": "forbidden_condition",
+            "source_sha256": "90c9ea18270aeeb930970275141b478962139ac70e881ce9f2957a873b0fd4b6"
+          },
+          {
+            "line_end": 364,
+            "line_start": 332,
+            "path": "src/nooa/tracing/_secret_scrubber.py",
+            "role": "commit_point",
+            "source_sha256": "90c9ea18270aeeb930970275141b478962139ac70e881ce9f2957a873b0fd4b6"
+          },
+          {
+            "line_end": 142,
+            "line_start": 129,
+            "path": "src/nooa/tracing/__init__.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7e28775f8216a47e8c044756cf5309a17164cf1f17438238825c43423618dc29"
+          }
+        ],
+        "forbidden_condition": "A span carrying credential material in its attributes (values matching the high-precision secret patterns, or values under sensitive/opaque-provider-state keys) reaching an OTLP HTTP exporter's export path unredacted.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "OTLP HTTP span export from the TracerProvider's processor chain (BatchSpanProcessor-wrapped network exporters, e.g. the journal exporter posting to the viewer's /v1/traces).",
+        "protected_resource": "OTLP HTTP telemetry endpoints receiving agent spans.",
+        "protection_obligation": "Spans exported over OTLP HTTP (network telemetry sinks) must have detected secrets \u2014 API keys, bearer tokens, private keys, sensitive credential keys, and provider-opaque state keys \u2014 redacted from their attributes before any exporter sends them.",
+        "scope_limits": [
+          "If span._attributes is absent or unwritable, the scrubber only logs a warning and the redaction may not be applied (_secret_scrubber.py:356-362).",
+          "Pattern-based scrubbing is high-precision/low-false-positive by design and does not claim to catch arbitrary secret formats.",
+          "Local exporters (file/console) are covered by the same wrap and are compiled as a separate file-stratum contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The landlock_restrict_self syscall inside apply_landlock (guards.py:293-295), reached via install_guards(spec) invoked in worker_main before the op loop (worker.py:435-437).",
+        "contract_id": "ecological-contract:e2bd74fc3490a5daeaf1d56ff8531e5c",
+        "declared_mechanism": "apply_landlock() creates a default-deny Landlock ruleset (handled_access_fs per ABI mask), adds path-beneath allow rules (required paths failing closed), sets PR_SET_NO_NEW_PRIVS and calls landlock_restrict_self; install_guards(spec) sequences it in worker_main after the namespace build and before the cell op loop; SandboxedExecutor.__init__ raises SandboxUnavailable when the capability probe reports Landlock unavailable and config.require is set.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 256,
+            "line_start": 248,
+            "path": "src/nooa/runtime/sandbox/guards.py",
+            "role": "forbidden_condition",
+            "source_sha256": "41bf5d21d832bba055551d65feef5359f3fd7fe71806084a0903e69f2b9953b0"
+          },
+          {
+            "line_end": 297,
+            "line_start": 257,
+            "path": "src/nooa/runtime/sandbox/guards.py",
+            "role": "guard_registration",
+            "source_sha256": "41bf5d21d832bba055551d65feef5359f3fd7fe71806084a0903e69f2b9953b0"
+          },
+          {
+            "line_end": 295,
+            "line_start": 293,
+            "path": "src/nooa/runtime/sandbox/guards.py",
+            "role": "commit_point",
+            "source_sha256": "41bf5d21d832bba055551d65feef5359f3fd7fe71806084a0903e69f2b9953b0"
+          },
+          {
+            "line_end": 369,
+            "line_start": 358,
+            "path": "src/nooa/runtime/sandbox/guards.py",
+            "role": "guard_registration",
+            "source_sha256": "41bf5d21d832bba055551d65feef5359f3fd7fe71806084a0903e69f2b9953b0"
+          },
+          {
+            "line_end": 443,
+            "line_start": 429,
+            "path": "src/nooa/runtime/sandbox/worker.py",
+            "role": "commit_point",
+            "source_sha256": "cd99b8dc048104378262af5742902eba3ce0ae6cb97dcd4c6ba7e44ee06e7ac0"
+          },
+          {
+            "line_end": 116,
+            "line_start": 105,
+            "path": "src/nooa/runtime/sandbox/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "b866c8d4467762de5d1f250de160fb531ac4a8a068c854074467fab146bc2ef0"
+          },
+          {
+            "line_end": 1429,
+            "line_start": 1422,
+            "path": "src/nooa/runtime/actor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "430696455f91fd9825d842ca49fe146484a7823540d677cbf8cbe6ee68c233a6"
+          }
+        ],
+        "forbidden_condition": "Any filesystem access by the worker process to a path not covered by a Landlock path-beneath rule granting the attempted access, after landlock_restrict_self has committed.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The concrete Landlock rule set (workspace path, write flags, required vs optional system paths) is resolved by nooa.runtime.sandbox.config.resolve_spec, whose source is not supplied."
+        ],
+        "protected_operation": "Execution of LLM-generated cells inside the sandbox worker process (run_cell_source over the persistent cell namespace).",
+        "protected_resource": "The sandbox worker process's filesystem access surface (everything beyond the resolved Landlock rules, e.g. the configured workspace).",
+        "protection_obligation": "Code running in the sandboxed CodeAct worker process must be denied filesystem access outside the resolved Landlock allow rules, enforced irrevocably (default-deny) before any cell runs; the parent must fail closed via SandboxUnavailable when Landlock is unenforceable and sandbox.require is set.",
+        "scope_limits": [
+          "Only the sandbox worker process is confined; in-process (non-sandbox) cell execution is covered by the separate pre-execution validator contract, whose module docstring disclaims containment.",
+          "With sandbox.require=False on a host lacking Landlock, the guard is pruned and the executor runs degraded (executor.py:116-125)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Dependency rejection in _require_viewer_authorization before handler execution (main.py:207-245); the protected write commits at otlp_store.ingest_batch_write_bytes in the single-writer ingest worker (main.py:117).",
+        "contract_id": "ecological-contract:f00cd493460f7231e70de61d7535aa0e",
+        "declared_mechanism": "_require_viewer_authorization FastAPI dependency (loopback OR constant-time cookie compare OR constant-time bearer compare; 403 when the token is unset for non-loopback clients), registered via dependencies=_protected on every included router (main.py:345-349) and on /v1/traces, /v1/sync, and the journal endpoints; accepted ingest writes commit through the single-writer ingest worker.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 245,
+            "line_start": 207,
+            "path": "src/nooa/viewer/main.py",
+            "role": "guard_registration",
+            "source_sha256": "053c6dd2c6664a43aa3502ace306219e516a66538c03f24df56b54253732f78e"
+          },
+          {
+            "line_end": 255,
+            "line_start": 255,
+            "path": "src/nooa/viewer/main.py",
+            "role": "guard_registration",
+            "source_sha256": "053c6dd2c6664a43aa3502ace306219e516a66538c03f24df56b54253732f78e"
+          },
+          {
+            "line_end": 349,
+            "line_start": 345,
+            "path": "src/nooa/viewer/main.py",
+            "role": "guard_registration",
+            "source_sha256": "053c6dd2c6664a43aa3502ace306219e516a66538c03f24df56b54253732f78e"
+          },
+          {
+            "line_end": 380,
+            "line_start": 357,
+            "path": "src/nooa/viewer/main.py",
+            "role": "protected_operation",
+            "source_sha256": "053c6dd2c6664a43aa3502ace306219e516a66538c03f24df56b54253732f78e"
+          },
+          {
+            "line_end": 117,
+            "line_start": 104,
+            "path": "src/nooa/viewer/main.py",
+            "role": "commit_point",
+            "source_sha256": "053c6dd2c6664a43aa3502ace306219e516a66538c03f24df56b54253732f78e"
+          },
+          {
+            "line_end": 234,
+            "line_start": 221,
+            "path": "src/nooa/tracing/_litellm_journal.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7dbb0209b3e6c74aa12143f960f82343231d36d4c1354e6a7f119444c09600ea"
+          }
+        ],
+        "forbidden_condition": "A non-loopback request lacking a valid nooa_viewer_session cookie or a 'Bearer <token>' Authorization header reaching a protected route \u2014 including any non-loopback request when NOOA_VIEWER_AUTH_TOKEN is unset (fail-closed 403).",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "OTLP trace ingest, journal ingest, and trace/eval/annotation/explorer/memory router access against the viewer's shared SQLite store.",
+        "protected_resource": "The viewer's shared SQLite trace/journal store (otlp_store) and its protected API surface.",
+        "protection_obligation": "Viewer API endpoints receiving agent telemetry \u2014 POST /v1/traces OTLP ingest, the journal ingest endpoints, and all protected routers \u2014 must reject requests that are neither loopback-origin nor authenticated with the NOOA_VIEWER_AUTH_TOKEN bearer/session-cookie credential, before any payload reaches the shared SQLite trace/journal store.",
+        "scope_limits": [
+          "The static SPA catch-all and /assets mount are not behind the dependency.",
+          "CORS middleware configuration (main.py:337-343) is ordinary web CORS and is not compiled as a separate contract.",
+          "Session-cookie issuance via the ?token= bootstrap redirect (main.py:588-623) is part of the credential scheme, not an independent guard."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Module-level patch assignment at import time (src/nooa/runtime/async_safety.py:100-103); the per-call rejection commits in the wrappers before the original blocking call (e.g. _safe_future_result, lines 53-58).",
+        "contract_id": "ecological-contract:f8b92e7c205ff95b64691fa81057707e",
+        "declared_mechanism": "Import-time monkeypatch of concurrent.futures.Future.result/exception and concurrent.futures.wait/as_completed with wrappers that check _in_agent_context plus _is_event_loop_thread() and raise RuntimeError before delegating to the originals; agent_async_safety_context() sets the activation ContextVar around generated-code execution.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 70,
+            "line_start": 51,
+            "path": "src/nooa/runtime/async_safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d60efec5b3e9ad00e809ce518c8241912765cc12830cd6681d1f106cfb292380"
+          },
+          {
+            "line_end": 96,
+            "line_start": 73,
+            "path": "src/nooa/runtime/async_safety.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d60efec5b3e9ad00e809ce518c8241912765cc12830cd6681d1f106cfb292380"
+          },
+          {
+            "line_end": 103,
+            "line_start": 99,
+            "path": "src/nooa/runtime/async_safety.py",
+            "role": "commit_point",
+            "source_sha256": "d60efec5b3e9ad00e809ce518c8241912765cc12830cd6681d1f106cfb292380"
+          },
+          {
+            "line_end": 122,
+            "line_start": 106,
+            "path": "src/nooa/runtime/async_safety.py",
+            "role": "guard_registration",
+            "source_sha256": "d60efec5b3e9ad00e809ce518c8241912765cc12830cd6681d1f106cfb292380"
+          },
+          {
+            "line_end": 1600,
+            "line_start": 1583,
+            "path": "src/nooa/runtime/actor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "430696455f91fd9825d842ca49fe146484a7823540d677cbf8cbe6ee68c233a6"
+          }
+        ],
+        "forbidden_condition": "Calling concurrent.futures.Future.result()/Future.exception() on a not-yet-done future, or concurrent.futures.wait()/as_completed(), from the event-loop thread while the _in_agent_context ContextVar is True.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether the activation ContextVar propagates into threads spawned by generated code (where Future.result() could legitimately block) is not established by supplied source."
+        ],
+        "protected_operation": "Event-loop execution of LLM-generated cell code (and other code inside agent_async_safety_context) that might invoke concurrent.futures blocking entry points.",
+        "protected_resource": "The asyncio event loop thread executing agent-generated code; the concurrent.futures blocking entry points.",
+        "protection_obligation": "While agent code executes under agent_async_safety_context on the event-loop thread, blocking concurrent.futures entry points (Future.result, Future.exception, wait, as_completed) must raise RuntimeError before the underlying blocking wait runs, preventing event-loop deadlock during agent code execution.",
+        "scope_limits": [
+          "The guards activate only inside agent_async_safety_context(); outside that context the patched calls pass through unchanged.",
+          "AST-level blocking-call prevention (E310) is a separate validator contract; this module is the runtime backstop for cross-block patterns.",
+          "Thread detection relies on loop._thread_id when present, otherwise assumes the loop thread when get_running_loop() succeeds (async_safety.py:39-48)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "provider.add_span_processor(SecretScrubSpanProcessor(inner)) in _add_exporters (src/nooa/tracing/__init__.py:395); the per-span scrub commits in SecretScrubSpanProcessor.on_end before inner.on_end (src/nooa/tracing/_secret_scrubber.py:332-364).",
+        "contract_id": "ecological-contract:fc0339ac4998c6554dac43ec6581b36a",
+        "declared_mechanism": "_add_exporters wraps the local exporter's SimpleSpanProcessor in SecretScrubSpanProcessor; its on_end redacts sensitive keys and regex-matched secrets from span attributes before delegating to the inner processor.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 182,
+            "line_start": 179,
+            "path": "src/nooa/tracing/__init__.py",
+            "role": "protected_operation",
+            "source_sha256": "7e28775f8216a47e8c044756cf5309a17164cf1f17438238825c43423618dc29"
+          },
+          {
+            "line_end": 395,
+            "line_start": 374,
+            "path": "src/nooa/tracing/__init__.py",
+            "role": "guard_registration",
+            "source_sha256": "7e28775f8216a47e8c044756cf5309a17164cf1f17438238825c43423618dc29"
+          },
+          {
+            "line_end": 66,
+            "line_start": 28,
+            "path": "src/nooa/tracing/_secret_scrubber.py",
+            "role": "forbidden_condition",
+            "source_sha256": "90c9ea18270aeeb930970275141b478962139ac70e881ce9f2957a873b0fd4b6"
+          },
+          {
+            "line_end": 364,
+            "line_start": 332,
+            "path": "src/nooa/tracing/_secret_scrubber.py",
+            "role": "commit_point",
+            "source_sha256": "90c9ea18270aeeb930970275141b478962139ac70e881ce9f2957a873b0fd4b6"
+          },
+          {
+            "line_end": 142,
+            "line_start": 129,
+            "path": "src/nooa/tracing/__init__.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7e28775f8216a47e8c044756cf5309a17164cf1f17438238825c43423618dc29"
+          }
+        ],
+        "forbidden_condition": "A span carrying credential material in its attributes (values matching the secret patterns, or values under sensitive/opaque-provider-state keys) reaching the local file exporter's processor unredacted.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "OtlpJsonFileExporter write internals are not in supplied source; the exact file-write commit line is not directly evidenced \u2014 ordering is established at the processor wrap."
+        ],
+        "protected_operation": "Local trace-file export via OtlpJsonFileExporter on the SimpleSpanProcessor path (_LOCAL_EXPORTER_TYPES).",
+        "protected_resource": "JSONL trace files written by OtlpJsonFileExporter.",
+        "protection_obligation": "Spans written to local trace files (OtlpJsonFileExporter JSONL output) must have detected secrets \u2014 API keys, tokens, private keys, sensitive/opaque-provider-state keys \u2014 redacted from their attributes before the file exporter receives them.",
+        "scope_limits": [
+          "The ConsoleSpanExporter is also wrapped by the same mechanism but its in-process console effect is not separately classified here.",
+          "If span._attributes is absent, the scrubber only logs a warning and the redaction may not be applied (_secret_scrubber.py:356-362)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "memory_routes._resolve_db path containment (src/nooa/viewer/memory_routes.py:71-92) is not compiled as a contract: supplied source binds the guarded open effect to a user-supplied ?db= query parameter, not to an agent tool, agent lifecycle hook, or agent-generated input reaching the effect (excluded under the scope gate on generic application validation).",
+      "AgentMeta.__setattr__ -> guard_dynamic_method (src/nooa/metaclass.py:145-149) and _prepare_server_config ${VAR} deepcopy (src/nooa/mcp/tool.py:555-562) appear only in reviewer rationale; the guard implementation (nooa.runtime.method_guard) and obligation-level forbidden conditions are not in supplied source, so no contracts were compiled for them.",
+      "Sandbox configuration resolution (workspace path, Landlock rule list, max_memory_mb/max_cpu_seconds, require flag) performed by nooa.runtime.sandbox.config.resolve_spec is not in supplied source.",
+      "OtlpJsonFileExporter and journal file writer (writer.append_blocks/append_call) internals are not in supplied source, so file-stratum commit lines are evidenced only at the guard/processor boundary.",
+      "The acp run_agent router internals that bind JSON-RPC session/prompt to CodingACPAdapter.prompt are not in supplied source; the binding is evidenced at the adapter's prompt() implementation.",
+      "Whether the journal sideband payload blocks are scrubbed before posting (nooa.tracing._journal_builder) is not in supplied source; the fallback message path's scrubbing is established."
+    ],
+    "repository": "NVIDIA-NeMo/labs-OO-Agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:cee71bd3bba1644284ff6a7be971a154"
+  },
+  "request_sha256": "b341b2df10c2a89becb4c02734effb2088761ec61a7c0ce5bb67c1c2908cdbbe",
+  "response_sha256": "75e34340a8a1299433b10a36443d0f4c53535b1cf15803c4a2daf2329888a56e",
+  "state": "completed",
+  "tokens": 184127,
+  "unit": "v24-screen:cee71bd3bba1644284ff6a7be971a154"
+}

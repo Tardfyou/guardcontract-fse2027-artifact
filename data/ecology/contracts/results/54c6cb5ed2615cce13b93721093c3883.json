@@ -1,0 +1,195 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tools.py:50-51 writes metadata['outline_document_search_used']=True to tool_context.state, and the source comment (tools.py:49) makes it clear that the submission is before the external request, so that the model cannot be triggered repeatedly after timeout; the gated HTTP effect is in the wait_for scheduling of tools.py:55-58 and weixin_search.py:The requests.get call occurs at 41-43, 89-90, and 129-130.",
+        "contract_id": "ecological-contract:3104bc2fa34790b023b3519198561a0f",
+        "declared_mechanism": "Single-time flag guard for tool inline: The entry reads tool_context.state['metadata']['outline_document_search_used']. If it is set, reject and return the instruction to stop calling the tool (tools.py:44-47); otherwise, the flag is written back to tool_context.state (tools.py:49-51) before the external request is issued, and then asyncio.wait_for(..., timeout=12) Perform scraping and safe downgrade (tools.py:55-61).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 47,
+            "line_start": 44,
+            "path": "backend/simpleOutline/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ffbd4b3fe2722cf1dbd0a4ea26867d13bab26a34fa38448b798b842cadd97548"
+          },
+          {
+            "line_end": 51,
+            "line_start": 42,
+            "path": "backend/simpleOutline/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "ffbd4b3fe2722cf1dbd0a4ea26867d13bab26a34fa38448b798b842cadd97548"
+          },
+          {
+            "line_end": 39,
+            "line_start": 24,
+            "path": "backend/simpleOutline/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "ffbd4b3fe2722cf1dbd0a4ea26867d13bab26a34fa38448b798b842cadd97548"
+          },
+          {
+            "line_end": 43,
+            "line_start": 40,
+            "path": "backend/simpleOutline/weixin_search.py",
+            "role": "protected_operation",
+            "source_sha256": "e5e70326403ad756930d55372628e53ff95c72484a2845306db7534798557854"
+          },
+          {
+            "line_end": 90,
+            "line_start": 89,
+            "path": "backend/simpleOutline/weixin_search.py",
+            "role": "protected_operation",
+            "source_sha256": "e5e70326403ad756930d55372628e53ff95c72484a2845306db7534798557854"
+          },
+          {
+            "line_end": 130,
+            "line_start": 129,
+            "path": "backend/simpleOutline/weixin_search.py",
+            "role": "protected_operation",
+            "source_sha256": "e5e70326403ad756930d55372628e53ff95c72484a2845306db7534798557854"
+          },
+          {
+            "line_end": 51,
+            "line_start": 49,
+            "path": "backend/simpleOutline/tools.py",
+            "role": "commit_point",
+            "source_sha256": "ffbd4b3fe2722cf1dbd0a4ea26867d13bab26a34fa38448b798b842cadd97548"
+          },
+          {
+            "line_end": 58,
+            "line_start": 53,
+            "path": "backend/simpleOutline/tools.py",
+            "role": "commit_point",
+            "source_sha256": "ffbd4b3fe2722cf1dbd0a4ea26867d13bab26a34fa38448b798b842cadd97548"
+          },
+          {
+            "line_end": 12,
+            "line_start": 11,
+            "path": "backend/simpleOutline/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ffbd4b3fe2722cf1dbd0a4ea26867d13bab26a34fa38448b798b842cadd97548"
+          },
+          {
+            "line_end": 52,
+            "line_start": 42,
+            "path": "backend/simpleOutline/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ffbd4b3fe2722cf1dbd0a4ea26867d13bab26a34fa38448b798b842cadd97548"
+          }
+        ],
+        "forbidden_condition": "After metadata.outline_document_search_used has been set, the second and subsequent calls to DocumentSearch reach outbound crawling again - the source comment clearly states that the placeholder before the request is to prevent the model from being triggered repeatedly after timeout (tools.py:49); when the flag is set, the entry check directly rejects and returns \"A data search has been completed, please stop calling the tool and output the Markdown outline immediately\" (tools.py:45-47).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The view provided does not show any wiring in the simpleOutline pipeline that registers DocumentSearch into the agent tool list (no tools=[DocumentSearch] registration point); the direct_tool classification is based on the ToolContext type signature (tools.py:11,42), tool_context.agent_name (tools.py:52), and the model-oriented stop command message (tools.py:47).",
+          "The \"per outline session\" boundary definition (initialization/reset timing of tool_context.state['metadata']) does not appear in the provided source code."
+        ],
+        "protected_operation": "The outbound Sogou/WeChat article crawling chain executed by _search_one_document: sogou_weixin_search GET for https://weixin.sogou.com/weixin (weixin_search.py:41-43), get_real_url GET for Sogou link (weixin_search.py:89-90), get_article_content for the parsed real URL of WeChat article GET (weixin_search.py:129-130), dispatched by DocumentSearch via asyncio.to_thread at tools.py:55-58.",
+        "protected_resource": "The DocumentSearch tool's outbound HTTP crawl capacity for weixin.sogou.com and the parsed WeChat article host is gated by the outline_document_search_used single flag in tool_context.state['metadata'].",
+        "protection_obligation": "DocumentSearch for backend/simpleOutline must ensure that at most one outbound Sogou/WeChat article crawl is triggered per outline session: the outline_document_search_used flag is submitted to tool_context.state before initiating the HTTP request, and any subsequent tool calls (including model retries after timeout) are rejected and only indicative messages are returned.",
+        "scope_limits": [
+          "This guard only restricts crawling via DocumentSearch; the module-level functions sogou_weixin_search / get_real_url / get_article_content / get_wechat_article of weixin_search.py:19-163 can bypass the flag and perform the same outbound request directly and are not covered by this contract.",
+          "Repeated calls after the flag is set are rejected at the entrance (tools.py:45-47), and no status changes or requests occur; the 12-second timeout only applies to the allowed crawl (tools.py:55-58).",
+          "The timeout and empty result paths (tools.py:59-65) flag remains set when returning, so even if the first crawl has no results, it will not be crawled again for that session.",
+          "Truncation of content after successful crawling to 6000 characters (tools.py:37-38) and session persistence that only saves the source identifier (tools.py:67-72) are data processing choices of the same tool and do not constitute an independent protected effect outside of this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The return of my_before_model_callback on each PPTWriterSubAgent model request: the exhausted-budget branch returns the fallback LlmResponse at agent.py:36-41 in place of the model request (short-circuit commit), while within budget the callback returns None at agent.py:47 and the real model request is dispatched; agent.py:44-47 documents that only the None return continues to the LLM.",
+        "contract_id": "ecological-contract:3938f00c652c852d7fa8b99d1b6224a0",
+        "declared_mechanism": "before_model_callback=my_before_model_callback registered on PPTWriterSubAgent (agent.py:92); the callback calls consume_page_model_call_budget(state, current_slide_index) (agent.py:31), which increments the per-page counter and returns False past the hard cap of 2 (generation_utils.py:14-22); on exhaustion the callback builds a deterministic fallback via fallback_slide_for_failed_generation from state['outline_'] and returns it as an LlmResponse (agent.py:32-41); the in-source comment states that returning None is what allows the LLM call to proceed (agent.py:44-47).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 97,
+            "line_start": 83,
+            "path": "backend/slide_agent/slide_agent/sub_agents/ppt_writer/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "c603c0a927c44e3c7f3e2161a9f8b318a38a0c7bd3f821dcbc5b7ab6e77c251e"
+          },
+          {
+            "line_end": 22,
+            "line_start": 10,
+            "path": "backend/slide_agent/slide_agent/generation_utils.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c5b95d6fe0c542d4caddd213f0db2c4243956fc7eaca00d77b82295b0ac90fec"
+          },
+          {
+            "line_end": 41,
+            "line_start": 31,
+            "path": "backend/slide_agent/slide_agent/sub_agents/ppt_writer/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "c603c0a927c44e3c7f3e2161a9f8b318a38a0c7bd3f821dcbc5b7ab6e77c251e"
+          },
+          {
+            "line_end": 93,
+            "line_start": 85,
+            "path": "backend/slide_agent/slide_agent/sub_agents/ppt_writer/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "c603c0a927c44e3c7f3e2161a9f8b318a38a0c7bd3f821dcbc5b7ab6e77c251e"
+          },
+          {
+            "line_end": 41,
+            "line_start": 31,
+            "path": "backend/slide_agent/slide_agent/sub_agents/ppt_writer/agent.py",
+            "role": "commit_point",
+            "source_sha256": "c603c0a927c44e3c7f3e2161a9f8b318a38a0c7bd3f821dcbc5b7ab6e77c251e"
+          },
+          {
+            "line_end": 47,
+            "line_start": 44,
+            "path": "backend/slide_agent/slide_agent/sub_agents/ppt_writer/agent.py",
+            "role": "commit_point",
+            "source_sha256": "c603c0a927c44e3c7f3e2161a9f8b318a38a0c7bd3f821dcbc5b7ab6e77c251e"
+          },
+          {
+            "line_end": 92,
+            "line_start": 92,
+            "path": "backend/slide_agent/slide_agent/sub_agents/ppt_writer/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "c603c0a927c44e3c7f3e2161a9f8b318a38a0c7bd3f821dcbc5b7ab6e77c251e"
+          }
+        ],
+        "forbidden_condition": "A third (or later) real LLM model invocation for the same slide page: consume_page_model_call_budget returns False when the incremented count for current_slide_index exceeds MAX_MODEL_CALLS_PER_PAGE=2 (generation_utils.py:11,20-22), and my_before_model_callback then returns a fallback LlmResponse for that firing instead of None (agent.py:31-41).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "ADK framework semantics that a non-None LlmResponse returned from before_model_callback suppresses the outbound model request are supported only by the in-source comment at agent.py:44-47; the framework's callback dispatch code is not in the supplied views.",
+          "create_model(...) and PPT_WRITER_AGENT_CONFIG (agent.py:12-13,86-87) are not supplied, so the concrete model endpoint/transport protected by the cap is unbound.",
+          "fallback_slide_for_failed_generation raises IndexError for out-of-range page indices (generation_utils.py:128-129); callback behavior when state['outline_'] is missing or current_slide_index is stale is not shown.",
+          "Whether retries issued inside the model client (create_model) would count toward the cap is unbound; the callback counts only before-model firings."
+        ],
+        "protected_operation": "The real LLM model invocation performed by PPTWriterSubAgent for slide content generation (LlmAgent constructed with model=create_model(...) and wired with before_model_callback, agent.py:85-93).",
+        "protected_resource": "Per-page model invocation budget of PPTWriterSubAgent, tracked in agent callback state under page_model_call_count_map keyed by current_slide_index.",
+        "protection_obligation": "PPTWriterSubAgent registers before_model_callback=my_before_model_callback, which enforces consume_page_model_call_budget to forbid more than MAX_MODEL_CALLS_PER_PAGE (2) real LLM invocations per slide page and, once the per-page budget is exhausted, short-circuits the model invocation by returning a deterministic fallback LlmResponse instead of letting the request proceed.",
+        "scope_limits": [
+          "Cap is keyed by state current_slide_index, which defaults to 0 when absent (agent.py:30); only firings of before_model_callback for PPTWriterSubAgent are counted, and no contract is asserted for other agents' model calls.",
+          "Every before-model firing increments the page counter (generation_utils.py:20-22), so tool-continuation rounds consume the same per-page budget; the first two firings per page proceed with return None (agent.py:47).",
+          "The exhausted-budget path returns a locally built fallback from state['outline_'] and involves no model call; page_model_call_count_map is auto-created by the guard when absent (generation_utils.py:16-19) and reset per generation by initialize_generation_state (generation_utils.py:115).",
+          "LoopAgent max_iterations=200 (agent.py:355) is a separate loop-termination bound and is not part of this contract."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "backend/slide_agent/slide_agent/sub_agents/ppt_writer/agent.py:11 The implementation source code of the imported ppt_writer tools module (SearchImage, DocumentSearch, KnowledgeBaseSearch) is not provided, and the guard contract cannot be signed for the HTTP effects of these tools; in the provided view normalize_search_engines Only the command prompt word prefix (agent.py:146-160; generation_utils.py:134-139) is determined, and the execution of the gate tool is not controlled. Therefore, the \"normalize_search_engines gated SearchImage/KnowledgeBaseSearch external HTTP effect\" mentioned by the first reviewer is not supported by the source code as a contract.",
+      "The google.adk framework code that implements before_model_callback short-circuit semantics and ToolContext/session state persistence is not provided; the short-circuit semantics of the model call upper limit are only inferred based on the in-source comments of agent.py:44-47.",
+      "create_model(...) and PPT_WRITER_AGENT_CONFIG (agent.py:12-13,86-87) are not provided, and the specific model endpoint/transmission method protected by the model call limit is not bound.",
+      "The view provided does not show the call site for initialize_generation_state (generation_utils.py:101-121) in the slide_agent runtime, and the cross-page/cross-session reset cadence of page_model_call_count_map is not confirmed; the guard will build this map itself when missing (generation_utils.py:16-19).",
+      "The provided view does not show any wiring that registers backend/simpleOutline's DocumentSearch into the agent tool list or runner; the commented tools=[DocumentSearch,...] in agent.py:94 points to another unprovided tools module under ppt_writer, not backend/simpleOutline/tools.py, and cannot be used as registration evidence for this function.",
+      "The life cycle definition of \"an outline session\" in backend/simpleOutline (where tool_context.state['metadata'] is initialized/reset, its underlying persistence semantics) does not appear in the provided source code."
+    ],
+    "repository": "skillixx/molingpptagent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:54c6cb5ed2615cce13b93721093c3883"
+  },
+  "request_sha256": "563f4d5cdc99b57c981181fb7ce345daf49ca6fb6aeb3b958cef93c98d879a29",
+  "response_sha256": "652281c72c2290acf8013a7ca5adee13b4a06a04a2049498c986b05d48a5bdee",
+  "state": "completed",
+  "tokens": 31607,
+  "unit": "v24-screen:54c6cb5ed2615cce13b93721093c3883"
+}

@@ -1,0 +1,344 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The send_email tool-call invocation point inside the agent run: the middleware interrupts 'just before' the indicated tool is invoked (module docstring) and the effect commits only after Command(resume=...) supplies the decision, as shown by the '__interrupt__' handling loop and the resume invoke.",
+        "contract_id": "ecological-contract:11872d56d3b011fb1aaaa1128ad3e16d",
+        "declared_mechanism": "HumanInTheLoopMiddleware registered in create_agent middleware with interrupt_on={'send_email': {'allowed_decisions': ['approve', 'edit', 'reject']}, 'read_email': False} plus checkpointer=InMemorySaver(); the demo driver resumes the interrupted run only via agent.invoke(Command(resume={'decisions': [decision]}), config) after collecting the operator's decision.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 58,
+            "line_start": 46,
+            "path": "labs/lab-06/solution/04_human_in_the_loop.py",
+            "role": "guard_registration",
+            "source_sha256": "fafa5affee733ede259a9f2301f5ddfd25470c66fc4348836f5f01f9fcc7b1f7"
+          },
+          {
+            "line_end": 9,
+            "line_start": 2,
+            "path": "labs/lab-06/solution/04_human_in_the_loop.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fafa5affee733ede259a9f2301f5ddfd25470c66fc4348836f5f01f9fcc7b1f7"
+          },
+          {
+            "line_end": 123,
+            "line_start": 123,
+            "path": "labs/lab-06/solution/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8a71a80a1c33056f40d5787fa63a24e5aacaab01f5288c4dbdcc98e41fc01b09"
+          },
+          {
+            "line_end": 130,
+            "line_start": 121,
+            "path": "labs/lab-06/solution/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "8a71a80a1c33056f40d5787fa63a24e5aacaab01f5288c4dbdcc98e41fc01b09"
+          },
+          {
+            "line_end": 99,
+            "line_start": 83,
+            "path": "labs/lab-06/solution/04_human_in_the_loop.py",
+            "role": "commit_point",
+            "source_sha256": "fafa5affee733ede259a9f2301f5ddfd25470c66fc4348836f5f01f9fcc7b1f7"
+          },
+          {
+            "line_end": 135,
+            "line_start": 134,
+            "path": "labs/lab-06/solution/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8a71a80a1c33056f40d5787fa63a24e5aacaab01f5288c4dbdcc98e41fc01b09"
+          },
+          {
+            "line_end": 44,
+            "line_start": 42,
+            "path": "labs/lab-06/solution/04_human_in_the_loop.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fafa5affee733ede259a9f2301f5ddfd25470c66fc4348836f5f01f9fcc7b1f7"
+          },
+          {
+            "line_end": 59,
+            "line_start": 47,
+            "path": "labs/lab-06/solution/_smoke_test.py",
+            "role": "guard_registration",
+            "source_sha256": "8f753968ee7fb7c8eca6abb19164ad1cfe4dd58b9bbae286edcc463ca3c9c157"
+          }
+        ],
+        "forbidden_condition": "The send_email tool call committing without a recorded human decision from the allowed set (approve/edit/reject). The tool is declared an irreversible action requiring human approval, so an uninterrupted/unsigned invocation of send_email is the forbidden condition.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "How the 'edit' decision rewrites tool arguments before the commit is middleware-internal behavior not shown in source.",
+          "Whether InMemorySaver is an acceptable checkpointer for the target deployment (durability of interrupted state) is undetermined.",
+          "Whether any production send_email implementation performs real email delivery (which would add a communication-stratum commit point) is not established by the stub."
+        ],
+        "protected_operation": "Agent dispatch and execution of the send_email tool call within the agent run.",
+        "protected_resource": "The send_email agent tool (defined with @tool in labs/lab-06/solution/tools.py and bound via EMAIL_TOOLS), whose supplied implementation is a stub returning an 'email sent' confirmation string.",
+        "protection_obligation": "The agent must not execute the send_email tool without an explicit human decision (approve/edit/reject): HumanInTheLoopMiddleware must interrupt the agent run immediately before the send_email tool call is invoked, hold state across the interrupt via a checkpointer, and only allow the run to resume when the operator's decision is supplied via Command(resume={'decisions': [...]}).",
+        "scope_limits": [
+          "The supplied send_email body is a stub returning a static string (tools.py line 130); no real email delivery occurs in the supplied source, so the guarded commit is the tool invocation itself, not a verified network delivery.",
+          "read_email is explicitly exempted from interruption (interrupt_on 'read_email': False); the obligation covers send_email only.",
+          "allowed_decisions includes 'edit', but the demo driver's ask_decision only produces approve/reject, so the edit path is declared but never exercised in the supplied flow.",
+          "An identical registration exists in labs/lab-06/solution/_smoke_test.py (lines 47-59) as a construction-only check with no runtime run.",
+          "Interrupt bypass-resistance and required-checkpointer semantics are library behavior not shown in the supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The middleware block firing during strict_agent.invoke: the demo expects an exception ('Zablokowano zgodnie z polityk\u0105'); if no exception occurs the demo flags misconfiguration ('nie zablokowano \u2014 sprawd\u017a konfiguracj\u0119'), so the commit point is the blocked model call inside the invoke.",
+        "contract_id": "ecological-contract:14fa3c085523cea20905cbafc36debf1",
+        "declared_mechanism": "PIIMiddleware('email', strategy='block', apply_to_input=True) registered as the sole middleware of strict_agent via create_agent.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 89,
+            "line_start": 85,
+            "path": "labs/lab-06/solution/02_pii_detection.py",
+            "role": "guard_registration",
+            "source_sha256": "54492b5ff0870d311ad6fe8d664a11f3dd6bad9b79682429ae8af41c3504efbc"
+          },
+          {
+            "line_end": 83,
+            "line_start": 80,
+            "path": "labs/lab-06/solution/02_pii_detection.py",
+            "role": "forbidden_condition",
+            "source_sha256": "54492b5ff0870d311ad6fe8d664a11f3dd6bad9b79682429ae8af41c3504efbc"
+          },
+          {
+            "line_end": 93,
+            "line_start": 91,
+            "path": "labs/lab-06/solution/02_pii_detection.py",
+            "role": "protected_operation",
+            "source_sha256": "54492b5ff0870d311ad6fe8d664a11f3dd6bad9b79682429ae8af41c3504efbc"
+          },
+          {
+            "line_end": 96,
+            "line_start": 90,
+            "path": "labs/lab-06/solution/02_pii_detection.py",
+            "role": "commit_point",
+            "source_sha256": "54492b5ff0870d311ad6fe8d664a11f3dd6bad9b79682429ae8af41c3504efbc"
+          },
+          {
+            "line_end": 89,
+            "line_start": 85,
+            "path": "labs/lab-06/solution/02_pii_detection.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "54492b5ff0870d311ad6fe8d664a11f3dd6bad9b79682429ae8af41c3504efbc"
+          }
+        ],
+        "forbidden_condition": "An invocation of the strict agent with input containing email PII proceeding past the middleware to the model instead of being hard-blocked with an error.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The exception type raised on block, and whether any partial state is committed before the block, are middleware-internal behaviors not shown in source."
+        ],
+        "protected_operation": "Invocation of the strict agent (strict_agent.invoke) on user input containing an email address.",
+        "protected_resource": "The model invocation path of strict_agent (create_agent whose only middleware is PIIMiddleware('email', strategy='block', apply_to_input=True)).",
+        "protection_obligation": "In the strict configuration, a user message containing an email address must not be processed by the agent at all: PIIMiddleware strategy='block' must abort the invocation with an error instead of letting the message reach the model.",
+        "scope_limits": [
+          "The strict agent exists only inside the demo main() flow; the demo observes and prints the block outcome rather than asserting it (an unblocked run merely prints a 'check configuration' notice).",
+          "Blocking is registered only for the email PII type and only with apply_to_input=True.",
+          "No duplicate of this block registration appears elsewhere in the supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The model invocation point where the middleware's counter is checked before each call; only the registration and the declared exit behavior appear in the supplied source.",
+        "contract_id": "ecological-contract:1c385e3d98b0328cac03e04f7b4be1c1",
+        "declared_mechanism": "ModelCallLimitMiddleware(thread_limit=..., run_limit=..., exit_behavior='end') registered in create_agent middleware (dedicated construction at lines 40-44; combined construction with other middleware at lines 69-75).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 44,
+            "line_start": 40,
+            "path": "labs/lab-06/solution/_smoke_test.py",
+            "role": "guard_registration",
+            "source_sha256": "8f753968ee7fb7c8eca6abb19164ad1cfe4dd58b9bbae286edcc463ca3c9c157"
+          },
+          {
+            "line_end": 41,
+            "line_start": 41,
+            "path": "labs/lab-06/solution/_smoke_test.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8f753968ee7fb7c8eca6abb19164ad1cfe4dd58b9bbae286edcc463ca3c9c157"
+          },
+          {
+            "line_end": 75,
+            "line_start": 69,
+            "path": "labs/lab-06/solution/_smoke_test.py",
+            "role": "guard_registration",
+            "source_sha256": "8f753968ee7fb7c8eca6abb19164ad1cfe4dd58b9bbae286edcc463ca3c9c157"
+          },
+          {
+            "line_end": 44,
+            "line_start": 44,
+            "path": "labs/lab-06/solution/_smoke_test.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8f753968ee7fb7c8eca6abb19164ad1cfe4dd58b9bbae286edcc463ca3c9c157"
+          }
+        ],
+        "forbidden_condition": "Model (LLM) invocation count exceeding the configured thread_limit/run_limit (4/4 in the dedicated construction at line 41; 8/6 in the combined construction at line 72) under ModelCallLimitMiddleware.",
+        "missing_evidence_roles": [
+          "commit_point",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether the limit counts only successful calls or all attempts, and what 'end' returns to the caller, are library behaviors not shown in source."
+        ],
+        "protected_operation": "The agent's model invocation (ChatOpenAI gpt-4o-mini calls issued during the agent run).",
+        "protected_resource": "The model-call path of the agents constructed with ModelCallLimitMiddleware in labs/lab-06/solution/_smoke_test.py.",
+        "protection_obligation": "The agent must not exceed the configured model-call budget per thread and per run; on exceeding the limit the run must end (exit_behavior='end') instead of issuing further model calls.",
+        "scope_limits": [
+          "Registrations appear only in the construction-only smoke test; no runtime demonstration exists in the supplied source.",
+          "Two different limit configurations (4/4 and 8/6) are constructed; the supplied source does not indicate which configuration applies to any deployed agent."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The model call during agent.invoke: per the source comments, after the middleware pass the message content in state is already sanitized and 'the model did NOT see the raw sensitive data'; the printed first_human_text(result['messages']) exhibits the post-commit state that the model sees.",
+        "contract_id": "ecological-contract:41f365d9259b1bbbdd6926b1de272c81",
+        "declared_mechanism": "Three PIIMiddleware registrations in create_agent middleware, all with apply_to_input=True: PIIMiddleware('email', strategy='redact'), PIIMiddleware('credit_card', strategy='mask'), PIIMiddleware('ip', strategy='hash').",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 46,
+            "line_start": 39,
+            "path": "labs/lab-06/solution/02_pii_detection.py",
+            "role": "guard_registration",
+            "source_sha256": "54492b5ff0870d311ad6fe8d664a11f3dd6bad9b79682429ae8af41c3504efbc"
+          },
+          {
+            "line_end": 75,
+            "line_start": 74,
+            "path": "labs/lab-06/solution/02_pii_detection.py",
+            "role": "forbidden_condition",
+            "source_sha256": "54492b5ff0870d311ad6fe8d664a11f3dd6bad9b79682429ae8af41c3504efbc"
+          },
+          {
+            "line_end": 72,
+            "line_start": 66,
+            "path": "labs/lab-06/solution/02_pii_detection.py",
+            "role": "protected_operation",
+            "source_sha256": "54492b5ff0870d311ad6fe8d664a11f3dd6bad9b79682429ae8af41c3504efbc"
+          },
+          {
+            "line_end": 76,
+            "line_start": 72,
+            "path": "labs/lab-06/solution/02_pii_detection.py",
+            "role": "commit_point",
+            "source_sha256": "54492b5ff0870d311ad6fe8d664a11f3dd6bad9b79682429ae8af41c3504efbc"
+          },
+          {
+            "line_end": 47,
+            "line_start": 35,
+            "path": "labs/lab-06/solution/02_pii_detection.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "54492b5ff0870d311ad6fe8d664a11f3dd6bad9b79682429ae8af41c3504efbc"
+          },
+          {
+            "line_end": 38,
+            "line_start": 29,
+            "path": "labs/lab-06/solution/_smoke_test.py",
+            "role": "guard_registration",
+            "source_sha256": "8f753968ee7fb7c8eca6abb19164ad1cfe4dd58b9bbae286edcc463ca3c9c157"
+          },
+          {
+            "line_end": 74,
+            "line_start": 69,
+            "path": "labs/lab-06/solution/_smoke_test.py",
+            "role": "guard_registration",
+            "source_sha256": "8f753968ee7fb7c8eca6abb19164ad1cfe4dd58b9bbae286edcc463ca3c9c157"
+          }
+        ],
+        "forbidden_condition": "A user input message containing raw email/credit_card/ip PII being passed to the model un-sanitized (the source states the model must not see the raw sensitive data).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether sanitization applies to tool outputs or later conversation turns (vs. only initial input) is middleware semantics not shown in source.",
+          "Properties of the 'hash' strategy (salted, reversible, stable across runs) are unspecified in the supplied source.",
+          "Whether the middleware rewrites the stored state message or only the model-visible view is not determinable from the supplied comments alone."
+        ],
+        "protected_operation": "The agent's model invocation over user input messages (agent.invoke carrying the user's message content in the PII-sanitizing agent).",
+        "protected_resource": "The model context (messages sent to ChatOpenAI gpt-4o-mini) of the agent built by build_agent() in labs/lab-06/solution/02_pii_detection.py.",
+        "protection_obligation": "Raw PII (email addresses, credit-card numbers, IP addresses) present in agent input must not reach the model: PIIMiddleware must sanitize each registered PII type on input (redact/mask/hash respectively) before the model invocation, so the model observes only sanitized content.",
+        "scope_limits": [
+          "Only input-direction processing is declared (apply_to_input=True on all three registrations); no output- or tool-result-direction sanitization is registered in the supplied source.",
+          "Only the email, credit_card, and ip PII types are registered for this agent; other built-in types named in the module docstring (mac_address, url) are not registered here.",
+          "Detection recall/precision of the PII patterns is middleware-internal behavior not evidenced in source.",
+          "Duplicate constructions exist in labs/lab-06/solution/_smoke_test.py (full trio at lines 29-38; email-redact in the combined agent at lines 69-75) as construction-only checks."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The calculator tool-call execution point where the middleware's per-run counter is checked; the supplied source shows only the registration and the declared exit behavior ('end'), not the runtime enforcement.",
+        "contract_id": "ecological-contract:7653f8e4fe2d832483f290f5392d9d3f",
+        "declared_mechanism": "ToolCallLimitMiddleware(tool_name='calculator', run_limit=2, exit_behavior='end') registered in create_agent middleware in the smoke-test construction.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 44,
+            "line_start": 40,
+            "path": "labs/lab-06/solution/_smoke_test.py",
+            "role": "guard_registration",
+            "source_sha256": "8f753968ee7fb7c8eca6abb19164ad1cfe4dd58b9bbae286edcc463ca3c9c157"
+          },
+          {
+            "line_end": 42,
+            "line_start": 42,
+            "path": "labs/lab-06/solution/_smoke_test.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8f753968ee7fb7c8eca6abb19164ad1cfe4dd58b9bbae286edcc463ca3c9c157"
+          },
+          {
+            "line_end": 61,
+            "line_start": 50,
+            "path": "labs/lab-06/solution/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "8a71a80a1c33056f40d5787fa63a24e5aacaab01f5288c4dbdcc98e41fc01b09"
+          },
+          {
+            "line_end": 44,
+            "line_start": 44,
+            "path": "labs/lab-06/solution/_smoke_test.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8f753968ee7fb7c8eca6abb19164ad1cfe4dd58b9bbae286edcc463ca3c9c157"
+          }
+        ],
+        "forbidden_condition": "A run in which the calculator tool invocation count exceeds run_limit=2 under ToolCallLimitMiddleware bound to tool_name='calculator'.",
+        "missing_evidence_roles": [
+          "commit_point"
+        ],
+        "pending_binding_information": [
+          "Runtime semantics of exit_behavior='end' (how the run terminates and what is returned to the caller) are library behavior not shown in source."
+        ],
+        "protected_operation": "Agent dispatch and execution of the calculator tool call.",
+        "protected_resource": "The calculator agent tool (defined with @tool in labs/lab-06/solution/tools.py).",
+        "protection_obligation": "The calculator tool must not be invoked more than the configured per-run limit (run_limit=2) within a single agent run; on exceeding the limit the run must end (exit_behavior='end') rather than continue invoking the tool.",
+        "scope_limits": [
+          "This registration appears only in labs/lab-06/solution/_smoke_test.py, a construction-only smoke test ('budowa agent\u00f3w bez wywo\u0142a\u0144 API'); no runtime demonstration of the limit exists in the supplied source.",
+          "The limit is per-run only (run_limit=2); no thread-level limit is configured for the calculator tool."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "All guard constructions in the supplied views are lab demos or a construction-only smoke test; the source contains no deployment configuration, so runtime enforcement, prevalence, and bypass behavior of any middleware cannot be assessed from this unit.",
+      "The send_email tool body is a stub returning a static confirmation string; whether any real email-delivery effect exists behind it in other environments is not established.",
+      "The 'edit' decision declared in allowed_decisions is never produced by the demo driver (ask_decision offers approve/reject only), so the edit path is unexercised in source.",
+      "PIIMiddleware registrations are declared with apply_to_input=True only; whether sanitization extends to tool results or model output is middleware-internal and not shown.",
+      "Detection patterns and enforcement internals of PIIMiddleware, HumanInTheLoopMiddleware, ModelCallLimitMiddleware, and ToolCallLimitMiddleware are library behavior not included in the supplied source views."
+    ],
+    "repository": "gajdaj2/ai_ey",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:6bb33a543606d5bde47d4f44d2ad455b"
+  },
+  "request_sha256": "8fb810d71b2b142d7d2c4d52b5aa98c2782ce29b85afe257f6d5efeb4ce276f8",
+  "response_sha256": "a34b58b8e1bb935e53a68efa5af2927371b9ff11e08c3300387a2ac1a408c1d8",
+  "state": "completed",
+  "tokens": 25683,
+  "unit": "v24-screen:6bb33a543606d5bde47d4f44d2ad455b"
+}

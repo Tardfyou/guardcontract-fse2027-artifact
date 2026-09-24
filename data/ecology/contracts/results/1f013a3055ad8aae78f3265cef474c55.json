@@ -1,0 +1,705 @@
+{
+  "attempt": 2,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The sign-off branch returning before ledger append and _run_inner_loop (_magentic.py 1202-1205) and the APPROVE path invoking _run_inner_loop (1317-1358).",
+        "contract_id": "ecological-contract:04a5b3a2b64d2c373b319995842b9a39",
+        "declared_mechanism": "The require_plan_signoff branch in handle_start_message calls _send_plan_review_request (ctx.request_info with _MagenticHumanInterventionRequest(kind=PLAN_REVIEW)) and returns; only the @response_handler handle_human_intervention_response -> _handle_plan_review_response resumes _run_inner_loop on APPROVE.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 1219,
+            "line_start": 1199,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_magentic.py",
+            "role": "guard_registration",
+            "source_sha256": "b1303f718051c00fa5e4b062777d2e98b422cccb554ad94a280982756b8a1de6"
+          },
+          {
+            "line_end": 2210,
+            "line_start": 2202,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_magentic.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b1303f718051c00fa5e4b062777d2e98b422cccb554ad94a280982756b8a1de6"
+          },
+          {
+            "line_end": 1696,
+            "line_start": 1679,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_magentic.py",
+            "role": "guard_registration",
+            "source_sha256": "b1303f718051c00fa5e4b062777d2e98b422cccb554ad94a280982756b8a1de6"
+          },
+          {
+            "line_end": 1303,
+            "line_start": 1280,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_magentic.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b1303f718051c00fa5e4b062777d2e98b422cccb554ad94a280982756b8a1de6"
+          },
+          {
+            "line_end": 1358,
+            "line_start": 1317,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_magentic.py",
+            "role": "commit_point",
+            "source_sha256": "b1303f718051c00fa5e4b062777d2e98b422cccb554ad94a280982756b8a1de6"
+          }
+        ],
+        "forbidden_condition": "handle_start_message appending the task ledger and starting _run_inner_loop before a PLAN_REVIEW human intervention reply has been processed.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Start of the Magentic inner coordination loop after initial planning.",
+        "protected_resource": "MagenticOrchestratorExecutor coordination loop and the manager-generated task-ledger plan.",
+        "protection_obligation": "When require_plan_signoff is enabled, the Magentic orchestrator must not start the coordination loop until a human plan decision is received through the registered response handler; APPROVE (optionally with edited plan/comments) resumes the inner loop, and revision rounds re-request review.",
+        "scope_limits": [
+          "After max_plan_review_rounds revision rounds the orchestrator logs a warning and proceeds with the current plan without further sign-off (lines 1361-1382).",
+          "The gate is enabled only when the workflow is built with with_plan_review(enable=True) (require_plan_signoff)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await self.session.call_tool(tool_name, arguments=filtered_kwargs) inside MCPTool.call_tool.",
+        "contract_id": "ecological-contract:0dd0f4a082c40b562f4097a23821518a",
+        "declared_mechanism": "MCPTool._determine_approval_mode resolves global or per-tool approval_mode by local tool name; load_tools/load_prompts attach the resolved approval_mode to each AIFunction(func=partial(self.call_tool, ...)) so the framework function-invocation loop's approval interception applies.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 561,
+            "line_start": 551,
+            "path": "agent-framework/python/packages/core/agent_framework/_mcp.py",
+            "role": "guard_registration",
+            "source_sha256": "911f265fcd4e1364b39b4b4171860bf2ba3f036b23ef20206d67fbc1f83f95f6"
+          },
+          {
+            "line_end": 646,
+            "line_start": 605,
+            "path": "agent-framework/python/packages/core/agent_framework/_mcp.py",
+            "role": "guard_registration",
+            "source_sha256": "911f265fcd4e1364b39b4b4171860bf2ba3f036b23ef20206d67fbc1f83f95f6"
+          },
+          {
+            "line_end": 841,
+            "line_start": 836,
+            "path": "agent-framework/python/packages/core/agent_framework/_mcp.py",
+            "role": "forbidden_condition",
+            "source_sha256": "911f265fcd4e1364b39b4b4171860bf2ba3f036b23ef20206d67fbc1f83f95f6"
+          },
+          {
+            "line_end": 701,
+            "line_start": 666,
+            "path": "agent-framework/python/packages/core/agent_framework/_mcp.py",
+            "role": "commit_point",
+            "source_sha256": "911f265fcd4e1364b39b4b4171860bf2ba3f036b23ef20206d67fbc1f83f95f6"
+          }
+        ],
+        "forbidden_condition": "An AIFunction wrapper for an MCP server tool whose resolved approval_mode is 'always_require' being invoked (reaching session.call_tool) without prior user approval.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "No non-docstring registration or dataflow in the supplied source binds MCPTool (or its AIFunction wrappers) to an agent tool list or agent run, so agent mediation is not established."
+        ],
+        "protected_operation": "Invocation of MCP server tools via MCPTool.call_tool and its AIFunction wrappers (session.call_tool).",
+        "protected_resource": "AIFunction wrappers created by MCPTool.load_tools (and load_prompts) wrapping partial(self.call_tool, tool.name).",
+        "protection_obligation": "Tools loaded from a locally connected MCP server must carry the MCPTool's approval_mode onto their AIFunction wrappers so that tools resolved to 'always_require' (globally or per-tool-name) cannot be invoked through the wrappers without user approval.",
+        "scope_limits": [
+          "The MCPTool itself performs no approval re-check at call time; enforcement depends entirely on the function-invocation loop supplied in _tools.py.",
+          "Docstring examples are the only supplied evidence that MCPTool instances are attached to agents as tools."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Handler-entry guard calls (lines 600, 669, 683) preceding deployment_manager.deploy (line 627) and deployment_manager.delete_deployment (line 671).",
+        "contract_id": "ecological-contract:2b2f308867de4e566346bd663b16334a",
+        "declared_mechanism": "_require_developer_mode(feature) invoked at the top of each deployment handler, raising HTTPException 403 (developer_mode_required) when mode == 'user'.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 134,
+            "line_start": 113,
+            "path": "agent-framework/python/packages/devui/agent_framework_devui/_server.py",
+            "role": "guard_registration",
+            "source_sha256": "57e3a2f558ec7d58dac1e4a750e231353eb88cdba201aa4c0efa41137c93f5d7"
+          },
+          {
+            "line_end": 601,
+            "line_start": 595,
+            "path": "agent-framework/python/packages/devui/agent_framework_devui/_server.py",
+            "role": "guard_registration",
+            "source_sha256": "57e3a2f558ec7d58dac1e4a750e231353eb88cdba201aa4c0efa41137c93f5d7"
+          },
+          {
+            "line_end": 633,
+            "line_start": 626,
+            "path": "agent-framework/python/packages/devui/agent_framework_devui/_server.py",
+            "role": "commit_point",
+            "source_sha256": "57e3a2f558ec7d58dac1e4a750e231353eb88cdba201aa4c0efa41137c93f5d7"
+          },
+          {
+            "line_end": 672,
+            "line_start": 666,
+            "path": "agent-framework/python/packages/devui/agent_framework_devui/_server.py",
+            "role": "guard_registration",
+            "source_sha256": "57e3a2f558ec7d58dac1e4a750e231353eb88cdba201aa4c0efa41137c93f5d7"
+          },
+          {
+            "line_end": 672,
+            "line_start": 670,
+            "path": "agent-framework/python/packages/devui/agent_framework_devui/_server.py",
+            "role": "commit_point",
+            "source_sha256": "57e3a2f558ec7d58dac1e4a750e231353eb88cdba201aa4c0efa41137c93f5d7"
+          },
+          {
+            "line_end": 686,
+            "line_start": 680,
+            "path": "agent-framework/python/packages/devui/agent_framework_devui/_server.py",
+            "role": "guard_registration",
+            "source_sha256": "57e3a2f558ec7d58dac1e4a750e231353eb88cdba201aa4c0efa41137c93f5d7"
+          }
+        ],
+        "forbidden_condition": "deployment_manager.deploy or deployment_manager.delete_deployment executing while self.mode == 'user'.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The concrete Azure Container Apps calls made by DeploymentManager.deploy / delete_deployment are not present in the supplied sources."
+        ],
+        "protected_operation": "Azure Container App deployment creation/deletion via the deployment endpoints.",
+        "protected_resource": "DeploymentManager deployment operations behind the /v1/deployments and /v1/entities/{entity_id}/deploy endpoints.",
+        "protection_obligation": "Privileged deployment lifecycle operations of the DevServer - creating Azure Container App deployments (POST /v1/deployments, POST /v1/entities/{entity_id}/deploy) and deleting deployments (DELETE /v1/deployments/{deployment_id}) - must be rejected with HTTP 403 when the server runs in 'user' mode, enforced at handler entry before DeploymentManager performs the external effect.",
+        "scope_limits": [
+          "Guard is an HTTP mode gate on DevUI handlers; supplied source does not bind deployment requests to agent tools, agent lifecycle hooks, or agent-generated input.",
+          "Deployment listing/details endpoints are also mode-gated (lines 644, 654) but perform no external mutation.",
+          "DeploymentManager internals are not in the supplied source; the external effect is identified from endpoint behavior only."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The approval-response feedback points: user_input_needed.create_response(...) followed by agent.run(new_inputs) (ai_function_with_approval.py 64-72) and request_event.data.create_response(approved=True) followed by workflow.send_responses_streaming (sequential_builder_tool_approval.py 106-110; concurrent 135-140; group_chat 160-164).",
+        "contract_id": "ecological-contract:2f987aacf51f4742e6851ed93713e693",
+        "declared_mechanism": "@ai_function(approval_mode='always_require') registration consumed by the framework approval interception (_tools.py approval-needed branch); approvals surface as user_input_requests/RequestInfoEvent, and execution resumes only after create_response(approved=True) is appended and agent.run re-invoked, or the response is fed via workflow.send_responses_streaming.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 31,
+            "path": "agent-framework/python/samples/getting_started/tools/ai_function_with_approval.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "64b689dcc054ae588fe5076a9492f0438b61fda41a80a85f5289158a0058ff6e"
+          },
+          {
+            "line_end": 72,
+            "line_start": 60,
+            "path": "agent-framework/python/samples/getting_started/tools/ai_function_with_approval.py",
+            "role": "commit_point",
+            "source_sha256": "64b689dcc054ae588fe5076a9492f0438b61fda41a80a85f5289158a0058ff6e"
+          },
+          {
+            "line_end": 53,
+            "line_start": 47,
+            "path": "agent-framework/python/samples/getting_started/workflows/tool-approval/sequential_builder_tool_approval.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8e85a89ec5b7023f9c7448b6d9d683db8330052d579181a0587805524a2fbacf"
+          },
+          {
+            "line_end": 113,
+            "line_start": 100,
+            "path": "agent-framework/python/samples/getting_started/workflows/tool-approval/sequential_builder_tool_approval.py",
+            "role": "commit_point",
+            "source_sha256": "8e85a89ec5b7023f9c7448b6d9d683db8330052d579181a0587805524a2fbacf"
+          },
+          {
+            "line_end": 75,
+            "line_start": 68,
+            "path": "agent-framework/python/samples/getting_started/workflows/tool-approval/concurrent_builder_tool_approval.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "49d10834a30f0c4d26f07ba79aff2639e3bdd55b020c568ab2b193b135092712"
+          },
+          {
+            "line_end": 140,
+            "line_start": 129,
+            "path": "agent-framework/python/samples/getting_started/workflows/tool-approval/concurrent_builder_tool_approval.py",
+            "role": "commit_point",
+            "source_sha256": "49d10834a30f0c4d26f07ba79aff2639e3bdd55b020c568ab2b193b135092712"
+          },
+          {
+            "line_end": 63,
+            "line_start": 57,
+            "path": "agent-framework/python/samples/getting_started/workflows/tool-approval/group_chat_builder_tool_approval.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "979052f0a8c4a6a6c196ba9a93d99e2df9cb4e6340887805dcc1d8c64f2b6648"
+          },
+          {
+            "line_end": 164,
+            "line_start": 150,
+            "path": "agent-framework/python/samples/getting_started/workflows/tool-approval/group_chat_builder_tool_approval.py",
+            "role": "commit_point",
+            "source_sha256": "979052f0a8c4a6a6c196ba9a93d99e2df9cb4e6340887805dcc1d8c64f2b6648"
+          },
+          {
+            "line_end": 133,
+            "line_start": 126,
+            "path": "agent-framework/python/samples/getting_started/devui/weather_agent_azure/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "65c67eb5960de12fc020c4a0c9afb4a3398b9b15d2006c6a5ad619aae8402829"
+          },
+          {
+            "line_end": 1607,
+            "line_start": 1582,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          }
+        ],
+        "forbidden_condition": "Executing any of these tools without a FunctionApprovalResponseContent with approved=True following the surfaced FunctionApprovalRequestContent/RequestInfoEvent.",
+        "missing_evidence_roles": [
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "The workflow-level machinery that pauses on FunctionApprovalRequestContent and resumes via send_responses_streaming is not included in the supplied sources."
+        ],
+        "protected_operation": "Invocation of the approval-gated sample AI function tools.",
+        "protected_resource": "The named @ai_function(approval_mode='always_require') tools registered on sample agents and workflows.",
+        "protection_obligation": "AI function tools registered with approval_mode='always_require' in the supplied samples (send_email, get_weather_detail, execute_database_query, execute_trade, deploy_to_production) must not execute until a human-approved FunctionApprovalResponseContent is supplied back through the approval cycle - an interactive agent.run rerun with create_response(...) or the workflow RequestInfoEvent -> send_responses_streaming cycle.",
+        "scope_limits": [
+          "All gated tool bodies in these samples are simulations; no real external effect is committed in source.",
+          "The workflow RequestInfoEvent pause/resume machinery is used by the samples but its implementation is not in the supplied sources; enforcement of the gate itself is the supplied _tools.py approval interception."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "ctx.request_info(...TOOL_APPROVAL...) with return None in _invoke_agent (2050-2063) and the decision handling in handle_tool_approval_response (1888-1946).",
+        "contract_id": "ecological-contract:46701d4e813c7b4a96af35b96dd64093",
+        "declared_mechanism": "_invoke_agent stores the first user_input_request as _pending_tool_request, emits _MagenticHumanInterventionRequest(kind=TOOL_APPROVAL) via ctx.request_info, and returns None (halting the turn); @response_handler handle_tool_approval_response on REJECT appends a FunctionResultContent 'Tool call was rejected by human reviewer...' keyed by the pending call_id without executing, and on APPROVE/GUIDANCE re-invokes the agent to resume.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 2063,
+            "line_start": 2025,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_magentic.py",
+            "role": "guard_registration",
+            "source_sha256": "b1303f718051c00fa5e4b062777d2e98b422cccb554ad94a280982756b8a1de6"
+          },
+          {
+            "line_end": 1880,
+            "line_start": 1866,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_magentic.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b1303f718051c00fa5e4b062777d2e98b422cccb554ad94a280982756b8a1de6"
+          },
+          {
+            "line_end": 1924,
+            "line_start": 1893,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_magentic.py",
+            "role": "commit_point",
+            "source_sha256": "b1303f718051c00fa5e4b062777d2e98b422cccb554ad94a280982756b8a1de6"
+          },
+          {
+            "line_end": 1865,
+            "line_start": 1860,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_magentic.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b1303f718051c00fa5e4b062777d2e98b422cccb554ad94a280982756b8a1de6"
+          },
+          {
+            "line_end": 2011,
+            "line_start": 1994,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_magentic.py",
+            "role": "protected_operation",
+            "source_sha256": "b1303f718051c00fa5e4b062777d2e98b422cccb554ad94a280982756b8a1de6"
+          }
+        ],
+        "forbidden_condition": "Continuing or executing the pending tool call without a TOOL_APPROVAL human reply, or proceeding with tool execution after decision REJECT.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [],
+        "protected_operation": "Continuation/execution of the agent's pending function call stored in _pending_tool_request.",
+        "protected_resource": "MagenticAgentExecutor._pending_tool_request (call_id-identified FunctionApprovalRequestContent) and the wrapped agent's run continuation.",
+        "protection_obligation": "A participant agent's pending tool/function call (FunctionApprovalRequestContent identified by call_id) must not be executed or continued without an explicit human decision: MagenticAgentExecutor must pause via ctx.request_info(kind=TOOL_APPROVAL) and only the registered @response_handler may resume; REJECT must suppress execution and inject a rejection FunctionResultContent instead of running the tool.",
+        "scope_limits": [
+          "Only the first user_input_request per run is processed; multiple pending requests are truncated with a warning (lines 2026-2031).",
+          "APPROVE/GUIDANCE resume by injecting the human response text as a FunctionResultContent; the underlying tool call still executes through the wrapped agent's normal pipeline."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The limit checks immediately preceding self.invocation_count += 1 and self.func(...) in AIFunction.__call__.",
+        "contract_id": "ecological-contract:655af227e96b1f4ddb849a69b4cd9b84",
+        "declared_mechanism": "Pre-invocation limit checks at the top of AIFunction.__call__ raising ToolException before self.func is called; limits validated at construction to be at least 1.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 704,
+            "line_start": 693,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          },
+          {
+            "line_end": 601,
+            "line_start": 593,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          },
+          {
+            "line_end": 713,
+            "line_start": 705,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "commit_point",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          },
+          {
+            "line_end": 2198,
+            "line_start": 2139,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          }
+        ],
+        "forbidden_condition": "Invoking the wrapped function when invocation_count >= max_invocations or invocation_exception_count >= max_invocation_exceptions.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "AIFunction invocation of its wrapped function (via __call__/invoke).",
+        "protected_resource": "AIFunction instances configured with max_invocations and/or max_invocation_exceptions.",
+        "protection_obligation": "An AIFunction must refuse execution once its max_invocations or max_invocation_exceptions limit is reached, raising ToolException before the wrapped function is invoked.",
+        "scope_limits": [
+          "The guard is per-AIFunction-instance state; invocation counting semantics across agent runs are not further constrained in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Validation inside _extract_function_responses preceding workflow.send_responses_streaming(function_responses) in _run_stream_impl.",
+        "contract_id": "ecological-contract:7429e914a401cf412a7da77eb7728448",
+        "declared_mechanism": "_extract_function_responses validates each FunctionApprovalResponseContent (arguments decodable to RequestInfoFunctionArgs, approved flag true, request_id present in pending_requests) and raises AgentExecutionException otherwise, before function_responses reach workflow.send_responses_streaming.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 411,
+            "line_start": 380,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "543617658dca32058ee9bde3c0944429e4a6ac2bea56654058d099eecec2e5cf"
+          },
+          {
+            "line_end": 404,
+            "line_start": 395,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "543617658dca32058ee9bde3c0944429e4a6ac2bea56654058d099eecec2e5cf"
+          },
+          {
+            "line_end": 256,
+            "line_start": 246,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_agent.py",
+            "role": "commit_point",
+            "source_sha256": "543617658dca32058ee9bde3c0944429e4a6ac2bea56654058d099eecec2e5cf"
+          },
+          {
+            "line_end": 374,
+            "line_start": 351,
+            "path": "agent-framework/python/packages/core/agent_framework/_workflows/_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "543617658dca32058ee9bde3c0944429e4a6ac2bea56654058d099eecec2e5cf"
+          }
+        ],
+        "forbidden_condition": "Resuming the wrapped workflow via send_responses_streaming with function responses derived from a FunctionApprovalResponseContent where content.approved is false, or from responses that do not match outstanding pending requests while requests are outstanding.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Workflow resumption with function responses extracted from caller input messages (the _run_stream_impl continuation path).",
+        "protected_resource": "WorkflowAgent.pending_requests and the wrapped workflow's RequestInfoEvent response cycle.",
+        "protection_obligation": "The WorkflowAgent must not resume a workflow that has pending requests using an unapproved FunctionApprovalResponseContent (approved=False) or a response referencing a non-pending request; such inputs must raise AgentExecutionException before the workflow is resumed.",
+        "scope_limits": [
+          "FunctionResultContent responses are accepted for pending requests without an approved flag; the guard constrains approval-content resumption specifically."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The approval-needed early return before asyncio.gather execution (_tools.py 1598-1607) and the approved-only execution path in the non-streaming (1791-1801) and streaming (1987-1998) wrappers.",
+        "contract_id": "ecological-contract:a5ed80210a5511376c80d3acf3fb5270",
+        "declared_mechanism": "approval_tools computed from the tool map (approval_mode == 'always_require'); the approval-needed branch returns FunctionApprovalRequestContent for all pending calls without execution; the invocation wrappers execute only resp.approved responses collected via _collect_approval_responses; _replace_approval_contents_with_results substitutes a 'Tool call invocation was rejected by user.' FunctionResultContent for rejected calls; the consecutive-error counter breaks the loop at config.max_consecutive_errors_per_request.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 1607,
+            "line_start": 1582,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          },
+          {
+            "line_end": 1184,
+            "line_start": 1180,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          },
+          {
+            "line_end": 1733,
+            "line_start": 1719,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          },
+          {
+            "line_end": 1801,
+            "line_start": 1791,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "commit_point",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          },
+          {
+            "line_end": 1998,
+            "line_start": 1987,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "commit_point",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          },
+          {
+            "line_end": 1817,
+            "line_start": 1803,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          }
+        ],
+        "forbidden_condition": "_try_execute_function_calls executing a FunctionCallContent whose target tool has approval_mode='always_require' instead of returning FunctionApprovalRequestContent, or executing a tool on a response with approved=False.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Auto-execution of AIFunction tools in the chat client function-invocation loop (non-streaming and streaming).",
+        "protected_resource": "AIFunction tools in ChatOptions.tools with approval_mode='always_require', plus the per-request consecutive-error budget (max_consecutive_errors_per_request).",
+        "protection_obligation": "Auto-invocation of tools registered with approval_mode='always_require' is forbidden: the function-invocation loop must intercept such FunctionCallContent and emit FunctionApprovalRequestContent instead of executing, and the tool may be executed only after an approved FunctionApprovalResponseContent is collected; rejected calls must yield a rejection FunctionResultContent rather than tool execution, and consecutive execution errors must stop further function calls for the request.",
+        "scope_limits": [
+          "The ai_function docstring states the approval gate applies only to the auto-invocation flow; direct programmatic calls to the AIFunction are not approval-checked.",
+          "Rejection handling returns an error result to the model rather than executing the tool; behavior after rejection is model-driven."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Inclusion of the require_approval-mapped MCP tool resource/definition in the outgoing run options/tool resources, and submission of ToolApproval entries with runs.submit_tool_outputs_stream for approved calls; the tool call itself commits server-side in the Azure AI service.",
+        "contract_id": "ecological-contract:c50cd8abca51769ab8e587e2961d0812",
+        "declared_mechanism": "Approval-mode mapping in AzureAIClient._prepare_mcp_tool (mcp['require_approval'] = 'always' if approval_mode == 'always_require' else 'never', or per-tool-name dicts) and AzureAIAgentClient._prepare_mcp_resources (mcp_resource['require_approval'] written into run_options['tool_resources']['mcp']); SubmitToolApprovalAction runs are parsed into FunctionApprovalRequestContent and FunctionApprovalResponseContent is converted to ToolApproval(approve=content.approved) submitted via runs.submit_tool_outputs_stream.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 505,
+            "line_start": 487,
+            "path": "agent-framework/python/packages/azure-ai/agent_framework_azure_ai/_client.py",
+            "role": "guard_registration",
+            "source_sha256": "6e639b9cc326cc1d04ef8579cdc5cdd8aa9e6d699ef4e81e2ef26ba7338b4144"
+          },
+          {
+            "line_end": 965,
+            "line_start": 931,
+            "path": "agent-framework/python/packages/azure-ai/agent_framework_azure_ai/_chat_client.py",
+            "role": "guard_registration",
+            "source_sha256": "b810dfaaf2234d29e43663e6c70aa4ba22005b845e633341a3f9c43df17a7206"
+          },
+          {
+            "line_end": 399,
+            "line_start": 395,
+            "path": "agent-framework/python/packages/core/agent_framework/_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "376dab8be1f2b847ee850b20bbce89a86398a0b47c66eeb75b02e1b3524cd1f3"
+          },
+          {
+            "line_end": 765,
+            "line_start": 751,
+            "path": "agent-framework/python/packages/azure-ai/agent_framework_azure_ai/_chat_client.py",
+            "role": "protected_operation",
+            "source_sha256": "b810dfaaf2234d29e43663e6c70aa4ba22005b845e633341a3f9c43df17a7206"
+          },
+          {
+            "line_end": 1139,
+            "line_start": 1095,
+            "path": "agent-framework/python/packages/azure-ai/agent_framework_azure_ai/_chat_client.py",
+            "role": "commit_point",
+            "source_sha256": "b810dfaaf2234d29e43663e6c70aa4ba22005b845e633341a3f9c43df17a7206"
+          },
+          {
+            "line_end": 370,
+            "line_start": 361,
+            "path": "agent-framework/python/packages/azure-ai/agent_framework_azure_ai/_chat_client.py",
+            "role": "commit_point",
+            "source_sha256": "b810dfaaf2234d29e43663e6c70aa4ba22005b845e633341a3f9c43df17a7206"
+          },
+          {
+            "line_end": 170,
+            "line_start": 161,
+            "path": "agent-framework/python/samples/getting_started/agents/openai/openai_responses_client_with_hosted_mcp.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "79c9f421349ff10e7fa2f59fd143cb816a4782e208f616c7cf9883cdf3115acb"
+          },
+          {
+            "line_end": 177,
+            "line_start": 166,
+            "path": "agent-framework/python/samples/getting_started/agents/azure_openai/azure_responses_client_with_hosted_mcp.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "39d897583f329d3bd450b3c26cb6502b40b813ccd6f6057ae969723f4596c74d"
+          }
+        ],
+        "forbidden_condition": "A HostedMCPTool with approval_mode='always_require' being attached to an Azure AI agent run without its approval_mode mapped onto require_approval='always' (or the per-tool 'always' mapping), allowing the service to execute MCP tool calls without user approval.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The call site that invokes AzureAIClient._prepare_mcp_tool inside the responses request pipeline is not present in the supplied view.",
+          "Server-side enforcement behavior of require_approval='always' is not observable in supplied source."
+        ],
+        "protected_operation": "Server-side execution of hosted MCP tool calls during an Azure AI agent run (e.g., calls to learn.microsoft.com/api/mcp).",
+        "protected_resource": "HostedMCPTool-declared MCP server endpoints attached as agent tools in run options/tool resources.",
+        "protection_obligation": "Hosted MCP tool invocations declared with approval_mode='always_require' must not execute without prior user approval: the Azure AI clients must translate the framework approval_mode onto require_approval='always' (or per-tool-name mappings) on the MCP tool resource/definition attached to the agent run, surface the resulting approval demand as FunctionApprovalRequestContent, and resubmit only explicit FunctionApprovalResponseContent decisions as ToolApproval.",
+        "scope_limits": [
+          "Enforcement of require_approval is performed by the Azure AI service and is outside the supplied source.",
+          "HostedMCPTool-to-McpTool definition conversion at _chat_client.py lines 1072-1078 carries no approval mapping itself; the guard rides on the separate tool_resources path.",
+          "Sample instantiations (azure/openai responses clients) bind the guard to learn.microsoft.com/api/mcp with approval_mode='always_require' and interactive 'Approve function call? (y/n)' rerun loops."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The blocked branches that set context.terminate=True / return without next(context) (agent.py lines 76-77; class_based_middleware.py lines 58-67).",
+        "contract_id": "ecological-contract:e58d57c94f69ea04673545745379ea1f",
+        "declared_mechanism": "@chat_middleware security_filter_middleware checks context.messages[-1] for blocked terms and on a match sets context.result to a refusal ChatResponse/stream and context.terminate=True without calling next; SecurityAgentMiddleware(AgentMiddleware) overrides context.result with a blocking AgentRunResponse and returns without next().",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 49,
+            "line_start": 36,
+            "path": "agent-framework/python/samples/getting_started/devui/weather_agent_azure/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "65c67eb5960de12fc020c4a0c9afb4a3398b9b15d2006c6a5ad619aae8402829"
+          },
+          {
+            "line_end": 77,
+            "line_start": 76,
+            "path": "agent-framework/python/samples/getting_started/devui/weather_agent_azure/agent.py",
+            "role": "commit_point",
+            "source_sha256": "65c67eb5960de12fc020c4a0c9afb4a3398b9b15d2006c6a5ad619aae8402829"
+          },
+          {
+            "line_end": 57,
+            "line_start": 45,
+            "path": "agent-framework/python/samples/getting_started/middleware/class_based_middleware.py",
+            "role": "guard_registration",
+            "source_sha256": "2fb6d081c6ec18988210b8e8b851c798addb5fc6a0cca2199a47640c55dd773e"
+          },
+          {
+            "line_end": 67,
+            "line_start": 58,
+            "path": "agent-framework/python/samples/getting_started/middleware/class_based_middleware.py",
+            "role": "commit_point",
+            "source_sha256": "2fb6d081c6ec18988210b8e8b851c798addb5fc6a0cca2199a47640c55dd773e"
+          },
+          {
+            "line_end": 150,
+            "line_start": 137,
+            "path": "agent-framework/python/samples/getting_started/devui/weather_agent_azure/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "65c67eb5960de12fc020c4a0c9afb4a3398b9b15d2006c6a5ad619aae8402829"
+          },
+          {
+            "line_end": 107,
+            "line_start": 100,
+            "path": "agent-framework/python/samples/getting_started/middleware/class_based_middleware.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2fb6d081c6ec18988210b8e8b851c798addb5fc6a0cca2199a47640c55dd773e"
+          }
+        ],
+        "forbidden_condition": "Calling next(context) (continuing the agent run toward model/tool execution) when the latest user message contains a blocked sensitive term ('password', 'secret', 'api_key', 'token' in the DevUI chat middleware; 'password'/'secret' in SecurityAgentMiddleware).",
+        "missing_evidence_roles": [
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Agent run continuation (model invocation) for agents registering these middlewares.",
+        "protected_resource": "The run pipelines of the DevUI Azure weather agent and the class-based middleware sample agent.",
+        "protection_obligation": "Agent runs whose latest user message contains sensitive terms must be terminated by registered chat/agent middleware before the model or downstream execution proceeds, overriding the run result with a refusal instead of invoking the next pipeline stage.",
+        "scope_limits": [
+          "Blocked-term lists differ between the two registrations ('password', 'secret', 'api_key', 'token' vs 'password', 'secret').",
+          "Downstream effects in these samples are simulated (mock tools); no concrete external model/tool effect beyond the middleware hooks is shown in source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The guard call at line 559 preceding executor.entity_discovery.invalidate_entity(entity_id) at line 577.",
+        "contract_id": "ecological-contract:f668bc12358da2880f1693d5cc15178b",
+        "declared_mechanism": "_require_developer_mode('entity hot reload') invoked at the start of the reload handler, raising HTTPException 403 in user mode.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 560,
+            "line_start": 552,
+            "path": "agent-framework/python/packages/devui/agent_framework_devui/_server.py",
+            "role": "guard_registration",
+            "source_sha256": "57e3a2f558ec7d58dac1e4a750e231353eb88cdba201aa4c0efa41137c93f5d7"
+          },
+          {
+            "line_end": 558,
+            "line_start": 554,
+            "path": "agent-framework/python/packages/devui/agent_framework_devui/_server.py",
+            "role": "protected_operation",
+            "source_sha256": "57e3a2f558ec7d58dac1e4a750e231353eb88cdba201aa4c0efa41137c93f5d7"
+          },
+          {
+            "line_end": 578,
+            "line_start": 576,
+            "path": "agent-framework/python/packages/devui/agent_framework_devui/_server.py",
+            "role": "commit_point",
+            "source_sha256": "57e3a2f558ec7d58dac1e4a750e231353eb88cdba201aa4c0efa41137c93f5d7"
+          }
+        ],
+        "forbidden_condition": "executor.entity_discovery.invalidate_entity(entity_id) executing while self.mode == 'user'.",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "Hot-reload of a registered agent/workflow entity (module cache invalidation with reimport on next access).",
+        "protected_resource": "Entity discovery module cache for registered entities.",
+        "protection_obligation": "Entity hot-reload (POST /v1/entities/{entity_id}/reload) must be rejected with HTTP 403 when the DevServer runs in 'user' mode, before the entity's module cache is invalidated.",
+        "scope_limits": [
+          "In-memory entities are refused with 400 before cache invalidation; the guard is an HTTP mode gate with no agent-mediated path in supplied source."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The reviewer-claimed DevUI Bearer-token auth middleware (agent-framework/python/packages/devui/agent_framework_devui/_server.py lines 326-377) is ordinary web authentication over non-exempt API routes; the supplied source does not bind it to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect, so no contract was emitted for it.",
+      "The call site that invokes AzureAIClient._prepare_mcp_tool (agent-framework/python/packages/azure-ai/agent_framework_azure_ai/_client.py lines 487-505) in the responses request pipeline is not present in the supplied view.",
+      "Server-side enforcement of require_approval='always' for hosted MCP tools (Azure AI service behavior) is not observable in the supplied sources.",
+      "DeploymentManager.deploy / delete_deployment internals (the concrete Azure Container Apps calls) are not included in the supplied sources.",
+      "No non-docstring registration or dataflow in the supplied sources binds core MCPTool AIFunction wrappers (agent-framework/python/packages/core/agent_framework/_mcp.py) to an agent tool list or agent run.",
+      "The workflow machinery that pauses on FunctionApprovalRequestContent and resumes via send_responses_streaming (used by the tool-approval samples) is not included in the supplied sources; only its sample usage is shown.",
+      "Behavior labels and runtime prevalence data are unavailable per the stated scope; only the supplied line-numbered source views were used."
+    ],
+    "repository": "BassemMonla/MAF312",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:1f013a3055ad8aae78f3265cef474c55"
+  },
+  "request_sha256": "34a1fdb1c4c31d66587da65aee1d33bfa84fdbb138d958ead24875278b235811",
+  "response_sha256": "c6378986f5d3af51d2ab694090f254f25748e118d1e1951c4a257b6d2914140f",
+  "state": "completed",
+  "tokens": 184361,
+  "unit": "v24-screen:1f013a3055ad8aae78f3265cef474c55"
+}

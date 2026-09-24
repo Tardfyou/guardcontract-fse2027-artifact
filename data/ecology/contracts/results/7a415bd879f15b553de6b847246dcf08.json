@@ -1,0 +1,141 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Rejection must complete inside _resolve_attachments before _prepare_artifact_delivery attaches ResolvedAttachments to the OutboundMessage and the manager publishes it via bus.publish_outbound (manager.py lines 526-544 non-streaming final; 612-641 streaming final), which feeds FeishuChannel.send_file's upload of the attachment to Feishu (im.v1.file.create / im.v1.image.create) and message reply/create (feishu.py lines 201-234).",
+        "contract_id": "ecological-contract:2fa819dc6459f1e7cc350100145204db",
+        "declared_mechanism": "_resolve_attachments in backend/app/channels/manager.py: (1) virtual-path prefix check against _OUTPUTS_VIRTUAL_PREFIX ('/mnt/user-data/outputs/') with skip-and-warning on mismatch; (2) resolution via deerflow Paths.resolve_virtual_path (segment-boundary prefix requirement plus post-resolution relative_to traversal rejection); (3) post-resolution containment check actual.resolve().relative_to(outputs_dir) against paths.sandbox_outputs_dir(thread_id).resolve(); (4) on-disk existence check; non-conforming paths are skipped with a warning and never become ResolvedAttachment objects.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 287,
+            "line_start": 238,
+            "path": "backend/app/channels/manager.py",
+            "role": "guard_registration",
+            "source_sha256": "46794109b7660b512a9a8815e8ea5c886dd7cdc829423abd2b8b9fcb23bf9354"
+          },
+          {
+            "line_end": 249,
+            "line_start": 242,
+            "path": "backend/app/channels/manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "46794109b7660b512a9a8815e8ea5c886dd7cdc829423abd2b8b9fcb23bf9354"
+          },
+          {
+            "line_end": 269,
+            "line_start": 257,
+            "path": "backend/app/channels/manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "46794109b7660b512a9a8815e8ea5c886dd7cdc829423abd2b8b9fcb23bf9354"
+          },
+          {
+            "line_end": 544,
+            "line_start": 526,
+            "path": "backend/app/channels/manager.py",
+            "role": "protected_operation",
+            "source_sha256": "46794109b7660b512a9a8815e8ea5c886dd7cdc829423abd2b8b9fcb23bf9354"
+          },
+          {
+            "line_end": 641,
+            "line_start": 612,
+            "path": "backend/app/channels/manager.py",
+            "role": "protected_operation",
+            "source_sha256": "46794109b7660b512a9a8815e8ea5c886dd7cdc829423abd2b8b9fcb23bf9354"
+          },
+          {
+            "line_end": 234,
+            "line_start": 201,
+            "path": "backend/app/channels/feishu.py",
+            "role": "commit_point",
+            "source_sha256": "86b905c221549c76d62e81b630e4a637a8fb3a484fc3b54e5243d3893f92c383"
+          },
+          {
+            "line_end": 544,
+            "line_start": 543,
+            "path": "backend/app/channels/manager.py",
+            "role": "commit_point",
+            "source_sha256": "46794109b7660b512a9a8815e8ea5c886dd7cdc829423abd2b8b9fcb23bf9354"
+          },
+          {
+            "line_end": 641,
+            "line_start": 630,
+            "path": "backend/app/channels/manager.py",
+            "role": "commit_point",
+            "source_sha256": "46794109b7660b512a9a8815e8ea5c886dd7cdc829423abd2b8b9fcb23bf9354"
+          },
+          {
+            "line_end": 225,
+            "line_start": 195,
+            "path": "backend/app/channels/manager.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "46794109b7660b512a9a8815e8ea5c886dd7cdc829423abd2b8b9fcb23bf9354"
+          },
+          {
+            "line_end": 526,
+            "line_start": 508,
+            "path": "backend/app/channels/manager.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "46794109b7660b512a9a8815e8ea5c886dd7cdc829423abd2b8b9fcb23bf9354"
+          },
+          {
+            "line_end": 613,
+            "line_start": 610,
+            "path": "backend/app/channels/manager.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "46794109b7660b512a9a8815e8ea5c886dd7cdc829423abd2b8b9fcb23bf9354"
+          },
+          {
+            "line_end": 132,
+            "line_start": 126,
+            "path": "backend/packages/harness/deerflow/config/paths.py",
+            "role": "guard_registration",
+            "source_sha256": "8770b035235cadbc15e121156824d495d1bc01660a40e46ed28e81864a75c3e9"
+          },
+          {
+            "line_end": 201,
+            "line_start": 168,
+            "path": "backend/packages/harness/deerflow/config/paths.py",
+            "role": "guard_registration",
+            "source_sha256": "8770b035235cadbc15e121156824d495d1bc01660a40e46ed28e81864a75c3e9"
+          }
+        ],
+        "forbidden_condition": "Attaching or delivering (uploading) an artifact whose virtual path does not start with /mnt/user-data/outputs/ or whose resolved host path escapes the thread's outputs directory \u2014 i.e., exfiltrating uploaded or workspace files via IM channels.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The MessageBus-to-channel dispatch code (e.g., FeishuChannel._on_outbound body) is omitted from the supplied view; the publish_outbound-to-send_file link is supported only by the outbound subscription at feishu.py line 104 and the attachments field carried on OutboundMessage.",
+          "Whether the present_files tool or the LangGraph server validates filepaths before they reach the run result is not shown in the supplied views.",
+          "Whether OutboundMessage.attachments is consumed by channels other than Feishu, and how, is not shown.",
+          "Whether any code path other than the two _prepare_artifact_delivery call sites (manager.py lines 526 and 613) can attach attachments to an OutboundMessage is not determinable from the supplied views."
+        ],
+        "protected_operation": "Attachment resolution and outbound attachment delivery in ChannelManager: _resolve_attachments feeding _prepare_artifact_delivery, attachment of ResolvedAttachment objects to the final OutboundMessage, bus.publish_outbound, and the receiving channel's file upload/send.",
+        "protected_resource": "Files under the thread-scoped sandbox outputs directory (host: {base_dir}/threads/{thread_id}/user-data/outputs, sandbox: /mnt/user-data/outputs/) and the outbound IM-channel attachment upload path (FeishuChannel.send_file uploads).",
+        "protection_obligation": "Agent-reported artifact paths (present_files tool-call arguments extracted from the agent run result) may be attached to outbound messages and uploaded to external IM channels only when the virtual path is under /mnt/user-data/outputs/ and its resolved host path stays inside the thread's sandbox outputs directory; any non-outputs virtual path or path-traversal escape must be rejected (not attached, not uploaded) before the outbound message is published to the channel bus and delivered.",
+        "scope_limits": [
+          "Guard is enforced only at host-side attachment resolution inside ChannelManager (_handle_chat final delivery at manager.py line 526 and _handle_streaming_chat final delivery at manager.py line 613); the supplied source shows no agent-runtime or sandbox-side validation of present_files filepaths.",
+          "The delivery/upload effect is shown in supplied source only for the Feishu channel; slack and telegram appear in CHANNEL_CAPABILITIES (manager.py lines 29-33) but their attachment handling is not in the supplied views.",
+          "Rejection is skip-with-warning: rejected or unresolvable paths are excluded from attachments but their basenames are still appended to the response text as a 'Created Files' fallback (manager.py lines 301-312 and 528-532); the forbidden file's contents are not delivered.",
+          "Containment boundary is the per-thread outputs directory; other /mnt/user-data subtrees (workspace/, uploads/) are excluded by design per the guard docstring, so outputs-only delivery is the declared policy.",
+          "Intermediate streaming publishes (is_final=False) carry no attachments in the supplied source; artifact attachment occurs only on the final outbound message of each dispatch path."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The MessageBus consumer that invokes FeishuChannel.send_file (the _on_outbound handler body) is not present in the supplied source, so the concrete publication-to-upload wiring is unverified.",
+      "Implementations of the slack and telegram channels (whether they upload OutboundMessage.attachments) are not supplied.",
+      "The agent-side definition/registration of the present_files tool and any filepath validation it performs are not supplied.",
+      "Behavior labels, runtime prevalence data, and any non-Feishu delivery paths for attachments are unavailable from the supplied views."
+    ],
+    "repository": "robwestz/collabr",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7a415bd879f15b553de6b847246dcf08"
+  },
+  "request_sha256": "d9965ae01eb9e147a020839531501efe1e274532e2f1f9fa7b10d7aa18dc9594",
+  "response_sha256": "f089b9f49463e7b40ff39f16409299c6fecda61f4b38d61c62bb488fb578da1b",
+  "state": "completed",
+  "tokens": 31819,
+  "unit": "v24-screen:7a415bd879f15b553de6b847246dcf08"
+}

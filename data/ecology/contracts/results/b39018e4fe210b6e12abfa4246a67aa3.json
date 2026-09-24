@@ -1,0 +1,180 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "credential_generator.generate_credential at verify_auth_use_case.py:35, realized as the Set-Cookie 'credential' header on the /auth/verify JSONResponse (main.py:1422-1430).",
+        "contract_id": "ecological-contract:3caa07cf7e9d7c259e287ab3fe25eaf7",
+        "declared_mechanism": "VerifyAuthUseCase.execute awaits siwe_manager.verify_signature (SiwePySiweManager wraps siwe.SiweMessage.verify with nonce and domain, returning None on failure); if claims is None it raises InvalidSignature before generate_credential is called; the /auth/verify endpoint calls this use case and only on success deletes the nonce cookie and sets the credential cookie.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 28,
+            "line_start": 23,
+            "path": "api/api/authentication/verify_auth_use_case.py",
+            "role": "guard_registration",
+            "source_sha256": "961f9c7aaab804fadf89cdc7059350489c0edff9a2d5eb060ffd293688d53802"
+          },
+          {
+            "line_end": 19,
+            "line_start": 9,
+            "path": "api/api/authentication/siwe/infrastructure/siwe_py_siwe_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "e483c9851b02670fc2a47d9d785e348eb1b689e92b15e7f3bae941921e8c27ef"
+          },
+          {
+            "line_end": 28,
+            "line_start": 27,
+            "path": "api/api/authentication/verify_auth_use_case.py",
+            "role": "forbidden_condition",
+            "source_sha256": "961f9c7aaab804fadf89cdc7059350489c0edff9a2d5eb060ffd293688d53802"
+          },
+          {
+            "line_end": 1416,
+            "line_start": 1399,
+            "path": "api/api/main.py",
+            "role": "protected_operation",
+            "source_sha256": "a8f5ff42c86255756fe1f52aadf0b0e6c3001cb116eb15ccdc3d8bb1e8fe4e3b"
+          },
+          {
+            "line_end": 35,
+            "line_start": 30,
+            "path": "api/api/authentication/verify_auth_use_case.py",
+            "role": "commit_point",
+            "source_sha256": "961f9c7aaab804fadf89cdc7059350489c0edff9a2d5eb060ffd293688d53802"
+          },
+          {
+            "line_end": 1430,
+            "line_start": 1422,
+            "path": "api/api/main.py",
+            "role": "commit_point",
+            "source_sha256": "a8f5ff42c86255756fe1f52aadf0b0e6c3001cb116eb15ccdc3d8bb1e8fe4e3b"
+          }
+        ],
+        "forbidden_condition": "Issuing a credential for a request whose SIWE verification fails \u2014 i.e., credential_generator.generate_credential (verify_auth_use_case.py:35) or the 'credential' Set-Cookie on /auth/verify executing when SiwePySiweManager.verify_signature returned None because SiweMessage.verify raised.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether nonce single-use/expended tracking is enforced server-side; the nonce store behind GenerateAuthNonceUseCase (main.py:162-164) is not in the supplied views, and /auth/verify reads the nonce from the client-held cookie (main.py:1401-1407).",
+          "Whether the domain bound into SiweMessage.verify (derived from configuration.frontend_url, main.py:1413-1415) matches deployed origins; configuration values are not supplied.",
+          "Definition of InvalidSignature (AppException subclass and status code) \u2014 api/authentication/siwe/exception/invalid_signature is not supplied.",
+          "Whether DateTime.now() units align with the 'exp' claim expected by PyJWT's verify_exp=True check \u2014 the DateTime implementation (api/datetime/date_time) is not supplied."
+        ],
+        "protected_operation": "Credential issuance at POST /auth/verify: verify_auth_use_case.execute(signature, message, nonce, domain) producing the JWT (claims: address, exp = now + 6 hours) and setting it as an httponly, secure, samesite=strict cookie with exp-derived max_age.",
+        "protected_resource": "The 'credential' JWT whose address claim is the authenticated address later consumed by the credential middleware and by agent tools when keying effects; the nonce cookie consumed as verification input.",
+        "protection_obligation": "A JWT credential may only be issued (and set as the 'credential' cookie) when the SIWE signature over the nonce message verifies: VerifyAuthUseCase must refuse issuance (raise InvalidSignature) whenever siwe_manager.verify_signature returns no claims, so generate_credential and the Set-Cookie on /auth/verify execute only for a verified wallet signature.",
+        "scope_limits": [
+          "This is upstream web authentication (SIWE nonce/signature flow); it is compiled because the issued credential is exactly the token gated by the agent-protecting middleware compiled in the other contract, not because any agent tool or lifecycle hook binds to the issuance act itself.",
+          "Nonce acquisition (/auth/nonce) and its 5-minute cookie lifetime are outside the compiled obligation except as input to verify_signature.",
+          "The HTTP status returned for an invalid signature (mapping of InvalidSignature via the AppException handler, main.py:266-271) is not asserted; the InvalidSignature definition is not in the supplied views.",
+          "No determination is made regarding any DEC violation, runtime behavior, safety, or prevalence."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The 401 JSONResponse returned at main.py:243-248 and 253-258 aborts dispatch; otherwise 'return await call_next(request)' at main.py:263 commits passage of the request into the protected endpoint handler (and, for /conversation, into downstream agent/tool effect execution).",
+        "contract_id": "ecological-contract:4347739d6f0277dd2b99b7cd1c01771b",
+        "declared_mechanism": "FastAPI HTTP middleware registered via @app.middleware(\"http\") as credential_authentication_middleware; reads the 'credential' cookie and verifies it with PyJwtCredentialGenerator.verify_credential (PyJWT decode, algorithms=[HS256], verify_exp=True); returns 401 JSONResponse ('Credential cookie missing' / 'Invalid credential') before call_next; on success stores claims['address'] into request.state.address.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 227,
+            "line_start": 226,
+            "path": "api/api/main.py",
+            "role": "guard_registration",
+            "source_sha256": "a8f5ff42c86255756fe1f52aadf0b0e6c3001cb116eb15ccdc3d8bb1e8fe4e3b"
+          },
+          {
+            "line_end": 28,
+            "line_start": 18,
+            "path": "api/api/authentication/credential/infrastructure/py_jwt_credential_generator.py",
+            "role": "guard_registration",
+            "source_sha256": "0547cc2df3ecfbe81c8b54c717452319776f64da2eaff5b2e7472445b05e05c6"
+          },
+          {
+            "line_end": 258,
+            "line_start": 237,
+            "path": "api/api/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a8f5ff42c86255756fe1f52aadf0b0e6c3001cb116eb15ccdc3d8bb1e8fe4e3b"
+          },
+          {
+            "line_end": 263,
+            "line_start": 263,
+            "path": "api/api/main.py",
+            "role": "commit_point",
+            "source_sha256": "a8f5ff42c86255756fe1f52aadf0b0e6c3001cb116eb15ccdc3d8bb1e8fe4e3b"
+          },
+          {
+            "line_end": 262,
+            "line_start": 260,
+            "path": "api/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a8f5ff42c86255756fe1f52aadf0b0e6c3001cb116eb15ccdc3d8bb1e8fe4e3b"
+          },
+          {
+            "line_end": 1063,
+            "line_start": 1059,
+            "path": "api/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a8f5ff42c86255756fe1f52aadf0b0e6c3001cb116eb15ccdc3d8bb1e8fe4e3b"
+          },
+          {
+            "line_end": 897,
+            "line_start": 891,
+            "path": "api/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a8f5ff42c86255756fe1f52aadf0b0e6c3001cb116eb15ccdc3d8bb1e8fe4e3b"
+          },
+          {
+            "line_end": 1142,
+            "line_start": 1129,
+            "path": "api/api/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a8f5ff42c86255756fe1f52aadf0b0e6c3001cb116eb15ccdc3d8bb1e8fe4e3b"
+          }
+        ],
+        "forbidden_condition": "An HTTP request whose path is not excluded (path does not start with /auth/nonce, /auth/verify, /health, /docs, /openapi, or /openapi., and method is not OPTIONS) proceeding past credential_authentication_middleware to the endpoint when request.cookies['credential'] is absent, or when PyJwtCredentialGenerator.verify_credential returns None (JWT decode failure or expired token, verify_exp=True), instead of receiving a 401 JSONResponse before call_next.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Whether request_address_context remains bound to the middleware-derived address for the entire lazily-executed stream() generator (main.py:1085-1095) across all agent tool calls, given the ContextVar is set in the request handler (main.py:1062) and tools read it via request_address_context.get() (e.g., main.py:891).",
+          "Whether the credential_generator instance used by the middleware and the one used for issuance share the same secret/algorithm \u2014 the api/registry wiring (imported at main.py:59-78) is not in the supplied views.",
+          "Complete inventory of endpoints behind the middleware; repository enumeration is not complete and behavior labels are unavailable.",
+          "Whether the wrap_tool_call middleware handle_tool_errors (main.py:1108-1126) is intended to carry any authorization role; supplied source shows only error handling."
+        ],
+        "protected_operation": "Execution of protected endpoint handlers behind the middleware \u2014 concretely POST /conversation (the agent executor and agent tool dispatch) and other protected endpoints such as /conversation/messages, /asset/swap/price, /order/signable, /portfolio, /auth, /auth/signout \u2014 reachable only via call_next after credential verification.",
+        "protected_resource": "The authenticated wallet address established from verified JWT claims (request.state.address, copied into the request_address_context ContextVar) and the downstream effects keyed to it: the per-address agent conversation thread_id (address:system_prompt_hash) and order records (intended/planned/executed) persisted by the agent tool plan_and_execute_swap_order.",
+        "protection_obligation": "All non-excluded HTTP API requests must be authenticated before endpoint execution: the registered credential_authentication_middleware must reject with 401 any request whose 'credential' cookie is missing or whose JWT fails verification (including expiry checking) via credential_generator.verify_credential, before call_next dispatches to the endpoint handler. This gate includes the /conversation agent entry point, whose handler executes the agent and its registered tools, which commit effects (order persistence, chain receipt parsing, conversation threads) keyed to the credential-derived authenticated address.",
+        "scope_limits": [
+          "CORS middleware registration (main.py:217-223) and the OPTIONS preflight bypass (main.py:237) are outside scope; only the credential gate is compiled.",
+          "Agent mediation is established only via the /conversation path and its tool-committed effects; the middleware also guards non-agent endpoints (/order/signable, /portfolio, /asset/swap/price, /conversation/messages, /auth, /auth/signout) for which mediation is not_established and is not asserted here.",
+          "Excluded-path matching is prefix-based (startswith) per main.py:237-239; no judgment is made on whether that is over- or under-broad.",
+          "The order-persistence and chain-receipt effects inside plan_and_execute_swap_order (database / external strata) are downstream consequences of this http dispatch; no separate contract is emitted because the supplied source declares no distinct guard mechanism for those commits beyond this middleware.",
+          "No determination is made regarding any DEC violation, runtime behavior, safety, or prevalence; this compiles the supported obligation only."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The api/registry module (credential_generator, siwe_manager, date_time, and repository instances imported at main.py:59-78) is not in the supplied views; secret/instance sharing between credential issuance and middleware verification cannot be confirmed.",
+      "The InvalidSignature exception definition (api/authentication/siwe/exception/invalid_signature) and any dedicated handler are not supplied, so the response status for failed SIWE verification is not established.",
+      "GenerateAuthNonceUseCase (api/authentication/generate_auth_nonce_use_case) and any server-side nonce storage are not supplied; nonce single-use enforcement cannot be assessed.",
+      "The DateTime implementation (api/datetime/date_time) is not supplied; the unit/semantics of 'exp' relative to PyJWT verify_exp=True cannot be confirmed.",
+      "Repository enumeration is not complete and behavior labels are unavailable; endpoints, middleware, or agent wiring outside the supplied views cannot be assessed and are not hypothesized."
+    ],
+    "repository": "mehdidotcafe/coinbasket",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b39018e4fe210b6e12abfa4246a67aa3"
+  },
+  "request_sha256": "3e62b9b476c96f7e6d8942a0bb767899659227f13d469f8ea6d09cfd1646d34d",
+  "response_sha256": "92afcc71e5272bbc01a01dbe9e5b052b2ebf4bcb3abe7a141aefcbc3549e2159",
+  "state": "completed",
+  "tokens": 32915,
+  "unit": "v24-screen:b39018e4fe210b6e12abfa4246a67aa3"
+}

@@ -1,0 +1,245 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Runner.run(agent, input=user_input) at app/agent_service.py:122, executed inside the try block whose except InputGuardrailTripwireTriggered handler (lines 144-155) converts the tripwire into InputGuardrailViolationError before return of output (line 143 path) and before conversation persistence (lines 125-136).",
+        "contract_id": "ecological-contract:563cb14a4279c8da9876bffac8508945",
+        "declared_mechanism": "InputGuardrail named 'model_based_input_guardrail' (guardrail_function=self._model_based_input_guardrail, run_in_parallel=False) attached at Agent construction via input_guardrails=[self._input_guardrail]; the guard function runs the MeridianInputGuardrail classifier agent and returns GuardrailFunctionOutput(output_info={'reason': ...}, tripwire_triggered=not decision.is_safe); the resulting InputGuardrailTripwireTriggered is caught and re-raised as InputGuardrailViolationError ('Request blocked by input safety guardrail.').",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 75,
+            "line_start": 69,
+            "path": "app/agent_service.py",
+            "role": "protected_operation",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 54,
+            "line_start": 41,
+            "path": "app/agent_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 59,
+            "line_start": 55,
+            "path": "app/agent_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 255,
+            "line_start": 243,
+            "path": "app/agent_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 121,
+            "line_start": 114,
+            "path": "app/agent_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 123,
+            "line_start": 113,
+            "path": "app/agent_service.py",
+            "role": "commit_point",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 155,
+            "line_start": 144,
+            "path": "app/agent_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          }
+        ],
+        "forbidden_condition": "A user message classified unsafe by the MeridianInputGuardrail classifier \u2014 jailbreak/prompt injection, requests for hidden prompts or secrets, policy bypass, or attempts to access another customer's private account/order data \u2014 being processed by the support agent run; the guardrail function sets tripwire_triggered=not decision.is_safe for such input.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Agents SDK semantics (library source not supplied): whether input_guardrails with run_in_parallel=False run to completion before any model inference or MCP tool invocation inside Runner.run, and confirm InputGuardrailTripwireTriggered is raised from Runner.run itself.",
+          "Whether get_reply is exposed via an HTTP route in app/main.py (not supplied), which would constitute an additional http-stratum commit point for the same obligation.",
+          "Whether settings in app/config.py (guardrail_model, mcp_server_url, max_input_chars) alter guard coverage in the deployed environment."
+        ],
+        "protected_operation": "Execution of the MeridianSupportAgent via Runner.run on the composed user input (customer message plus authenticated identity/history context) in the non-streaming get_reply path.",
+        "protected_resource": "MeridianSupportAgent run with attached MCP order/product/account server (MCPServerStreamableHttp) and fetch_conversation_history function tool.",
+        "protection_obligation": "ChatAgentService.get_reply must refuse to run the MeridianSupportAgent (via Runner.run) on a user message that the registered model-based InputGuardrail 'model_based_input_guardrail' marks unsafe, surfacing the block as InputGuardrailViolationError before any reply is returned or persisted.",
+        "scope_limits": [
+          "Compiled from supplied app/agent_service.py (lines 1-308) only; app/main.py, app/config.py, app/conversation_store.py, and Agents SDK library internals are not in supplied source.",
+          "Covers the non-streaming get_reply path only; the streaming stream_reply path is captured in a separate contract.",
+          "No claim is made about classifier accuracy, evasion resistance, or whether the guardrail model's safety decisions are correct on any particular input.",
+          "The max_input_chars size pre-check (lines 76-85) also raises InputGuardrailViolationError but is generic input-length validation and is excluded from this contract.",
+          "No claim is made about whether the guard is bypassable, whether it fires in all deployments, or about runtime prevalence of blocked inputs."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "ConversationStore.add_message calls at app/agent_service.py:125-136 (get_reply) and 224-235 (stream_reply).",
+        "contract_id": "ecological-contract:b4c8ba7108a36d6e30c533638861cc80",
+        "declared_mechanism": "Commit ordering around the registered InputGuardrail 'model_based_input_guardrail': add_message calls are placed after the guarded Runner.run / Runner.run_streamed inside the same try block, and the except InputGuardrailTripwireTriggered handlers (lines 144-155 and 236-239) re-raise InputGuardrailViolationError, so a tripped guardrail aborts the block before any add_message call executes.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 136,
+            "line_start": 125,
+            "path": "app/agent_service.py",
+            "role": "commit_point",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 235,
+            "line_start": 224,
+            "path": "app/agent_service.py",
+            "role": "commit_point",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 59,
+            "line_start": 55,
+            "path": "app/agent_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 54,
+            "line_start": 41,
+            "path": "app/agent_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 136,
+            "line_start": 122,
+            "path": "app/agent_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 235,
+            "line_start": 205,
+            "path": "app/agent_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          }
+        ],
+        "forbidden_condition": "ConversationStore.add_message persisting a chat turn (the user message or an assistant reply) for a request whose input was marked unsafe by the model-based input guardrail, i.e., persistence executing after an InputGuardrailTripwireTriggered raised inside the guarded agent run.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "ConversationStore backend (database vs in-memory) \u2014 app/conversation_store.py is not in supplied source, so the exact stratum of add_message is unclassified.",
+          "Whether the Agents SDK guarantees InputGuardrailTripwireTriggered surfaces before the post-run add_message calls in the streaming path (i.e., that no persistence occurs even if the tripwire surfaces late during stream_events).",
+          "Whether any other component (e.g., app/main.py, not supplied) writes to ConversationStore independently of ChatAgentService."
+        ],
+        "protected_operation": "Conversation persistence performed by ConversationStore.add_message after a completed agent run \u2014 user and assistant messages in get_reply (lines 125-136) and in stream_reply (lines 224-235).",
+        "protected_resource": "Per-customer conversation history held in ConversationStore, keyed by customer_id/customer_email.",
+        "protection_obligation": "Chat turns whose user message was blocked by the model-based InputGuardrail must not be written to the conversation store: in both get_reply and stream_reply, ConversationStore.add_message must not execute for a request where the guardrail tripped, so neither the unsafe user message nor any assistant output is persisted.",
+        "scope_limits": [
+          "Compiled from supplied app/agent_service.py (lines 1-308) only; ConversationStore's backend implementation is not in supplied source.",
+          "Stratum recorded as application state because the persistence medium of ConversationStore is unsupplied; if add_message writes a persistent database, the stratum for these commit points would be database.",
+          "The persistence prevention is an ordering consequence of the run-level guardrail, not an independently registered guard on add_message itself.",
+          "Whether any other code path writes conversation messages without passing the guardrail is not visible in the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Runner.run_streamed(agent, input=user_input) at app/agent_service.py:205 with guardrail execution surfacing during stream_events consumption (lines 207-218), inside the try block whose except InputGuardrailTripwireTriggered handler (lines 236-239) converts the tripwire into InputGuardrailViolationError before conversation persistence (lines 224-235).",
+        "contract_id": "ecological-contract:f8732a1abfe7eecbe6d10fae7654a5b5",
+        "declared_mechanism": "InputGuardrail named 'model_based_input_guardrail' (guardrail_function=self._model_based_input_guardrail, run_in_parallel=False) attached at Agent construction via input_guardrails=[self._input_guardrail]; the guard function runs the MeridianInputGuardrail classifier and returns GuardrailFunctionOutput(tripwire_triggered=not decision.is_safe); the resulting InputGuardrailTripwireTriggered is caught and re-raised as InputGuardrailViolationError ('Request blocked by input safety guardrail.').",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 170,
+            "line_start": 164,
+            "path": "app/agent_service.py",
+            "role": "protected_operation",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 54,
+            "line_start": 41,
+            "path": "app/agent_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 59,
+            "line_start": 55,
+            "path": "app/agent_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 255,
+            "line_start": 243,
+            "path": "app/agent_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 204,
+            "line_start": 197,
+            "path": "app/agent_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 222,
+            "line_start": 205,
+            "path": "app/agent_service.py",
+            "role": "commit_point",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          },
+          {
+            "line_end": 239,
+            "line_start": 236,
+            "path": "app/agent_service.py",
+            "role": "guard_registration",
+            "source_sha256": "b035c47ae2afc7ad0836721a59bda9682568eb1f4436296cd149d0ee04475330"
+          }
+        ],
+        "forbidden_condition": "A user message classified unsafe by the MeridianInputGuardrail classifier \u2014 jailbreak/prompt injection, requests for hidden prompts or secrets, policy bypass, or attempts to access another customer's private account/order data \u2014 being processed by the streaming support agent run; the guardrail function sets tripwire_triggered=not decision.is_safe for such input.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Agents SDK semantics (library source not supplied): at what point during Runner.run_streamed / stream_events the input guardrail executes and InputGuardrailTripwireTriggered surfaces, and whether any response text can be streamed before the guardrail completes.",
+          "Whether stream_reply is exposed via an HTTP route in app/main.py (not supplied), which would constitute an additional http-stratum commit point for the same obligation.",
+          "Whether settings in app/config.py (guardrail_model, mcp_server_url, max_input_chars) alter guard coverage in the deployed environment."
+        ],
+        "protected_operation": "Execution of the MeridianSupportAgent via Runner.run_streamed on the composed user input and streaming of reply deltas to the caller in the stream_reply path.",
+        "protected_resource": "MeridianSupportAgent streaming run with attached MCP order/product/account server (MCPServerStreamableHttp) and fetch_conversation_history function tool.",
+        "protection_obligation": "ChatAgentService.stream_reply must refuse to run the MeridianSupportAgent (via Runner.run_streamed) on a user message that the registered model-based InputGuardrail 'model_based_input_guardrail' marks unsafe, surfacing the block as InputGuardrailViolationError before any delta is yielded or any turn is persisted.",
+        "scope_limits": [
+          "Compiled from supplied app/agent_service.py (lines 1-308) only; app/main.py, app/config.py, app/conversation_store.py, and Agents SDK library internals are not in supplied source.",
+          "Covers the streaming stream_reply path only; the non-streaming get_reply path is captured in a separate contract.",
+          "No claim is made about classifier accuracy, evasion resistance, or whether the guardrail model's safety decisions are correct on any particular input.",
+          "The max_input_chars size pre-check (lines 171-174) also raises InputGuardrailViolationError but is generic input-length validation and is excluded from this contract.",
+          "No claim is made about whether partial deltas could be yielded before a tripwire in streaming mode; SDK surfacing semantics are unresolved."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "app/conversation_store.py is not in supplied source: the backend of ConversationStore.add_message (persistent database vs in-memory/application state) is unknown, so the persistence commit points are recorded as stratum 'state' provisionally.",
+      "Agents SDK library source is not supplied: the guarantee that input_guardrails execute (with run_in_parallel=False) before model inference and MCP tool invocation inside Runner.run/Runner.run_streamed, and the exact surfacing point of InputGuardrailTripwireTriggered in streaming mode, are unverified.",
+      "app/main.py and app/config.py cited by reviewers as production wiring and deployed MCP URL are not in supplied source: HTTP endpoint exposure, authentication context of get_reply/stream_reply callers, and deployed settings are unconfirmed.",
+      "Repository enumeration is incomplete and behavior labels are unavailable: whether additional guardrails, output guardrails, or other agent run paths exist outside app/agent_service.py is unknown.",
+      "The guardrail classifier's model identity (settings.guardrail_model) and its decision quality are not assessable from supplied source."
+    ],
+    "repository": "techmornach/Meridian-Support-Chatbot",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:232357855afb9f411541e229f38f5d81"
+  },
+  "request_sha256": "01631942f66d094c6a986b1c7ef8d8d3e76ba400ac21b6c1fc95aaf747d91069",
+  "response_sha256": "237b1491aba17f1598e1766bbec19d779521614145e36463bf0cbcdaf8a07b8f",
+  "state": "completed",
+  "tokens": 19274,
+  "unit": "v24-screen:232357855afb9f411541e229f38f5d81"
+}

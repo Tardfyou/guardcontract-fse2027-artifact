@@ -1,0 +1,342 @@
+{
+  "attempt": 2,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "File effects commit through the backend dispatch configured at construction: _normalize_backend builds a CompositeBackend routing /workspace/ to the LocalShellBackend and defaulting file operations to the StateBackend-first _WorkspaceShellBackend (deep_agent.py 61-97); the concrete write/edit/delete implementations live in the deepagents dependency (not supplied).",
+        "contract_id": "ecological-contract:71d66b21dd3d2768a6a165393807199e",
+        "declared_mechanism": "DEFAULT_DEEPAGENT_INTERRUPT_ON entries for write_file/edit_file/delete with approve/reject allowed_decisions (deep_agent.py 31-36), resolved as the default interrupt_on and registered into create_deep_agent via construct_deep_agent_graph (deep_agent.py 130-148); the CLI decision collection is restricted to approve/reject with default 'reject' (commands.py 668-702); the bypass is deepagent_auto_approve setting interrupt_on=None (llm_agent.py 557-572).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 36,
+            "line_start": 31,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 35,
+            "line_start": 33,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 121,
+            "line_start": 112,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 97,
+            "line_start": 90,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "commit_point",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 148,
+            "line_start": 135,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 572,
+            "line_start": 557,
+            "path": "src/chemgraph/agent/llm_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "6d82d8c416153569758a5dab0b17659470e0ba2cb101b02b717dcaeac17129c5"
+          },
+          {
+            "line_end": 702,
+            "line_start": 668,
+            "path": "src/chemgraph/cli/commands.py",
+            "role": "guard_registration",
+            "source_sha256": "94df30502aee9d5cd6a341c07e6a7dee108909c5cf9bc09d03715fa83fc6cdcf"
+          }
+        ],
+        "forbidden_condition": "Unreviewed file mutation or deletion by Deep Agent write_file/edit_file/delete tool calls, including disabling approval interrupts via interrupt_on=None outside an externally isolated, explicitly trusted execution context (deep_agent.py 119-120).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "deepagents tool-execution internals for write_file/edit_file/delete (commit behavior on reject) are not supplied.",
+          "Interrupt wiring for the main_agent-embedded deepagent worker (construct_main_agent_graph internals) is not supplied."
+        ],
+        "protected_operation": "Deep Agent write_file/edit_file/delete tool invocations against workspace files.",
+        "protected_resource": "Workspace files: the host filesystem via the /workspace LocalShellBackend route when a shell backend is configured; the checkpointed agent-state file namespace otherwise (StateBackend default).",
+        "protection_obligation": "Deep Agent 'write_file', 'edit_file', and 'delete' tool calls that create, modify, or remove files must pause for an explicit human approve/reject decision before the mutation commits. The gate is the same DEFAULT_DEEPAGENT_INTERRUPT_ON registration at create_deep_agent, bypassable only via the explicit deepagent_auto_approve opt-in that sets interrupt_on=None for a standalone deep_agent in an explicitly trusted workspace.",
+        "scope_limits": [
+          "With the default StateBackend (no local shell backend), file tools mutate checkpointed in-memory agent state rather than the host filesystem; the file stratum applies specifically when a local-shell backend workspace route is active. The registered approve/reject gate covers both variants.",
+          "deepagents' write/edit/delete internals are dependency code not in the supplied views; the exact commit semantics on a rejected decision are unverified.",
+          "The deepagent_auto_approve bypass path is headless-only and requires an explicit deepagent_workspace (commands.py 280-283; main.py 585-597)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The host-shell effect commits at the backend execution delegation _WorkspaceShellBackend.execute/aexecute -> LocalShellBackend.execute (deep_agent.py 77-81); the interrupt_on gate is registered at the create_deep_agent graph-construction call (deep_agent.py 139-148) and applies per tool call before that delegation.",
+        "contract_id": "ecological-contract:a7dec2ab6e79f9ce7e13d60b952b9177",
+        "declared_mechanism": "DEFAULT_DEEPAGENT_INTERRUPT_ON['execute'] = {'allowed_decisions': ['approve', 'reject']} (deep_agent.py 31-36) is deep-copied as the default interrupt_on and passed to create_deep_agent (deep_agent.py 130-148). Resume requires a structured approve/reject decision, with the CLI decision prompt defaulting to 'reject' (commands.py 668-702). ChemGraph strips the gate only when deepagent_auto_approve=True by setting deepagent_options['interrupt_on'] = None (llm_agent.py 557-572); deepagent_auto_approve is validated to the deep_agent workflow only (llm_agent.py 278-282).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 36,
+            "line_start": 31,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 134,
+            "line_start": 130,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 148,
+            "line_start": 135,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 81,
+            "line_start": 77,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "commit_point",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 28,
+            "line_start": 15,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 217,
+            "line_start": 213,
+            "path": "src/chemgraph/agent/llm_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6d82d8c416153569758a5dab0b17659470e0ba2cb101b02b717dcaeac17129c5"
+          },
+          {
+            "line_end": 572,
+            "line_start": 557,
+            "path": "src/chemgraph/agent/llm_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "6d82d8c416153569758a5dab0b17659470e0ba2cb101b02b717dcaeac17129c5"
+          },
+          {
+            "line_end": 702,
+            "line_start": 668,
+            "path": "src/chemgraph/cli/commands.py",
+            "role": "guard_registration",
+            "source_sha256": "94df30502aee9d5cd6a341c07e6a7dee108909c5cf9bc09d03715fa83fc6cdcf"
+          }
+        ],
+        "forbidden_condition": "An agent-initiated Deep Agent 'execute' tool call reaching host-shell command execution without a recorded human approve/reject decision (unreviewed command execution).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "deepagents create_deep_agent's exact enforcement behavior for interrupt_on (whether a rejected decision leaves no partial effect) is not observable in the supplied views.",
+          "construct_main_agent_graph internals: interrupt_on wiring for the embedded deepagent worker is not supplied."
+        ],
+        "protected_operation": "Deep Agent 'execute' tool invocation of host shell commands through the configured backend (LocalShellBackend via the _WorkspaceShellBackend.execute delegation).",
+        "protected_resource": "The host shell exposed to the Deep Agent (arbitrary OS command execution; the CLI warns the shell is not confined to the workspace directory).",
+        "protection_obligation": "Deep Agent 'execute' tool calls that run host shell commands must pause for an explicit human approve/reject decision before the command runs. The gate is the DEFAULT_DEEPAGENT_INTERRUPT_ON registration applied to create_deep_agent at graph construction; unreviewed shell execution is reachable only through the explicit deepagent_auto_approve opt-in (standalone deep_agent workflow only), which sets interrupt_on=None.",
+        "scope_limits": [
+          "Supplied source shows registration and backend wiring only; deepagents' internal pre-tool interrupt enforcement (pause-before-execution semantics, effect of a 'reject') is dependency code not in the supplied views.",
+          "deepagent_auto_approve is restricted to the standalone deep_agent workflow (llm_agent.py 278-282) and, per the CLI, to headless runs with an explicit deepagent_workspace (main.py 577-597; commands.py 280-283).",
+          "Whether the main_agent-embedded worker (enable_deepagent) receives equivalent interrupt configuration depends on construct_main_agent_graph internals, which are not supplied.",
+          "Standalone deep_agent construction receives an InMemorySaver by default so approval interrupts can be resumed (deep_agent.py 112-129)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The confirmation resolves immediately before LocalShellBackend construction and return (commands.py 171-187); on approval the backend object that will execute the agent's commands is committed as deepagent_backend in initialize_agent (commands.py 290-299).",
+        "contract_id": "ecological-contract:bbcb26927fe91d43e170e45b44c5d2f5",
+        "declared_mechanism": "require_confirmation gate: rich Confirm.ask('Enable this development-only capability?', default=False) raising RuntimeError('Experimental Deep Agent access was not approved.') on denial (commands.py 157-175); callers pass require_confirmation=not deepagent_auto_approve (commands.py 290-296), and deepagent_auto_approve additionally requires the standalone deep_agent workflow, headless invocation, and an explicit workspace (main.py 577-597; commands.py 276-283).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 150,
+            "line_start": 145,
+            "path": "src/chemgraph/cli/commands.py",
+            "role": "protected_operation",
+            "source_sha256": "94df30502aee9d5cd6a341c07e6a7dee108909c5cf9bc09d03715fa83fc6cdcf"
+          },
+          {
+            "line_end": 175,
+            "line_start": 157,
+            "path": "src/chemgraph/cli/commands.py",
+            "role": "guard_registration",
+            "source_sha256": "94df30502aee9d5cd6a341c07e6a7dee108909c5cf9bc09d03715fa83fc6cdcf"
+          },
+          {
+            "line_end": 187,
+            "line_start": 171,
+            "path": "src/chemgraph/cli/commands.py",
+            "role": "commit_point",
+            "source_sha256": "94df30502aee9d5cd6a341c07e6a7dee108909c5cf9bc09d03715fa83fc6cdcf"
+          },
+          {
+            "line_end": 299,
+            "line_start": 290,
+            "path": "src/chemgraph/cli/commands.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "94df30502aee9d5cd6a341c07e6a7dee108909c5cf9bc09d03715fa83fc6cdcf"
+          },
+          {
+            "line_end": 81,
+            "line_start": 77,
+            "path": "src/chemgraph/graphs/deep_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a82385333b838e5ae635a14e0f7189cc12eb6b2a07b70287ecd23f37d32fa069"
+          },
+          {
+            "line_end": 147,
+            "line_start": 139,
+            "path": "src/chemgraph/cli/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e41396fe43ab03b44e8c52c34503515dbc2234bf990f85d600a6fbba38278279"
+          }
+        ],
+        "forbidden_condition": "Provisioning the development-only LocalShellBackend \u2014 which lets the agent modify files under the workspace and run arbitrary shell commands on a host whose shell is not confined to that directory \u2014 without explicit operator approval ('Allow a headless deep_agent to execute commands and mutate files without approval prompts; its shell is not confined to the workspace', main.py 139-147).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether LocalShellBackend's virtual_mode/root_dir actually confine any file operations (as opposed to only shell commands) cannot be verified from the supplied views."
+        ],
+        "protected_operation": "Creation of the Deep Agent's host-shell backend via _create_experimental_deepagent_backend (LocalShellBackend provisioning).",
+        "protected_resource": "The host shell and host filesystem reachable through the unconfined backend (environment inheritance limited to _DEEPAGENT_ENV_ALLOWLIST).",
+        "protection_obligation": "Enabling the experimental unconfined host-shell backend for the Deep Agent requires explicit interactive operator confirmation that defaults to deny; the CLI must refuse to provision LocalShellBackend (RuntimeError) without that confirmation, and the auto-approve bypass is reachable only in headless deep_agent runs with an explicitly provided workspace.",
+        "scope_limits": [
+          "This gate controls capability provisioning at agent initialization; per-command human review is a separate runtime gate (the execute approval contract).",
+          "The gate applies only on CLI paths that use the experimental backend (uses_deepagent); programmatic ChemGraph callers may supply their own backend without this confirmation.",
+          "Environment inheritance is restricted to the _DEEPAGENT_ENV_ALLOWLIST entries (commands.py 135-142, 177-186).",
+          "deepagents LocalShellBackend internals (virtual_mode, root_dir confinement guarantees) are dependency code not in the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The mutating HTTP request issued by the invoker's _post/_put/_delete/_delete_with_query helper after _check_unsafe passes (helpers at alcf_iri_core.py 243-278); e.g., submit_job commits via _post('/compute/job/<resource>', =jobspec) at 586-590.",
+        "contract_id": "ecological-contract:e0799032a0aa21b82c17dffc7a78e93d",
+        "declared_mechanism": "_check_unsafe(action) raises RuntimeError unless os.environ[UNSAFE_ENV='ALCF_IRI_ALLOW_UNSAFE'] is set (alcf_iri_core.py 48, 128-133); it is wired via '_check_unsafe(...) or _post/_put/_delete/_delete_with_query(...)' into each write-action invoker (submit_job 586-590, update_job 601-605, cancel_job 614-618, mkdir 786-791, rm 803-807, chmod 820-825, chown 839-845, mv 864-869, cp 882-887, symlink 900-905, compress 918-923, extract 936-941, task cancel 984-986).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 133,
+            "line_start": 128,
+            "path": "src/chemgraph/tools/alcf_iri_core.py",
+            "role": "guard_registration",
+            "source_sha256": "3ca4fd946284713549d1d066b2737400ac25cb8b901b9db2ee14b32b62b89437"
+          },
+          {
+            "line_end": 48,
+            "line_start": 48,
+            "path": "src/chemgraph/tools/alcf_iri_core.py",
+            "role": "guard_registration",
+            "source_sha256": "3ca4fd946284713549d1d066b2737400ac25cb8b901b9db2ee14b32b62b89437"
+          },
+          {
+            "line_end": 791,
+            "line_start": 786,
+            "path": "src/chemgraph/tools/alcf_iri_core.py",
+            "role": "guard_registration",
+            "source_sha256": "3ca4fd946284713549d1d066b2737400ac25cb8b901b9db2ee14b32b62b89437"
+          },
+          {
+            "line_end": 986,
+            "line_start": 984,
+            "path": "src/chemgraph/tools/alcf_iri_core.py",
+            "role": "guard_registration",
+            "source_sha256": "3ca4fd946284713549d1d066b2737400ac25cb8b901b9db2ee14b32b62b89437"
+          },
+          {
+            "line_end": 36,
+            "line_start": 34,
+            "path": "src/chemgraph/tools/alcf_iri_core.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3ca4fd946284713549d1d066b2737400ac25cb8b901b9db2ee14b32b62b89437"
+          },
+          {
+            "line_end": 566,
+            "line_start": 558,
+            "path": "src/chemgraph/tools/alcf_iri_core.py",
+            "role": "protected_operation",
+            "source_sha256": "3ca4fd946284713549d1d066b2737400ac25cb8b901b9db2ee14b32b62b89437"
+          },
+          {
+            "line_end": 775,
+            "line_start": 774,
+            "path": "src/chemgraph/tools/alcf_iri_core.py",
+            "role": "protected_operation",
+            "source_sha256": "3ca4fd946284713549d1d066b2737400ac25cb8b901b9db2ee14b32b62b89437"
+          },
+          {
+            "line_end": 983,
+            "line_start": 980,
+            "path": "src/chemgraph/tools/alcf_iri_core.py",
+            "role": "protected_operation",
+            "source_sha256": "3ca4fd946284713549d1d066b2737400ac25cb8b901b9db2ee14b32b62b89437"
+          },
+          {
+            "line_end": 590,
+            "line_start": 586,
+            "path": "src/chemgraph/tools/alcf_iri_core.py",
+            "role": "commit_point",
+            "source_sha256": "3ca4fd946284713549d1d066b2737400ac25cb8b901b9db2ee14b32b62b89437"
+          },
+          {
+            "line_end": 247,
+            "line_start": 243,
+            "path": "src/chemgraph/tools/alcf_iri_core.py",
+            "role": "commit_point",
+            "source_sha256": "3ca4fd946284713549d1d066b2737400ac25cb8b901b9db2ee14b32b62b89437"
+          }
+        ],
+        "forbidden_condition": "Invoking a write-kind ALCF IRI action while $ALCF_IRI_ALLOW_UNSAFE is unset: 'Action {action!r} modifies HPC state. Refusing to run without $ALCF_IRI_ALLOW_UNSAFE=1' (alcf_iri_core.py 128-133; module docstring: write endpoints are listed as UNSAFE and refuse to run without the variable, 34-36).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "chemgraph/tools/alcf_iri_tools.py \u2014 the LangChain wrapper module that would bind dispatch/category actions to agent tools \u2014 is referenced at alcf_iri_core.py 3-6 but is not among the supplied sources.",
+          "construct_iri_graph internals for the single_agent_iri workflow are not supplied; llm_agent.py 653-663 only notes the graph auto-picks alcf_iri_prompt 'for category tools' without showing any tool wiring.",
+          "src/chemgraph/prompt/alcf_iri_prompt.py, cited by reviewers for agent-facing documentation of the guard, is not supplied and was not used."
+        ],
+        "protected_operation": "The write-kind actions in the ALCF IRI category action tables: submit_job, update_job, cancel_job (compute); mkdir, rm, chmod, chown, mv, cp, symlink, compress, extract (filesystem); cancel (task).",
+        "protected_resource": "ALCF HPC state reachable through the Facility API (https://api.alcf.anl.gov/api/v1): PBS job queue/state, storage filesystem paths, and in-flight async tasks.",
+        "protection_obligation": "State-mutating ALCF IRI Facility API operations \u2014 compute submit_job/update_job/cancel_job, filesystem mkdir/rm/chmod/chown/mv/cp/symlink/compress/extract, and task cancel \u2014 must refuse to run (RuntimeError) unless the ALCF_IRI_ALLOW_UNSAFE environment variable is set; the _check_unsafe guard is composed into every write-kind action-table invoker immediately before the _post/_put/_delete HTTP call that commits the change.",
+        "scope_limits": [
+          "The guard is a static environment opt-in, not human review; the module states HITL is 'planned' (alcf_iri_core.py 34-36, 128-133) and the submit_job description instructs callers to attempt normally rather than refuse preemptively (558-566).",
+          "The guard applies at the alcf_iri_core dispatch layer for any caller; read-kind actions and the Globus re-auth flows are not gated.",
+          "Whether these guarded actions are exposed as agent tools cannot be established from the supplied views (the wrapper module and the IRI graph internals are absent), so no agent_entry_binding is asserted."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "deepagents dependency internals (create_deep_agent interrupt enforcement, tool execution for execute/write_file/edit_file/delete, LocalShellBackend confinement behavior) are not in the supplied views; the Deep Agent approval gate is established by registration and documented semantics only, not observed runtime behavior.",
+      "chemgraph/tools/alcf_iri_tools.py (LangChain wrappers that would expose ALCF IRI dispatch/category actions as agent tools) is referenced but not supplied; agent mediation for the ALCF contract is therefore recorded as not_established.",
+      "chemgraph/graphs/single_agent_iri.py (construct_iri_graph) internals are not supplied; llm_agent.py 653-663 mentions 'category tools' and alcf_iri_prompt without showing tool wiring.",
+      "src/chemgraph/prompt/alcf_iri_prompt.py, cited by reviewers (lines 27-31 and 58-61), is not among the supplied sources and was excluded from evidence.",
+      "construct_main_agent_graph internals (interrupt_on wiring for the enable_deepagent embedded Deep Agent worker) are not supplied.",
+      "The headless auto-approve CLI flag literal is redacted in the supplied view of src/chemgraph/cli/main.py 139-147 (and referenced only as '<REDACTED>' at line 543), so the exact flag name cannot be quoted.",
+      "Behavior labels are unavailable and repository enumeration is incomplete; no runtime-behavior or prevalence determinations are made, and all obligations above are compiled strictly from the supplied line-numbered source views."
+    ],
+    "repository": "argonne-lcf/ChemGraph",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:36ba8f827f2fabfecd0d427beb468717"
+  },
+  "request_sha256": "b8d9340fd33fffa08c77ffd50713532a5a60042564ccf3691be97fdc4b696999",
+  "response_sha256": "c8bc9f8abd83a53fc0fbecbb6808ace522a3eb011a7d153e509f529cf17f68ec",
+  "state": "completed",
+  "tokens": 92965,
+  "unit": "v24-screen:36ba8f827f2fabfecd0d427beb468717"
+}

@@ -1,0 +1,308 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The first host filesystem access after _resolve in each tool, which the guard must precede: fp.read_text (read_file libagents/tools/files.py:64; read_summary libagents/tools/files.py:128), fp.write_text (write_file libagents/tools/files.py:152; edit_file libagents/tools/files.py:185), and fp.unlink (delete_file libagents/tools/files.py:196).",
+        "contract_id": "ecological-contract:4c01252a2ae251a160223b90a4422753",
+        "declared_mechanism": "PathMapper.to_host strips the env_root/host_root prefix, resolves the remainder against host_root, and raises ValueError unless the resolved path equals host_root or is one of its parents (libagents/paths.py:72-84); the tools' _resolve wraps to_host and re-raises as ToolError so the tool call fails closed before touching the filesystem (libagents/tools/files.py:9-13).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 84,
+            "line_start": 64,
+            "path": "libagents/paths.py",
+            "role": "guard_registration",
+            "source_sha256": "7ce7f3cfd1ead40ab4ca04fdbf19def7ec1a8396f010ed0fc5ea7708577a9a7b"
+          },
+          {
+            "line_end": 83,
+            "line_start": 82,
+            "path": "libagents/paths.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7ce7f3cfd1ead40ab4ca04fdbf19def7ec1a8396f010ed0fc5ea7708577a9a7b"
+          },
+          {
+            "line_end": 13,
+            "line_start": 9,
+            "path": "libagents/tools/files.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e917b0c2c1b4665d11038f1f712ebbe2c17509c5d603b19bb37bbbc630e8dca8"
+          },
+          {
+            "line_end": 147,
+            "line_start": 143,
+            "path": "libagents/tools/files.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e917b0c2c1b4665d11038f1f712ebbe2c17509c5d603b19bb37bbbc630e8dca8"
+          },
+          {
+            "line_end": 267,
+            "line_start": 261,
+            "path": "README.md",
+            "role": "agent_entry_binding",
+            "source_sha256": "00026dfaf51e92575832343bf4b2eadcf93658b9f941ed8a8a91c1d41af050aa"
+          },
+          {
+            "line_end": 153,
+            "line_start": 148,
+            "path": "libagents/tools/files.py",
+            "role": "protected_operation",
+            "source_sha256": "e917b0c2c1b4665d11038f1f712ebbe2c17509c5d603b19bb37bbbc630e8dca8"
+          },
+          {
+            "line_end": 152,
+            "line_start": 151,
+            "path": "libagents/tools/files.py",
+            "role": "commit_point",
+            "source_sha256": "e917b0c2c1b4665d11038f1f712ebbe2c17509c5d603b19bb37bbbc630e8dca8"
+          },
+          {
+            "line_end": 186,
+            "line_start": 172,
+            "path": "libagents/tools/files.py",
+            "role": "protected_operation",
+            "source_sha256": "e917b0c2c1b4665d11038f1f712ebbe2c17509c5d603b19bb37bbbc630e8dca8"
+          },
+          {
+            "line_end": 185,
+            "line_start": 184,
+            "path": "libagents/tools/files.py",
+            "role": "commit_point",
+            "source_sha256": "e917b0c2c1b4665d11038f1f712ebbe2c17509c5d603b19bb37bbbc630e8dca8"
+          },
+          {
+            "line_end": 197,
+            "line_start": 189,
+            "path": "libagents/tools/files.py",
+            "role": "protected_operation",
+            "source_sha256": "e917b0c2c1b4665d11038f1f712ebbe2c17509c5d603b19bb37bbbc630e8dca8"
+          },
+          {
+            "line_end": 196,
+            "line_start": 191,
+            "path": "libagents/tools/files.py",
+            "role": "commit_point",
+            "source_sha256": "e917b0c2c1b4665d11038f1f712ebbe2c17509c5d603b19bb37bbbc630e8dca8"
+          },
+          {
+            "line_end": 64,
+            "line_start": 55,
+            "path": "libagents/tools/files.py",
+            "role": "protected_operation",
+            "source_sha256": "e917b0c2c1b4665d11038f1f712ebbe2c17509c5d603b19bb37bbbc630e8dca8"
+          }
+        ],
+        "forbidden_condition": "A resolved host path that is neither the environment root nor beneath it (a path escaping host_root), i.e. any file operation targeting a location outside the environment root; to_host raises ValueError(\"path escapes the environment root: ...\") exactly when resolved != host_root and host_root not in resolved.parents (libagents/paths.py:82-83).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The reviewer claims the HTTP API files endpoint and _safe_ui_candidate enforce the same confinement; libagents/api.py is not among the supplied views, so operator-side binding is unverified.",
+          "Whether other host-side writers (board tools, memory writes outside libagents/tools/files.py) route through PathMapper.to_host is not shown in the supplied views."
+        ],
+        "protected_operation": "The host filesystem accesses of the five agent file tools operating on agent-supplied paths: read_file and read_summary reads, and write_file/edit_file creates-overwrites and delete_file unlinks, each of which first calls _resolve(ctx, args[\"path\"]) (libagents/tools/files.py:56, 125, 149, 173, 191).",
+        "protected_resource": "The host filesystem outside the environment root (everything not under PathMapper.host_root, which is the resolved environment directory, libagents/paths.py:68-84).",
+        "protection_obligation": "Agent-invoked file tools (read_file, read_summary, write_file, edit_file, delete_file) must refuse to resolve any agent-supplied path outside the environment root before any host filesystem access, via PathMapper.to_host raising on escape and the tools' _resolve converting that refusal into a ToolError that aborts the call.",
+        "scope_limits": [
+          "Only effects routed through _resolve/PathMapper.to_host are covered; any file effect that does not call to_host is outside this contract.",
+          "read_file/read_summary are non-mutating reads; they are included because the same guard gates them, while the stratum reflects the mutating tools (write_file, edit_file, delete_file) whose commit points are cited.",
+          "Shell commands are not subject to PathMapper; filesystem confinement for shell commands is a separate sandbox-level mechanism (README.md:227-231), covered by the macOS Seatbelt contracts.",
+          "The guard is resolution-time; whether it is raced by concurrent path swaps is not assessable from the supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The sandbox-exec process spawn inside MacOSSandbox.exec: the persistent session shell created with self._argv(\"/bin/bash\", ...) (libagents/sandbox.py:486-495) and the one-shot subprocess.run(self._argv(\"/bin/bash\", \"-lc\", command), ...) (libagents/sandbox.py:497-504); the deny-by-default profile attaches at that spawn and governs all writes of the sandboxed process tree.",
+        "contract_id": "ecological-contract:7d65a1482d768361dc1d53e9da315f61",
+        "declared_mechanism": "MACOS_SEATBELT_PROFILE: (deny default) with (allow file-write* (subpath (param \"ENV_ROOT\"))) plus the narrow cache exceptions (libagents/sandbox.py:207-249); bound to every command via _argv, which builds sandbox-exec -D ENV_ROOT=... -D DARWIN_TEMP/... -p MACOS_SEATBELT_PROFILE ... (libagents/sandbox.py:451-461); fail-closed availability check _require_seatbelt raises RuntimeError when not on darwin or /usr/bin/sandbox-exec is missing (libagents/sandbox.py:441-449, invoked from start/exec).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 216,
+            "line_start": 207,
+            "path": "libagents/sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 249,
+            "line_start": 218,
+            "path": "libagents/sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 449,
+            "line_start": 441,
+            "path": "libagents/sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 461,
+            "line_start": 451,
+            "path": "libagents/sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 431,
+            "line_start": 423,
+            "path": "libagents/sandbox.py",
+            "role": "forbidden_condition",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 242,
+            "line_start": 233,
+            "path": "README.md",
+            "role": "forbidden_condition",
+            "source_sha256": "00026dfaf51e92575832343bf4b2eadcf93658b9f941ed8a8a91c1d41af050aa"
+          },
+          {
+            "line_end": 485,
+            "line_start": 480,
+            "path": "libagents/sandbox.py",
+            "role": "protected_operation",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 504,
+            "line_start": 486,
+            "path": "libagents/sandbox.py",
+            "role": "commit_point",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 247,
+            "line_start": 244,
+            "path": "README.md",
+            "role": "agent_entry_binding",
+            "source_sha256": "00026dfaf51e92575832343bf4b2eadcf93658b9f941ed8a8a91c1d41af050aa"
+          },
+          {
+            "line_end": 7,
+            "line_start": 6,
+            "path": "libagents/sandbox.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          }
+        ],
+        "forbidden_condition": "A sandboxed subprocess writing or deleting any host file outside the ENV_ROOT subpath, apart from the explicitly allowed narrow caches (xcrun_db, CFNetworkDownload_*, NSIRD_swift-* under DARWIN_TEMP; the Xcode PlugInCache under DARWIN_CACHE; the DARWIN_METAL_CACHE subpath), as declared in the profile's deny-default plus scoped file-write allowances (libagents/sandbox.py:207-249) and the MacOSSandbox contract statement (libagents/sandbox.py:427-430; README.md:236-238).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The shell tool's source (its @tool registration and its call into Sandbox.exec) is not in the supplied views; the agent command-to-exec dataflow is asserted by README.md:244-247 and the sandbox module docstring (libagents/sandbox.py:6-7) but not shown as tool-dispatch code.",
+          "Allowances contributed by the imported fragments system.sb and com.apple.corefoundation.sb (libagents/sandbox.py:210-212) are not visible in the supplied source and could affect the effective write policy.",
+          "Runtime effectiveness of the Seatbelt regex rules cannot be verified from source alone."
+        ],
+        "protected_operation": "Execution of shell commands by MacOSSandbox.exec, covering both the persistent-session shell and the one-shot command path, each wrapped in sandbox-exec with the profile (libagents/sandbox.py:480-510).",
+        "protected_resource": "The host filesystem outside the environment root, where the boundary is the resolved environment directory bound as the ENV_ROOT profile parameter (libagents/sandbox.py:438-439, 455).",
+        "protection_obligation": "Shell commands executed under the macOS sandbox must be denied host filesystem writes and deletions outside the environment root (the ENV_ROOT subpath), except the narrow filename-scoped Swift/Xcode/Metal cache allowances, by the deny-by-default Seatbelt profile applied at every sandbox-exec invocation of MacOSSandbox.exec, failing closed when sandbox-exec is unavailable.",
+        "scope_limits": [
+          "Reads are deliberately broad ((allow file-read*)) and network access is allowed (libagents/sandbox.py:215, 256); only writes/deletions are confined.",
+          "Filename-scoped cache exceptions permit writes under DARWIN_TEMP, DARWIN_CACHE, and DARWIN_METAL_CACHE per the regex/subpath rules (libagents/sandbox.py:218-249).",
+          "Declared best-effort against accidental damage from trusted agents, not a security boundary for hostile code (libagents/sandbox.py:9-11; README.md:239-240).",
+          "Applies only to MacOSSandbox; LocalSandbox has no isolation (libagents/sandbox.py:13-15; README.md:229-231) and Docker relies on container isolation instead.",
+          "Seatbelt is Apple-deprecated and may change; the mode fails closed when sandbox-exec is unavailable (README.md:240-242; libagents/sandbox.py:441-449)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "The sandbox-exec process spawn inside MacOSSandbox.exec: the persistent session shell via self._argv(...) (libagents/sandbox.py:486-495) and the one-shot subprocess.run(self._argv(...)) (libagents/sandbox.py:497-504).",
+        "contract_id": "ecological-contract:b7b0018c6b6f3b9a4766ece59d2726a3",
+        "declared_mechanism": "The same MACOS_SEATBELT_PROFILE deny-by-default registration bound per command through _argv's sandbox-exec -p invocation (libagents/sandbox.py:207-216, 451-461), with fail-closed availability via _require_seatbelt (libagents/sandbox.py:441-449); the profile enumerates allowances without any signal grant, so signalling falls to deny default.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 216,
+            "line_start": 207,
+            "path": "libagents/sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 256,
+            "line_start": 251,
+            "path": "libagents/sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 461,
+            "line_start": 451,
+            "path": "libagents/sandbox.py",
+            "role": "guard_registration",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 431,
+            "line_start": 423,
+            "path": "libagents/sandbox.py",
+            "role": "forbidden_condition",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 242,
+            "line_start": 236,
+            "path": "README.md",
+            "role": "forbidden_condition",
+            "source_sha256": "00026dfaf51e92575832343bf4b2eadcf93658b9f941ed8a8a91c1d41af050aa"
+          },
+          {
+            "line_end": 485,
+            "line_start": 480,
+            "path": "libagents/sandbox.py",
+            "role": "protected_operation",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 504,
+            "line_start": 486,
+            "path": "libagents/sandbox.py",
+            "role": "commit_point",
+            "source_sha256": "aa3812e716478376e8ae1d80df963a3133dff8d0f2bebc0a501850b28331fae5"
+          },
+          {
+            "line_end": 247,
+            "line_start": 244,
+            "path": "README.md",
+            "role": "agent_entry_binding",
+            "source_sha256": "00026dfaf51e92575832343bf4b2eadcf93658b9f941ed8a8a91c1d41af050aa"
+          }
+        ],
+        "forbidden_condition": "A sandboxed subprocess sending signals to host processes unrelated to the sandboxed process tree; declared at libagents/sandbox.py:427-431 and README.md:238, and enforced by the profile's (deny default) with no signal allowance, the only process-target allowance being process-info* restricted to target self (libagents/sandbox.py:208-209, 251-252).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The shell tool's source linking agent tool calls to Sandbox.exec is not supplied; mediation rests on README.md:244-247 and the sandbox module docstring (libagents/sandbox.py:6-7).",
+          "The allowance set contributed by imported Seatbelt fragments is unknown from the supplied views, so the exact effective signal policy cannot be fully confirmed."
+        ],
+        "protected_operation": "Execution of shell commands by MacOSSandbox.exec (persistent-session and one-shot paths), each spawn wrapped in sandbox-exec with the deny-default profile (libagents/sandbox.py:480-510).",
+        "protected_resource": "Host processes outside the sandboxed process tree (unrelated host processes).",
+        "protection_obligation": "Shell commands executed under the macOS sandbox must be denied from signalling unrelated host processes, via the deny-by-default Seatbelt profile applied at every sandbox-exec invocation of MacOSSandbox.exec.",
+        "scope_limits": [
+          "Signal denial derives from (deny default) plus the absence of a signal allowance; imported Apple fragments (system.sb, com.apple.corefoundation.sb) could add allowances not visible in the supplied source (libagents/sandbox.py:210-213).",
+          "process-info* is allowed only for target self (libagents/sandbox.py:252); process-fork and process-exec within the sandbox are allowed (libagents/sandbox.py:251).",
+          "Declared best-effort guard against accidental damage, not a hostile-code boundary; applies only to MacOSSandbox (libagents/sandbox.py:9-11; README.md:239-240)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "libagents/api.py (HTTP files endpoint) and _safe_ui_candidate are not among the supplied views; the first-phase reviewer claim that operator file operations enforce the same path confinement cannot be verified from source.",
+      "The shell tool implementation (its @tool registration and its call into Sandbox.exec) is not supplied; the agent command-to-MacOSSandbox.exec dataflow is documented (README.md:244-247; libagents/sandbox.py:6-7) but not shown as tool-dispatch code.",
+      "The contents of the imported Seatbelt fragments (system.sb, com.apple.corefoundation.sb) are not supplied; the allowances they contribute to MACOS_SEATBELT_PROFILE are unknown.",
+      "No supplied source shows whether all host-side file effects outside libagents/tools/files.py (e.g., board or memory writers) route through PathMapper.to_host."
+    ],
+    "repository": "philippspohn/libertarian-agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4137a9379ea60dbb8f1fff82d0097084"
+  },
+  "request_sha256": "2aebd1cd1a27c8c39c68263df2c7a40b6d69018333782427d66c4f63bc44255f",
+  "response_sha256": "72fd4f1d0c32385d282390c806891ba3f2fe620ae2207853e4c2c4517934ca39",
+  "state": "completed",
+  "tokens": 35201,
+  "unit": "v24-screen:4137a9379ea60dbb8f1fff82d0097084"
+}

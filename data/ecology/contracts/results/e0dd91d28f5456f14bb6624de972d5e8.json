@@ -1,0 +1,245 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Runner.run call at python-backend/api.py:192-194; a triggered tripwire raises InputGuardrailTripwireTriggered, caught at api.py:195, producing the refusal ChatResponse at api.py:211-221 so that result.new_items processing (api.py:226-304) and conversation_store.save (api.py:325) never execute.",
+        "contract_id": "ecological-contract:75ee16e7f1f5f18fb01720ceee423964",
+        "declared_mechanism": "@input_guardrail(name=\"Relevance Guardrail\") decorator on relevance_guardrail (main.py:121), which runs guardrail_agent via Runner.run and emits a tripwire output; registered in the input_guardrails list of score_update_agent (main.py:175), match_status_agent (main.py:197), faq_agent (main.py:212), and triage_agent (main.py:228); api.py catches InputGuardrailTripwireTriggered around the /chat Runner.run call and returns a refusal.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 127,
+            "line_start": 121,
+            "path": "python-backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 119,
+            "line_start": 110,
+            "path": "python-backend/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 127,
+            "line_start": 127,
+            "path": "python-backend/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 176,
+            "line_start": 169,
+            "path": "python-backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 198,
+            "line_start": 191,
+            "path": "python-backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 213,
+            "line_start": 200,
+            "path": "python-backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 229,
+            "line_start": 215,
+            "path": "python-backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 68,
+            "line_start": 62,
+            "path": "python-backend/main.py",
+            "role": "protected_operation",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 194,
+            "line_start": 186,
+            "path": "python-backend/api.py",
+            "role": "protected_operation",
+            "source_sha256": "78035c802511b7a254b04bdc0d8ce02e243087981f8fd081bc3e5f5653a72bbd"
+          },
+          {
+            "line_end": 221,
+            "line_start": 191,
+            "path": "python-backend/api.py",
+            "role": "commit_point",
+            "source_sha256": "78035c802511b7a254b04bdc0d8ce02e243087981f8fd081bc3e5f5653a72bbd"
+          },
+          {
+            "line_end": 325,
+            "line_start": 323,
+            "path": "python-backend/api.py",
+            "role": "commit_point",
+            "source_sha256": "78035c802511b7a254b04bdc0d8ce02e243087981f8fd081bc3e5f5653a72bbd"
+          },
+          {
+            "line_end": 194,
+            "line_start": 186,
+            "path": "python-backend/api.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "78035c802511b7a254b04bdc0d8ce02e243087981f8fd081bc3e5f5653a72bbd"
+          }
+        ],
+        "forbidden_condition": "relevance_guardrail returns GuardrailFunctionOutput(output_info=final, tripwire_triggered=not final.is_relevant) (main.py:127): the guardrail sub-agent classifies the user message as unrelated to a football match (placar, tempo de jogo, substitui\u00e7\u00f5es, regras, estat\u00edsticas), causing InputGuardrailTripwireTriggered to be raised.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the external 'agents' SDK executes input guardrails before any tool dispatch within Runner.run (ordering not shown in supplied source).",
+          "Whether InputGuardrailTripwireTriggered can be raised after some tool calls in the same run have already executed (partial effect commit).",
+          "Whether input guardrails re-evaluate when a handoff to a new agent occurs within a single run.",
+          "Whether the in-memory input_items mutation at api.py:187 becomes visible in stored conversation state on the refusal path via the shared object reference."
+        ],
+        "protected_operation": "Agent execution of the user's chat message: POST /chat appends req.message to state['input_items'] (api.py:187) and dispatches Runner.run(current_agent, state['input_items'], context=state['context']) (api.py:192-194), which may dispatch agent tools (update_score, faq_football_tool, match_status_tool) and, on success, persist updated state (api.py:323-325).",
+        "protected_resource": "Match-agent run pipeline (Runner.run over /chat input) and match/session application state: MatchAgentContext fields mutated by tools (e.g., current_score via update_score at main.py:67) and InMemoryConversationStore conversation state (api.py:94-103, save at api.py:325).",
+        "protection_obligation": "User input judged not relevant to a football match must not be executed by the match agents: the Relevance Guardrail input guardrail registered on every agent (triage, FAQ, score update, match status) must trip during the Runner.run dispatch so that off-topic messages never complete agent processing, never reach tool side effects (e.g., update_score writing MatchAgentContext.current_score), and never persist run results to conversation state; the /chat endpoint returns a fixed refusal instead.",
+        "scope_limits": [
+          "The forbidden-condition decision is an LLM classification (guardrail_agent, model gpt-4.1-mini, main.py:110-119): enforcement is probabilistic, not a deterministic predicate.",
+          "Coverage is limited to the four agents declared in main.py and only to runs dispatched through Runner.run in the /chat endpoint; no other entry point is guarded in supplied source.",
+          "Only input guardrails exist in supplied source; no output guardrails or per-tool guards are registered (api.py:327-344 merely reports final guardrail status).",
+          "On the refusal path, state['input_items'] was already mutated in memory (api.py:187 and refusal append at api.py:212); conversation_store.save is skipped (api.py:325), but for existing conversations the mutated dict is the same object held by the store (api.py:184).",
+          "substitution_tool (main.py:81-91) is defined but attached to no agent, so no guard path can reach it in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Runner.run call at python-backend/api.py:192-194; a triggered tripwire raises InputGuardrailTripwireTriggered, caught at api.py:195, producing the refusal ChatResponse at api.py:211-221 so that result.new_items processing (api.py:226-304) and conversation_store.save (api.py:325) never execute.",
+        "contract_id": "ecological-contract:9ea7285c5612298a40a8542449a992c9",
+        "declared_mechanism": "@input_guardrail(name=\"Jailbreak Guardrail\") decorator on jailbreak_guardrail (main.py:143), which runs jailbreak_guardrail_agent via Runner.run and emits a tripwire output; registered in the input_guardrails list of score_update_agent (main.py:175), match_status_agent (main.py:197), faq_agent (main.py:212), and triage_agent (main.py:228); api.py catches InputGuardrailTripwireTriggered around the /chat Runner.run call and returns a refusal.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 149,
+            "line_start": 143,
+            "path": "python-backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 141,
+            "line_start": 133,
+            "path": "python-backend/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 149,
+            "line_start": 149,
+            "path": "python-backend/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 176,
+            "line_start": 169,
+            "path": "python-backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 198,
+            "line_start": 191,
+            "path": "python-backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 213,
+            "line_start": 200,
+            "path": "python-backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 229,
+            "line_start": 215,
+            "path": "python-backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 68,
+            "line_start": 62,
+            "path": "python-backend/main.py",
+            "role": "protected_operation",
+            "source_sha256": "5d69756539522812eaea11cf28574cb8b7833ffa2ededaf1b5b0ab254143cd95"
+          },
+          {
+            "line_end": 194,
+            "line_start": 186,
+            "path": "python-backend/api.py",
+            "role": "protected_operation",
+            "source_sha256": "78035c802511b7a254b04bdc0d8ce02e243087981f8fd081bc3e5f5653a72bbd"
+          },
+          {
+            "line_end": 221,
+            "line_start": 191,
+            "path": "python-backend/api.py",
+            "role": "commit_point",
+            "source_sha256": "78035c802511b7a254b04bdc0d8ce02e243087981f8fd081bc3e5f5653a72bbd"
+          },
+          {
+            "line_end": 325,
+            "line_start": 323,
+            "path": "python-backend/api.py",
+            "role": "commit_point",
+            "source_sha256": "78035c802511b7a254b04bdc0d8ce02e243087981f8fd081bc3e5f5653a72bbd"
+          },
+          {
+            "line_end": 194,
+            "line_start": 186,
+            "path": "python-backend/api.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "78035c802511b7a254b04bdc0d8ce02e243087981f8fd081bc3e5f5653a72bbd"
+          }
+        ],
+        "forbidden_condition": "jailbreak_guardrail returns GuardrailFunctionOutput(output_info=final, tripwire_triggered=not final.is_safe) (main.py:149): the guardrail sub-agent classifies the message as a jailbreak attempt or a command outside the football-match context, causing InputGuardrailTripwireTriggered to be raised.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the external 'agents' SDK executes input guardrails before any tool dispatch within Runner.run (ordering not shown in supplied source).",
+          "Whether InputGuardrailTripwireTriggered can be raised after some tool calls in the same run have already executed (partial effect commit).",
+          "Whether input guardrails re-evaluate when a handoff to a new agent occurs within a single run.",
+          "Whether the in-memory input_items mutation at api.py:187 becomes visible in stored conversation state on the refusal path via the shared object reference."
+        ],
+        "protected_operation": "Agent execution of the user's chat message: POST /chat appends req.message to state['input_items'] (api.py:187) and dispatches Runner.run(current_agent, state['input_items'], context=state['context']) (api.py:192-194), which may dispatch agent tools (update_score, faq_football_tool, match_status_tool) and, on success, persist updated state (api.py:323-325).",
+        "protected_resource": "Match-agent run pipeline (Runner.run over /chat input) and match/session application state: MatchAgentContext fields mutated by tools (e.g., current_score via update_score at main.py:67) and InMemoryConversationStore conversation state (api.py:94-103, save at api.py:325).",
+        "protection_obligation": "Jailbreak attempts or out-of-context commands in user input must not be processed by the match agents: the Jailbreak Guardrail input guardrail registered on every agent (triage, FAQ, score update, match status) must trip during the Runner.run dispatch so that unsafe messages never complete agent processing, never reach tool side effects (e.g., update_score mutating match context), and never persist run results to conversation state; the /chat endpoint returns a fixed refusal instead.",
+        "scope_limits": [
+          "The forbidden-condition decision is an LLM classification (jailbreak_guardrail_agent, model gpt-4.1-mini, main.py:133-141): enforcement is probabilistic, not a deterministic predicate.",
+          "Coverage is limited to the four agents declared in main.py and only to runs dispatched through Runner.run in the /chat endpoint; no other entry point is guarded in supplied source.",
+          "Only input guardrails exist in supplied source; no output guardrails or per-tool guards are registered (api.py:327-344 merely reports final guardrail status).",
+          "On the refusal path, state['input_items'] was already mutated in memory (api.py:187 and refusal append at api.py:212); conversation_store.save is skipped (api.py:325), but for existing conversations the mutated dict is the same object held by the store (api.py:184).",
+          "substitution_tool (main.py:81-91) is defined but attached to no agent, so no guard path can reach it in supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "The 'agents' package implementation is not supplied: the internal scheduling of input guardrails by Runner.run relative to model calls and tool dispatch, and the exact timing of the InputGuardrailTripwireTriggered raise, cannot be confirmed from the provided views.",
+      "Repository enumeration is not complete: other source files could exist that add agents, tools, guardrails, or alternate dispatch paths not visible in the supplied views.",
+      "Behavior labels and runtime behavior data are unavailable per scope, so effective guard coverage and tripwire frequency in operation cannot be assessed from source alone."
+    ],
+    "repository": "arthurcuri/futebol-openai-cs-agents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:e0dd91d28f5456f14bb6624de972d5e8"
+  },
+  "request_sha256": "3831114836c110604aec8e8cad716dcc1b9ee3c2f60df58742093901d9b8e0a0",
+  "response_sha256": "5b9b7f3ab5e49bd28ad3d92c88ffd87fa8da20fc5c4cf7553464e3ae9ba7b27a",
+  "state": "completed",
+  "tokens": 22622,
+  "unit": "v24-screen:e0dd91d28f5456f14bb6624de972d5e8"
+}

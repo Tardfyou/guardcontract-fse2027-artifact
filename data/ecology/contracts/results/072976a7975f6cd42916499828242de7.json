@@ -1,0 +1,114 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Dispatch of the outbound LLM provider HTTP request, which occurs only after on_llm_start completes without raising; when a limit is exceeded, the raise inside on_llm_start (re-raised at backend/agents/orchestrator.py 294-297, 439-441, 482-485) aborts the invocation so the request never commits.",
+        "contract_id": "ecological-contract:650696b2f40b6618d1d5ff0de65a6289",
+        "declared_mechanism": "GeminiUsageCallback (BaseCallbackHandler) produced by create_callback() (backend/utils/api_tracker.py 186-187), instantiated at Orchestrator init (backend/agents/orchestrator.py 154) and attached via callbacks=[self.callback] to init_chat_model (backend/agents/orchestrator.py 163-169); on_llm_start calls increment_api_call (backend/utils/api_tracker.py 153-157), which invokes _global_rate_limiter.check_and_increment_request() before counting the call (backend/utils/api_tracker.py 132-137); the limiter raises RateLimitExceededError on any limit breach (backend/utils/api_tracker.py 99-116); on_llm_start re-raises it 'to stop execution' (backend/utils/api_tracker.py 158-159), and Orchestrator call sites re-raise it immediately instead of retrying (backend/agents/orchestrator.py 294-297, 439-441, 482-485) so the abort propagates through validator, task execution, and the thread-pool result loop.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 80,
+            "line_start": 69,
+            "path": "backend/utils/api_tracker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8db5c04a5b37520770c5ee088d073bf8c3479e2d61bc2c941764e79a34e35c27"
+          },
+          {
+            "line_end": 120,
+            "line_start": 89,
+            "path": "backend/utils/api_tracker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8db5c04a5b37520770c5ee088d073bf8c3479e2d61bc2c941764e79a34e35c27"
+          },
+          {
+            "line_end": 137,
+            "line_start": 132,
+            "path": "backend/utils/api_tracker.py",
+            "role": "guard_registration",
+            "source_sha256": "8db5c04a5b37520770c5ee088d073bf8c3479e2d61bc2c941764e79a34e35c27"
+          },
+          {
+            "line_end": 161,
+            "line_start": 153,
+            "path": "backend/utils/api_tracker.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8db5c04a5b37520770c5ee088d073bf8c3479e2d61bc2c941764e79a34e35c27"
+          },
+          {
+            "line_end": 187,
+            "line_start": 186,
+            "path": "backend/utils/api_tracker.py",
+            "role": "guard_registration",
+            "source_sha256": "8db5c04a5b37520770c5ee088d073bf8c3479e2d61bc2c941764e79a34e35c27"
+          },
+          {
+            "line_end": 169,
+            "line_start": 153,
+            "path": "backend/agents/orchestrator.py",
+            "role": "guard_registration",
+            "source_sha256": "ec18b60951518d5359bd529144e8fdc098c25581f74c1a4b85695f1f9f5117ad"
+          },
+          {
+            "line_end": 169,
+            "line_start": 163,
+            "path": "backend/agents/orchestrator.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ec18b60951518d5359bd529144e8fdc098c25581f74c1a4b85695f1f9f5117ad"
+          },
+          {
+            "line_end": 239,
+            "line_start": 233,
+            "path": "backend/agents/orchestrator.py",
+            "role": "protected_operation",
+            "source_sha256": "ec18b60951518d5359bd529144e8fdc098c25581f74c1a4b85695f1f9f5117ad"
+          },
+          {
+            "line_end": 297,
+            "line_start": 294,
+            "path": "backend/agents/orchestrator.py",
+            "role": "commit_point",
+            "source_sha256": "ec18b60951518d5359bd529144e8fdc098c25581f74c1a4b85695f1f9f5117ad"
+          }
+        ],
+        "forbidden_condition": "Dispatching an LLM provider request when the global RateLimiter's sliding windows show a configured limit is exceeded: len(request_history_min) >= limits['requests']['minute'], len(request_history_day) >= limits['requests']['day'], summed tokens in token_history_min >= limits['tokens']['minute'], or summed tokens in token_history_day >= limits['tokens']['day'] (backend/utils/api_tracker.py 99-116); on any breach, check_and_increment_request raises RateLimitExceededError (retry_after 60s or 3600s) before recording the request (backend/utils/api_tracker.py 100, 103, 112, 116, 118-120).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether Planner, Responder, and Synthesizer register GeminiUsageCallback on their own LLMs (claims at planner.py 35-41, responder.py 42-47, response_synthesizer.py 85-91 require those source files).",
+          "Whether ConversationSummaryBufferMemory's internal summarization calls using llm=self.llm_model (backend/agents/orchestrator.py 206-212) run with the attached callback and thus hit the same guard.",
+          "Whether the installed langchain/chat-model versions guarantee on_llm_start fires before the provider HTTP request dispatch (the framework-behavior assumption underlying 'raised before the request is dispatched').",
+          "Actual limit values in backend/config/limits..",
+          "Whether server.py (referenced at backend/utils/api_tracker.py 154) catches the propagated RateLimitExceededError and converts it into a user-facing abort/response."
+        ],
+        "protected_operation": "Outbound LLM provider API invocations of the guarded chat model(s), e.g., the Orchestrator's validation_chain.invoke(...) (backend/agents/orchestrator.py 233-239) and equivalent pipeline model calls, each of which triggers the on_llm_start guard prior to dispatch.",
+        "protected_resource": "LLM provider API access/quota guarded by the process-global _global_rate_limiter (backend/utils/api_tracker.py 58-130) for chat models instantiated via init_chat_model with callbacks=[GeminiUsageCallback] (backend/agents/orchestrator.py 163-169).",
+        "protection_obligation": "LLM API invocations made through chat models wired with GeminiUsageCallback (verified for the Orchestrator's init_chat_model instance) must be blocked before the provider request is dispatched \u2014 RateLimitExceededError raised from the on_llm_start callback and deliberately re-raised by call sites to abort execution \u2014 whenever the global sliding-window limits for requests/minute, requests/day, tokens/minute, or tokens/day configured in RateLimiter are exceeded; enforced by RateLimiter.check_and_increment_request() reached via increment_api_call from GeminiUsageCallback.on_llm_start.",
+        "scope_limits": [
+          "Only the Orchestrator's own chat-model registration is verifiable in supplied source (backend/agents/orchestrator.py 154, 163-169); reviewer-cited attachments in planner.py (35-41), responder.py (42-47), and response_synthesizer.py (85-91) are not present in the supplied views.",
+          "The token checks are pre-request checks against already-recorded usage only; the in-flight request's own tokens are recorded post hoc in on_llm_end (backend/utils/api_tracker.py 163-183), so the guard cannot pre-count the current request's tokens (backend/utils/api_tracker.py 105-106).",
+          "The limiter is process-global (_global_rate_limiter, backend/utils/api_tracker.py 130), not per-conversation; the per-conversation _usage['api_calls'] increment (backend/utils/api_tracker.py 136-137) only occurs after the check passes and is observational.",
+          "limits. is not supplied; the stated defaults (30 req/min, 1000 req/day, 8000 tok/min, 200000 tok/day) apply only when the config file fails to load (backend/utils/api_tracker.py 69-80).",
+          "All other guard-adjacent callback failures are swallowed (backend/utils/api_tracker.py 160-161, 181-183); only RateLimitExceededError propagates, so tracking errors do not block the effect."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source views for backend/agents/planner.py, backend/agents/responder.py, and backend/agents/response_synthesizer.py \u2014 required to verify the reviewer-claimed per-agent callback registrations (planner.py 35-41, responder.py 42-47, response_synthesizer.py 85-91) and thus 'every chat model' coverage of the guard.",
+      "backend/server.py \u2014 referenced as the handler that catches RateLimitExceededError (backend/utils/api_tracker.py 154 comment); needed to confirm end-to-end abort behavior.",
+      "backend/config/limits. \u2014 the actually configured request/token limit values (backend/utils/api_tracker.py 72-74).",
+      "LangChain/langchain-classic version pins \u2014 needed to confirm the on_llm_start-before-dispatch ordering and whether memory summarization invocations carry the attached callbacks."
+    ],
+    "repository": "kiennkt05/Travel-Agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:072976a7975f6cd42916499828242de7"
+  },
+  "request_sha256": "79d4a1e4634062f3f5b0f8ce4831518780f86345ce6c8acb687efa4ee4782c9b",
+  "response_sha256": "171e126ae992d3adbba0bddf802f85bce512f449006b825df9e90bc07ba447bc",
+  "state": "completed",
+  "tokens": 26828,
+  "unit": "v24-screen:072976a7975f6cd42916499828242de7"
+}

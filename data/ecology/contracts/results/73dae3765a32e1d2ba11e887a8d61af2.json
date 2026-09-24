@@ -1,0 +1,106 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The guardrail tripwire evaluation performed by Runner.run before the supervisor agent processes the input: when tripwire_triggered=True, Runner.run aborts with InputGuardrailTripwireTriggered, handled at lines 465-467 so that no agent processing, handoff, or tool effect commits, and only the refusal string is committed as the returned response (line 474).",
+        "contract_id": "ecological-contract:fdeb746979a8aec79e85947c8947ff99",
+        "declared_mechanism": "Input guardrail kanit_guardrail, declared with @input_guardrail (lines 139-147), which classifies the input via guardrail_agent (GuardOutput.is_blocked) and returns GuardrailFunctionOutput(tripwire_triggered=is_blocked); it is registered on supervisor_agent via input_guardrails=[kanit_guardrail] (line 422). On tripwire, Runner.run raises InputGuardrailTripwireTriggered, which the invoke entrypoint catches (lines 465-467) to return the fixed refusal string 'I'd really rather not talk about Kan\u0131t...' instead of an agent answer.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 147,
+            "line_start": 139,
+            "path": "multi_agent_llm/core/flight_multi_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "3d1f48270141b95e8ad9326d65464d3045facfe54f43b2cc4a1aacb30e4be363"
+          },
+          {
+            "line_end": 424,
+            "line_start": 421,
+            "path": "multi_agent_llm/core/flight_multi_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "3d1f48270141b95e8ad9326d65464d3045facfe54f43b2cc4a1aacb30e4be363"
+          },
+          {
+            "line_end": 137,
+            "line_start": 106,
+            "path": "multi_agent_llm/core/flight_multi_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3d1f48270141b95e8ad9326d65464d3045facfe54f43b2cc4a1aacb30e4be363"
+          },
+          {
+            "line_end": 461,
+            "line_start": 457,
+            "path": "multi_agent_llm/core/flight_multi_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "3d1f48270141b95e8ad9326d65464d3045facfe54f43b2cc4a1aacb30e4be363"
+          },
+          {
+            "line_end": 467,
+            "line_start": 455,
+            "path": "multi_agent_llm/core/flight_multi_agent.py",
+            "role": "commit_point",
+            "source_sha256": "3d1f48270141b95e8ad9326d65464d3045facfe54f43b2cc4a1aacb30e4be363"
+          },
+          {
+            "line_end": 435,
+            "line_start": 432,
+            "path": "multi_agent_llm/core/flight_multi_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d1f48270141b95e8ad9326d65464d3045facfe54f43b2cc4a1aacb30e4be363"
+          },
+          {
+            "line_end": 460,
+            "line_start": 457,
+            "path": "multi_agent_llm/core/flight_multi_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d1f48270141b95e8ad9326d65464d3045facfe54f43b2cc4a1aacb30e4be363"
+          },
+          {
+            "line_end": 45,
+            "line_start": 43,
+            "path": "multi_agent_llm/core/Dockerfile",
+            "role": "agent_entry_binding",
+            "source_sha256": "0e182953be845d0542f70a0b4eca0cb2a589bf19f58bcffe23f0a71a8057b878"
+          }
+        ],
+        "forbidden_condition": "A user prompt constituting a personal inquiry about Kan\u0131t Vural \u2014 i.e., seeking personal information, achievements, opinions, biography, or history, or discussing him as a person rather than asking a legitimate project-authorship question \u2014 being accepted for processing by the supervisor agent run.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The openai-agents SDK internals are not supplied; the assumption that input guardrails execute before the starting agent's model calls/tool calls rests on the SDK's InputGuardrailTripwireTriggered contract visible at lines 18 and 465, not on visible SDK code.",
+          "Whether BedrockAgentCoreApp exposes invoke as a network-facing endpoint (Dockerfile EXPOSEs ports 8080/8000, but bedrock_agentcore.runtime server wiring is not in supplied source).",
+          "Whether the guardrail also runs on handoff sub-agents (flight_data_agent, project_info_agent) or only on the starting agent is not determinable from supplied source.",
+          "The full repository is not enumerated; whether equivalent or conflicting guardrails exist in other modules is unknown."
+        ],
+        "protected_operation": "The supervisor agent run executed via Runner.run(starting_agent=supervisor_agent, input=user_message) inside the BedrockAgentCoreApp invoke entrypoint, including its downstream handoffs to flight_data_agent and project_info_agent and any tool executions those agents perform.",
+        "protected_resource": "The multi-agent Runner pipeline rooted at supervisor_agent in multi_agent_llm/core/flight_multi_agent.py (supervisor_agent and its handoff sub-agents flight_data_agent and project_info_agent, together with the tools they can invoke).",
+        "protection_obligation": "User prompts classified as personal (non-authorship) inquiries about Kan\u0131t Vural must be blocked by the registered input guardrail kanit_guardrail before the supervisor agent run processes them: the tripwire is enforced at the Runner.run commit point prior to agent execution (and therefore prior to any downstream handoff or tool effects, such as DynamoDB-backed flight queries), and the Bedrock AgentCore invoke entrypoint catches InputGuardrailTripwireTriggered and returns a fixed refusal response instead. (Merges the phase-first and phase-second reviewer obligations, which describe the same guard, commit point, and refusal path.)",
+        "scope_limits": [
+          "The guard is an LLM-based classifier (guardrail_agent, gpt-4.1-mini, temperature 0); enforcement depends on its classification, and explicit authorship questions about Kan\u0131t Vural are allowed through by design (lines 113-122).",
+          "The tripwire is registered only on supervisor_agent, the starting agent of Runner.run in the invoke entrypoint; guardrail behavior on handoff sub-agent runs or on any other entrypoint is not established by the supplied source.",
+          "Avoidance of downstream effects (e.g., the DynamoDB-backed query_flight_data tool) is indirect: those effects are skipped only because the run aborts at the tripwire; no separate guard mechanism targets those effects, and this contract does not guard them directly.",
+          "The refusal is a fixed response string returned from invoke; the contract does not cover logging, monitoring, rate-limiting, or any pre-entrypoint filtering.",
+          "Classification, safety, and runtime prevalence of the guard are out of scope for this contract; only the source-supported registration and enforcement path is captured."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "openai-agents SDK source showing the execution ordering of input guardrails relative to the starting agent's model invocation and tool calls is not supplied.",
+      "bedrock_agentcore.runtime server wiring and network exposure details for the @app.entrypoint invoke function are not supplied.",
+      "Implementation of utils/load_flight_data_dynamodb.query_flights_by_time_window (referenced at line 6 and called at line 195) is not supplied, so the read/write nature of the downstream DynamoDB effect is unverifiable.",
+      "Repository enumeration is not complete and behavior labels are unavailable; prevalence or completeness of guard coverage across other entrypoints/modules cannot be assessed from supplied source."
+    ],
+    "repository": "kanitvural/aws-data-science-data-engineering-mlops-infra",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:73dae3765a32e1d2ba11e887a8d61af2"
+  },
+  "request_sha256": "d9e132e49468b2afc355af2e4ac05ba005f789be412cda7c2a93c61a152a1ca5",
+  "response_sha256": "ce02a9a509a84f5cff075a32f24fc26e71f70cd223a4175c98db91351725850f",
+  "state": "completed",
+  "tokens": 17080,
+  "unit": "v24-screen:73dae3765a32e1d2ba11e887a8d61af2"
+}

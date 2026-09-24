@@ -1,0 +1,180 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "Final flag assignment (agent_chain.py 1009-1015) committed at LeadAgentQueryResponse construction and return in _query_lead (agent_chain.py 1028-1037); the returned object is the value bound into turn telemetry in query()'s finally block (699-700).",
+        "contract_id": "ecological-contract:417b35ef51b8938c71580422f14058b1",
+        "declared_mechanism": "Inline post-processing booking gate in _query_lead: raw model flags tagged as _turn_flags['pre_gate'] before the gate (925-929); clear_programme_match derived from suggested_program or model relevant_programs (995-998); proactive_booking_offer = programme match AND model show_booking_widget (999-1002); booking_flow_requested = explicit intent OR preference follow-up OR proactive offer (1004-1008); final flags recomputed (1009-1015) with explicit suppression/grant logging (1017-1026) before LeadAgentQueryResponse construction (1028-1037). Schema-side constraint: StructuredAgentResponse field descriptions restrict when the model may set the flags (utilclasses.py 39-46).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 929,
+            "line_start": 923,
+            "path": "src/rag/agent_chain.py",
+            "role": "guard_registration",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          },
+          {
+            "line_end": 1026,
+            "line_start": 995,
+            "path": "src/rag/agent_chain.py",
+            "role": "guard_registration",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          },
+          {
+            "line_end": 1024,
+            "line_start": 1023,
+            "path": "src/rag/agent_chain.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          },
+          {
+            "line_end": 46,
+            "line_start": 39,
+            "path": "src/rag/utilclasses.py",
+            "role": "forbidden_condition",
+            "source_sha256": "a6fdec4473b20dd1a8fb8acb535e42c87714c03dd6cc2753e8d969db92822727"
+          },
+          {
+            "line_end": 1015,
+            "line_start": 1009,
+            "path": "src/rag/agent_chain.py",
+            "role": "protected_operation",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          },
+          {
+            "line_end": 1037,
+            "line_start": 1028,
+            "path": "src/rag/agent_chain.py",
+            "role": "commit_point",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          },
+          {
+            "line_end": 929,
+            "line_start": 910,
+            "path": "src/rag/agent_chain.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          },
+          {
+            "line_end": 208,
+            "line_start": 190,
+            "path": "src/rag/agent_chain.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          }
+        ],
+        "forbidden_condition": "ExecutiveAgentChain returning a LeadAgentQueryResponse from _query_lead with appointment_requested=True or show_booking_widget=True unless at least one gate condition holds: (a) explicit booking intent detected in the user query (_is_explicit_booking_intent), (b) an active booking-preference follow-up continuing a handover flow (handover_requested + previous clarification + preference terms), or (c) a clear programme match (conversation-state suggested_program or model relevant_programs) combined with the model's show_booking_widget flag. Also forbidden: the model's raw structured-output flags alone determining the final booking state, and (for show_booking_widget specifically) granting the widget without the model widget flag or booking-committing response text.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The downstream consumer that renders the booking widget from LeadAgentQueryResponse.show_booking_widget (API/UI layer) is absent from supplied views; the flag-to-widget-display binding is unverified.",
+          "Whether streamed text deltas (on_delta) can surface booking-committing wording to the client before the gated flags commit at return is not established by supplied source.",
+          "Provenance of suggested_program and handover_requested (agent-derived vs. heuristic-only) cannot be confirmed without ConversationStateManager source, which affects the agent-mediated status of the proactive-offer leg."
+        ],
+        "protected_operation": "Computation and return of the authoritative post-gate booking flags (appointment_requested, show_booking_widget) on the lead-agent turn response in _query_lead.",
+        "protected_resource": "The booking-flag fields (appointment_requested, show_booking_widget) of the LeadAgentQueryResponse produced by ExecutiveAgentChain._query_lead (src/rag/agent_chain.py), whose final values are consumed downstream as booking-widget/appointment funnel semantics.",
+        "protection_obligation": "Merged from both reviewer phases: the post-processing booking gate in ExecutiveAgentChain._query_lead must forbid the final LeadAgentQueryResponse returned for a lead-agent turn from carrying appointment_requested or show_booking_widget set to True unless explicit user booking intent, an active booking-preference follow-up, or a programme-matched proactive offer accompanies the lead agent's raw booking flags; model-only pre-gate intent without those conditions is overridden/suppressed before the response is returned and consumed as 'widget shown / appointment requested' UI and funnel-telemetry semantics.",
+        "scope_limits": [
+          "Guards flag semantics only: actual external booking actions (e.g., Calendly) are declared not observable in this system (scripts/usage_report.py line 442) and are not covered by this contract.",
+          "Applies to the post-agent path (_query_lead); pre-agent early-return paths hard-code both flags False (agent_chain.py 749-756, 797-803, 858-864) and continuation serving returns False (1138-1146) \u2014 cited as adjacent context, not separately guarded.",
+          "UI/API rendering of the booking widget from show_booking_widget lies outside supplied source; the contract binds the returned flag values and their documented telemetry semantics, not UI behavior.",
+          "The proactive-offer branch depends on clear_programme_match sourcing suggested_program from ConversationStateManager, whose implementation is not supplied; only the model-supplied relevant_programs leg is fully evidenced.",
+          "Applies to ExecutiveAgentChain's lead agent only; no other agent or tool path is covered by supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "usage_logger.log_turn(event) at src/rag/agent_chain.py line 653 (persistence of the structured usage event; file-based storage per scripts/usage_report.py 10-13, 117-127, 495-497).",
+        "contract_id": "ecological-contract:d224852d41db18b03a88e5e5df7a0ae9",
+        "declared_mechanism": "_emit_turn_event builds the 'final' dict exclusively from the gate-returned response's flags (624-631), places raw model intent only under 'pre_gate' (639), and writes exactly one event per turn via usage_logger.log_turn (653); query() guarantees emission in a finally block binding the pipeline response (692-700). Report-side registration treats 'final' as authoritative post-gate truth and computes gate_suppressed/gate_granted corrections (usage_report.py 197-232, 272-282).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 640,
+            "line_start": 624,
+            "path": "src/rag/agent_chain.py",
+            "role": "guard_registration",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          },
+          {
+            "line_end": 13,
+            "line_start": 10,
+            "path": "scripts/usage_report.py",
+            "role": "guard_registration",
+            "source_sha256": "91bac831daa3c804c8ea0b17486006179056dbe6f262d2d530450782032f6764"
+          },
+          {
+            "line_end": 232,
+            "line_start": 219,
+            "path": "scripts/usage_report.py",
+            "role": "guard_registration",
+            "source_sha256": "91bac831daa3c804c8ea0b17486006179056dbe6f262d2d530450782032f6764"
+          },
+          {
+            "line_end": 316,
+            "line_start": 310,
+            "path": "scripts/usage_report.py",
+            "role": "forbidden_condition",
+            "source_sha256": "91bac831daa3c804c8ea0b17486006179056dbe6f262d2d530450782032f6764"
+          },
+          {
+            "line_end": 653,
+            "line_start": 632,
+            "path": "src/rag/agent_chain.py",
+            "role": "protected_operation",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          },
+          {
+            "line_end": 653,
+            "line_start": 653,
+            "path": "src/rag/agent_chain.py",
+            "role": "commit_point",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          },
+          {
+            "line_end": 700,
+            "line_start": 692,
+            "path": "src/rag/agent_chain.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e1de48b7f4a6954479d44e53d8b349ac5fa617462a1da5f098ee65408fe0959b"
+          }
+        ],
+        "forbidden_condition": "A per-turn usage event recording show_booking_widget or appointment_requested under its 'final' block as True when those values did not survive the post-processing booking gate \u2014 i.e., treating pre-gate model intent as 'widgets actually shown' \u2014 or conflating pre-gate and final flags in the authoritative event (contrasted by usage_report.py's explicit pre-gate caveat that raw flags are 'model intent, NOT widgets shown').",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "UsageEventLogger.log_turn implementation (src/utils/logging) is not supplied; the file-append mechanism, exact path, and format of usage_<session_id>.l are inferred from scripts/usage_report.py documentation (10-13, 117-127, 495-497) rather than verified writer code.",
+          "Whether any consumer other than scripts/usage_report.py treats the 'final' flags as authoritative is unknown from supplied source."
+        ],
+        "protected_operation": "Emission of the anonymous per-turn usage event whose 'final' block carries the gate-filtered booking flags and whose 'pre_gate' block carries the raw model flags, written via UsageEventLogger.log_turn from _emit_turn_event.",
+        "protected_resource": "The structured per-turn usage event for the session (persisted as <logs>/usage/usage_<session_id>.l per scripts/usage_report.py lines 10-13 and 117-127), the declared primary/authoritative funnel source.",
+        "protection_obligation": "Per-turn usage telemetry must bind the 'widget shown / appointment requested' funnel signals to the post-gate final booking flags of the gate-returned LeadAgentQueryResponse (not the model's pre-gate raw intent), preserving raw model intent separately under pre_gate so gate corrections (suppressions/grants) remain measurable in the authoritative structured event stream.",
+        "scope_limits": [
+          "Covers only the 'final' and 'pre_gate' booking-flag fields of the usage event; other event fields (outcomes, timing, retrieval counters, scope_type) are out of scope.",
+          "Config-gated transcript logging mirrors the same final block into transcript metadata (agent_chain.py 655-671); treated here as the same dataflow, not a separate protected resource.",
+          "usage_report.py's legacy logs.log parsing path is a measurement-side fallback carrying an explicit pre-gate caveat (310-316, 357-364); it is a consumer, not a guarded effect.",
+          "The gate upstream of this telemetry is contracted separately (state-stratum contract on _query_lead flag computation); this contract covers only the telemetry binding of its outputs."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "src/utils/logging (UsageEventLogger, TranscriptLogger) is not supplied; persistence mechanics of usage events and transcripts are unverified and inferred only from scripts/usage_report.py documentation.",
+      "The UI/API layer consuming LeadAgentQueryResponse (widget rendering, appointment-requested handling) is not in supplied views; the flag-to-display binding cannot be confirmed.",
+      "src/rag/conversation_state.py (ConversationStateManager) is not supplied; provenance of suggested_program and handover_requested \u2014 inputs to the gate's programme-match and preference-follow-up legs \u2014 is unverified.",
+      "src/rag/middleware.py (AgentChainMiddleware tool/model wrappers) and src/rag/prompts.py (lead system prompt) are not supplied; any additional booking-related guardrails or prompt-level booking constraints are unverifiable.",
+      "Repository enumeration is incomplete and behavior labels are unavailable (per provided scope), so prevalence or runtime enforcement of the declared gate outside the supplied views cannot be assessed."
+    ],
+    "repository": "koizachek/HSG_RAG",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a53b0ae9fc382680fc583f0aa0022d43"
+  },
+  "request_sha256": "355299f1d44a87bea804ff2abdc063bc059f356f036846b835f42ad19358a633",
+  "response_sha256": "cfb66d3dee9049834eda49f0c393424b1158092c2189c36062e8f76cbc4bfdfb",
+  "state": "completed",
+  "tokens": 42814,
+  "unit": "v24-screen:a53b0ae9fc382680fc583f0aa0022d43"
+}

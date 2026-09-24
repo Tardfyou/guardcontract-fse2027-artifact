@@ -1,0 +1,226 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "os_control/win32_app_close.py line 18 (win32gui.PostMessage(hwnd, WM_CLOSE, 0, 0)) and line 27 (proc.terminate()) \u2014 both reached only after the is_safe_to_close check passes; single stratum (process), so one contract.",
+        "contract_id": "ecological-contract:26303a0a627f5006ee89afb625fdbddc",
+        "declared_mechanism": "Name-based blocklist check is_safe_to_close(process_name, app_name) executed at the top of close_app_gracefully (os_control/win32_app_close.py lines 13-14), returning False before the window message or terminate calls; policy lists defined in policies/app_safety_policy.py lines 1-15 and predicate at lines 17-27.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 15,
+            "line_start": 1,
+            "path": "policies/app_safety_policy.py",
+            "role": "forbidden_condition",
+            "source_sha256": "74be20a639ab244cb3aac033c14a7fac46c4436f4a888afce16d91bab665865c"
+          },
+          {
+            "line_end": 27,
+            "line_start": 17,
+            "path": "policies/app_safety_policy.py",
+            "role": "guard_registration",
+            "source_sha256": "74be20a639ab244cb3aac033c14a7fac46c4436f4a888afce16d91bab665865c"
+          },
+          {
+            "line_end": 14,
+            "line_start": 13,
+            "path": "os_control/win32_app_close.py",
+            "role": "guard_registration",
+            "source_sha256": "cba56b78429d1e9b254023957ddb41ffd1106bf53ccb8a0c8a435ccb9eb68df8"
+          },
+          {
+            "line_end": 29,
+            "line_start": 16,
+            "path": "os_control/win32_app_close.py",
+            "role": "commit_point",
+            "source_sha256": "cba56b78429d1e9b254023957ddb41ffd1106bf53ccb8a0c8a435ccb9eb68df8"
+          },
+          {
+            "line_end": 49,
+            "line_start": 44,
+            "path": "handlers/close_app.py",
+            "role": "protected_operation",
+            "source_sha256": "969863d861fc678041a5bd653c65b5714e50e10fb0193c60a410e5286e0f792c"
+          }
+        ],
+        "forbidden_condition": "Issuing WM_CLOSE or proc.terminate() against a process named in SYSTEM_PROCESS_NAMES (explorer.exe, winlogon.exe, crss.exe, services.exe, lsass.exe, smss.exe, svchost.exe) or an app named in PROTECTED_APP_NAMES (windows security, task manager, registry editor) \u2014 i.e., is_safe_to_close returning False while a close action still proceeds (policies/app_safety_policy.py lines 1-15, 21-25).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether CloseAppHandler is reachable from AetheraAgent tool dispatch via controllers/task_dispatcher (dispatcher and BaseHandler sources not supplied) \u2014 this determines whether the close effect is agent-mediated.",
+          "Whether any entry in tools/system_tools or other registered tool modules wraps close_app_gracefully or an equivalent termination effect (tools sources not supplied)."
+        ],
+        "protected_operation": "Graceful close/termination of an application process via close_app_gracefully (window WM_CLOSE, wait, then forced terminate), invoked from CloseAppHandler.handle.",
+        "protected_resource": "Windows system processes and protected applications enumerated in policies/app_safety_policy.py (SYSTEM_PROCESS_NAMES, PROTECTED_APP_NAMES).",
+        "protection_obligation": "Process close/termination must refuse system and protected processes: close_app_gracefully must consult is_safe_to_close before any close action and must not post WM_CLOSE to, or terminate, a process whose image name is in SYSTEM_PROCESS_NAMES or whose app name is in PROTECTED_APP_NAMES.",
+        "scope_limits": [
+          "Enforcement is name-based and exact lowercase; processes not in the blocklist pass even if functionally system-critical (policies/app_safety_policy.py lines 17-27).",
+          "The check runs once before WM_CLOSE; once passed, both the graceful and forced termination paths proceed without re-checking.",
+          "Supplied source binds this path only to CloseAppHandler (handlers/close_app.py lines 44-49); no supplied line shows an AetheraAgent tool dispatching CLOSE_APP or calling close_app_gracefully, and the agent toolset wired in voice_assistant.py (lines 23-27, 144-145) imports only from tools/ modules and does not include this handler."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "handlers/close_app.py line 45: success = close_app_gracefully(...) \u2014 the call that proceeds to WM_CLOSE/terminate (os_control/win32_app_close.py lines 18 and 27) only after approval; same process stratum as the is_safe_to_close commit point.",
+        "contract_id": "ecological-contract:5f42c82dd499b1fa1ab6011e6c2e805e",
+        "declared_mechanism": "Unsaved-data permission gate: may_have_unsaved_data(target_app.name) check plus permission_manager.request(PermissionRequest(action='CLOSE_APP', app_name, reason='unsaved_data', prompt=...)) at handlers/close_app.py lines 31-42, returning TaskResult(False, 'Close operation cancelled') when not approved (lines 41-42).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 42,
+            "line_start": 31,
+            "path": "handlers/close_app.py",
+            "role": "guard_registration",
+            "source_sha256": "969863d861fc678041a5bd653c65b5714e50e10fb0193c60a410e5286e0f792c"
+          },
+          {
+            "line_end": 42,
+            "line_start": 41,
+            "path": "handlers/close_app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "969863d861fc678041a5bd653c65b5714e50e10fb0193c60a410e5286e0f792c"
+          },
+          {
+            "line_end": 49,
+            "line_start": 44,
+            "path": "handlers/close_app.py",
+            "role": "commit_point",
+            "source_sha256": "969863d861fc678041a5bd653c65b5714e50e10fb0193c60a410e5286e0f792c"
+          },
+          {
+            "line_end": 27,
+            "line_start": 10,
+            "path": "handlers/close_app.py",
+            "role": "protected_operation",
+            "source_sha256": "969863d861fc678041a5bd653c65b5714e50e10fb0193c60a410e5286e0f792c"
+          }
+        ],
+        "forbidden_condition": "Invoking close_app_gracefully for a target app for which may_have_unsaved_data(target_app.name) is true without permission_manager.request returning approved (handlers/close_app.py lines 31-42).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "policies/unsaved_app_policy.may_have_unsaved_data implementation not supplied \u2014 which applications trigger the approval requirement is unknown.",
+          "The permission_manager implementation (permissions/ package) is not supplied \u2014 how the prompt is answered, default behavior on timeout, and who can approve are unknown.",
+          "Whether the intent reaching CloseAppHandler can originate from AetheraAgent-generated commands (controllers/task_dispatcher.py and agent intent wiring not supplied)."
+        ],
+        "protected_operation": "The close_app_gracefully call performed by CloseAppHandler.handle for the resolved target application (matched by name from state.opened_apps, or the focused/last-opened app).",
+        "protected_resource": "User application processes that may hold unsaved data (targets resolved via state.opened_apps, state.get_focused_app, state.get_last_opened_app).",
+        "protection_obligation": "Closing an application that may hold unsaved data requires explicit user approval: CloseAppHandler must consult may_have_unsaved_data and obtain an approved permission_manager.request(PermissionRequest(action='CLOSE_APP', ...)) before invoking close_app_gracefully; an unapproved request must abort with 'Close operation cancelled'.",
+        "scope_limits": [
+          "Applies only when may_have_unsaved_data matches the target app name; the policy's source is not supplied, so the covered app set is unknown.",
+          "Applies only to the CLOSE_APP handler path; a direct caller of close_app_gracefully outside this handler would bypass the permission gate (no other callers appear in the supplied source).",
+          "No agent binding is present in the supplied source: only the BaseHandler.handle(intent, state, permission_manager) invocation shape is shown, and nothing ties the CLOSE_APP intent to AetheraAgent output."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "assistant/voice_assistant.py line 65: response = self.agent.process(text) \u2014 the agent-turn invocation reached only after the gate accepts; the denial branch at lines 58-60 diverts to response_queue and continues without processing.",
+        "contract_id": "ecological-contract:80922db38c52dbaf1632e14e6c723302",
+        "declared_mechanism": "SecurityGate.allow(user_text) face-authentication gate enforced at the top of the AgentWorker loop (voice_assistant.py lines 57-60) before agent.process; SecurityGate denies when not authenticated (vision/security_gate.py lines 18-44), logs the intrusion frame via IntrusionLogger, sets state.pending_intrusion_report, and optionally calls LockWorkStation under LOCK_ON_UNAUTHORIZED; the gate is constructed at voice_assistant.py lines 153-156 and injected into AgentWorker at lines 197-203.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 60,
+            "line_start": 57,
+            "path": "assistant/voice_assistant.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e2c543636c334d121e79166566dce8a4c74a98abb86fa2fda0519d7976217887"
+          },
+          {
+            "line_end": 156,
+            "line_start": 153,
+            "path": "assistant/voice_assistant.py",
+            "role": "guard_registration",
+            "source_sha256": "e2c543636c334d121e79166566dce8a4c74a98abb86fa2fda0519d7976217887"
+          },
+          {
+            "line_end": 203,
+            "line_start": 197,
+            "path": "assistant/voice_assistant.py",
+            "role": "guard_registration",
+            "source_sha256": "e2c543636c334d121e79166566dce8a4c74a98abb86fa2fda0519d7976217887"
+          },
+          {
+            "line_end": 44,
+            "line_start": 18,
+            "path": "vision/security_gate.py",
+            "role": "guard_registration",
+            "source_sha256": "0fa8bacf8479f614ebda2574725a8f3f8dc033ea7ad9877fbc0267f74e51aa8e"
+          },
+          {
+            "line_end": 66,
+            "line_start": 62,
+            "path": "assistant/voice_assistant.py",
+            "role": "protected_operation",
+            "source_sha256": "e2c543636c334d121e79166566dce8a4c74a98abb86fa2fda0519d7976217887"
+          },
+          {
+            "line_end": 66,
+            "line_start": 64,
+            "path": "assistant/voice_assistant.py",
+            "role": "commit_point",
+            "source_sha256": "e2c543636c334d121e79166566dce8a4c74a98abb86fa2fda0519d7976217887"
+          },
+          {
+            "line_end": 65,
+            "line_start": 50,
+            "path": "assistant/voice_assistant.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e2c543636c334d121e79166566dce8a4c74a98abb86fa2fda0519d7976217887"
+          },
+          {
+            "line_end": 167,
+            "line_start": 163,
+            "path": "assistant/voice_assistant.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e2c543636c334d121e79166566dce8a4c74a98abb86fa2fda0519d7976217887"
+          }
+        ],
+        "forbidden_condition": "Unauthenticated text reaching the agent: security_gate.allow(text) returning False for a dequeued command (i.e., agent.process running while state.is_authenticated is false and the camera is available), per voice_assistant.py lines 57-60 and security_gate.py lines 28-44.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "How and when state.is_authenticated is set or cleared (vision/face_recognizer.py not supplied) determines the effective window of the gate.",
+          "The value of config.constants.LOCK_ON_UNAUTHORIZED (config/constants.py not supplied) determines whether the denial path actually locks the workstation.",
+          "Whether agent.process internally enforces additional per-tool guards (core/agent/AetheraAgent.py not supplied)."
+        ],
+        "protected_operation": "Processing of queued user commands (voice/STT, gesture-injected text, terminal input) by AetheraAgent via agent.process inside AgentWorker.run.",
+        "protected_resource": "The AetheraAgent command-processing path in AgentWorker (text_queue -> SecurityGate -> agent.process) and the owner-authenticated session.",
+        "protection_obligation": "Agent command processing must be denied until face authentication passes: every text command dequeued by AgentWorker must be accepted by SecurityGate.allow() before AetheraAgent.process is invoked; a denial must answer 'Access denied. Owner not recognized.', log an intrusion attempt (with camera frame when available), set state.pending_intrusion_report, and lock the workstation when LOCK_ON_UNAUTHORIZED is enabled.",
+        "scope_limits": [
+          "Enforcement applies only when a security_gate is supplied to AgentWorker and, inside allow(), only while the camera is available; the camera-unavailable fallback returns True unconditionally (vision/security_gate.py lines 19-21).",
+          "state.is_authenticated short-circuits allow() to True (vision/security_gate.py lines 23-26), so effective coverage depends on the unsupplied FaceRecognizer authentication lifecycle.",
+          "Coverage is limited to text consumed by AgentWorker from text_queue; ProactiveEngine is constructed with a direct AetheraAgent reference (voice_assistant.py lines 219-224) and no supplied line shows proactive triggers passing through the gate.",
+          "Per-tool effects executed inside agent.process are not individually guarded by anything visible in the supplied source; this contract covers only the agent-turn entry, and the downstream strata of agent.process are unknown.",
+          "The supplied effect of a passed gate at this source level is the in-process invocation of the agent turn; tool_execution is assigned as invocation-only, with actual tool effects unverified."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "vision/face_recognizer.py is not supplied: the mechanism and lifetime of state.is_authenticated, which governs the SecurityGate.allow bypass, are unknown.",
+      "config/constants.py is not supplied: the value of LOCK_ON_UNAUTHORIZED (whether the denial path locks the workstation) is unknown.",
+      "core/agent/AetheraAgent.py is not supplied: the internals of agent.process and the strata of its downstream tool executions are unknown, so the tool_execution stratum for the gated agent turn is invocation-only.",
+      "policies/unsaved_app_policy.py is not supplied: coverage of may_have_unsaved_data is unknown.",
+      "The permission_manager implementation (permissions/ package) is not supplied: approval channel, timeout defaults, and approver identity are unknown.",
+      "controllers/task_dispatcher.py and handlers/base_handler.py are not supplied: it cannot be established whether CLOSE_APP intents originate from AetheraAgent tool dispatch or a separate intent pipeline, so agent mediation for the close-app contracts is not_established.",
+      "tools/system_tools.py and the other registered tool modules are not supplied: it cannot be confirmed whether any registered agent tool invokes close_app_gracefully or a similar process-termination effect.",
+      "The ProactiveEngine trigger/registration sources are not supplied: whether proactive agent invocations bypass the SecurityGate (they hold a direct agent reference at voice_assistant.py lines 219-224) is unknown.",
+      "Behavior labels are unavailable per the provided scope; runtime prevalence and violation status are out of scope for this compilation."
+    ],
+    "repository": "SanujaRubasinghe/Aethera-The-Modular-Multi-Modal-Assistant",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:26fde05e98e3869ebd6dc10ed2bb1162"
+  },
+  "request_sha256": "1559ffa627dd2fba359d064d136405deaa7dcbe41992d3d00637b45bb1cb3c2c",
+  "response_sha256": "c7fa4c28735d8664a0d97ada003be66664d22d7462ec6706b0bed9c41d0c4bf6",
+  "state": "completed",
+  "tokens": 19500,
+  "unit": "v24-screen:26fde05e98e3869ebd6dc10ed2bb1162"
+}

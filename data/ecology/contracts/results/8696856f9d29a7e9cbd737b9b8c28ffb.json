@@ -1,0 +1,602 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "githubAPI.update_file(reponame, filename_wo_ver, fileData.content, repobranch, ..., current_user.fullname, current_user.email) at libs/files.py:284-286; githubAPI.create_new_file(...) at libs/files.py:288-290.",
+        "contract_id": "ecological-contract:4e457d4d429491d6be5d25bd9a992cd7",
+        "declared_mechanism": "The same Depends(get_current_active_user) dependency (libs/files.py:237) and 403 '..' checks (libs/files.py:238-239) registered on the PUT /files/{dir_path:path} handler, evaluated before the handler can reach the commit block; the commit block itself is additionally gated on the reponame configuration check (libs/files.py:257).",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 39,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 237,
+            "line_start": 235,
+            "path": "libs/files.py",
+            "role": "protected_operation",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 237,
+            "line_start": 236,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 239,
+            "line_start": 238,
+            "path": "libs/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 290,
+            "line_start": 281,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 201,
+            "line_start": 169,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 209,
+            "line_start": 204,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 208,
+            "line_start": 207,
+            "path": "libs/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          }
+        ],
+        "forbidden_condition": "An unauthenticated caller (401), a disabled user (400), or a request with '..' in dir_path or fileData.name (403) inducing a Git update or file-create commit through the save_file handler.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the DEC-study agent invokes save_file / the PUT endpoint or the GithubAPI directly as tools.",
+          "The actual external semantics of GithubAPI.update_file and githubAPI.create_new_file (network endpoints, credentials) are unverifiable without libs/github_api.py."
+        ],
+        "protected_operation": "The Git commit block of save_file: conditional on DOCS_REPONAME configuration, a Git content comparison, and then githubAPI.update_file (when the file exists in Git) or githubAPI.create_new_file otherwise, with current_user.fullname and current_user.email passed as commit identity.",
+        "protected_resource": "The remote documentation Git repository identified by DOCS_REPONAME / DOCS_REPO_BRANCH, accessed through the GithubAPI client instantiated at module load (libs/files.py:48-56).",
+        "protection_obligation": "Committing saved content to the configured Git documentation repository via githubAPI.update_file or githubAPI.create_new_file inside save_file may be reached only by authenticated, active users whose PUT request has already passed the endpoint's auth dependency and '..' traversal rejection.",
+        "scope_limits": [
+          "Merged from the first-phase reviewer's Git-commit prong and the second-phase wording for the same handler.",
+          "libs/github_api.py is not supplied; the external effect is characterized from call-site names and arguments only; 'other_external' is assigned because a remote-repository mutation fits no local file, database, process, communication, or in-process tool class.",
+          "The commit is conditional: a Git content mismatch short-circuits to a local-only save (libs/files.py:266-273), and fetch failures suppress the commit (libs/files.py:274-280).",
+          "current_user.fullname/email flowing into commit metadata (libs/files.py:286, :290) is a principal-to-effect dataflow within ordinary web authentication, not agent mediation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "curfilepath.parent.mkdir(mode=0o744, parents=True, exist_ok=True) at libs/files.py:320; curfilepath.touch(mode=0o644, exist_ok=False) at libs/files.py:323; buffer.write(new_text) at libs/files.py:335-336; shutil.copyfileobj(file.file, buffer) at libs/files.py:338-339.",
+        "contract_id": "ecological-contract:5b6dc94040a54427b438f7f15b3b22b7",
+        "declared_mechanism": "FastAPI dependency Depends(get_current_active_user) on the handler (libs/files.py:302); the explicit substring check 'dir_path.find(\"..\") != -1' raising 403 (libs/files.py:303-304); and the SUPP_MIME_TYPES whitelist (libs/files.py:46) enforced via magic.from_buffer sniffing with a 403 'Forbidden File Type' rejection before any write (libs/files.py:309-312).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 39,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 46,
+            "line_start": 46,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 302,
+            "line_start": 300,
+            "path": "libs/files.py",
+            "role": "protected_operation",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 302,
+            "line_start": 302,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 304,
+            "line_start": 303,
+            "path": "libs/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 312,
+            "line_start": 309,
+            "path": "libs/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 323,
+            "line_start": 319,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 339,
+            "line_start": 335,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 201,
+            "line_start": 169,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 209,
+            "line_start": 204,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 208,
+            "line_start": 207,
+            "path": "libs/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          }
+        ],
+        "forbidden_condition": "An unauthenticated request (401), a disabled user (400 'Inactive user'), a dir_path containing '..' (403 'Forbidden access'), or an upload whose sniffed MIME type matches no SUPP_MIME_TYPES entry (403 'Forbidden File Type') reaching file creation or content write.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether uploaded bytes or extracted text feed any agent pipeline downstream.",
+          "Whether the upload endpoint is exposed to any agent as a tool."
+        ],
+        "protected_operation": "create_upload_files: per-upload MIME sniffing via magic.from_buffer, existence-conflict checks, parent directory creation, file creation (touch), and content write (PDF text-extraction rewrite or shutil.copyfileobj) into the input directory.",
+        "protected_resource": "Filesystem paths under INPUT_CODE_DIR './oldcode' (curfilepath = Path(INPUT_CODE_DIR) / dir_path / file.filename).",
+        "protection_obligation": "Uploading files into the input code directory via POST /uploadfiles/{dir_path:path} (create_upload_files) is permitted only for authenticated, active users; requests with '..' in dir_path or carrying MIME types outside the declared whitelist (application/pdf or text/*.*) must be rejected before any bytes are written.",
+        "scope_limits": [
+          "Merged from first- and second-phase reviewer wording for the upload prong.",
+          "The declared '..' check covers dir_path only; no traversal screen on file.filename appears in supplied source (statement of the guard's declared scope, not a violation finding).",
+          "PDF uploads are rewritten as extracted text before the write (libs/files.py:328-336).",
+          "No agent binding is evidenced in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "githubAPI.get_full_dirtree(reponame, repobranch) at libs/files.py:162; githubAPI.get_file_contents(reponame, file_path, repobranch) at libs/files.py:205.",
+        "contract_id": "ecological-contract:9fafaa2d95ffc89aa1d85886c9196024",
+        "declared_mechanism": "FastAPI dependency Depends(get_current_active_user) registered on both handlers (libs/files.py:156, :199, resolving the libs/auth.py:169-209 chain), plus the reponame configuration check raising 404 'No Git Repository configured' (libs/files.py:158-159, :201-202).",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 39,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 156,
+            "line_start": 155,
+            "path": "libs/files.py",
+            "role": "protected_operation",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 156,
+            "line_start": 156,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 163,
+            "line_start": 161,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 199,
+            "line_start": 198,
+            "path": "libs/files.py",
+            "role": "protected_operation",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 199,
+            "line_start": 199,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 206,
+            "line_start": 204,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 201,
+            "line_start": 169,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 209,
+            "line_start": 204,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 208,
+            "line_start": 207,
+            "path": "libs/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          }
+        ],
+        "forbidden_condition": "An unauthenticated request (401) or a disabled user (400 'Inactive user') reaching the GithubAPI fetch effects; both handlers also raise 404 when DOCS_REPONAME is unset.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether these Git read endpoints are exposed to any agent as tools."
+        ],
+        "protected_operation": "get_gitdirlist performing githubAPI.get_full_dirtree(reponame, repobranch) and get_gitfile performing githubAPI.get_file_contents(reponame, file_path, repobranch).",
+        "protected_resource": "The directory tree and file contents of the configured documentation Git repository (DOCS_REPONAME / DOCS_REPO_BRANCH) via the GithubAPI client.",
+        "protection_obligation": "Reading the configured Git documentation repository's directory tree or file contents via GET /gitfiles/ (get_gitdirlist) and GET /gitfiles/{file_path:path} (get_gitfile) is permitted only for authenticated, active users, with both handlers additionally requiring a configured repository. (Derived from the second-phase reviewer's router-wide wording; the first-phase obligation text enumerated only local-directory reads and Git commits.)",
+        "scope_limits": [
+          "Read-only external fetches; no mutation of the remote repository occurs on these endpoints.",
+          "These endpoints are guarded by authentication only; no '..' screen on the git file_path path parameter appears in supplied source (statement of the guard's declared scope, not a violation finding).",
+          "libs/github_api.py is not supplied; the external fetch semantics are characterized from call sites only.",
+          "No agent binding is evidenced in supplied source; per study scope rules the obligation remains outside DEC scope unless an agent binding is established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "newfilepath.parent.mkdir(mode=0o744, parents=True, exist_ok=True) at libs/files.py:247; newfilepath.touch(mode=0o644, exist_ok=False) at libs/files.py:250; newfilepath.write_text(fileData.content) at libs/files.py:254.",
+        "contract_id": "ecological-contract:bbe08bb8378dd2439072b03ee04b2148",
+        "declared_mechanism": "FastAPI dependency Depends(get_current_active_user) on the handler (libs/files.py:237, resolving the libs/auth.py:169-209 chain) plus the explicit combined check 'dir_path.find(\"..\") != -1 or fileData.name.find(\"..\") != -1' raising 403 before version resolution (libs/files.py:238-239); auxiliary existence-conflict 409 checks (newfilepath.exists() at :243, touch FileExistsError at :250-252) are declared alongside.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 39,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 237,
+            "line_start": 235,
+            "path": "libs/files.py",
+            "role": "protected_operation",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 237,
+            "line_start": 236,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 239,
+            "line_start": 238,
+            "path": "libs/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 250,
+            "line_start": 246,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 254,
+            "line_start": 254,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 201,
+            "line_start": 169,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 209,
+            "line_start": 204,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 208,
+            "line_start": 207,
+            "path": "libs/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          }
+        ],
+        "forbidden_condition": "An unauthenticated request (401), a disabled user (400 'Inactive user'), or a request with '..' in dir_path or fileData.name (403 'Forbidden access') reaching directory creation, new version file creation, or content write under the output directory.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the PUT endpoint is exposed to any agent as a tool in the deployed system.",
+          "Whether fileData.content (the File payload) originates from agent generation."
+        ],
+        "protected_operation": "save_file: version-name resolution via get_file_version_names, parent directory creation, new version file creation (touch), and content write (write_text) for files under ./newcode (OUTPUT_CODE_DIR).",
+        "protected_resource": "Filesystem paths under OUTPUT_CODE_DIR './newcode' \u2014 newly created directories and versioned files written by save_file.",
+        "protection_obligation": "Creating or version-bumping files under the output code directory via PUT /files/{dir_path:path} (save_file) is permitted only for authenticated, active users, and requests whose dir_path or fileData.name contain '..' must be rejected before any filesystem mutation is committed.",
+        "scope_limits": [
+          "Merged from first- and second-phase reviewer wording; the Git commit side-effect of the same handler is covered by a separate contract at the other_external stratum.",
+          "The declared traversal screen is a substring check for '..' on dir_path and fileData.name only.",
+          "No agent binding is evidenced; the obligation is ordinary web authentication plus input screening unless an agent binding is established."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "filepath.unlink(missing_ok=True) at libs/files.py:227; filepath.rmdir() at libs/files.py:229.",
+        "contract_id": "ecological-contract:d0e07ee1ab306fa593374ccb1416373f",
+        "declared_mechanism": "FastAPI dependency Depends(get_current_active_user) on the handler (libs/files.py:212) plus the explicit combined check 'file_path.find(\"..\") != -1 or editable != True' raising 403 before path resolution (libs/files.py:213-214).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 39,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 212,
+            "line_start": 210,
+            "path": "libs/files.py",
+            "role": "protected_operation",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 212,
+            "line_start": 212,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 214,
+            "line_start": 213,
+            "path": "libs/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 229,
+            "line_start": 226,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 201,
+            "line_start": 169,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 209,
+            "line_start": 204,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 208,
+            "line_start": 207,
+            "path": "libs/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          }
+        ],
+        "forbidden_condition": "An unauthenticated request (401), a disabled user (400 'Inactive user'), a file_path containing '..' (403), or editable != True (403 'Forbidden access') reaching the unlink or rmdir effect.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the DELETE endpoint is exposed to any agent as a tool."
+        ],
+        "protected_operation": "delete_file: existence check and removal of a file (unlink with missing_ok=True) or an empty directory (rmdir) under the editable output directory branch.",
+        "protected_resource": "Files and directories under OUTPUT_CODE_DIR './newcode' (basedir selected by the editable=True branch).",
+        "protection_obligation": "Deleting files or directories under the output code directory via DELETE /files/{file_path:path} (delete_file) is permitted only for authenticated, active users whose request carries editable=True, and requests whose file_path contains '..' must be rejected before any deletion is committed.",
+        "scope_limits": [
+          "Merged from first- and second-phase reviewer wording for the delete prong.",
+          "The declared guard additionally requires editable=True, restricting deletions to the output-directory branch of the handler.",
+          "No agent binding is evidenced in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "filepath.read_text() at libs/files.py:187 and libs/files.py:194; FileResponse(str(filepath)) at libs/files.py:185 for raw delivery; directory enumeration via filepath.glob('**/*') feeding the response at libs/files.py:145-151.",
+        "contract_id": "ecological-contract:dacfc81832a7a61dd5f05d5597bc38f9",
+        "declared_mechanism": "FastAPI dependency Depends(get_current_active_user) registered on both handlers (libs/files.py:134, :168), resolving through get_current_user (cookie token extraction via OAuth2PasswordBearerWithCookie with 401 on missing token, jwt.decode verification, expiry check, unknown-user 401 in libs/auth.py:169-201) and get_current_active_user (400 on disabled user, libs/auth.py:204-209), plus the explicit substring check 'file_path.find(\"..\") != -1' raising 403 before path resolution (libs/files.py:170-171).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 39,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 135,
+            "line_start": 133,
+            "path": "libs/files.py",
+            "role": "protected_operation",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 134,
+            "line_start": 134,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 151,
+            "line_start": 142,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 169,
+            "line_start": 167,
+            "path": "libs/files.py",
+            "role": "protected_operation",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 169,
+            "line_start": 168,
+            "path": "libs/files.py",
+            "role": "guard_registration",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 171,
+            "line_start": 170,
+            "path": "libs/files.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 187,
+            "line_start": 183,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 194,
+            "line_start": 190,
+            "path": "libs/files.py",
+            "role": "commit_point",
+            "source_sha256": "3e45d74ea0d0d77936ebcee85f0e3b2eaffcf7fedf7e1486f48843a47e3ba627"
+          },
+          {
+            "line_end": 92,
+            "line_start": 86,
+            "path": "libs/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 201,
+            "line_start": 169,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 175,
+            "line_start": 171,
+            "path": "libs/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 209,
+            "line_start": 204,
+            "path": "libs/auth.py",
+            "role": "guard_registration",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          },
+          {
+            "line_end": 208,
+            "line_start": 207,
+            "path": "libs/auth.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fa4609635926e0f2bc5fc38ab5c9f6270202ee8de3c6224edca0c9fd184677b3"
+          }
+        ],
+        "forbidden_condition": "A request reaching the file-read or listing effect without a valid, unexpired session-token cookie (401 'Not authenticated' / 401 'Could not validate credentials'), carried by a disabled user (400 'Inactive user'), or \u2014 for GET /files/{file_path:path} only \u2014 whose file_path contains '..' (403 'Forbidden access').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool specification, tool registry, or agent framework exposes GET /files/ or GET /files/{file_path:path} to a model or agent (no such registration appears in supplied source).",
+          "Whether the application entrypoint mounts these routers for an agent-controlled client (mounting code not supplied)."
+        ],
+        "protected_operation": "Authenticated reads of file contents and directory enumerations via get_dirlist (GET /files/) and get_file (GET /files/{file_path:path}), including raw FileResponse delivery, content reads, and highest-version resolution via get_editable_file in the editable output directory.",
+        "protected_resource": "Files and directory listings under ./oldcode (INPUT_CODE_DIR) and ./newcode (OUTPUT_CODE_DIR), returned as File objects or FileResponse bodies.",
+        "protection_obligation": "Reading file contents and enumerating directory listings under the code directories (INPUT_CODE_DIR='./oldcode', OUTPUT_CODE_DIR='./newcode') via GET /files/ and GET /files/{file_path:path} is permitted only for authenticated, active users, and on the path-parameterized read endpoint a request whose file_path contains the substring '..' must be rejected before any file content is read or returned. (Merges the 'reading' prong of the first-phase reviewer opinion with the second-phase router-wide wording.)",
+        "scope_limits": [
+          "Merged from first- and second-phase reviewer wording covering the same auth + traversal guard chain.",
+          "These endpoints perform read-only filesystem access (no mutation); the 'file' stratum is assigned as the filesystem-effect class closest to the guarded access, explicitly noted as non-mutating.",
+          "Only ordinary FastAPI web authentication and generic path screening are evidenced in supplied source; per study scope rules the obligation remains outside DEC scope unless an agent binding is later established.",
+          "The declared traversal screen is a substring check for '..' on the request path only; the versioned-file fallback (get_editable_file) resolves other files in the same parent directory."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source view contains any AI-agent tool registration, tool dispatch, agent lifecycle hook, or agent-framework import; agent mediation is therefore not_established for every contract, and under the study scope rules these ordinary web-authentication/validation obligations remain outside DEC scope until such a binding is supplied.",
+      "libs/github_api.py is not supplied: the semantics, network endpoints, and authentication of GithubAPI.update_file, create_new_file, get_file_contents, and get_full_dirtree cannot be verified; the other_external strata for the Git contracts are assigned from call-site usage only.",
+      "The application entrypoint that mounts libs.files.router and libs.auth.router is not supplied; network exposure of these endpoints is inferred solely from the FastAPI decorators in the supplied views.",
+      "Sanitized literals ('<REDACTED>' for ACCESS_TOKEN_EXPIRE_MINUTES, cookie key names, OAuth flow fields) in the supplied sanitized source prevent confirming exact token-lifetime and cookie-parameter values used by the auth guard chain.",
+      "Whether uploaded file bytes or PDF-extracted text (libs/files.py:328-336) flow into any downstream agent processing pipeline is not shown in the supplied source.",
+      "Whether file.filename on the upload endpoint requires its own traversal screening is a design question not resolved by the reviewer obligations or the supplied source; the declared guard covers dir_path only."
+    ],
+    "repository": "residue-analytics/codedoc",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:8696856f9d29a7e9cbd737b9b8c28ffb"
+  },
+  "request_sha256": "6da3e73860acef89ab93ff062640d5fc401c0c058209e023c2f85d041ceb6050",
+  "response_sha256": "48839a447d91397f7392f4093b4279c253fdb2d49f080573e43ca72e92dfbe96",
+  "state": "completed",
+  "tokens": 30621,
+  "unit": "v24-screen:8696856f9d29a7e9cbd737b9b8c28ffb"
+}

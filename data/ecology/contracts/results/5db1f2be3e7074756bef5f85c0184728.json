@@ -1,0 +1,427 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The CSRFMiddleware.dispatch validation block at backend/app/gateway/csrf_middleware.py:184-198, which must pass before call_next(request) at line 200 hands the request to route handlers.",
+        "contract_id": "ecological-contract:24a4c8dfc501607b8a83e0c87e96180f",
+        "declared_mechanism": "CSRFMiddleware (BaseHTTPMiddleware, Double Submit Cookie pattern): should_check_csrf selects state-changing methods; dispatch reads the csrf_token cookie and X-CSRF-Token header and returns 403 'CSRF token missing' / 'CSRF token mismatch' before call_next; wired via app.add_middleware(CSRFMiddleware) in create_app.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 309,
+            "line_start": 305,
+            "path": "backend/app/gateway/app.py",
+            "role": "guard_registration",
+            "source_sha256": "927605f36bc2a690d14be6d59ffe61fc4de24fde752d286157785d6db1daab39"
+          },
+          {
+            "line_end": 45,
+            "line_start": 32,
+            "path": "backend/app/gateway/csrf_middleware.py",
+            "role": "protected_operation",
+            "source_sha256": "27c33ff024ae8eb22112394c505055ecc1ed4c48a4225e6fe7605c9d3929500c"
+          },
+          {
+            "line_end": 198,
+            "line_start": 184,
+            "path": "backend/app/gateway/csrf_middleware.py",
+            "role": "forbidden_condition",
+            "source_sha256": "27c33ff024ae8eb22112394c505055ecc1ed4c48a4225e6fe7605c9d3929500c"
+          },
+          {
+            "line_end": 200,
+            "line_start": 188,
+            "path": "backend/app/gateway/csrf_middleware.py",
+            "role": "commit_point",
+            "source_sha256": "27c33ff024ae8eb22112394c505055ecc1ed4c48a4225e6fe7605c9d3929500c"
+          }
+        ],
+        "forbidden_condition": "A state-changing request (POST/PUT/DELETE/PATCH per should_check_csrf, excluding /api/v1/auth/me and the _AUTH_EXEMPT_PATHS endpoints) is forwarded downstream while its csrf_token cookie or X-CSRF-Token header is missing, or while secrets.compare_digest(cookie_token, header_token) shows the pair does not match exactly.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Source for the runs/thread_runs gateway routers (agent run creation) is not supplied; it is needed to determine whether any CSRF-guarded state-changing request commits agent-run or agent-tool effects, which would establish agent mediation for this guard.",
+          "AuthMiddleware implementation (backend/app/gateway/auth_middleware.py) is not supplied; its fail-closed behavior and ordering relative to CSRFMiddleware are asserted only by the registration comment at app.py:305."
+        ],
+        "protected_operation": "Downstream processing (call_next into gateway route handlers) of any state-changing HTTP request to the API gateway.",
+        "protected_resource": "State-changing endpoints of the bookistudios AI API gateway mounted in create_app (backend/app/gateway/app.py), including thread create/patch/state/delete, uploads, agents, channels, and other POST/PUT/DELETE/PATCH routes.",
+        "protection_obligation": "State-changing gateway HTTP requests (POST, PUT, DELETE, PATCH) other than the exempt auth endpoints must carry a csrf_token cookie and an X-CSRF-Token header whose values match exactly; CSRFMiddleware, registered on the FastAPI app in create_app, must reject non-conforming state-changing requests with HTTP 403 before the route handler executes.",
+        "scope_limits": [
+          "Auth endpoints (/api/v1/auth/login/local, /logout, /register, /initialize) and /api/v1/auth/me are exempt from the double-submit check; auth POSTs are instead gated by same-origin/configured-origin rejection (is_allowed_auth_origin, csrf_middleware.py:148-182).",
+          "GET, HEAD, OPTIONS, and TRACE are exempt per RFC 7231 (should_check_csrf).",
+          "The middleware is a generic HTTP-layer control; supplied source does not bind the guarded operations to agent tool dispatch or agent lifecycle, so agent mediation is not established and must not be inferred from the repository's agent-backend topic."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "sandbox.execute_command(command) at backend/packages/harness/deerflow/sandbox/tools.py:1246, reached only after the is_host_bash_allowed gate (line 1239) and validate_local_bash_command_paths (line 1243) in the is_local_sandbox branch.",
+        "contract_id": "ecological-contract:5a72a484195cf0495378f65ebc44a640",
+        "declared_mechanism": "Layered guards: (1) is_host_bash_allowed() at bash_tool entry returns LOCAL_HOST_BASH_DISABLED_MESSAGE before any execution (tools.py:1239-1240); (2) validate_local_bash_command_paths(command, thread_data) raises PermissionError/SandboxRuntimeError on traversal or out-of-bounds paths before execution (tools.py:891-931); (3) get_available_tools filters config tools matching _is_host_bash_tool out of the agent toolset when is_host_bash_allowed(config) is false (tools/tools.py:61-63); (4) task_tool returns LOCAL_BASH_SUBAGENT_DISABLED_MESSAGE for subagent_type == 'bash' when is_host_bash_allowed() is false (task_tool.py:101-104).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 1224,
+            "line_start": 1223,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "60a671dff8ff7cc22aa42440cf98f7bc3b4564ade0fac82f6d14212e606a6464"
+          },
+          {
+            "line_end": 51,
+            "line_start": 50,
+            "path": "backend/packages/harness/deerflow/tools/builtins/task_tool.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "9f8440188c21404ff7a84ed4f4b63f0e1783c87daf4b76918a38d2f194f3059a"
+          },
+          {
+            "line_end": 45,
+            "line_start": 35,
+            "path": "backend/packages/harness/deerflow/sandbox/security.py",
+            "role": "forbidden_condition",
+            "source_sha256": "9c9400c67858de03075a40fb7f00fd3e29fc8b1ccd42e7a9a994e2dcabe785c0"
+          },
+          {
+            "line_end": 931,
+            "line_start": 891,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "60a671dff8ff7cc22aa42440cf98f7bc3b4564ade0fac82f6d14212e606a6464"
+          },
+          {
+            "line_end": 1246,
+            "line_start": 1236,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "commit_point",
+            "source_sha256": "60a671dff8ff7cc22aa42440cf98f7bc3b4564ade0fac82f6d14212e606a6464"
+          },
+          {
+            "line_end": 63,
+            "line_start": 61,
+            "path": "backend/packages/harness/deerflow/tools/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "6457e23e6ce302190b87e34e2761a8158566ff0c6ffcbe47b809426a22207a89"
+          },
+          {
+            "line_end": 104,
+            "line_start": 101,
+            "path": "backend/packages/harness/deerflow/tools/builtins/task_tool.py",
+            "role": "guard_registration",
+            "source_sha256": "9f8440188c21404ff7a84ed4f4b63f0e1783c87daf4b76918a38d2f194f3059a"
+          }
+        ],
+        "forbidden_condition": "bash_tool reaching sandbox.execute_command in local-sandbox mode when is_host_bash_allowed() returns false, or when validate_local_bash_command_paths detects '..' traversal segments, file:// URLs, out-of-bounds absolute paths, unsafe cd/pushd targets, or root-path arguments outside the allowed virtual families; equivalently, a host-bash tool being registered into the agent toolset or a bash subagent dispatched while host bash is disabled.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "LocalSandboxProvider.execute_command implementation is not supplied; how the validated command is executed on the host, and the residual risk acknowledged by the best-effort disclaimer, cannot be verified from the supplied source."
+        ],
+        "protected_operation": "Agent-invoked bash command execution via the bash_tool tool (and the bash-subagent dispatch path in task_tool).",
+        "protected_resource": "Host shell and host filesystem accessed through LocalSandboxProvider sandbox.execute_command (thread workspace/uploads/outputs, skills, ACP workspace, custom mounts, and the broader host reachable from shell paths).",
+        "protection_obligation": "When the LocalSandboxProvider is active, host-side bash command execution through the agent's bash_tool must be rejected at tool entry unless sandbox.allow_host_bash is explicitly true and the command passes local path validation; additionally, host-bash tooling must be excluded from agent tool registration and the bash subagent must be refused while host bash is disabled.",
+        "scope_limits": [
+          "validate_local_bash_command_paths is documented as a best-effort guard for the explicit sandbox.allow_host_bash opt-in and 'not a secure sandbox boundary' (tools.py:891-905).",
+          "is_host_bash_allowed returns True unconditionally when the active provider is not LocalSandboxProvider (security.py:43-44); the non-local branch of bash_tool executes sandbox.execute_command without these local checks (tools.py:1255-1263).",
+          "MCP filesystem-server allowed paths and the system path-prefix allowlist (/bin/, /usr/bin/, /usr/sbin/, /sbin/, /opt/homebrew/bin/, /dev/) are permitted exceptions inside the validation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "sandbox.write_file(path, content, append) at backend/packages/harness/deerflow/sandbox/tools.py:1520 (inside get_file_operation_lock at line 1519), gated by the validations at lines 1513-1517.",
+        "contract_id": "ecological-contract:8c7220c8eb588a5a953ec4750dd8273b",
+        "declared_mechanism": "validate_local_tool_path(path, thread_data) security gate (raises SandboxRuntimeError when thread_data is missing and PermissionError on traversal, disallowed families, and read-only violations) invoked in write_file_tool (line 1515), followed by _resolve_and_validate_user_data_path bounds-checking the resolved host path against allowed roots (tools.py:639-675) for non-custom-mount paths (line 1517), before sandbox.write_file under the file-operation lock.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 1495,
+            "line_start": 1494,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "60a671dff8ff7cc22aa42440cf98f7bc3b4564ade0fac82f6d14212e606a6464"
+          },
+          {
+            "line_end": 636,
+            "line_start": 585,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "60a671dff8ff7cc22aa42440cf98f7bc3b4564ade0fac82f6d14212e606a6464"
+          },
+          {
+            "line_end": 675,
+            "line_start": 639,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "60a671dff8ff7cc22aa42440cf98f7bc3b4564ade0fac82f6d14212e606a6464"
+          },
+          {
+            "line_end": 1521,
+            "line_start": 1509,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "60a671dff8ff7cc22aa42440cf98f7bc3b4564ade0fac82f6d14212e606a6464"
+          },
+          {
+            "line_end": 1520,
+            "line_start": 1519,
+            "path": "backend/packages/harness/deerflow/sandbox/tools.py",
+            "role": "commit_point",
+            "source_sha256": "60a671dff8ff7cc22aa42440cf98f7bc3b4564ade0fac82f6d14212e606a6464"
+          }
+        ],
+        "forbidden_condition": "write_file_tool writing a path that contains '..' traversal segments, lies outside the allowed virtual-path families (/mnt/user-data, /mnt/skills, /mnt/acp-workspace, configured mounts), or targets write-forbidden read-only families (skills, ACP workspace, read_only custom mounts) \u2014 or a resolved user-data path escaping the thread's workspace/uploads/outputs roots \u2014 before sandbox.write_file is reached.",
+        "missing_evidence_roles": [
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "LocalSandbox._resolve_path / LocalSandbox._resolve_paths_in_command implementations are not supplied; needed to confirm custom-mount resolution cannot escape the configured mount roots."
+        ],
+        "protected_operation": "Agent-invoked file writes via the write_file_tool tool in local-sandbox mode.",
+        "protected_resource": "Host filesystem under the thread's workspace/uploads/outputs directories plus skills, ACP workspace, and custom mounts, written through LocalSandboxProvider sandbox.write_file.",
+        "protection_obligation": "In local-sandbox mode, agent file-write tool operations must be rejected at tool entry unless the requested virtual path passes traversal and read-only validation (/mnt/user-data writable; /mnt/skills and /mnt/acp-workspace only read-only; custom mounts per their per-mount read_only flag), and resolved /mnt/user-data paths must stay within the thread's workspace/uploads/outputs roots, before sandbox.write_file executes.",
+        "scope_limits": [
+          "The checks apply only in the is_local_sandbox(runtime) branch; non-local providers skip validate_local_tool_path.",
+          "Custom mount paths bypass the user-data resolved-path bounds check and are resolved by LocalSandbox._resolve_path, whose implementation is not in the supplied source; mount write enforcement relies solely on the mount.read_only flag inside validate_local_tool_path.",
+          "Read-side tools (ls, glob, grep, read_file) apply the same validator with read_only=True (e.g., tools.py:1287, 1461); their read effects are outside this write-commit contract.",
+          "str_replace_tool performs the same validation before its sandbox.write_file (tools.py:1557-1573) and is covered by the same validator, though its handler is not separately cited in the reviewer obligation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "core_v1.create_namespaced_pod(K8S_NAMESPACE, _build_pod(sandbox_id, thread_id)) at docker/provisioner/app.py:464; _build_pod validates thread_id (line 308) before spec construction with _build_volume_mounts (line 365) and _build_volumes (line 372).",
+        "contract_id": "ecological-contract:965cf5c401cfe36dc0f4d04fff952847",
+        "declared_mechanism": "SAFE_THREAD_ID_PATTERN = ^[A-Za-z0-9_\\-]+$ enforced twice: (1) CreateSandboxRequest.thread_id Field(pattern=SAFE_THREAD_ID_PATTERN), which makes FastAPI reject non-conforming requests with 422 at the boundary; (2) _validate_thread_id(thread_id) re-checked as the first statement of _build_pod, raising ValueError before volumes and mounts are constructed.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 65,
+            "line_start": 65,
+            "path": "docker/provisioner/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bf09c86d140fe467eb3f181c1952223cbf50afbe1b8ff9eaaa91b404fa53cd7a"
+          },
+          {
+            "line_end": 223,
+            "line_start": 221,
+            "path": "docker/provisioner/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bf09c86d140fe467eb3f181c1952223cbf50afbe1b8ff9eaaa91b404fa53cd7a"
+          },
+          {
+            "line_end": 308,
+            "line_start": 306,
+            "path": "docker/provisioner/app.py",
+            "role": "guard_registration",
+            "source_sha256": "bf09c86d140fe467eb3f181c1952223cbf50afbe1b8ff9eaaa91b404fa53cd7a"
+          },
+          {
+            "line_end": 103,
+            "line_start": 98,
+            "path": "docker/provisioner/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "bf09c86d140fe467eb3f181c1952223cbf50afbe1b8ff9eaaa91b404fa53cd7a"
+          },
+          {
+            "line_end": 281,
+            "line_start": 275,
+            "path": "docker/provisioner/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "bf09c86d140fe467eb3f181c1952223cbf50afbe1b8ff9eaaa91b404fa53cd7a"
+          },
+          {
+            "line_end": 294,
+            "line_start": 286,
+            "path": "docker/provisioner/app.py",
+            "role": "forbidden_condition",
+            "source_sha256": "bf09c86d140fe467eb3f181c1952223cbf50afbe1b8ff9eaaa91b404fa53cd7a"
+          },
+          {
+            "line_end": 447,
+            "line_start": 439,
+            "path": "docker/provisioner/app.py",
+            "role": "protected_operation",
+            "source_sha256": "bf09c86d140fe467eb3f181c1952223cbf50afbe1b8ff9eaaa91b404fa53cd7a"
+          },
+          {
+            "line_end": 464,
+            "line_start": 463,
+            "path": "docker/provisioner/app.py",
+            "role": "commit_point",
+            "source_sha256": "bf09c86d140fe467eb3f181c1952223cbf50afbe1b8ff9eaaa91b404fa53cd7a"
+          }
+        ],
+        "forbidden_condition": "A thread_id containing characters outside [A-Za-z0-9_-] (e.g., '/', '..', or other traversal/segment characters) being used to build the sandbox Pod's hostPath (join_host_path(THREADS_HOST_PATH, thread_id, \"user-data\")) or PVC subPath (threads/{thread_id}/user-data), allowing the pod mount to escape the intended threads directory on the host node.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The backend component that calls POST /api/sandboxes (sandbox provider client) is not supplied; whether thread_id can originate from agent-generated input, and whether pod creation is bound to agent tool execution or lifecycle, cannot be established from the supplied source."
+        ],
+        "protected_operation": "POST /api/sandboxes sandbox Pod creation for a client-supplied (sandbox_id, thread_id) pair.",
+        "protected_resource": "Host node filesystem locations bound into the sandbox Pod \u2014 the user-data hostPath volume THREADS_HOST_PATH/{thread_id}/user-data (type DirectoryOrCreate) or the user-data PVC subPath.",
+        "protection_obligation": "Sandbox provisioning must reject thread_id values not matching ^[A-Za-z0-9_\\-]+$ before they are interpolated into the sandbox Pod's host filesystem paths, enforced both at request validation (CreateSandboxRequest pattern) and again at pod-manifest construction, so no traversal thread_id can reach the pod-creation commit point.",
+        "scope_limits": [
+          "The committed effect is a Kubernetes API mutation; hostPath type DirectoryOrCreate causes subsequent host-directory creation on the node by the kubelet, which is downstream of the guarded commit point.",
+          "sandbox_id is not pattern-validated and is interpolated into Pod/Service names (_pod_name/_svc_name); this guard covers thread_id only.",
+          "The provisioner endpoint has no authentication in the supplied source; this contract is format validation, not access control."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "await thread_store.delete(thread_id) at backend/app/gateway/routers/threads.py:217 (best-effort block, lines 213-219).",
+        "contract_id": "ecological-contract:acce0277f8fe1a4c56a105ee0d392dce",
+        "declared_mechanism": "The @require_permission(\"threads\", \"delete\", owner_check=True, require_existing=True) decorator on the DELETE /api/threads/{thread_id} route guards the entire handler, including the thread_store.delete block, before it executes.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 192,
+            "line_start": 190,
+            "path": "backend/app/gateway/routers/threads.py",
+            "role": "guard_registration",
+            "source_sha256": "01373e3c735b410626a1269df687f826beab7290104ddb2a79ec9085ac5a4c09"
+          },
+          {
+            "line_end": 295,
+            "line_start": 254,
+            "path": "backend/app/gateway/authz.py",
+            "role": "forbidden_condition",
+            "source_sha256": "85b74e41c4e429a39cc8ab3dc68027e95a3aea27ab4ea9361ee12052fb2d22c7"
+          },
+          {
+            "line_end": 221,
+            "line_start": 199,
+            "path": "backend/app/gateway/routers/threads.py",
+            "role": "protected_operation",
+            "source_sha256": "01373e3c735b410626a1269df687f826beab7290104ddb2a79ec9085ac5a4c09"
+          },
+          {
+            "line_end": 219,
+            "line_start": 213,
+            "path": "backend/app/gateway/routers/threads.py",
+            "role": "commit_point",
+            "source_sha256": "01373e3c735b410626a1269df687f826beab7290104ddb2a79ec9085ac5a4c09"
+          }
+        ],
+        "forbidden_condition": "thread_store.delete(thread_id) executing for a caller who is unauthenticated (401), lacks threads:delete (403), does not own the existing threads_meta row, or targets a thread whose threads_meta row does not exist (404 via require_existing=True).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "ThreadMetaStore implementations (sqlite/memory) are not supplied; needed to confirm the persistence stratum, the delete semantics, and the check_access behavior relied on by the guard."
+        ],
+        "protected_operation": "Removal of the threads_meta row via ThreadMetaStore.delete inside the DELETE /api/threads/{thread_id} handler.",
+        "protected_resource": "Persistent ThreadMetaStore backing the threads_meta table (sqlite-backed per the handler docstring; an in-memory variant exists).",
+        "protection_obligation": "The same authenticated-owner/existing-thread authorization must gate removal of the thread's persistent thread_meta row performed inside DELETE /api/threads/{thread_id}; no unauthenticated, unauthorized, or non-owner caller may cause thread_store.delete(thread_id) to execute.",
+        "scope_limits": [
+          "ThreadMetaStore may be sqlite (persistent database) or memory (in-process); the memory variant would be application-state mutation rather than a database mutation.",
+          "The row removal is best-effort: exceptions are logged and swallowed (threads.py:218-219), so the guard prevents unauthorized invocation but a no-op deletion remains possible for authorized callers.",
+          "checkpointer.adelete_thread (threads.py:205-211) is a further persistent effect of the same handler; its backend is not supplied and it is not covered by a separate contract here."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "path_manager.delete_thread_dir(thread_id, user_id=...) at backend/app/gateway/routers/threads.py:151 (invoked from the handler at line 202) and delete_file_safe(uploads_dir, filename, convertible_extensions=CONVERTIBLE_EXTENSIONS) at backend/app/gateway/routers/uploads.py:335.",
+        "contract_id": "ecological-contract:f46a5153f92717caea22201eb572d452",
+        "declared_mechanism": "@require_permission(\"threads\", \"delete\", owner_check=True, require_existing=True) decorators on both DELETE endpoints; the require_permission wrapper authenticates (401), checks permission (403), and calls thread_store.check_access(thread_id, user.id, require_existing=True) yielding a 404 denial before invoking the handler; AuthMiddleware registered fail-closed at app level (app.py:305-306).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 306,
+            "line_start": 305,
+            "path": "backend/app/gateway/app.py",
+            "role": "guard_registration",
+            "source_sha256": "927605f36bc2a690d14be6d59ffe61fc4de24fde752d286157785d6db1daab39"
+          },
+          {
+            "line_end": 192,
+            "line_start": 190,
+            "path": "backend/app/gateway/routers/threads.py",
+            "role": "guard_registration",
+            "source_sha256": "01373e3c735b410626a1269df687f826beab7290104ddb2a79ec9085ac5a4c09"
+          },
+          {
+            "line_end": 328,
+            "line_start": 326,
+            "path": "backend/app/gateway/routers/uploads.py",
+            "role": "guard_registration",
+            "source_sha256": "424e4feebbf9a67fbfc2482bf07c3b91bceeeee5e5b98aaad96565ca9b165aa6"
+          },
+          {
+            "line_end": 295,
+            "line_start": 254,
+            "path": "backend/app/gateway/authz.py",
+            "role": "forbidden_condition",
+            "source_sha256": "85b74e41c4e429a39cc8ab3dc68027e95a3aea27ab4ea9361ee12052fb2d22c7"
+          },
+          {
+            "line_end": 202,
+            "line_start": 193,
+            "path": "backend/app/gateway/routers/threads.py",
+            "role": "protected_operation",
+            "source_sha256": "01373e3c735b410626a1269df687f826beab7290104ddb2a79ec9085ac5a4c09"
+          },
+          {
+            "line_end": 163,
+            "line_start": 147,
+            "path": "backend/app/gateway/routers/threads.py",
+            "role": "commit_point",
+            "source_sha256": "01373e3c735b410626a1269df687f826beab7290104ddb2a79ec9085ac5a4c09"
+          },
+          {
+            "line_end": 339,
+            "line_start": 329,
+            "path": "backend/app/gateway/routers/uploads.py",
+            "role": "commit_point",
+            "source_sha256": "424e4feebbf9a67fbfc2482bf07c3b91bceeeee5e5b98aaad96565ca9b165aa6"
+          }
+        ],
+        "forbidden_condition": "An unauthenticated caller, a caller lacking the threads:delete permission, a caller who does not own the existing threads_meta row for thread_id, or a target whose threads_meta row is missing (require_existing=True converts missing rows from legacy-allow into a 404 denial) reaching delete_thread_dir or delete_file_safe.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "ThreadMetaStore.check_access implementation is not supplied; the exact ownership/existence comparison behind the 404 denial is unverified.",
+          "AuthMiddleware implementation (backend/app/gateway/auth_middleware.py) is not supplied; its fail-closed semantics are asserted only by the registration comment.",
+          "deerflow.uploads.manager.delete_file_safe and deerflow.config.paths.Paths.delete_thread_dir implementations are not supplied; internal path-traversal handling at the committed deletions is unverified."
+        ],
+        "protected_operation": "The DELETE /api/threads/{thread_id} handler (delete_thread_data) and the DELETE /api/threads/{thread_id}/uploads/{filename} handler (delete_uploaded_file).",
+        "protected_resource": "Thread-local persisted filesystem data \u2014 thread directories removed via Paths.delete_thread_dir and uploaded files removed via deerflow.uploads.manager.delete_file_safe.",
+        "protection_obligation": "Only an authenticated caller who owns an existing thread may commit destructive thread-scoped filesystem deletions; DELETE /api/threads/{thread_id} and DELETE /api/threads/{thread_id}/uploads/{filename} must deny unauthenticated callers (401), callers without threads:delete (403), non-owners of existing threads, and targets whose threads_meta row does not exist (404 via require_existing) before any filesystem deletion executes, with fail-closed AuthMiddleware as the request-level gate.",
+        "scope_limits": [
+          "check_access is strict-deny only for existing rows with a different user_id; NULL-user_id (pre-auth shared) rows are allowed \u2014 the destructive routes additionally require the row to exist.",
+          "Direct handler invocation with the _deerflow_test_bypass_auth request stub bypasses the decorator checks (authz.py:122-128, 182-183, 251-252).",
+          "The same handlers also delete checkpoint data (checkpointer.adelete_thread, threads.py:205-211) and the thread_meta row (covered by a separate database-stratum contract); those effects are not part of this file-stratum contract.",
+          "These decorators are HTTP-route access control; supplied source does not bind these endpoints to agent tool dispatch or agent-generated input, so agent mediation is not established."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "backend/app/gateway/auth_middleware.py (AuthMiddleware) is not supplied; its fail-closed request-level behavior and ordering relative to CSRFMiddleware and route decorators are asserted only by the registration comment at backend/app/gateway/app.py:305.",
+      "ThreadMetaStore implementations, including check_access used by require_permission(owner_check=True, require_existing=True), are not supplied; ownership-comparison and require-existing semantics are unverified.",
+      "deerflow.uploads.manager.delete_file_safe and deerflow.config.paths.Paths.delete_thread_dir are not supplied; path-traversal handling inside the committed thread/file deletions is unverified.",
+      "Runs/thread_runs gateway routers (agent run creation) are not supplied; without them the CSRF and thread-deletion HTTP guards cannot be bound to agent run or tool effects, so agent_mediation is recorded as not_established for those contracts.",
+      "The backend sandbox-provider client that calls the provisioner's POST /api/sandboxes is not supplied; agent mediation of the thread_id validation guard is not established.",
+      "LocalSandboxProvider implementations (execute_command, write_file, _resolve_path, _setup_path_mappings) are not supplied; commit-point behavior beyond the interface calls in sandbox/tools.py is unverified.",
+      "Runtime wiring that populates runtime.state thread_data/sandbox for the @tool sandbox tools is not supplied; tool-mediated dataflow into the guards is inferred from the tool decorators and Runtime parameters.",
+      "The AppConfig sandbox schema declaring allow_host_bash is not supplied; the flag is accessed via getattr(sandbox_cfg, 'allow_host_bash', False) in sandbox/security.py, so its declared type/default is unverified.",
+      "checkpointer.adelete_thread (backend/app/gateway/routers/threads.py:205-211) is an additional destructive effect of the thread-delete handler; the checkpointer backend source is not supplied, so no separate contract stratum could be assigned for it."
+    ],
+    "repository": "Muhabuki003/bookistudios-ai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:5db1f2be3e7074756bef5f85c0184728"
+  },
+  "request_sha256": "5ebece4c75fad0c507fa01dfe514f5ffc0b042a3fe8cad42197c804c8f7a5e62",
+  "response_sha256": "481dded40c9ec6b75cf72102508ae9387416f871ad79da9ce3f6b3342f75998b",
+  "state": "completed",
+  "tokens": 91294,
+  "unit": "v24-screen:5db1f2be3e7074756bef5f85c0184728"
+}

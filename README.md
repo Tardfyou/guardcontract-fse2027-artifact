@@ -1,0 +1,11 @@
+# GuardContract Anonymous Artifact (Preparation Workspace)
+
+This directory is the single staging location for the anonymous replication package. It is not release-ready yet. `MANIFEST.json` records every populated file and its source identity; `SHA256SUMS` verifies exact copies. Empty directories reserve stable destinations for unfinished experiments.
+
+Current populated evidence covers the 98-program mechanism matrix, real SDK execution and behavior ground truth, the frozen dev/test split, held-out baselines and ablations, the independent async mechanism extension, the 745-repository API census, repository prominence strata, the completed 772-unit source-screening ledger, 456/456 compiled ecological units, structural qualification, broad risk candidates, strict witness-only outcomes, bidirectional held-out confirmations, and repair closure. Historical contract labels are retained for provenance under `data/development/` but are ineligible for final witness-only DEC results.
+
+The strict ecological proof gate produced no decided v4 contracts: all 190 mechanically eligible contracts remain `UNKNOWN`, while 107 legacy contracts are `EXCLUDED` from the v4 protocol. This is a completed negative coverage result, not evidence of zero violations. Consequently the real-repository repair queue is empty and its repair rate is undefined. The owned held-out confirmation remains separate (6 VP and 18 CWS among 24 bidirectionally eligible programs). No separate fresh confirmatory set or sixth-framework migration experiment is planned.
+
+The two repository populations remain separate: the 745-repository breadth census is not the denominator for the 695-repository/772-unit depth study. The 59 `post-freeze` breadth records have already been viewed and are not a fresh confirmatory set for the current method. Prominence strata contain 11 repositories with at least 1,000 stars and a 45-repository cohort with at least 100 stars.
+
+Run `sha256sum -c SHA256SUMS` for the current exact-copy check and `python3 scripts/rebuild_guardcontract_final_tables.py --root . --out tables/FINAL_TABLES.json` for R1 reconstruction. Final public release still requires the remaining license, anonymization and anonymous-URL decisions; raw provider wires and third-party repository copies remain excluded.

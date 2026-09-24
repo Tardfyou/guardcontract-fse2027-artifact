@@ -1,0 +1,99 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Registration-time commit: the filtered tool list is bound into create_agent in LangChainRootCauseAgent.analyze (root_cause.py lines 155-167), fixing the agent's invocable tool set; the guarded effect itself \u2014 an MCP tool invocation dispatched over HTTP to the 'kubernetes' server \u2014 commits during agent.ainvoke tool execution (root_cause.py lines 170-172). Both commit points fall in the same effect stratum, so a single contract is emitted.",
+        "contract_id": "ecological-contract:f11d9e54f649e71ec5cf624fc867ffca",
+        "declared_mechanism": "Name-based tool allowlist: the module-level frozenset ALLOWED_MCP_TOOL_NAMES (root_cause.py line 21) is enforced inside load_read_only_mcp_tools, which returns only loaded tools whose name attribute is in the allowlist (root_cause.py lines 99-100); LangChainRootCauseAgent.analyze loads exactly this filtered list and registers it with create_agent (root_cause.py lines 156-160).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 21,
+            "line_start": 21,
+            "path": "src/my_agent_app/agents/root_cause.py",
+            "role": "guard_registration",
+            "source_sha256": "10628210a5d05b048c9adb3f151d6b332260e2ac12fa8d1be3a2621725de5d74"
+          },
+          {
+            "line_end": 100,
+            "line_start": 99,
+            "path": "src/my_agent_app/agents/root_cause.py",
+            "role": "forbidden_condition",
+            "source_sha256": "10628210a5d05b048c9adb3f151d6b332260e2ac12fa8d1be3a2621725de5d74"
+          },
+          {
+            "line_end": 109,
+            "line_start": 103,
+            "path": "src/my_agent_app/agents/root_cause.py",
+            "role": "protected_operation",
+            "source_sha256": "10628210a5d05b048c9adb3f151d6b332260e2ac12fa8d1be3a2621725de5d74"
+          },
+          {
+            "line_end": 167,
+            "line_start": 155,
+            "path": "src/my_agent_app/agents/root_cause.py",
+            "role": "commit_point",
+            "source_sha256": "10628210a5d05b048c9adb3f151d6b332260e2ac12fa8d1be3a2621725de5d74"
+          },
+          {
+            "line_end": 172,
+            "line_start": 170,
+            "path": "src/my_agent_app/agents/root_cause.py",
+            "role": "commit_point",
+            "source_sha256": "10628210a5d05b048c9adb3f151d6b332260e2ac12fa8d1be3a2621725de5d74"
+          },
+          {
+            "line_end": 160,
+            "line_start": 158,
+            "path": "src/my_agent_app/agents/root_cause.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "10628210a5d05b048c9adb3f151d6b332260e2ac12fa8d1be3a2621725de5d74"
+          },
+          {
+            "line_end": 41,
+            "line_start": 32,
+            "path": "src/my_agent_app/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b3e7bedcbae21cd44c322b8c89b7b7b93d90623ecf931a5fbdd30ebd01872dd6"
+          }
+        ],
+        "forbidden_condition": "Any kubernetes MCP tool whose name is not in ALLOWED_MCP_TOOL_NAMES {kubectl_get, kubectl_describe, kubectl_logs} \u2014 in particular any mutating kubectl operation \u2014 being registered into the agent built by create_agent or being invoked by the LLM agent during agent.ainvoke against the cluster.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Server-side semantics of the 'kubernetes' MCP server (default http://localhost:3001/mcp): whether kubectl_get/kubectl_describe/kubectl_logs are genuinely read-only and whether the server exposes additional tools beyond the three allowlisted names is not shown in the supplied source.",
+          "Concrete dataflow from RootCauseAnalysisHandler/KubernetesEventCollector to LangChainRootCauseAgent.analyze (the my_agent_app.collector module is not supplied); main.py lines 32-41 show only construction and wiring of the agent into the FastAPI lifespan pipeline.",
+          "Whether langchain's create_agent/ainvoke guarantees that the agent cannot invoke tools outside the registered list at runtime (framework behavior and version not shown in the supplied source)."
+        ],
+        "protected_operation": "The LLM root-cause agent's read-only diagnostic investigation of Kubernetes warning events via the allowlisted MCP tools (kubectl_get, kubectl_describe, kubectl_logs) during LangChainRootCauseAgent.analyze and its agent.ainvoke run.",
+        "protected_resource": "The Kubernetes cluster reachable through the 'kubernetes' MCP server at settings.mcp_server_url (default http://localhost:3001/mcp, overridable via the MCP_SERVER_URL environment variable).",
+        "protection_obligation": "MCP tools loaded from the 'kubernetes' MCP server must be filtered to the read-only allowlist ALLOWED_MCP_TOOL_NAMES = {kubectl_get, kubectl_describe, kubectl_logs} by load_read_only_mcp_tools before the resulting tool list is registered with create_agent in LangChainRootCauseAgent.analyze, so that the LLM agent can invoke only allowlisted read-only kubectl operations and can never register or invoke any mutating or otherwise non-allowlisted tool against the cluster. (Merges the two reviewer phrasings, which describe the same single obligation.)",
+        "scope_limits": [
+          "Applies only to tools loaded from the single 'kubernetes' MCP server configured in load_read_only_mcp_tools (root_cause.py lines 90-98); no other MCP servers, direct kubectl execution, or alternative Kubernetes API access paths are covered by this guard.",
+          "The guard filters tools solely by name (getattr(tool, 'name', '') in ALLOWED_MCP_TOOL_NAMES, root_cause.py line 100); it does not constrain tool arguments, namespaces, resource selectors, or output handling for the allowlisted read-only tools.",
+          "Enforcement occurs once at tool load/registration time; per-invocation re-validation and any framework guarantee that the agent can only dispatch registered tools are not established by the supplied source.",
+          "ROOT_CAUSE_SYSTEM_PROMPT (root_cause.py lines 103-109) is advisory prompt-level guidance ('Investigue apenas com as ferramentas de leitura fornecidas'); the enforceable mechanism for this obligation is the name allowlist, not the prompt.",
+          "ModelCallLimitMiddleware (root_cause.py lines 162-166) bounds LLM call volume and is a separate mechanism outside this allowlist obligation.",
+          "Server-side authorization or read-only enforcement inside the 'kubernetes' MCP server itself is outside the supplied source and outside this contract's declared mechanism."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Source of my_agent_app.collector (RootCauseAnalysisHandler.recover_orphaned_analyses, event handling, and the call site that invokes LangChainRootCauseAgent.analyze) to confirm the production dataflow into the guarded agent run.",
+      "Implementation or catalog of the 'kubernetes' MCP server and its full tool list, to verify which tools exist beyond the three allowlisted names and their read-only semantics.",
+      "langchain.agents.create_agent and langchain_mcp_adapters.MultiServerMCPClient behavior/version guarantees that only tools registered via create_agent are dispatchable during ainvoke.",
+      "API and web router sources (my_agent_app.api.router, my_agent_app.web.router) referenced in main.py, in case any endpoint independently triggers agent analyses through a path not shown."
+    ],
+    "repository": "pprohem/aiops-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:ac626984bcb8272214faea7e3a2f9ff2"
+  },
+  "request_sha256": "8365a527cab1f4d7a43ec567c40da34fe3c967c3ff6a4610935a348e3143209e",
+  "response_sha256": "0dd454dd5ec8a739ef65f260f437cc17b87fe2f3709802d90d2ad71f88609033",
+  "state": "completed",
+  "tokens": 16298,
+  "unit": "v24-screen:ac626984bcb8272214faea7e3a2f9ff2"
+}

@@ -1,0 +1,201 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "agents/financial/agent.py:112-115 \u2014 invoke calls check_input_guardrails(user_input) and, if guardrail_triggered, logs and returns guardrail_message before constructing config/initial_state and before self.graph.invoke at line 126; a blocked input never reaches graph/tool execution.",
+        "contract_id": "ecological-contract:b071b7d0e0821a13dfbc716165edb564",
+        "declared_mechanism": "check_input_guardrails(user_input) (agents/financial/guardrails.py:68-93): sequential screening returning (True, refusal_message) on detection \u2014 OFFENSIVE_PATTERNS regex search (71-74), PII_REQUEST_PATTERNS regex search (76-84), and OFF_TOPIC_KEYWORDS substring check exempted when any FINANCIAL_KEYWORDS substring is present (86-91); wired inline at the top of FinancialAgent.invoke (agents/financial/agent.py:111-115).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 115,
+            "line_start": 111,
+            "path": "agents/financial/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          },
+          {
+            "line_end": 93,
+            "line_start": 68,
+            "path": "agents/financial/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "d262b050d596ccaae9ec2ae9039d90978cf751451e0a38194500083b3ad36d32"
+          },
+          {
+            "line_end": 40,
+            "line_start": 29,
+            "path": "agents/financial/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d262b050d596ccaae9ec2ae9039d90978cf751451e0a38194500083b3ad36d32"
+          },
+          {
+            "line_end": 51,
+            "line_start": 42,
+            "path": "agents/financial/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d262b050d596ccaae9ec2ae9039d90978cf751451e0a38194500083b3ad36d32"
+          },
+          {
+            "line_end": 91,
+            "line_start": 71,
+            "path": "agents/financial/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d262b050d596ccaae9ec2ae9039d90978cf751451e0a38194500083b3ad36d32"
+          },
+          {
+            "line_end": 126,
+            "line_start": 117,
+            "path": "agents/financial/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          },
+          {
+            "line_end": 115,
+            "line_start": 112,
+            "path": "agents/financial/agent.py",
+            "role": "commit_point",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          },
+          {
+            "line_end": 105,
+            "line_start": 94,
+            "path": "agents/financial/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          },
+          {
+            "line_end": 75,
+            "line_start": 75,
+            "path": "agents/financial/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          }
+        ],
+        "forbidden_condition": "Unscreened user input that (a) matches any PII_REQUEST_PATTERNS regex (guardrails.py:29-40: account/bank/card number requests, ssn/passport/aadhaar/pan, phone/mobile/contact, email/address/dob/age, password/pin/cvv/otp/secret, ifsc/swift/bic/iban/routing, disclosure-verb requests, personal/private/sensitive-data requests), (b) matches any OFFENSIVE_PATTERNS regex (guardrails.py:49-51), or (c) contains an OFF_TOPIC_KEYWORDS term with no FINANCIAL_KEYWORDS substring (guardrails.py:42-47, 86-91), being passed into self.graph.invoke for agent/tool processing.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The implementation of retrieve_from_knowledge_base (tools/document_tools.py) is not supplied, so the downstream stratum of the conditional tool effect (file/database/http) cannot be refined beyond the invocation-level tool_execution stratum declared here.",
+          "config.get_llm and INFERENCE_PROVIDER are not supplied, so whether the unconditional agent LLM turn is a network (http) effect \u2014 which could justify a separate http-stratum contract at the same commit point \u2014 is unresolved.",
+          "Whether any outer caller wraps FinancialAgent.invoke or the graph as a registered tool for another agent, adding an outer dispatch binding, is not shown in the supplied views."
+        ],
+        "protected_operation": "Execution of the FinancialAgent LangGraph pipeline on the user input: self.graph.invoke(initial_state, config=config) at agents/financial/agent.py:126, which runs the agent node (self.llm.invoke with the user message) and the conditionally dispatched ToolNode executing the registered retrieve_from_knowledge_base tool.",
+        "protected_resource": "The financial agent's execution path registered at graph build time: the agent node (LLM inference) and the tools node (retrieve_from_knowledge_base), wired via StateGraph/ToolNode in _build_graph.",
+        "protection_obligation": "FinancialAgent.invoke must invoke check_input_guardrails on the raw user_input before any agent graph/tool execution, and must not proceed to self.graph.invoke when the input triggers the guard; it must return the guardrail refusal message instead. The declared forbidden trigger classes are PII-request patterns, offensive-content patterns, and off-topic (non-financial) queries. (Merges the first-phase and second-phase reviewer wordings, which assert the same mechanism and commit point.)",
+        "scope_limits": [
+          "The off-topic trigger fires only when no FINANCIAL_KEYWORDS substring appears anywhere in the input (guardrails.py:86-91), so queries mixing an off-topic term with any financial keyword pass the guard as declared.",
+          "Tool-node execution is conditional: tools_condition routes to the tools node only when the agent LLM emits a tool call (agent.py:100-105); crossing the commit point guarantees at least the agent LLM turn, not necessarily tool execution.",
+          "The guard screens only the user_input string supplied to FinancialAgent.invoke; no other ingress into the graph is screened by this mechanism.",
+          "This contract covers the code-registered guard only; the PII rules in FINANCIAL_SYSTEM_PROMPT (agent.py:16-69) are prompt-level instructions and are not relied on as the enforcement mechanism.",
+          "The forbidden condition as declared is limited to the enumerated regex/keyword lists; PII requests phrased outside PII_REQUEST_PATTERNS and off-topic inputs outside OFF_TOPIC_KEYWORDS are outside the declared forbidden condition."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "agents/financial/agent.py:137-142 \u2014 after check_output_guardrails runs, invoke either returns output_message (line 140, suppression committed) or returns output_content (line 142, disclosure committed); unredacted content must not cross line 142 when output_blocked is True.",
+        "contract_id": "ecological-contract:e428676a4683d876dbc2cf9532224162",
+        "declared_mechanism": "check_output_guardrails(output_content) (agents/financial/guardrails.py:96-105): scans the serialized output against every PII_PATTERNS regex and returns (True, suppression_message) on the first match; agents/financial/agent.py:137-140 substitutes that message for the content before return.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 140,
+            "line_start": 137,
+            "path": "agents/financial/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          },
+          {
+            "line_end": 105,
+            "line_start": 96,
+            "path": "agents/financial/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "d262b050d596ccaae9ec2ae9039d90978cf751451e0a38194500083b3ad36d32"
+          },
+          {
+            "line_end": 27,
+            "line_start": 7,
+            "path": "agents/financial/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d262b050d596ccaae9ec2ae9039d90978cf751451e0a38194500083b3ad36d32"
+          },
+          {
+            "line_end": 104,
+            "line_start": 97,
+            "path": "agents/financial/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "d262b050d596ccaae9ec2ae9039d90978cf751451e0a38194500083b3ad36d32"
+          },
+          {
+            "line_end": 135,
+            "line_start": 127,
+            "path": "agents/financial/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          },
+          {
+            "line_end": 142,
+            "line_start": 142,
+            "path": "agents/financial/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          },
+          {
+            "line_end": 142,
+            "line_start": 137,
+            "path": "agents/financial/agent.py",
+            "role": "commit_point",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          },
+          {
+            "line_end": 137,
+            "line_start": 126,
+            "path": "agents/financial/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          },
+          {
+            "line_end": 92,
+            "line_start": 82,
+            "path": "agents/financial/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "56ece0a43e9ad00a7b211412bba7064b8e8dbeecc49e4970d72910664ab66616"
+          }
+        ],
+        "forbidden_condition": "Agent-generated final-message content containing any string matched by PII_PATTERNS (guardrails.py:7-27: SSN-like \\d{3}-\\d{2}-\\d{4}, 16/15/12/10/9-digit identifiers, email addresses, 'account/acct/a/c number ...' phrasings, IFSC-like tokens, IBAN-like tokens, 16-digit grouped card-like numbers, PAN-like, Aadhaar-like, phone-like, 'A/C No ...' and 'bank account no ...' phrasings, [A-Z]{4}\\d{7}, [A-Z]{2}\\d{6}, and any generic \\b\\d{6,}\\b run) crossing the return of FinancialAgent.invoke to its caller.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "No caller, server, API handler, or chat-UI layer for FinancialAgent.invoke's return value is present in the supplied views; if such a transport layer is supplied, the effect_stratum may need to be re-declared (e.g., http) or split into a separate contract at the delivery commit point.",
+          "Whether invoke's return value is subsequently consumed by another agent tool dispatch downstream is not shown in the supplied views."
+        ],
+        "protected_operation": "Return of the agent's final response content to the caller from FinancialAgent.invoke (the return of output_content at agents/financial/agent.py:142, or the suppressed substitution at line 140).",
+        "protected_resource": "The final agent message content \u2014 result['messages'][-1].content serialized into output_content (agents/financial/agent.py:127-135) \u2014 emitted from invoke.",
+        "protection_obligation": "FinancialAgent.invoke must invoke check_output_guardrails on the serialized final agent message content before returning it to the caller, and must not return content that matches any PII_PATTERNS regex, returning the suppression message instead. (Merges the first-phase and second-phase reviewer wordings, which assert the same mechanism and commit point.)",
+        "scope_limits": [
+          "The forbidden condition is exactly the PII_PATTERNS regex set; indirect or semantic PII disclosure styles prohibited by the system prompt (agent.py:50-52) are not code-detected by this mechanism.",
+          "PII_PATTERNS includes the generic \\b\\d{6,}\\b pattern (guardrails.py:26), so the declared forbidden condition extends to any run of six or more digits, including ordinary financial figures appearing in responses.",
+          "Screening applies only to the string value returned by invoke; message content already written to the LangGraph checkpointer during self.graph.invoke (agent.py:106-107, 126) is outside this guard's commit point.",
+          "List-typed content is serialized by joining per-block text (agent.py:129-133); non-text modalities are outside the screened surface as declared."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "No caller, server, API, or UI layer that invokes FinancialAgent.invoke and consumes its return value is included in the supplied views; the downstream delivery channel for the guarded response is unknown.",
+      "tools/document_tools.py (implementation of retrieve_from_knowledge_base) is not supplied; the retrieval tool's backend effect type (file/database/http) cannot be determined.",
+      "config.py (get_llm, INFERENCE_PROVIDER) is not supplied; the transport of the agent LLM turn (network API vs local) is unknown.",
+      "memory/checkpointer.py (get_sqlite_saver) is not supplied; persistence behavior of graph state \u2014 including whether content that would later be output-suppressed can already be persisted at the checkpointer \u2014 is unresolved.",
+      "Per the stated scope, behavior labels are unavailable and repository enumeration is incomplete; additional guard registrations elsewhere (e.g., agent lifecycle hooks or callback wiring) cannot be ruled in or out from the supplied views."
+    ],
+    "repository": "devidutta-07/Finance-Agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:0685e3480a78b45d37e4be9adba3f749"
+  },
+  "request_sha256": "9a4c8d19abea85921fb37de9ef87a7e7b75ad69cb84740a463e826bcbd17d328",
+  "response_sha256": "eb94ab90bcd96026f57ffef0b20ed50270ed382cd23ab5b21dfa34523424122b",
+  "state": "completed",
+  "tokens": 21618,
+  "unit": "v24-screen:0685e3480a78b45d37e4be9adba3f749"
+}

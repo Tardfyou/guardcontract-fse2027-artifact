@@ -1,0 +1,302 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The in-process dispatch pass-through: booking_phase_guard returning None (booking_agent.py:108) permits the agent runtime to execute the requested FunctionTool; at this contract the guarded effect is the tool invocation itself.",
+        "contract_id": "ecological-contract:0365e58d4a5c7606098126c9f6e923bb",
+        "declared_mechanism": "booking_phase_guard registered as before_tool_callback on the booking_agent LlmAgent; it recomputes the phase via compute_phase(state), builds allowed = PHASE_TOOLS.get(phase, set()) | UNIVERSAL_TOOLS, and returns a blocking result for tool names outside that set.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 117,
+            "line_start": 111,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 101,
+            "line_start": 86,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 54,
+            "line_start": 34,
+            "path": "backend/app/agents/flow.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7b9f35685c31603706225f47e96df842ef1d619f103a1ef9daa0a97e3b58a9c2"
+          },
+          {
+            "line_end": 132,
+            "line_start": 118,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 108,
+            "line_start": 103,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "commit_point",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 132,
+            "line_start": 111,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          }
+        ],
+        "forbidden_condition": "Invocation of any FunctionTool dispatched by booking_agent whose tool.name is not a member of PHASE_TOOLS.get(compute_phase(state)) \u222a UNIVERSAL_TOOLS; the guard computes the phase from tool_context.state and returns a blocking {'result': {'blocked': True, ...}} dict instead of None for such calls.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the deployed google.adk runtime treats any non-None before_tool_callback return as tool suppression (framework semantics not in supplied source).",
+          "Whether all 13 registered tools dispatch exclusively through the LlmAgent tool-calling path intercepted by booking_phase_guard."
+        ],
+        "protected_operation": "Agent-dispatched invocation of the FunctionTools registered on the booking_agent LlmAgent (set_trip_basics_tool through send_invoice_email_tool).",
+        "protected_resource": "The ordered booking-flow tool dispatch surface of booking_agent and the downstream booking-flow effects those tools drive.",
+        "protection_obligation": "The booking_agent must enforce its registered before_tool_callback guard (booking_phase_guard) so that any tool invocation is blocked unless the tool name is in the current phase's allowed set (PHASE_TOOLS[phase] \u222a UNIVERSAL_TOOLS), where the phase is computed in code from explicit session-state slots, preventing out-of-order execution of the deterministic booking flow. (Merges the first- and second-phase reviewer wordings of the same gate.)",
+        "scope_limits": [
+          "Coverage is limited to invocations routed through booking_agent's before_tool_callback; direct calls to the underlying tool functions outside agent dispatch are not evidenced in supplied source.",
+          "That a non-None return from before_tool_callback suppresses tool execution is ADK framework behavior; supplied source shows the blocking dict and the guard's 'blocks tool calls' docstring but not the runtime enforcement.",
+          "The allowed set derives from session-state slots (origin/destination/pax, passengers_submitted, booking_id, payment_status, etc.) that parse_user_message writes from user message text; integrity controls over that state are not shown.",
+          "UNIVERSAL_TOOLS exempts get_booking_tool from phase gating in every phase (flow.py:54).",
+          "Downstream commit points of tools other than process_payment_tool and create_booking_draft_tool are outside supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The per-recipient await send_invoice_and_ticket(booking, email) calls executed in the loop at payment.py:64-67, immediately after the payment DB commit and the payment_status state write.",
+        "contract_id": "ecological-contract:056761b0511323c8eaf106a9977b2edc",
+        "declared_mechanism": "booking_phase_guard before_tool_callback phase/duplicate checks blocking process_payment_tool before its body, and therefore before its embedded email sends, can execute.",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 117,
+            "line_start": 111,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 106,
+            "line_start": 91,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 67,
+            "line_start": 59,
+            "path": "backend/app/agents/tools/payment.py",
+            "role": "protected_operation",
+            "source_sha256": "d83f8f4a3808827bb1d86ae2d5989cd81522ec954b93b6cb6576252a3ddafec4"
+          },
+          {
+            "line_end": 67,
+            "line_start": 63,
+            "path": "backend/app/agents/tools/payment.py",
+            "role": "commit_point",
+            "source_sha256": "d83f8f4a3808827bb1d86ae2d5989cd81522ec954b93b6cb6576252a3ddafec4"
+          },
+          {
+            "line_end": 132,
+            "line_start": 117,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          }
+        ],
+        "forbidden_condition": "Invocation of process_payment_tool when the tool name is outside the current phase's allowed set or when state.get('payment_status') is already set (booking_agent.py:91-106), which would (re)trigger the embedded email-delivery loop.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Implementation of send_invoice_and_ticket (app.services.email_service) to confirm the delivery mechanism and solidify the communication-stratum binding.",
+          "Implementation of send_invoice_email_tool and whether it constitutes a second, separately gated delivery effect.",
+          "Email failure/retry semantics, which would interact with the duplicate-payment gate (a retried payment would resend emails)."
+        ],
+        "protected_operation": "The invoice/ticket email delivery inside process_payment_tool: collecting passenger emails and awaiting send_invoice_and_ticket(booking, email) per recipient (payment.py:59-67).",
+        "protected_resource": "Passenger email recipients receiving invoice and e-ticket emails.",
+        "protection_obligation": "The registered booking_phase_guard's gating of process_payment_tool must also prevent out-of-order and repeated invoice/e-ticket email delivery, which process_payment_tool performs immediately after payment inside the tool body.",
+        "scope_limits": [
+          "The implementation of send_invoice_and_ticket (transport, provider, retry/failure handling) is not in supplied views; this contract binds delivery only to the awaited calls inside the tool body.",
+          "The separately registered send_invoice_email_tool (booking_agent.py:131) is a distinct delivery path whose implementation is not supplied; this contract covers only the sends embedded in process_payment_tool.",
+          "Once the tool executes, emails are sent unconditionally for every passenger email found; the guard's protection is exercised solely at the invocation boundary."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "db.add(payment) followed by booking.status = 'confirmed' and await db.commit() in process_payment (payment_service.py:31-35), persisting the Payment row and confirmed booking status.",
+        "contract_id": "ecological-contract:68b08e6863a8e7cb16ecaf5e65970119",
+        "declared_mechanism": "booking_phase_guard before_tool_callback phase/duplicate checks returning a blocking dict for process_payment_tool when the phase disallows it or state['payment_status'] exists.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 117,
+            "line_start": 111,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 106,
+            "line_start": 91,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 54,
+            "line_start": 36,
+            "path": "backend/app/agents/flow.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7b9f35685c31603706225f47e96df842ef1d619f103a1ef9daa0a97e3b58a9c2"
+          },
+          {
+            "line_end": 54,
+            "line_start": 40,
+            "path": "backend/app/agents/tools/payment.py",
+            "role": "protected_operation",
+            "source_sha256": "d83f8f4a3808827bb1d86ae2d5989cd81522ec954b93b6cb6576252a3ddafec4"
+          },
+          {
+            "line_end": 35,
+            "line_start": 24,
+            "path": "backend/app/services/payment_service.py",
+            "role": "commit_point",
+            "source_sha256": "56dc6d611f2aec8cd4ded4278e860e549d4688a766bb0f1f81a1eebdb62cf595"
+          },
+          {
+            "line_end": 132,
+            "line_start": 117,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 54,
+            "line_start": 53,
+            "path": "backend/app/agents/tools/payment.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "d83f8f4a3808827bb1d86ae2d5989cd81522ec954b93b6cb6576252a3ddafec4"
+          }
+        ],
+        "forbidden_condition": "Invocation of process_payment_tool when tool.name is not in PHASE_TOOLS[phase] \u222a UNIVERSAL_TOOLS (only Phase.PAYMENT lists process_payment_tool, flow.py:49), or when state.get('payment_status') is truthy (booking_agent.py:105-106).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether process_payment is reachable from any non-agent entry point (HTTP route, other service) outside the guarded tool dispatch.",
+          "Whether the state['payment_status'] write (payment.py:57) persists reliably with the session lifecycle so the duplicate guard cannot be bypassed across sessions or after partial failure.",
+          "ADK runtime semantics for before_tool_callback non-None returns (tool suppression)."
+        ],
+        "protected_operation": "Agent-dispatched invocation of FunctionTool(process_payment_tool), which opens a database session and calls process_payment(db, booking_id, method) (payment.py:53-54).",
+        "protected_resource": "Persistent payment records (Payment rows) and booking.status in the application database.",
+        "protection_obligation": "The registered booking_phase_guard must block process_payment_tool invocations outside the PAYMENT phase's allowed set and once state['payment_status'] is already set, preventing out-of-order and duplicate payment persistence (Payment row insert plus booking confirmation) in the database.",
+        "scope_limits": [
+          "Payment processing is simulated in-source ('Always succeeds (simulated)', payment.py:41); the evidenced persistent effect is the local DB commit, not an external gateway charge.",
+          "The duplicate gate keys on state['payment_status'], which process_payment_tool itself writes after the DB commit (payment.py:57); session-state persistence/transactionality across turns is not shown.",
+          "Coverage extends only to invocations through booking_agent's before_tool_callback; other callers of process_payment are not evidenced.",
+          "Coercion of invalid payment methods to credit_card (payment.py:50-51) is generic input validation outside this contract, which addresses ordering/duplication gating only."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "Pass-through return None at booking_agent.py:108 permitting FunctionTool dispatch; the tool's own persistence commit point is not present in supplied source (implementation of create_booking_draft_tool is not supplied), so the bound commit point at this stratum is the invocation-only dispatch.",
+        "contract_id": "ecological-contract:aec3b41fd97c08651bbe9482d7fe6ae3",
+        "declared_mechanism": "Duplicate-call check inside booking_phase_guard (before_tool_callback) returning a blocking dict when tool.name == 'create_booking_draft_tool' and state['booking_id'] is set, layered on the phase allowed-set check.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 117,
+            "line_start": 111,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 104,
+            "line_start": 103,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 54,
+            "line_start": 36,
+            "path": "backend/app/agents/flow.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7b9f35685c31603706225f47e96df842ef1d619f103a1ef9daa0a97e3b58a9c2"
+          },
+          {
+            "line_end": 127,
+            "line_start": 127,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "protected_operation",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 344,
+            "line_start": 337,
+            "path": "backend/app/agents/flow.py",
+            "role": "protected_operation",
+            "source_sha256": "7b9f35685c31603706225f47e96df842ef1d619f103a1ef9daa0a97e3b58a9c2"
+          },
+          {
+            "line_end": 108,
+            "line_start": 103,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "commit_point",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          },
+          {
+            "line_end": 132,
+            "line_start": 117,
+            "path": "backend/app/agents/booking_agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ed25a4845f312fec8fdeaac16515044564cee4a29e62fd5b1d54e4c939617e18"
+          }
+        ],
+        "forbidden_condition": "Invocation of create_booking_draft_tool when state.get('booking_id') is truthy (booking_agent.py:103-104), or when the tool name falls outside the current phase's allowed set \u2014 only Phase.ORDER_SUMMARY lists create_booking_draft_tool (flow.py:48).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Location and content of the create_booking_draft_tool implementation, including its persistence commit point and effect stratum.",
+          "Whether create_booking_draft_tool sets state['booking_id'] (analogous to payment.py:57 for payment_status), on which the duplicate gate depends.",
+          "ADK runtime semantics for before_tool_callback non-None returns (tool suppression)."
+        ],
+        "protected_operation": "Agent-dispatched invocation of FunctionTool(create_booking_draft_tool).",
+        "protected_resource": "The booking-draft creation path and the booking_id slot / persisted booking draft it produces.",
+        "protection_obligation": "The registered booking_phase_guard must block create_booking_draft_tool invocations once state['booking_id'] is already set, and confine it to the ORDER_SUMMARY phase per PHASE_TOOLS, preventing duplicate or out-of-order booking-draft creation.",
+        "scope_limits": [
+          "The body of create_booking_draft_tool is absent from supplied views; whether and where it persists a draft, and whether it writes state['booking_id'] itself, is unknown.",
+          "Coverage extends only to invocations through booking_agent's before_tool_callback; other callers are not evidenced.",
+          "The duplicate key is the session-state slot booking_id; state persistence and transactionality across turns are not shown."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Implementation of create_booking_draft_tool (imported at booking_agent.py:10-17, registered at line 127) is absent from supplied views; its persistence commit point and effect stratum cannot be bound.",
+      "Implementation of send_invoice_and_ticket (imported at payment.py:7) is absent; the email delivery transport and stratum confirmation are unavailable.",
+      "Implementation of send_invoice_email_tool (registered at booking_agent.py:131) is absent; whether it is an independent invoice-delivery effect distinct from the sends inside process_payment_tool is unknown.",
+      "google.adk runtime semantics confirming that a non-None return from before_tool_callback suppresses tool execution are not present in supplied source; only the guard's docstring and blocking-dict return evidence the intent.",
+      "Session-state storage, transactionality, and cross-turn persistence for the duplicate-gate keys booking_id and payment_status are not shown.",
+      "Commit points for the remaining registered tools (set_trip_basics_tool, show_passenger_form_tool, show_date_picker_tool, search_flights_tool, get_flight_details_tool, get_seat_map_tool, hold_seat_tool, show_insurance_tool, get_booking_tool, show_payment_form_tool) are outside supplied views.",
+      "No supplied evidence addresses non-agent entry points (HTTP routes, background jobs) that might invoke process_payment, booking-draft creation, or email sending outside the guarded tool dispatch."
+    ],
+    "repository": "lontonggg/travel-ai-assistant",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b50c28f2cdc8b292cf6c23eb1da069e4"
+  },
+  "request_sha256": "14c0bbf83cd3caf8696b43967ec33b1270bed9d48f248483fa4241e3b17d4c40",
+  "response_sha256": "4a09387316269933fedff05c91b3fc02d605d98ed6c7bf1e37bffc35ea2db9b6",
+  "state": "completed",
+  "tokens": 29068,
+  "unit": "v24-screen:b50c28f2cdc8b292cf6c23eb1da069e4"
+}

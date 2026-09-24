@@ -1,0 +1,135 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "run_command_sync(command, root) invoked at execute.py:50, whose subprocess.run(command, shell=True, cwd=str(root), capture_output=True, text=True, timeout=...) at execute.py:15-22 spawns the shell process.",
+        "contract_id": "ecological-contract:9ef65dac97f10e2b6444501638aa4b1a",
+        "declared_mechanism": "Pre-commit approval gate inside the run_command wrapper (execute.py:44-47): unless auto_approve is true, it calls request_approval(command) and, if the callback is absent or returns false, returns the refusal string \"Command was not approved by the user and did not run: {command}\" before run_command_sync is reached (fail-closed on a missing callback). The request_approval callback is supplied as backend main.py's on_command_approval (main.py:764-778), which pauses the run, broadcasts a 'command_approval' event, and blocks the worker thread on a threading.Event until POST /graphs/{graph_id}/run/{run_id}/command-approval (main.py:1033-1040) sets entry['approved'] (initialized False) and releases the event. Human approval is opt-out only via the explicit auto_approve_commands flag, default False in RunOptions (main.py:921-927), accepted by the run/redo/continue-from endpoints and threaded into run_graph (main.py:859) and into the tool build via get_crewai_tools' auto_approve_commands parameter (registry.py:73, 93).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 39,
+            "line_start": 34,
+            "path": "toru_agents/tools/builtin/execute.py",
+            "role": "guard_registration",
+            "source_sha256": "3b6b048bab264b425380c8616f34873b56243adeeb1269f405ef89de5de05e63"
+          },
+          {
+            "line_end": 43,
+            "line_start": 40,
+            "path": "toru_agents/tools/builtin/execute.py",
+            "role": "protected_operation",
+            "source_sha256": "3b6b048bab264b425380c8616f34873b56243adeeb1269f405ef89de5de05e63"
+          },
+          {
+            "line_end": 47,
+            "line_start": 44,
+            "path": "toru_agents/tools/builtin/execute.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3b6b048bab264b425380c8616f34873b56243adeeb1269f405ef89de5de05e63"
+          },
+          {
+            "line_end": 51,
+            "line_start": 48,
+            "path": "toru_agents/tools/builtin/execute.py",
+            "role": "commit_point",
+            "source_sha256": "3b6b048bab264b425380c8616f34873b56243adeeb1269f405ef89de5de05e63"
+          },
+          {
+            "line_end": 22,
+            "line_start": 10,
+            "path": "toru_agents/tools/builtin/execute.py",
+            "role": "commit_point",
+            "source_sha256": "3b6b048bab264b425380c8616f34873b56243adeeb1269f405ef89de5de05e63"
+          },
+          {
+            "line_end": 42,
+            "line_start": 37,
+            "path": "toru_agents/tools/registry.py",
+            "role": "guard_registration",
+            "source_sha256": "313506b6319f9015b11cc6e35a12925699b4d7632adf70bdbb27e90eabab633f"
+          },
+          {
+            "line_end": 75,
+            "line_start": 68,
+            "path": "toru_agents/tools/registry.py",
+            "role": "guard_registration",
+            "source_sha256": "313506b6319f9015b11cc6e35a12925699b4d7632adf70bdbb27e90eabab633f"
+          },
+          {
+            "line_end": 95,
+            "line_start": 90,
+            "path": "toru_agents/tools/registry.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "313506b6319f9015b11cc6e35a12925699b4d7632adf70bdbb27e90eabab633f"
+          },
+          {
+            "line_end": 778,
+            "line_start": 764,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "0d9955f4d0841f9a252c8ccfb5d50e8e190108c270b6bed348acc848497a7bfb"
+          },
+          {
+            "line_end": 1040,
+            "line_start": 1029,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "0d9955f4d0841f9a252c8ccfb5d50e8e190108c270b6bed348acc848497a7bfb"
+          },
+          {
+            "line_end": 867,
+            "line_start": 848,
+            "path": "backend/main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "0d9955f4d0841f9a252c8ccfb5d50e8e190108c270b6bed348acc848497a7bfb"
+          },
+          {
+            "line_end": 942,
+            "line_start": 921,
+            "path": "backend/main.py",
+            "role": "guard_registration",
+            "source_sha256": "0d9955f4d0841f9a252c8ccfb5d50e8e190108c270b6bed348acc848497a7bfb"
+          }
+        ],
+        "forbidden_condition": "run_command invoking run_command_sync (and thereby subprocess.run with shell=True) for a command when the run was not started with auto_approve_commands and no human approval for that exact command has been delivered through the command-approval bridge \u2014 including the case where no approval callback is present, in which the tool must refuse rather than execute.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "toru_agents/crew_engine.py (the run_graph implementation) is not in the supplied views: the internal call site linking run_graph's on_command_approval / auto_approve_commands parameters to get_crewai_tools' request_command_approval / auto_approve_commands (and thus to build_run_command_tool) is not directly evidenced.",
+          "Whether the 'deterministic compile_check node' mentioned in run_command_sync's docstring (execute.py:12-13) exists in supplied flows and whether it executes commands without approval cannot be assessed from the provided source.",
+          "resolve_command_approval (main.py:1033-1040) resolves pending entries by run_id only and does not verify that the path's graph_id matches the pending run's graph; whether decisions are scoped to the intended graph is not established.",
+          "The identity/authentication of the human resolving an approval at /command-approval is not established in the supplied source; the obligation says 'a human approves' but no approver-binding fact is evidenced.",
+          "Whether shipped agent configurations actually include run_command in their tool lists (prevalence) is unknown; behavior labels are unavailable per the unit scope."
+        ],
+        "protected_operation": "Invocation of the run_command agent tool by the agent to execute a shell command inside the workspace sandbox.",
+        "protected_resource": "OS shell/process execution scoped to the agent's workspace sandbox root (subprocess.run(command, shell=True, cwd=str(root), ...) in run_command_sync).",
+        "protection_obligation": "Agent-initiated shell commands submitted through the run_command tool must not be executed (run_command_sync / subprocess.run on the workspace sandbox root) until a human approves the exact command via the command-approval bridge, unless the run was explicitly started with auto_approve_commands.",
+        "scope_limits": [
+          "Explicit bypass: a run started with auto_approve_commands=True skips the approval gate entirely (execute.py:44); the flag defaults to False (main.py:921-922) but is accepted by /graphs/{graph_id}/run, /redo, and /chats/{chat_id}/continue-from/{step_index} (main.py:937, 978, 1014).",
+          "The guard is enforced only in the run_command tool wrapper; run_command_sync is shared and itself unguarded (its docstring at execute.py:12-13 says it is 'Shared by the run_command tool and the deterministic compile_check node'), so any other caller of run_command_sync is outside this contract.",
+          "Fail-closed but availability-dependent: with request_approval=None and auto_approve false, the tool refuses to run (execute.py:45); the ability to obtain human approval (not merely refusal) depends on a callback actually being wired in.",
+          "Approval binds to the exact command string passed to request_approval; no canonicalization or normalization of the command occurs before the human decision.",
+          "Coverage is limited to the supplied source views; no claim is made about runtime behavior, safety outcome, or prevalence."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "toru_agents/crew_engine.py (run_graph body) is not among the supplied views, so the concrete hand-off of on_command_approval/auto_approve_commands from run_graph into get_crewai_tools/build_run_command_tool is inferred from parameter wiring at the supplied boundaries only.",
+      "No behavior labels or prevalence data are supplied for this unit; whether run_command is actually enabled in shipped agent configurations is unknown.",
+      "The 'deterministic compile_check node' referenced as another run_command_sync caller (execute.py:12-13) is not present in the supplied views; its approval status cannot be evaluated.",
+      "No supplied evidence establishes approver identity/authentication for the /command-approval decision endpoint (main.py:1033-1040) or graph_id/run_id consistency checking beyond the run_id lookup."
+    ],
+    "repository": "Toru8P/ToruAgents",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:ba159f2d0c6af8eadad14030d8409750"
+  },
+  "request_sha256": "5a08787e7dec4fecd28cb1c1529931cdbb896563d09cfc0624f249e83d8f9fd8",
+  "response_sha256": "212bc5c0efaf5438fd07318d6f2704f3451046211a2f0e654247f4406ad0c819",
+  "state": "completed",
+  "tokens": 25406,
+  "unit": "v24-screen:ba159f2d0c6af8eadad14030d8409750"
+}

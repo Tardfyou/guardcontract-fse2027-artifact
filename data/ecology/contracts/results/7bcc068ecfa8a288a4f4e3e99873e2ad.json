@@ -1,0 +1,162 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "snapshot.reference.update(update_payload, option=self._write_option_for_snapshot(snapshot)) inside _update_research_job_if_owned_sync (backend/database_modules/jobs.py:328-333); worker-side abort boundary at the ResearchOwnershipLostError raises (e.g., backend/research_worker.py:169-172, 248-251).",
+        "contract_id": "ecological-contract:175e9a534e1e215f3a1283158a4b80ec",
+        "declared_mechanism": "_update_research_job_if_owned_sync: up to _OWNED_JOB_WRITE_MAX_ATTEMPTS (4) cycles of snapshot get, _owned_job_snapshot_matches (normalized workerId equality plus allowed-status membership), then conditional update with write_option(last_update_time) / exists=True, swallowing only Firestore race errors and otherwise raising; all supplied worker callers pass expected_worker_id=self._worker_id with allowed_statuses={'running'} and raise ResearchOwnershipLostError on a False result, and the heartbeat loop's ownership failure cancels the execution task via the asyncio.wait FIRST_COMPLETED handling.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 352,
+            "line_start": 306,
+            "path": "backend/database_modules/jobs.py",
+            "role": "guard_registration",
+            "source_sha256": "6c3570b27335601183ed3d872a37ef71e0b84c7150e67ce937a7252207a1f2be"
+          },
+          {
+            "line_end": 221,
+            "line_start": 203,
+            "path": "backend/database_modules/jobs.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6c3570b27335601183ed3d872a37ef71e0b84c7150e67ce937a7252207a1f2be"
+          },
+          {
+            "line_end": 336,
+            "line_start": 328,
+            "path": "backend/database_modules/jobs.py",
+            "role": "commit_point",
+            "source_sha256": "6c3570b27335601183ed3d872a37ef71e0b84c7150e67ce937a7252207a1f2be"
+          },
+          {
+            "line_end": 530,
+            "line_start": 505,
+            "path": "backend/database_modules/jobs.py",
+            "role": "guard_registration",
+            "source_sha256": "6c3570b27335601183ed3d872a37ef71e0b84c7150e67ce937a7252207a1f2be"
+          },
+          {
+            "line_end": 135,
+            "line_start": 117,
+            "path": "backend/research_worker.py",
+            "role": "guard_registration",
+            "source_sha256": "8ce03bf4a0cd8cebf506b0fdb48f547d07addd9210f93a298f58f4459616a694"
+          },
+          {
+            "line_end": 172,
+            "line_start": 162,
+            "path": "backend/research_worker.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8ce03bf4a0cd8cebf506b0fdb48f547d07addd9210f93a298f58f4459616a694"
+          },
+          {
+            "line_end": 256,
+            "line_start": 243,
+            "path": "backend/research_worker.py",
+            "role": "protected_operation",
+            "source_sha256": "8ce03bf4a0cd8cebf506b0fdb48f547d07addd9210f93a298f58f4459616a694"
+          }
+        ],
+        "forbidden_condition": "Any research_jobs mutation committing when the snapshot's workerId differs from expected_worker_id, the status is outside the allowed set ('running'), the document no longer exists, or the document changed since the snapshot read (write option rejected); and any worker continuing processing, checkpointing, or terminal/requeue writes after an ownership check returns False.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether the _progress/_checkpoint callbacks wired into ResearchGraph.run_resumable (backend/research_worker.py:77-82 and 213-219) constitute agent lifecycle hooks binding these guarded writes to agent execution; the ResearchGraph source is not supplied, so agent_mediation remains not_established.",
+          "Whether in-graph effects performed during research execution (e.g., message persistence, browsing) carry equivalent ownership guards is not determinable from supplied source."
+        ],
+        "protected_operation": "Owned research-job state transitions: update_research_job_progress, update_research_job_checkpoint, mark_research_job_completed, mark_research_job_failed, requeue_research_job, and heartbeat_research_job, each invoked with expected_worker_id set to the claiming worker's id.",
+        "protected_resource": "Firestore 'research_jobs' collection documents (status, workerId, leaseExpiresAt, lastHeartbeatAt, graphState, resumeFromNode, resultText, error fields).",
+        "protection_obligation": "After a claim, a worker may mutate a Firestore research_jobs document (progress update, checkpoint, completion, failure, requeue, heartbeat) only if a freshly read snapshot matches the worker's own workerId and status 'running' (whenever expected_worker_id is supplied), committing exclusively via a preconditioned Firestore update keyed on the snapshot's last_update_time; the worker must treat a failed owned-update as loss of ownership, raise ResearchOwnershipLostError, and stop issuing further job-level effects (including cancelling the running execution).",
+        "scope_limits": [
+          "The status restriction is applied only when expected_worker_id is not None (allowed_statuses={'running'}); the database layer accepts None, so the guarantee depends on caller discipline \u2014 all supplied research-job callers pass self._worker_id.",
+          "Covers research_jobs documents only; pdf_processing_jobs completion/failure/requeue writes (backend/database_modules/jobs.py:887-969) are unconditional updates and are excluded.",
+          "Session task mirror writes (set_user_session_active_task_status, clear_user_session_active_task_if_matches) are invoked by the worker but their implementations are not supplied; their preconditioning is not covered by this contract.",
+          "Worker-side enforcement stops further job-level writes; it does not govern effects already emitted inside ResearchGraph execution."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "snapshot.reference.update(update_payload, option=self._write_option_for_snapshot(snapshot)) inside _update_snapshot_if_unchanged_sync (backend/database_modules/jobs.py:193-196), reached from the claim path at backend/database_modules/jobs.py:299-300.",
+        "contract_id": "ecological-contract:cc2b7b8e841736cb928e560d067e5235",
+        "declared_mechanism": "_claim_research_job_document_sync state preconditions (queued-and-due or running-but-stale via _is_research_job_running_stale, with _is_firestore_write_race classifying contention) combined with _update_snapshot_if_unchanged_sync, which commits only through snapshot.reference.update with write_option(last_update_time) or write_option(exists=True) and returns False on race errors so the claim is skipped.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 304,
+            "line_start": 251,
+            "path": "backend/database_modules/jobs.py",
+            "role": "guard_registration",
+            "source_sha256": "6c3570b27335601183ed3d872a37ef71e0b84c7150e67ce937a7252207a1f2be"
+          },
+          {
+            "line_end": 282,
+            "line_start": 270,
+            "path": "backend/database_modules/jobs.py",
+            "role": "forbidden_condition",
+            "source_sha256": "6c3570b27335601183ed3d872a37ef71e0b84c7150e67ce937a7252207a1f2be"
+          },
+          {
+            "line_end": 393,
+            "line_start": 371,
+            "path": "backend/database_modules/jobs.py",
+            "role": "guard_registration",
+            "source_sha256": "6c3570b27335601183ed3d872a37ef71e0b84c7150e67ce937a7252207a1f2be"
+          },
+          {
+            "line_end": 201,
+            "line_start": 179,
+            "path": "backend/database_modules/jobs.py",
+            "role": "commit_point",
+            "source_sha256": "6c3570b27335601183ed3d872a37ef71e0b84c7150e67ce937a7252207a1f2be"
+          },
+          {
+            "line_end": 371,
+            "line_start": 361,
+            "path": "backend/research_worker.py",
+            "role": "protected_operation",
+            "source_sha256": "8ce03bf4a0cd8cebf506b0fdb48f547d07addd9210f93a298f58f4459616a694"
+          }
+        ],
+        "forbidden_condition": "A claim write to a research_jobs document committing when the document does not exist, is not in a claimable state (queued but nextRunAt in the future, running but not stale per lease/heartbeat timeouts, or any other status), or has changed since the snapshot read such that the preconditioned write option is rejected \u2014 i.e., two workers ending up owning the same job's running lease.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether ResearchBackgroundWorker (run_forever polling/claiming) is registered, scheduled, or dispatched by any agent component; no decorator, registration, tool dispatch, or agent dataflow binding the claim effect to an agent appears in supplied source.",
+          "Startup/deployment wiring that invokes run_forever is not shown in the supplied views."
+        ],
+        "protected_operation": "Claiming research_jobs documents during worker polling via claim_research_jobs / _claim_research_jobs_sync / _claim_research_job_document_sync.",
+        "protected_resource": "Firestore 'research_jobs' collection documents (lease/ownership fields: status, workerId, leaseExpiresAt, lastHeartbeatAt, nextRunAt, updatedAt).",
+        "protection_obligation": "A research worker may claim a Firestore research_jobs document (transition it to status 'running' with its own workerId and lease fields) only when the document is currently claimable \u2014 status 'queued' with nextRunAt due, or status 'running' whose lease/heartbeat is stale \u2014 and the claim must commit exclusively through a conditional Firestore update carrying the snapshot's last_update_time write option (exists=True fallback), so that a lost race or concurrently mutated document aborts the claim instead of granting a second owner.",
+        "scope_limits": [
+          "Limited to Firestore research_jobs documents; the pdf_processing_jobs claim path commits an unconditional update with no lease precondition (backend/database_modules/jobs.py:855-865) and is excluded from this contract.",
+          "Covers acquisition-time document state only; continued-ownership enforcement during job execution is covered by the separate owned-mutation contract.",
+          "Correctness assumes Firestore server-side enforcement of last_update_time/exists write options; that semantics is inferred from client usage in supplied source and is not independently verifiable here.",
+          "No authentication, HTTP-layer, or user-authorization obligations are included in this contract."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Reviewer obligation 1 (401 rejection via the get_current_user dependency plus per-session 403/404 ownership checks on chat/session routes) is ordinary web authentication/authorization; the supplied source contains no decorator, registration, tool dispatch, or concrete dataflow binding these HTTP routes or their guarded database effects to an agent tool, an agent lifecycle hook, or agent-generated input, so no contract was compiled for it under the stated scope rule.",
+      "backend/agent.py (Agent, build_research_handoff_context) is not supplied; whether model- or agent-generated handoff content flows into guarded effects such as enqueue_research_job (backend/api/routes/chat_modules/messages.py:175-183) cannot be established.",
+      "The ResearchGraph implementation (graph modules) is not supplied; whether the progress/checkpoint callbacks execute inside an agent loop with tool dispatch cannot be verified, leaving agent_mediation not_established for the research_jobs lease contracts.",
+      "The task-status and feedback endpoints named in reviewer obligation 1 do not appear in the supplied source views, so no evidence exists for them.",
+      "Implementations of set_user_session_active_task, set_user_session_active_task_status, and clear_user_session_active_task_if_matches are not supplied; any ownership preconditioning of those session-state writes is unverifiable.",
+      "pdf_processing_jobs lifecycle writes (claim at backend/database_modules/jobs.py:855-865; completion/failure/requeue at 887-969) commit unconditional updates with no lease precondition; no reviewer obligation covers them and none was compiled."
+    ],
+    "repository": "nabhpatodi10/Research-AI",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:7bcc068ecfa8a288a4f4e3e99873e2ad"
+  },
+  "request_sha256": "4ebf7327ef17c570a21dcda8eb787a3d1e8e892ba846dc5ba4b1a20fbe5d5fe8",
+  "response_sha256": "9217ee848e0c934e473d47f5f20d78de6bf25579041ce329e8a4c6d5f4da512d",
+  "state": "completed",
+  "tokens": 39726,
+  "unit": "v24-screen:7bcc068ecfa8a288a4f4e3e99873e2ad"
+}

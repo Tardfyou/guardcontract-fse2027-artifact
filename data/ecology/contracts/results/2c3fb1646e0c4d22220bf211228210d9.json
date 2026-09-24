@@ -1,0 +1,100 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "cursor.execute(clean_query) at src/text2sql/db.py:50, inside DatabaseManager.run_query.",
+        "contract_id": "ecological-contract:acbe8980b0df0675e968b79310ecb601",
+        "declared_mechanism": "Application-level SELECT-prefix guard inside DatabaseManager.run_query: the query is stripped (db.py:44) and, if not clean_query.upper().startswith(\"SELECT\"), run_query returns \"Erro: Apenas consultas de leitura (SELECT) s\u00e3o permitidas.\" (db.py:45-46) before any execution, so cursor.execute(clean_query) (db.py:50) is not reached for non-SELECT text. Downstream, the agent tool run_sql_query converts any 'Erro'-prefixed result into a ModelRetry (agent.py:60-61) within the agent's retry budget (agent.py:18).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 46,
+            "line_start": 43,
+            "path": "src/text2sql/db.py",
+            "role": "guard_registration",
+            "source_sha256": "3305fcab280456df64e25622323813cbe5370e5f13c21f94da8ccdaef9fc4959"
+          },
+          {
+            "line_end": 50,
+            "line_start": 48,
+            "path": "src/text2sql/db.py",
+            "role": "commit_point",
+            "source_sha256": "3305fcab280456df64e25622323813cbe5370e5f13c21f94da8ccdaef9fc4959"
+          },
+          {
+            "line_end": 41,
+            "line_start": 40,
+            "path": "src/text2sql/db.py",
+            "role": "protected_operation",
+            "source_sha256": "3305fcab280456df64e25622323813cbe5370e5f13c21f94da8ccdaef9fc4959"
+          },
+          {
+            "line_end": 17,
+            "line_start": 9,
+            "path": "src/text2sql/db.py",
+            "role": "protected_operation",
+            "source_sha256": "3305fcab280456df64e25622323813cbe5370e5f13c21f94da8ccdaef9fc4959"
+          },
+          {
+            "line_end": 63,
+            "line_start": 52,
+            "path": "src/text2sql/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "2d9212e9422f6be640010076a5ec1016833209a27e439c44cd1e08b4bb6a13ee"
+          },
+          {
+            "line_end": 56,
+            "line_start": 41,
+            "path": "app.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "f24da52916a8d60fa21dc6dbe967811e294cb111601365fd1136ec3875db083f"
+          },
+          {
+            "line_end": 47,
+            "line_start": 32,
+            "path": "main.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e92c2b61fd0e63d8ee26eee8ead5651cfb84df1b72a42892ad375902ea25a6d4"
+          }
+        ],
+        "forbidden_condition": "Execution of a SQL statement that is not a read-only SELECT query \u2014 i.e., whose stripped, uppercased text does not begin with 'SELECT' (for example INSERT, UPDATE, DELETE, or DDL) \u2014 reaching the cursor.execute sink.",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Whether DatabaseManager.run_query has any additional callers or entrypoints outside the supplied views (repository enumeration incomplete).",
+          "Whether the intended read-only guarantee must extend beyond the startswith('SELECT') prefix check (e.g., statements beginning with SELECT that embed other constructs, or multiple statements); the source specifies no coverage beyond the prefix test.",
+          "Whether any database-level read-only enforcement exists outside the supplied source; the shown connection is sqlite3.connect(db_path, check_same_thread=False) with no read-only mode argument (db.py:16).",
+          "Whether the ModelRetry-on-error behavior (agent.py:60-61) is an intended part of the enforcement design or merely error surfacing to the model."
+        ],
+        "protected_operation": "Execution of SQL statements against the SQLite database via DatabaseManager.run_query / cursor.execute, on the path reached from the agent tool run_sql_query.",
+        "protected_resource": "The SQLite database file banco.db, accessed through the sqlite3 connection held by DatabaseManager (opened at src/text2sql/db.py:16 and instantiated as DatabaseManager(\"banco.db\") at app.py:24 and main.py:19).",
+        "protection_obligation": "DatabaseManager.run_query must reject any SQL whose stripped text does not start with SELECT \u2014 returning an error string instead of executing it \u2014 before any statement reaches cursor.execute on the SQLite connection to banco.db, so that queries invoked by the agent through the run_sql_query tool remain read-only against the database. (Merged from both reviewer opinions, which state the same obligation.)",
+        "scope_limits": [
+          "Hypothesis compilation only: no determination of DEC violation, safety, runtime behavior, or prevalence is made.",
+          "Scope is limited to the supplied line-numbered source views; repository enumeration is not complete and behavior labels are unavailable.",
+          "The declared guard is exactly the application-level SELECT-prefix check shown at db.py:44-46; no database-level or other enforcement is asserted by this contract.",
+          "The contract covers the run_query path invoked from the agent tool run_sql_query; in the supplied views run_query has no other caller, and list_tables/describe_table (db.py:19-30) execute their own fixed SQL outside this guard."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No evidence in the supplied views of database-level read-only enforcement; the only evidenced mechanism is the application-level SELECT prefix check in run_query (db.py:44-46), with the connection opened via sqlite3.connect(db_path, check_same_thread=False) and no mode argument (db.py:16).",
+      "Caller inventory for DatabaseManager.run_query beyond the supplied views is unknown; repository enumeration is not complete.",
+      "Behavior labels are unavailable, so runtime sufficiency of the prefix guard cannot be assessed from the supplied source.",
+      "Whether the SELECT-prefix check is intended to cover constructs beyond a leading SELECT keyword is unspecified in the supplied source."
+    ],
+    "repository": "luizatrigueiro/Rocket-Lab-26.1-GenAI",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:2c3fb1646e0c4d22220bf211228210d9"
+  },
+  "request_sha256": "4d5b45a60feb4d432860f4257483f657c9d540dc15827b43bdef24c71f22c15e",
+  "response_sha256": "d13b53b8d1d4b4f62ad101d3e95c21e86095fbe4675d031772a43130aa1e7a75",
+  "state": "completed",
+  "tokens": 9564,
+  "unit": "v24-screen:2c3fb1646e0c4d22220bf211228210d9"
+}

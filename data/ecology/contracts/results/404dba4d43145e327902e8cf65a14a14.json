@@ -1,0 +1,284 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "web/backend/runner.py:1160-1188 \u2014 the short-circuit branch replaces the crew result with the synthetic override (result = _Result with pydantic=override); the substituted decision is then the sole proposal committed at runner.py:1307-1313 via portfolio_decision_to_action_proposal \u2192 _run_execution_pipeline \u2192 _record_episode.",
+        "contract_id": "ecological-contract:7603a681bdcd61b713f8578389c963ca",
+        "declared_mechanism": "_run_cascade_controller runs detect_regime over 252 days of OHLCV before kickoff and sets route='CRISIS_OVERRIDE' on Regime.CRISIS; _run_blocking branches on short_circuited to skip crew.kickoff, emit skipped node_completed events, build the override via _crisis_override_decision, emit final_decision with source='cascade_override', and wrap the override in a _Result (pydantic=override) as the only downstream decision.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 655,
+            "line_start": 637,
+            "path": "web/backend/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "85363acaae75dded8382ca9cd449c87d74325ed92d556920bf6b38adb677e33a"
+          },
+          {
+            "line_end": 690,
+            "line_start": 683,
+            "path": "web/backend/runner.py",
+            "role": "guard_registration",
+            "source_sha256": "85363acaae75dded8382ca9cd449c87d74325ed92d556920bf6b38adb677e33a"
+          },
+          {
+            "line_end": 707,
+            "line_start": 701,
+            "path": "web/backend/runner.py",
+            "role": "forbidden_condition",
+            "source_sha256": "85363acaae75dded8382ca9cd449c87d74325ed92d556920bf6b38adb677e33a"
+          },
+          {
+            "line_end": 1188,
+            "line_start": 1160,
+            "path": "web/backend/runner.py",
+            "role": "commit_point",
+            "source_sha256": "85363acaae75dded8382ca9cd449c87d74325ed92d556920bf6b38adb677e33a"
+          },
+          {
+            "line_end": 1207,
+            "line_start": 1202,
+            "path": "web/backend/runner.py",
+            "role": "protected_operation",
+            "source_sha256": "85363acaae75dded8382ca9cd449c87d74325ed92d556920bf6b38adb677e33a"
+          },
+          {
+            "line_end": 1313,
+            "line_start": 1307,
+            "path": "web/backend/runner.py",
+            "role": "commit_point",
+            "source_sha256": "85363acaae75dded8382ca9cd449c87d74325ed92d556920bf6b38adb677e33a"
+          },
+          {
+            "line_end": 1203,
+            "line_start": 1203,
+            "path": "web/backend/runner.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "85363acaae75dded8382ca9cd449c87d74325ed92d556920bf6b38adb677e33a"
+          },
+          {
+            "line_end": 1231,
+            "line_start": 1231,
+            "path": "web/backend/runner.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "85363acaae75dded8382ca9cd449c87d74325ed92d556920bf6b38adb677e33a"
+          }
+        ],
+        "forbidden_condition": "A crew-debate (LLM) generated PortfolioDecision driving the M1\u2192M2 execution pipeline while the pre-kickoff regime detector has classified the market as CRISIS (route CRISIS_OVERRIDE); the override rationale declares debate is skipped 'to prevent the LLM ensemble from rationalising into a contrarian trade against broken microstructure'.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "trading_crew/agentic/bridge.py and trading_crew/agentic/execution/pipeline.py are not in supplied source; the committed effect of run_pipeline (persist=True \u2014 sizing, fills, portfolio-state persistence) cannot be classified beyond the in-process decision/state handoff shown in the runner.",
+          "Whether the RISK_ONLY / RISK_HEAVY routes alter kickoff behavior elsewhere is not established by supplied source."
+        ],
+        "protected_operation": "The decision-to-proposal flow: crew.kickoff debate output \u2192 portfolio_decision_to_action_proposal (M1 bridge) \u2192 run_pipeline sizing/execution and _record_episode.",
+        "protected_resource": "The deterministic execution pipeline's proposal input and the resulting sizing/order state during CRISIS regime.",
+        "protection_obligation": "When the pre-kickoff cascade controller classifies the market regime as CRISIS, the analysis runner must short-circuit the multi-agent debate (crew.kickoff is skipped) and substitute a synthetic zero-size HOLD PortfolioDecision (action=HOLD, confidence=0.0, size_pct_of_book=0.0) as the sole result fed into the M1 bridge and deterministic M1\u2192M2 execution pipeline, so no order can be generated or sized from LLM debate during crisis conditions; the audit pipeline (risk gate, simulator, episodic-memory record) still runs on the override.",
+        "scope_limits": [
+          "Fires only on an explicit Regime.CRISIS classification; detector failure or unavailable OHLCV falls back to route FULL_DEBATE (runner.py:645-679), i.e. failure-open with respect to this guard.",
+          "Applies only in the web UI runner path (AnalysisRunner._run_blocking); direct TradingCrew(...).crew().kickoff() callers are not covered.",
+          "Routes RISK_ONLY (HIGH_VOL_RANGE) and RISK_HEAVY (HIGH_VOL/HIGH_VOL_TREND) are labelled by the controller, but no short-circuit branch for them is present in the supplied _run_blocking code.",
+          "The override decision bypasses the PM task and thus the confidence_guardrail; it is constructed directly to HOLD/0.0 by _crisis_override_decision.",
+          "The critic pass is intentionally skipped on cascade override (runner.py raises 'skip critic on cascade override'); stop normalization and the M1 pipeline still run on the override."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "web/backend/rlmf_runner.py:395-400 \u2014 worker thread construction, `with _LORA_LOCK: _LORA_JOB = job`, thread.start(), and snapshot return; a start is committed only after the lock-guarded running-job check has passed.",
+        "contract_id": "ecological-contract:cead4cdd47bdafd79d235de55b5c696a",
+        "declared_mechanism": "A threading.RLock (_LORA_LOCK) serializes a check of the module-level _LORA_JOB registry: raise ValueError('A fine-tune is already running (job ...). Stop it before starting another.') when status == 'running'; the new job is registered under the same lock immediately before thread.start().",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 1294,
+            "line_start": 1268,
+            "path": "web/backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "eb30acf6954428bcf31175422a1e265265da80dbf4ef8fb64987be8765db7b13"
+          },
+          {
+            "line_end": 297,
+            "line_start": 296,
+            "path": "web/backend/rlmf_runner.py",
+            "role": "guard_registration",
+            "source_sha256": "71e5ab11e2e019776bc0147ae88e5c71ffc95b298e69eea588da2e64a5ca8d6f"
+          },
+          {
+            "line_end": 317,
+            "line_start": 312,
+            "path": "web/backend/rlmf_runner.py",
+            "role": "forbidden_condition",
+            "source_sha256": "71e5ab11e2e019776bc0147ae88e5c71ffc95b298e69eea588da2e64a5ca8d6f"
+          },
+          {
+            "line_end": 328,
+            "line_start": 323,
+            "path": "web/backend/rlmf_runner.py",
+            "role": "guard_registration",
+            "source_sha256": "71e5ab11e2e019776bc0147ae88e5c71ffc95b298e69eea588da2e64a5ca8d6f"
+          },
+          {
+            "line_end": 400,
+            "line_start": 395,
+            "path": "web/backend/rlmf_runner.py",
+            "role": "commit_point",
+            "source_sha256": "71e5ab11e2e019776bc0147ae88e5c71ffc95b298e69eea588da2e64a5ca8d6f"
+          }
+        ],
+        "forbidden_condition": "Starting a LoRA fine-tune when _LORA_JOB is not None and _LORA_JOB.status == 'running' \u2014 a second concurrent fine-tune; the declared rule is 'Single-tenant: refuses to start when a fine-tune is already running (one GPU, one job)'.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The running-job check (rlmf_runner.py:323-328) and the _LORA_JOB assignment for the new job (rlmf_runner.py:397-398) occur in two separate _LORA_LOCK acquisitions; supplied source does not establish that check-and-register is atomic against concurrent starts.",
+          "trading_crew/agentic/rlmf_lora.run_finetune (the fine-tune body executed by the worker) is not in supplied source, so the downstream committed effects of an accepted job (adapter file writes, GPU use) cannot be classified."
+        ],
+        "protected_operation": "start_lora_training invocation via POST /api/training/rlmf/lora/start \u2014 exporting the RLMF dataset and launching the background fine-tune worker thread.",
+        "protected_resource": "The process-wide single LoRA fine-tune job slot (the _LORA_LOCK / _LORA_JOB registry backing GPU fine-tune capacity).",
+        "protection_obligation": "Background LoRA fine-tune starts must be single-tenant ('one GPU, one job'): start_lora_training must refuse to launch a second LoRA fine-tune while one is already running, rejecting the start with ValueError (surfaced as HTTP 400 by the /api/training/rlmf/lora/start handler) under the _LORA_LOCK guard before any new worker thread is created or registered as the active job.",
+        "scope_limits": [
+          "Operator-triggered via the HTTP control endpoint; supplied source binds it to no agent tool, agent lifecycle hook, or agent-generated input path.",
+          "Covers only the LoRA fine-tune registry; vLLM serving (start_server / _SERVER lock) and RL training jobs use separate registries not guarded by _LORA_LOCK.",
+          "Refusal triggers only on status == 'running'; completed, stopped, or failed jobs allow a new start."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "web/backend/session_manager.py:225-226 \u2014 `del self._sessions[run_id]` followed by return True; the eviction commits only after the terminal-status check passes.",
+        "contract_id": "ecological-contract:d24a0500d82a0e5b8010174ad010e34d",
+        "declared_mechanism": "SessionManager.remove checks session.status against TERMINAL_STATUSES = {COMPLETED, ERROR, CANCELLED} and returns False otherwise; the FastAPI handler maps a False return from sm.remove to HTTPException 409.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 219,
+            "line_start": 217,
+            "path": "web/backend/session_manager.py",
+            "role": "forbidden_condition",
+            "source_sha256": "00b0bf725daace61782e2ded634310b7bcee73b4b17800bae408874e4a142ef2"
+          },
+          {
+            "line_end": 224,
+            "line_start": 220,
+            "path": "web/backend/session_manager.py",
+            "role": "guard_registration",
+            "source_sha256": "00b0bf725daace61782e2ded634310b7bcee73b4b17800bae408874e4a142ef2"
+          },
+          {
+            "line_end": 226,
+            "line_start": 225,
+            "path": "web/backend/session_manager.py",
+            "role": "commit_point",
+            "source_sha256": "00b0bf725daace61782e2ded634310b7bcee73b4b17800bae408874e4a142ef2"
+          },
+          {
+            "line_end": 1555,
+            "line_start": 1543,
+            "path": "web/backend/app.py",
+            "role": "protected_operation",
+            "source_sha256": "eb30acf6954428bcf31175422a1e265265da80dbf4ef8fb64987be8765db7b13"
+          }
+        ],
+        "forbidden_condition": "Evicting a session whose status is not in TERMINAL_STATUSES (an active queued/running run) \u2014 remove returns False for non-terminal sessions and callers must cancel() first.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [],
+        "protected_operation": "DELETE /api/sessions/{run_id} eviction of a run session from the process-wide session store.",
+        "protected_resource": "In-memory run sessions owned by the SessionManager (queued/running analyses and their subscriber fan-out state).",
+        "protection_obligation": "A run session may only be evicted from the SessionManager's in-memory store after reaching a terminal status (completed/error/cancelled): SessionManager.remove must refuse to delete a non-terminal (queued/running) session, and the DELETE /api/sessions/{run_id} handler must surface that refusal as HTTP 409 ('Session is still active \u2014 cancel it before deleting').",
+        "scope_limits": [
+          "Covers only the in-memory SessionManager store; persisted RunRecords deleted via DELETE /api/runs/recent (clear_runs, trash-folder path) follow a separate on-disk deletion path not governed by remove().",
+          "Automatic capacity pruning via _evict() (session_manager.py:340-352) applies the same terminal-only rule but is not wired to the DELETE handler.",
+          "cancel() sets a terminal status but does not itself evict; eviction still requires an explicit remove call."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "confidence_guardrail returns (True, decision) at trading_crew/guardrails.py:81, accepting the PM task output as the committed typed PortfolioDecision, before the runner emits final_decision and bridges the decision into the execution pipeline.",
+        "contract_id": "ecological-contract:eeac8d96c48248e491accfc510c9b733",
+        "declared_mechanism": "CrewAI Task wiring in TradingCrew.crew(): Task(config=pm_decision, agent=portfolio_manager, output_pydantic=PortfolioDecision, guardrail=confidence_guardrail, guardrail_max_retries=2). The callable returns (False, re-prompt message) on any forbidden condition \u2014 re-prompting the agent for up to 2 retries per the Task(guardrail=...) contract \u2014 and returns (True, decision) only when all checks pass.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 449,
+            "line_start": 442,
+            "path": "trading_crew/crew.py",
+            "role": "guard_registration",
+            "source_sha256": "ae21ee0345260191c9a24c9a04b1e1689ee99923156828a7fdc642d0858a6dff"
+          },
+          {
+            "line_end": 7,
+            "line_start": 1,
+            "path": "trading_crew/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "b98a5cffe5a48bdfd5fcf6c82fa233f40d8e63a9a39f8999561ca9a56a483b25"
+          },
+          {
+            "line_end": 27,
+            "line_start": 14,
+            "path": "trading_crew/guardrails.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b98a5cffe5a48bdfd5fcf6c82fa233f40d8e63a9a39f8999561ca9a56a483b25"
+          },
+          {
+            "line_end": 79,
+            "line_start": 39,
+            "path": "trading_crew/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b98a5cffe5a48bdfd5fcf6c82fa233f40d8e63a9a39f8999561ca9a56a483b25"
+          },
+          {
+            "line_end": 81,
+            "line_start": 81,
+            "path": "trading_crew/guardrails.py",
+            "role": "commit_point",
+            "source_sha256": "b98a5cffe5a48bdfd5fcf6c82fa233f40d8e63a9a39f8999561ca9a56a483b25"
+          },
+          {
+            "line_end": 107,
+            "line_start": 78,
+            "path": "trading_crew/schemas.py",
+            "role": "protected_operation",
+            "source_sha256": "de43966927c75e91ffc6f6b75ed254178a6ce48ca17c0d1a111f9129337ce82d"
+          }
+        ],
+        "forbidden_condition": "Task output that fails to parse to PortfolioDecision; confidence > 0.88 with action != HOLD; size_pct_of_book > 5.0 with confidence < 0.7; compliance_status == 'BLOCKED' with action != 'HOLD' or size_pct_of_book != 0; action == 'HOLD' with size_pct_of_book != 0; directional action (BUY/STRONG_BUY/SELL/STRONG_SELL) with size_pct_of_book == 0.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "CrewAI framework internals are not in supplied source: the exact invocation point of the guardrail within the task lifecycle and the behavior after guardrail_max_retries exhaustion (reject vs. accept the failing output) are not established.",
+          "Whether each retry re-emission is re-validated by the same callable is framework behavior not shown in supplied source."
+        ],
+        "protected_operation": "Emission and acceptance of the Portfolio Manager's typed PortfolioDecision as the pm_decision task output.",
+        "protected_resource": "The final PortfolioDecision artifact consumed downstream (runner final_decision record and the portfolio_decision_to_action_proposal bridge input).",
+        "protection_obligation": "Every final typed PortfolioDecision emitted by the Portfolio Manager task must pass the registered confidence_guardrail before it is accepted as the task output: the guard forbids confidence > 0.88 on a non-HOLD action, size_pct_of_book > 5% with confidence < 0.7, compliance_status = BLOCKED without action = HOLD and size_pct_of_book = 0, HOLD with non-zero size, and directional actions (BUY/STRONG_BUY/SELL/STRONG_SELL) with zero size, plus outputs that do not parse to PortfolioDecision. Failures re-prompt the agent with feedback for up to guardrail_max_retries = 2 retries; only a passing decision is committed and flows onward to the runner's final_decision emission, the run record, and the M1 bridge/execution pipeline.",
+        "scope_limits": [
+          "Guards only the Portfolio Manager task output; analyst, debate, research-synthesis, trader, risk, quality-review, and compliance task outputs are unguarded.",
+          "Checks a fixed subset of PortfolioDecision fields (action, confidence, size_pct_of_book, compliance_status); other required fields (horizon, long_term_view, sources, provenance tags) are enforced by prompt/schema, not by this guardrail.",
+          "The guard evaluates task_output.pydantic inside the CrewAI task lifecycle; downstream transforms applied by the runner (reflective critic revision, stop normalization) occur after this commit and are not covered.",
+          "Applies only where the crew is assembled with this Task wiring (trading_crew.crew.TradingCrew); callers invoking crew.kickoff through other assembly paths are not covered."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "trading_crew/agentic/bridge.py and trading_crew/agentic/execution/pipeline.py are not in the supplied sources; the effect stratum and commit point of order generation/sizing and run_pipeline(persist=True) persistence cannot be classified from supplied source.",
+      "trading_crew/agentic/rlmf_lora.py (run_finetune) is not supplied; the downstream effects of an accepted LoRA job (adapter file writes, GPU use) are unobserved.",
+      "CrewAI framework sources implementing Task guardrail invocation and retry handling are not supplied; the guard's exact lifecycle hook point and post-retry-exhaustion behavior are not established.",
+      "No supplied source binds start_lora_training or DELETE /api/sessions/{run_id} to an agent tool, agent lifecycle hook, or agent-generated input reaching the guarded effect; agent_mediation for those contracts is recorded as not_established.",
+      "trading_crew/config/agents.yaml and commodity_crew sources are not supplied; the Portfolio Manager agent definition and whether the commodity crew carries equivalent guardrail wiring cannot be verified."
+    ],
+    "repository": "poladbachs/TradingCrew",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:404dba4d43145e327902e8cf65a14a14"
+  },
+  "request_sha256": "2a5181dd3b361b0c1105544a606065bf9a48325cdc892b113b1ea3c78f1fd5e4",
+  "response_sha256": "61879cb5156a393fb5606262ccad403309e5dd122cf723fedc40a43916e4492a",
+  "state": "completed",
+  "tokens": 109607,
+  "unit": "v24-screen:404dba4d43145e327902e8cf65a14a14"
+}

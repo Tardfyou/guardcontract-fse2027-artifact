@@ -1,0 +1,298 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "StreamingResponse (completions.py:151-156) or agent.run(prompt) at completions.py:159 and the ChatCompletionResponse at 213-226, all reached only after the guarded schema load at 138-141 succeeds within the same try-block.",
+        "contract_id": "ecological-contract:4dbf92aebc35017fc0540b77413bd196",
+        "declared_mechanism": "load_agentlet_schema(uri=agent_uri, tenant_id=x_tenant_id) is called inside the handler's try-block (completions.py:137-141) and raises PermissionError on tenant mismatch (registry.py:149-151); the handler's except clause converts the failure to an HTTP 500 before agent creation and run (completions.py:228-233).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 151,
+            "line_start": 149,
+            "path": "percolate/src/percolate/agents/registry.py",
+            "role": "guard_registration",
+            "source_sha256": "5e994eb22a2d19d401d8f7fe286ed769ca2a4e667ec0a5c5e678f3575faea476"
+          },
+          {
+            "line_end": 151,
+            "line_start": 146,
+            "path": "percolate/src/percolate/agents/registry.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5e994eb22a2d19d401d8f7fe286ed769ca2a4e667ec0a5c5e678f3575faea476"
+          },
+          {
+            "line_end": 148,
+            "line_start": 126,
+            "path": "percolate/src/percolate/api/routers/chat/completions.py",
+            "role": "protected_operation",
+            "source_sha256": "f9af649f5d8aaa8392fb81174d7e9c451b81c657cdf70dbee58de9f22fa5a473"
+          },
+          {
+            "line_end": 159,
+            "line_start": 151,
+            "path": "percolate/src/percolate/api/routers/chat/completions.py",
+            "role": "commit_point",
+            "source_sha256": "f9af649f5d8aaa8392fb81174d7e9c451b81c657cdf70dbee58de9f22fa5a473"
+          },
+          {
+            "line_end": 233,
+            "line_start": 228,
+            "path": "percolate/src/percolate/api/routers/chat/completions.py",
+            "role": "guard_registration",
+            "source_sha256": "f9af649f5d8aaa8392fb81174d7e9c451b81c657cdf70dbee58de9f22fa5a473"
+          }
+        ],
+        "forbidden_condition": "Running an agent whose user/{tenant}/{name} schema URI tenant segment differs from the request's X-Tenant-Id header value.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any middleware authenticates X-Tenant-Id to a verified caller identity (not in supplied source).",
+          "External effects of agent.run/streaming (model client and streaming module not supplied)."
+        ],
+        "protected_operation": "Agent creation and execution on the chat completions path: load_agentlet_schema -> create_agent -> agent.run / SSE streaming, culminating in the chat completion response.",
+        "protected_resource": "User agent-lets addressable through the request's model/agent_uri fields (tenant-scoped agent schemas).",
+        "protection_obligation": "The POST /v1/chat/completions endpoint must not execute a user agent-let belonging to another tenant: the schema load inside the request handler (load_agentlet_schema with tenant_id from X-Tenant-Id) must abort the request with an HTTP error response before any agent is created or run when the agent URI's tenant segment mismatches.",
+        "scope_limits": [
+          "The endpoint performs no tenant validation of agent_uri itself; protection is inherited from the registry check (registry.py:149-151).",
+          "x_tenant_id defaults to 'default' and no authentication of the header is shown (completions.py:31).",
+          "agent_uri is caller-controlled from the request body (agent_uri or model, completions.py:100-101).",
+          "The exception handler masks PermissionError as a generic 500 'Agent execution failed' (completions.py:228-233).",
+          "No agent tool registration, lifecycle hook, or agent-generated input is shown reaching this endpoint's guard; the caller is an HTTP client, hence not_established mediation."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The tenant-scoped percolate-rocks entity lookup following the check (registry.py:153-180, currently a TODO path that raises FileNotFoundError); any schema returned would flow into agent creation and execution at the callers (completions.py:143-159). The guard is positioned before both.",
+        "contract_id": "ecological-contract:789c85f86f6f8e621cd0ec373265589b",
+        "declared_mechanism": "load_agentlet_schema dispatches user/-prefixed URIs to _load_user_agentlet (registry.py:50-52); _load_user_agentlet parses the URI, compares uri_tenant to tenant_id, and raises PermissionError on mismatch before the entity search (registry.py:141-151).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 151,
+            "line_start": 141,
+            "path": "percolate/src/percolate/agents/registry.py",
+            "role": "guard_registration",
+            "source_sha256": "5e994eb22a2d19d401d8f7fe286ed769ca2a4e667ec0a5c5e678f3575faea476"
+          },
+          {
+            "line_end": 151,
+            "line_start": 149,
+            "path": "percolate/src/percolate/agents/registry.py",
+            "role": "forbidden_condition",
+            "source_sha256": "5e994eb22a2d19d401d8f7fe286ed769ca2a4e667ec0a5c5e678f3575faea476"
+          },
+          {
+            "line_end": 56,
+            "line_start": 16,
+            "path": "percolate/src/percolate/agents/registry.py",
+            "role": "protected_operation",
+            "source_sha256": "5e994eb22a2d19d401d8f7fe286ed769ca2a4e667ec0a5c5e678f3575faea476"
+          },
+          {
+            "line_end": 148,
+            "line_start": 137,
+            "path": "percolate/src/percolate/api/routers/chat/completions.py",
+            "role": "protected_operation",
+            "source_sha256": "f9af649f5d8aaa8392fb81174d7e9c451b81c657cdf70dbee58de9f22fa5a473"
+          },
+          {
+            "line_end": 180,
+            "line_start": 153,
+            "path": "percolate/src/percolate/agents/registry.py",
+            "role": "commit_point",
+            "source_sha256": "5e994eb22a2d19d401d8f7fe286ed769ca2a4e667ec0a5c5e678f3575faea476"
+          }
+        ],
+        "forbidden_condition": "Loading a user agent-let schema whose URI tenant segment (parts[1] of user/{tenant_id}/{name}) differs from the tenant_id argument ('Tenant mismatch: URI tenant ... != context tenant ...').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Source of percolate/mcplib/resources.py to determine whether MCP resource reads reach load_agentlet_schema with a tenant context (would establish direct_tool mediation).",
+          "Authentication binding that ties the tenant_id argument to a verified caller identity.",
+          "percolate-rocks entity-search semantics (module not supplied) for the tenant-isolated lookup the guard precedes."
+        ],
+        "protected_operation": "Agent-let schema loading for user-scoped URIs via load_agentlet_schema/_load_user_agentlet; on the chat completions path the load is invoked with tenant_id taken from the X-Tenant-Id header.",
+        "protected_resource": "Tenant-scoped user agent-let schemas/entities stored in percolate-rocks under the owning tenant's namespace (user.{tenant_id}.{agent_name}).",
+        "protection_obligation": "load_agentlet_schema must not load a user agent-let belonging to another tenant: for user/{tenant}/{name} URIs, a tenant segment differing from the tenant_id argument must raise PermissionError before any schema data is retrieved or returned, so callers (e.g., the /v1/chat/completions endpoint) never receive another tenant's agent-let schema.",
+        "scope_limits": [
+          "The check applies only to URIs starting with 'user/'; system agent-let loads from the filesystem carry no tenant scoping (registry.py:50-55, 183-212).",
+          "The guarded database lookup is not implemented (TODO, registry.py:153-180); the source shows the guard but not a working load behind it.",
+          "Supplied-source callers are the chat completions endpoint (completions.py:137-141) and ask_agent for system URIs only (agent.py:128-135); no agent tool, lifecycle hook, or agent-generated input is shown reaching this guard, hence not_established mediation.",
+          "register_agentlet_resources(mcp) at server.py:72-73 may expose agent-let schemas as MCP resources, but that module is not supplied, so MCP-mediated loading is unverified."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "self.db.insert(TABLE_SESSIONS, session_data) at session_store.py:103 (session upsert) and self.db.insert(TABLE_MESSAGES, message_data) at session_store.py:149 (message insert), both executed only after the get_session tenant check at line 191.",
+        "contract_id": "ecological-contract:a656f40f226079a8bccf400046e0fe4e",
+        "declared_mechanism": "get_session looks up the session and compares the stored tenant_id to the requested tenant_id, returning None with a warning log on mismatch ('Verify tenant_id matches (security check)') (session_store.py:222-235); save_message calls get_session(session_id, tenant_id) at line 191 before _upsert_session and _insert_message (193-201).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 45,
+            "line_start": 40,
+            "path": "percolate/src/percolate/mcplib/server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a64e45bc7ffc5b4b79cc5192fca05d224de64a4d002d5b254ea508a7e1199c4f"
+          },
+          {
+            "line_end": 99,
+            "line_start": 88,
+            "path": "percolate/src/percolate/mcplib/tools/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b5591cce39e5a4ac56bf8d62f8775554513b3161330dc49b7a60b266b63d2175"
+          },
+          {
+            "line_end": 235,
+            "line_start": 222,
+            "path": "percolate/src/percolate/memory/session_store.py",
+            "role": "guard_registration",
+            "source_sha256": "2afb6a353a17e5cd430031d20723903d8b231f9f3056878caabd61387ffbc876"
+          },
+          {
+            "line_end": 235,
+            "line_start": 229,
+            "path": "percolate/src/percolate/memory/session_store.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2afb6a353a17e5cd430031d20723903d8b231f9f3056878caabd61387ffbc876"
+          },
+          {
+            "line_end": 203,
+            "line_start": 153,
+            "path": "percolate/src/percolate/memory/session_store.py",
+            "role": "protected_operation",
+            "source_sha256": "2afb6a353a17e5cd430031d20723903d8b231f9f3056878caabd61387ffbc876"
+          },
+          {
+            "line_end": 135,
+            "line_start": 126,
+            "path": "percolate/src/percolate/api/routers/chat/completions.py",
+            "role": "protected_operation",
+            "source_sha256": "f9af649f5d8aaa8392fb81174d7e9c451b81c657cdf70dbee58de9f22fa5a473"
+          },
+          {
+            "line_end": 105,
+            "line_start": 94,
+            "path": "percolate/src/percolate/memory/session_store.py",
+            "role": "commit_point",
+            "source_sha256": "2afb6a353a17e5cd430031d20723903d8b231f9f3056878caabd61387ffbc876"
+          },
+          {
+            "line_end": 151,
+            "line_start": 136,
+            "path": "percolate/src/percolate/memory/session_store.py",
+            "role": "commit_point",
+            "source_sha256": "2afb6a353a17e5cd430031d20723903d8b231f9f3056878caabd61387ffbc876"
+          }
+        ],
+        "forbidden_condition": "Reading a chat session whose stored tenant_id differs from the requested tenant_id, or persisting a session upsert / message insert into a session owned by another tenant.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "rem_db insert()/lookup() semantics \u2014 upsert key_field and whether an upsert for an existing session_id owned by another tenant overwrites that row (rem_db module not supplied).",
+          "Authentication binding for tenant_id at both entry paths (X-Tenant-Id header; ask_agent tenant_id argument).",
+          "Whether get_session has other production callers beyond save_message (none shown in supplied source)."
+        ],
+        "protected_operation": "Chat session retrieval (get_session) and the save_message persistence path (session upsert plus message insert) that consults get_session before writing.",
+        "protected_resource": "Chat sessions and messages in the REM/percolate-rocks tables (TABLE_SESSIONS, TABLE_MESSAGES) scoped by tenant_id.",
+        "protection_obligation": "SessionStore.get_session must refuse (return None) any chat-session read whose stored tenant_id differs from the caller's tenant_id, and the save_message upsert path must not write messages into another tenant's session: the tenant check must run before any session upsert or message insert.",
+        "scope_limits": [
+          "On a tenant mismatch get_session returns None, but save_message then proceeds to build a NEW session record using the caller's tenant_id rather than aborting (session_store.py:73-92, 191-196); whether that can overwrite another tenant's row depends on unverified rem_db upsert semantics.",
+          "The read-side guard is per-row in get_session; get_messages and list_sessions are unimplemented stubs, so read isolation there is not operative (session_store.py:243-264, 327-347).",
+          "save_feedback writes feedback rows with a caller-supplied tenant_id and no tenant-match check (session_store.py:300-321).",
+          "The HTTP chat completions endpoint is a second entry path into the same store using the X-Tenant-Id header (completions.py:126-135, 196-211); agent mediation for this contract is established via the ask_agent MCP tool, which performs save_message with its tool arguments (agent.py:88-99, 169-182)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "agent.run(prompt) at agent.py:152 (agent creation at 146-150; assistant-message save at 170-182 downstream), reached only when the URI is not user/-scoped or passes the check at 116-120.",
+        "contract_id": "ecological-contract:df8e1a7c0766192de21d2793de408818",
+        "declared_mechanism": "Inline tenant check in ask_agent: after parsing agent_uri.split('/'), the tool returns a status='error' result with the message 'Access denied: can only access your own tenant's agents' when owner_tenant != tenant_id (agent.py:113-120), before tenant storage load and before agent creation/run.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 45,
+            "line_start": 40,
+            "path": "percolate/src/percolate/mcplib/server.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a64e45bc7ffc5b4b79cc5192fca05d224de64a4d002d5b254ea508a7e1199c4f"
+          },
+          {
+            "line_end": 126,
+            "line_start": 104,
+            "path": "percolate/src/percolate/mcplib/tools/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "b5591cce39e5a4ac56bf8d62f8775554513b3161330dc49b7a60b266b63d2175"
+          },
+          {
+            "line_end": 120,
+            "line_start": 113,
+            "path": "percolate/src/percolate/mcplib/tools/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b5591cce39e5a4ac56bf8d62f8775554513b3161330dc49b7a60b266b63d2175"
+          },
+          {
+            "line_end": 86,
+            "line_start": 53,
+            "path": "percolate/src/percolate/mcplib/tools/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "b5591cce39e5a4ac56bf8d62f8775554513b3161330dc49b7a60b266b63d2175"
+          },
+          {
+            "line_end": 152,
+            "line_start": 145,
+            "path": "percolate/src/percolate/mcplib/tools/agent.py",
+            "role": "commit_point",
+            "source_sha256": "b5591cce39e5a4ac56bf8d62f8775554513b3161330dc49b7a60b266b63d2175"
+          },
+          {
+            "line_end": 182,
+            "line_start": 169,
+            "path": "percolate/src/percolate/mcplib/tools/agent.py",
+            "role": "commit_point",
+            "source_sha256": "b5591cce39e5a4ac56bf8d62f8775554513b3161330dc49b7a60b266b63d2175"
+          }
+        ],
+        "forbidden_condition": "Executing (or loading the schema of) a user agent-let whose URI tenant segment (owner_tenant = parts[1]) does not equal the tenant_id argument supplied to ask_agent.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether MCP transport authenticates the tenant_id argument (no auth middleware in supplied source; ctx is documented as unused for compatibility).",
+          "What external effects create_pydantic_agent/agent.run have (factory and model client modules not supplied)."
+        ],
+        "protected_operation": "The ask_agent MCP tool: loading a user agent-let schema and executing it with a prompt via create_pydantic_agent and agent.run, followed by the assistant-message session write.",
+        "protected_resource": "User agent-lets addressed as user/{tenant_id}/{name} (tenant-scoped agent schemas in percolate-rocks storage).",
+        "protection_obligation": "A caller of the registered ask_agent MCP tool must not load or execute a user agent-let belonging to another tenant: when the agent_uri argument is a user/{tenant}/{name} URI whose tenant segment differs from the tool's tenant_id argument, ask_agent must return an access-denied error before any schema load, agent creation, or agent execution.",
+        "scope_limits": [
+          "The check covers only URIs starting with 'user/'; system agent URIs bypass it and load from the schema directory (agent.py:104, 128-135).",
+          "tenant_id is a caller-supplied tool argument; supplied source shows no authentication binding it to a server-side identity (agent.py:56, 67-69).",
+          "The guarded tenant-storage load is unimplemented: after passing the check, user URIs still return 'not yet implemented' (agent.py:122-126).",
+          "The user-message session write earlier in the same tool (agent.py:92-99) executes before the tenant check and is not gated by this guard.",
+          "The guard is function-local to ask_agent; it does not protect other load/execute paths."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "rem_db (percolate-rocks) module source: insert/upsert key_field semantics and lookup scoping, needed to confirm whether the session-store write-path guard prevents re-labeling an existing cross-tenant session row.",
+      "percolate/mcplib/resources.py (register_agentlet_resources): whether agent-let schemas are exposed as MCP resources and whether such reads pass a tenant context to load_agentlet_schema.",
+      "percolate/agents/factory.py and model/streaming clients: external effects of create_agent/agent.run, needed to finalize strata for execution effects beyond the shown invocation and HTTP response.",
+      "Any authentication/authorization middleware binding X-Tenant-Id or ask_agent's tenant_id argument to a verified caller identity; supplied source shows none."
+    ],
+    "repository": "percolating-sirsh/percolate-node",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:17a756af269099accbb606d16950a889"
+  },
+  "request_sha256": "62883562b2e6849c840b2d575dc7fd4cd6628499a0bb5aec447c1267cfab7022",
+  "response_sha256": "a0fae40b2ab34309c58510c782d82221c602d39587ff7ab3b7054c8756b5bdb6",
+  "state": "completed",
+  "tokens": 41452,
+  "unit": "v24-screen:17a756af269099accbb606d16950a889"
+}

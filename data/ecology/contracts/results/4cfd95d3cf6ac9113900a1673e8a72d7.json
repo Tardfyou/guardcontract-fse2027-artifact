@@ -1,0 +1,108 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "bridge_request_store.complete(body.request_id, body.result) at api_service/main.py:323 and bridge_request_store.fail(body.request_id, err) at api_service/main.py:331, both reached only after the token guard at api_service/main.py:313-318 passes.",
+        "contract_id": "ecological-contract:746edb0a54f2c156c5a65bae3527e5b1",
+        "declared_mechanism": "Shared-secret header verification at the top of the handler: expected token read from the CALLBACK_TOKEN environment variable; HTTP 503 raised if CALLBACK_TOKEN is unset/empty; HTTP 401 raised if X-Callback-Token is missing or unequal to the expected token; the legitimate sender (local_bridge/callback_client.post_result_callback) sets the same header, and api_service provisions the token to the bridge via the demo-submit form field callback_token.",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 311,
+            "line_start": 307,
+            "path": "api_service/main.py",
+            "role": "guard_registration",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 318,
+            "line_start": 313,
+            "path": "api_service/main.py",
+            "role": "forbidden_condition",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 336,
+            "line_start": 320,
+            "path": "api_service/main.py",
+            "role": "protected_operation",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 323,
+            "line_start": 323,
+            "path": "api_service/main.py",
+            "role": "commit_point",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 331,
+            "line_start": 331,
+            "path": "api_service/main.py",
+            "role": "commit_point",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 373,
+            "line_start": 361,
+            "path": "api_service/main.py",
+            "role": "protected_operation",
+            "source_sha256": "be73e86ad8070e594662ad1c720ffc69df544efee8802fcdc6517547f39a37ef"
+          },
+          {
+            "line_end": 32,
+            "line_start": 29,
+            "path": "local_bridge/callback_client.py",
+            "role": "guard_registration",
+            "source_sha256": "6846d7c75c1ad444cae7e58449f0db202d92eb731695f55717abbffe6b4b60f2"
+          },
+          {
+            "line_end": 36,
+            "line_start": 29,
+            "path": "api_service/bridge_forward.py",
+            "role": "guard_registration",
+            "source_sha256": "0e963055ec527be45e50136759b260856d446eb98d2c18cf8f877b2da579ab2a"
+          }
+        ],
+        "forbidden_condition": "Committing a final result into bridge_request_store (bridge_request_store.complete or bridge_request_store.fail) from a POST /internal/result-callback request whose X-Callback-Token header is missing or does not equal the configured CALLBACK_TOKEN, or proceeding to any commit when CALLBACK_TOKEN is unset/empty; the handler must have already terminated with 503 or 401 before reaching the commit.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent runtime dispatches a tool or lifecycle hook that results in the POST /internal/result-callback; the local bridge code path that invokes callback_client.post_result_callback is not supplied.",
+          "Whether the `result` payload committed at api_service/main.py:323 is agent-generated (e.g., produced by an LLM explanation service inside the local RabbitMQ pipeline) such that agent-generated input reaches the guarded commit.",
+          "Whether any agent framework registration binds /internal/result-callback or bridge_request_store as a tool or hook target; none appears in the supplied views.",
+          "Confirmation of bridge_request_store's storage medium (api_service/request_store.py not supplied) to fix effect_stratum as state versus database."
+        ],
+        "protected_operation": "Execution of the result_callback handler's commit path for POST /internal/result-callback: marking the request completed with body.result or failed with body.error in bridge_request_store.",
+        "protected_resource": "bridge_request_store entries keyed by request_id in api_service (in-memory request store per the module docstring), whose status/result/error payloads are served to browsers via GET /result/{request_id}.",
+        "protection_obligation": "POST /internal/result-callback in api_service must reject any callback before mutation unless the caller's X-Callback-Token header equals the configured CALLBACK_TOKEN (503 when CALLBACK_TOKEN is unset/empty, 401 when the header is missing or mismatched), so that final completed/failed results are committed into bridge_request_store only for token-authenticated senders; bridge_request_store contents are subsequently served to browsers via GET /result/{request_id}. (Merged from both reviewer submissions, which describe the same obligation.)",
+        "scope_limits": [
+          "The supplied source shows a conventional web-service callback authentication guard (shared-secret header on an HTTP endpoint); no agent tool dispatch, agent lifecycle hook, or agent-generated input reaching the guarded commit is visible in the supplied views, so agent mediation is recorded as not_established and this obligation may be out of scope for agent-DEC unless such a binding is established.",
+          "The guard protects only the /internal/result-callback commit path; the parallel RabbitMQ consumer flow that writes Redis results (store_completed_result, api_service/main.py:161-197) carries no such token guard and is not covered by this contract.",
+          "bridge_request_store's implementation (api_service/request_store.py) is not supplied; the 'state' stratum classification rests on the module docstring at api_service/main.py:11 ('in-memory store') and handler usage, not on the store's own source.",
+          "GET /result/{request_id} serves stored payloads without per-request authorization in the supplied source; that exposure motivates the resource's sensitivity but is not a separately guarded operation in this contract.",
+          "This contract records source-supported structure only; no determination of violation, safety, runtime behavior, or prevalence is made."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source establishes agent mediation for POST /internal/result-callback: no agent tool registration, lifecycle hook, or agent-generated-input dataflow reaching bridge_request_store.complete()/fail() appears in the provided views; agent_mediation is therefore not_established and no agent_entry_binding evidence is cited.",
+      "api_service/request_store.py (bridge_request_store implementation) is not supplied; whether the store is purely in-memory versus persistent cannot be confirmed from source (docstring at api_service/main.py:11 says 'in-memory store').",
+      "The local bridge pipeline internals (vision_service, matching_service, explanation_service) and the code path that invokes local_bridge/callback_client.post_result_callback are not supplied; the provenance of the `result` payload and the callback trigger cannot be verified.",
+      "Reviewer rationale referenced 'LLM content/format guardrails elsewhere'; no such guardrails appear in the supplied views and they are not incorporated into this contract."
+    ],
+    "repository": "MaayanCohen1/personalized-skincare-recommender",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:4cfd95d3cf6ac9113900a1673e8a72d7"
+  },
+  "request_sha256": "3477bf8e6d4493086089ef715aade13414934502e493a9875007db36498f2bd1",
+  "response_sha256": "7c94f4afe91d6b9dd1d9da3200da4464d1d451d17a39f37a2890e33e870b648a",
+  "state": "completed",
+  "tokens": 19326,
+  "unit": "v24-screen:4cfd95d3cf6ac9113900a1673e8a72d7"
+}

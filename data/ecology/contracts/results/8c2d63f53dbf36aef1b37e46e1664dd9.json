@@ -1,0 +1,225 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Dispatch of the signed email for delivery at client.py:1496 (`data = ffi.send_signed_email(options)` inside HaiClient.send_signed_email), reachable only through the exclusive Python-side handoff at agent.py:136 (`return self._client.send_signed_email(...)`).",
+        "contract_id": "ecological-contract:6117c80bc2d5795f6ed2b25990f60aef",
+        "declared_mechanism": "Exclusive routing guard: EmailNamespace.send returns only `self._client.send_signed_email(...)`; HaiClient.send_signed_email validates required fields and the registered agent-email precondition, then signs with the agent's JACS key via the Rust FFI layer and submits (the server validates the signature, countersigns, and delivers).",
+        "effect_stratum": "communication",
+        "evidence": [
+          {
+            "line_end": 146,
+            "line_start": 136,
+            "path": "python/src/haiai/agent.py",
+            "role": "guard_registration",
+            "source_sha256": "4fa08b0439c207503a882b1f69adb74eb47b1ff6b419255b64a4c09366401757"
+          },
+          {
+            "line_end": 116,
+            "line_start": 112,
+            "path": "python/src/haiai/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4fa08b0439c207503a882b1f69adb74eb47b1ff6b419255b64a4c09366401757"
+          },
+          {
+            "line_end": 7,
+            "line_start": 1,
+            "path": "python/src/haiai/agent.py",
+            "role": "forbidden_condition",
+            "source_sha256": "4fa08b0439c207503a882b1f69adb74eb47b1ff6b419255b64a4c09366401757"
+          },
+          {
+            "line_end": 111,
+            "line_start": 100,
+            "path": "python/src/haiai/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "4fa08b0439c207503a882b1f69adb74eb47b1ff6b419255b64a4c09366401757"
+          },
+          {
+            "line_end": 367,
+            "line_start": 362,
+            "path": "python/src/haiai/agent.py",
+            "role": "protected_operation",
+            "source_sha256": "4fa08b0439c207503a882b1f69adb74eb47b1ff6b419255b64a4c09366401757"
+          },
+          {
+            "line_end": 1461,
+            "line_start": 1457,
+            "path": "python/src/haiai/client.py",
+            "role": "guard_registration",
+            "source_sha256": "fb8d9caff0b64c0dbb801c27cf443fb02362e43600c4cc8bc8c1df05d243d69a"
+          },
+          {
+            "line_end": 1496,
+            "line_start": 1496,
+            "path": "python/src/haiai/client.py",
+            "role": "commit_point",
+            "source_sha256": "fb8d9caff0b64c0dbb801c27cf443fb02362e43600c4cc8bc8c1df05d243d69a"
+          }
+        ],
+        "forbidden_condition": "An outbound email submitted through Agent.email.send() (or its reply() wrapper) without JACS signing \u2014 i.e., any unsigned send path through the EmailNamespace; declared repeatedly as 'There is no unsigned send path' in the module, class, and method docstrings.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Confirmation from the FFI adapter (not supplied) that signing completes before the HTTP submission within ffi.send_signed_email.",
+          "Whether EmailNamespace.forward (ffi.forward) produces JACS-signed messages.",
+          "Whether EmailNamespace.send/reply are ever invoked as AI-agent tools or from agent lifecycle hooks (no registration, decorator, or dispatch wiring exists in the supplied source)."
+        ],
+        "protected_operation": "Outbound email sending via EmailNamespace.send (and EmailNamespace.reply, which routes through self.send), from the agent's @hai.ai address.",
+        "protected_resource": "Outbound email delivery through the HAI email service from the agent's JACS-identified @hai.ai address.",
+        "protection_obligation": "All emails sent through the high-level Agent.EmailNamespace API must be JACS-signed before delivery: EmailNamespace.send() must route exclusively to HaiClient.send_signed_email() \u2014 which builds RFC 5322 MIME and signs with the agent's JACS key via the Rust FFI layer before HAI API submission \u2014 with no unsigned send path exposed through the namespace (this merges the first reviewer's Agent.email.send wording with the second reviewer's exclusive-routing obligation).",
+        "scope_limits": [
+          "Covers only the high-level Agent.EmailNamespace path; the lower-level HaiClient.send_email (ffi.send_email) path exists in the supplied source outside this namespace and is not governed by the exclusive-routing guard.",
+          "EmailNamespace.forward routes to HaiClient.forward / ffi.forward rather than through send(); whether forwarded messages are JACS-signed is not established by the supplied source.",
+          "The JACS signing itself is performed inside the unsupplied FFI adapter; the Python-visible guarantee is the exclusive routing and precondition checks, not the signing implementation.",
+          "The 'Agent' class is a client wrapper for the JACS cryptographic agent identity; no AI-agent runtime binding is present in the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Return of `{'Authorization': build_jacs_auth_header()}` at _client_shared.py:81 \u2014 the earliest supplied-source point at which usable credential material exists and would be attached to an outbound HAI API request; the actual network dispatch is inside the unsupplied FFI adapter.",
+        "contract_id": "ecological-contract:84fbf443fbd5fe9db7ffd656f5fd47b8",
+        "declared_mechanism": "Fail-closed precondition checks that raise before any credential is produced: `if not (is_loaded() and get_config().jacs_id): raise HaiAuthError(...)` in build_auth_headers; `if cfg.jacs_id is None: raise HaiAuthError(...)` and the sign_string-capability check raising HaiError(code='JACS_NOT_LOADED') in build_jacs_auth_header.",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 81,
+            "line_start": 72,
+            "path": "python/src/haiai/_client_shared.py",
+            "role": "guard_registration",
+            "source_sha256": "deacf500fb37e38b2f94e84b9122e9772499972d36680fe67c9ff18010011dd3"
+          },
+          {
+            "line_end": 80,
+            "line_start": 76,
+            "path": "python/src/haiai/_client_shared.py",
+            "role": "forbidden_condition",
+            "source_sha256": "deacf500fb37e38b2f94e84b9122e9772499972d36680fe67c9ff18010011dd3"
+          },
+          {
+            "line_end": 64,
+            "line_start": 53,
+            "path": "python/src/haiai/_client_shared.py",
+            "role": "forbidden_condition",
+            "source_sha256": "deacf500fb37e38b2f94e84b9122e9772499972d36680fe67c9ff18010011dd3"
+          },
+          {
+            "line_end": 81,
+            "line_start": 81,
+            "path": "python/src/haiai/_client_shared.py",
+            "role": "commit_point",
+            "source_sha256": "deacf500fb37e38b2f94e84b9122e9772499972d36680fe67c9ff18010011dd3"
+          },
+          {
+            "line_end": 310,
+            "line_start": 308,
+            "path": "python/src/haiai/client.py",
+            "role": "protected_operation",
+            "source_sha256": "fb8d9caff0b64c0dbb801c27cf443fb02362e43600c4cc8bc8c1df05d243d69a"
+          },
+          {
+            "line_end": 200,
+            "line_start": 196,
+            "path": "python/src/haiai/client.py",
+            "role": "forbidden_condition",
+            "source_sha256": "fb8d9caff0b64c0dbb801c27cf443fb02362e43600c4cc8bc8c1df05d243d69a"
+          }
+        ],
+        "forbidden_condition": "Returning JACS Authorization credentials for an HAI request when no JACS agent is loaded: `not (is_loaded() and get_config().jacs_id)` in build_auth_headers; likewise `cfg.jacs_id is None` or a loaded agent supporting neither build_auth_header nor sign_string in build_jacs_auth_header; per the HaiClient class contract, no operation proceeds with an API-key fallback when the JACS config is not loaded.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which concrete HaiClient operations invoke build_auth_headers/_build_auth_headers immediately before dispatch (call sites are outside the supplied views).",
+          "Whether the unsupplied FFI adapter independently enforces the same fail-closed JACS precondition for requests it issues directly (e.g., ffi.submit_response, ffi.send_signed_email).",
+          "Whether any AI-agent tool registration or lifecycle hook routes caller input into these guarded operations (none exists in the supplied source)."
+        ],
+        "protected_operation": "Construction of JACS-signed Authorization headers for HAI API requests via _client_shared.build_auth_headers / build_jacs_auth_header, exposed on HaiClient as _build_auth_headers / _build_jacs_auth_header.",
+        "protected_resource": "HAI API authenticated endpoints reached with the agent's JACS identity (Authorization: JACS <jacs_id>:<timestamp>:<signature>).",
+        "protection_obligation": "Authenticated HAI API operations must fail closed when no JACS agent is loaded: construction of the JACS Authorization credential block must raise HaiAuthError (or HaiError with code JACS_NOT_LOADED) instead of returning usable auth headers when the JACS config is not loaded or jacs_id is missing, so no unauthenticated credential material becomes available for HAI request dispatch.",
+        "scope_limits": [
+          "No call site of build_auth_headers / HaiClient._build_auth_headers appears in the supplied views, so binding of this guard to a specific request dispatch (e.g., submit_benchmark_response or send_signed_email) is not established from source.",
+          "All HTTP dispatch in the supplied client is delegated to the FFI adapter (haiai._ffi_adapter.FFIAdapter / haiipy binding-core), whose implementation is not supplied; the network commit itself is outside the supplied source.",
+          "This contract captures only the JACS-loaded fail-closed precondition declared in the supplied source; no broader web-authentication policy is asserted."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "Delegation to `agent.sign_string(canonical_payload)` and insertion of the signature into jacs_doc['jacsSignature']['signature'], returning the signed_document/agent_jacs_id dict at signing.py:548-553; invocation-only within the supplied source \u2014 the signed document is returned to the caller with no external mutation shown.",
+        "contract_id": "ecological-contract:a015197f68cd0dcc6dd1a0fdc51bb4d1",
+        "declared_mechanism": "Capability precondition in sign_response: `if not hasattr(agent, 'sign_string'): raise HaiError(..., code='JACS_NOT_LOADED', action=\"Run 'haiai init' or set JACS_CONFIG_PATH environment variable\")` executed prior to canonicalization, envelope construction, or agent.sign_string delegation.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 514,
+            "line_start": 507,
+            "path": "python/src/haiai/signing.py",
+            "role": "guard_registration",
+            "source_sha256": "84cc78cad4a808d8cb0b0dc49b0b9a014d2c21f9ffbd1d7dd0cdee5f7b7d2323"
+          },
+          {
+            "line_end": 514,
+            "line_start": 509,
+            "path": "python/src/haiai/signing.py",
+            "role": "forbidden_condition",
+            "source_sha256": "84cc78cad4a808d8cb0b0dc49b0b9a014d2c21f9ffbd1d7dd0cdee5f7b7d2323"
+          },
+          {
+            "line_end": 553,
+            "line_start": 548,
+            "path": "python/src/haiai/signing.py",
+            "role": "commit_point",
+            "source_sha256": "84cc78cad4a808d8cb0b0dc49b0b9a014d2c21f9ffbd1d7dd0cdee5f7b7d2323"
+          },
+          {
+            "line_end": 1223,
+            "line_start": 1192,
+            "path": "python/src/haiai/client.py",
+            "role": "protected_operation",
+            "source_sha256": "fb8d9caff0b64c0dbb801c27cf443fb02362e43600c4cc8bc8c1df05d243d69a"
+          }
+        ],
+        "forbidden_condition": "Producing a JACS-signed job-response/benchmark-result envelope without a signing-capable JACS agent: `not hasattr(agent, 'sign_string')` in sign_response, detected before any envelope construction or signature delegation.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether ffi.submit_response (used by submit_benchmark_response) enforces an equivalent fail-closed JACS precondition inside the unsupplied FFI layer.",
+          "Where the signed document returned by sign_benchmark_result is subsequently consumed or submitted (not shown in the supplied views).",
+          "Whether any AI-agent tool registration or lifecycle hook invokes sign_benchmark_result (none exists in the supplied source)."
+        ],
+        "protected_operation": "Signing of job-response/benchmark-result payloads via haiai.signing.sign_response, as invoked by HaiClient.sign_benchmark_result.",
+        "protected_resource": "The JACS-signed job-response document (SignedJobResponse envelope: signed_document + agent_jacs_id) produced for benchmark-result verification.",
+        "protection_obligation": "JACS signing of benchmark/job-response payloads must fail closed: sign_response must raise HaiError (code JACS_NOT_LOADED) rather than produce a signed job-response document when the agent lacks sign_string support, so HaiClient.sign_benchmark_result (its caller) cannot emit a signed benchmark-result document without a loaded, signing-capable JACS agent.",
+        "scope_limits": [
+          "Within the supplied source, sign_benchmark_result only constructs and returns the signed document locally; no submission or dispatch of the signed document is shown.",
+          "The separate network path HaiClient.submit_benchmark_response delegates wrapping/signing to ffi.submit_response inside the unsupplied FFI adapter and shows no Python-side sign_response/sign_string guard in the supplied views.",
+          "canonicalize_ (which independently raises HaiError JACS_NOT_LOADED when no agent is loaded) is a supporting mechanism in the local-signing path but is not the primary guard asserted here."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The FFI adapter implementation (haiai._ffi_adapter.FFIAdapter / haiipy binding-core) is not supplied; internal enforcement of JACS authentication and signing for ffi.submit_response, ffi.send_signed_email, and ffi.send_email cannot be verified from the supplied views.",
+      "No call site of _client_shared.build_auth_headers or HaiClient._build_auth_headers appears in the supplied source views, so the first reviewer's claim that the HaiAuthError guard executes 'immediately before request dispatch' for benchmark response submission or signed email send is not supported by the supplied lines.",
+      "HaiClient.submit_benchmark_response shows no Python-side JACS-loaded guard; its docstring claims the response is wrapped as a JACS-signed document, but the visible code delegates entirely to ffi.submit_response.",
+      "No AI-agent tool registration, decorator, callback wiring, lifecycle hook, or tool dispatch appears in the supplied source; the 'Agent' class name and the SDK's agent domain alone do not establish agent mediation, so all contracts are marked not_established.",
+      "The haiai.config module (is_loaded, get_config, get_agent, load, save) is not supplied; the behavior of these functions beyond their call sites in the supplied views is unknown.",
+      "EmailNamespace.forward routes to HaiClient.forward / ffi.forward; whether forwarded emails are JACS-signed is not determinable from the supplied source."
+    ],
+    "repository": "HumanAssisted/haiai",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:8c2d63f53dbf36aef1b37e46e1664dd9"
+  },
+  "request_sha256": "18204909d127b3a836bd6c490161c69fd572a88340daaa69c2b2c82d1f0e04a9",
+  "response_sha256": "a7d426c58af9598673ba97cae0e831bc422479eb1d6620ab3a2a1b535c1b6dc5",
+  "state": "completed",
+  "tokens": 65923,
+  "unit": "v24-screen:8c2d63f53dbf36aef1b37e46e1664dd9"
+}

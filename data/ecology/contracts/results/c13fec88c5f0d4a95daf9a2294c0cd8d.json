@@ -1,0 +1,156 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "basic_form.save() and kb_form.save() followed by kb.save(update_fields=['regular_hours','transfer_destinations','entertainment_schedule','special_events','sms_templates_enabled','sms_templates']) inside portal_knowledge_base, reached only after the wrapper and in-view gates pass.",
+        "contract_id": "ecological-contract:805c7c6b239a5b9ad77177e26d8b1a00",
+        "declared_mechanism": "@portal_view() wrapper (decorators.portal_view): login_required(login_url='portal_login') plus get_membership(slug, request.user) resolving an active membership (404 otherwise) and setting request.restaurant/request.membership; then the view body computes can_edit = (membership.role == 'owner' or membership.can_edit_kb) and returns HttpResponseForbidden for POSTs before any save. Note: the wrapper's require_kb_edit branch is NOT used on this route \u2014 the operative owner/can_edit_kb gate is enforced inside the view body.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 42,
+            "line_start": 20,
+            "path": "backend/restaurants/decorators.py",
+            "role": "guard_registration",
+            "source_sha256": "dbbaef4babb3f62378316418f4532913c18328ceb0f1d1dfc7a8a0efc1822660"
+          },
+          {
+            "line_end": 21,
+            "line_start": 19,
+            "path": "backend/restaurants/portal_urls.py",
+            "role": "protected_operation",
+            "source_sha256": "74dadf9617edb466a8f73ebab73a77c3c6d1ab1aaf787820e4d73b6f8876705a"
+          },
+          {
+            "line_end": 4817,
+            "line_start": 4812,
+            "path": "backend/restaurants/views.py",
+            "role": "guard_registration",
+            "source_sha256": "da07159712509cdaeebda6f91f74ef16354962b6f4ca157cdfd50425d9ba0139"
+          },
+          {
+            "line_end": 4821,
+            "line_start": 4819,
+            "path": "backend/restaurants/views.py",
+            "role": "forbidden_condition",
+            "source_sha256": "da07159712509cdaeebda6f91f74ef16354962b6f4ca157cdfd50425d9ba0139"
+          },
+          {
+            "line_end": 4845,
+            "line_start": 4830,
+            "path": "backend/restaurants/views.py",
+            "role": "commit_point",
+            "source_sha256": "da07159712509cdaeebda6f91f74ef16354962b6f4ca157cdfd50425d9ba0139"
+          }
+        ],
+        "forbidden_condition": "A POST to the knowledge-base route from (a) an unauthenticated client (login_required redirect), (b) a user without an active RestaurantMembership for the slug (get_membership 404), or (c) an active member whose role != 'owner' and whose can_edit_kb is false (403 HttpResponseForbidden), reaching the basic_form.save()/kb_form.save()/kb.save() mutation path.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether operator-initiated mutation of agent-consumed knowledge rows qualifies as agent mediation for DEC purposes given the human-only entry point (direct_tool vs not_established).",
+          "Confirm no other URL conf registers portal_knowledge_base with require_kb_edit=True; only portal_urls.py was supplied."
+        ],
+        "protected_operation": "Authenticated Knowledge Base edit submission handled by portal_knowledge_base (route <slug:slug>/knowledge-base/), covering Restaurant basic fields and structured KB fields (regular_hours, transfer_destinations, entertainment_schedule, special_events, sms_templates).",
+        "protected_resource": "RestaurantKnowledgeBase row (and scoped Restaurant fields) for the slug-scoped restaurant \u2014 data consumed by the Retell voice agent via the get_info tool and call-start dynamic variables.",
+        "protection_obligation": "Restaurant-scoped Knowledge Base edits (POST /portal/<slug>/knowledge-base/) must be rejected before the RestaurantKnowledgeBase row is substantively mutated unless the requester is an authenticated user with an active membership for the slug whose role is 'owner' or whose can_edit_kb flag is set. The KB row is the AI agent's knowledge source \u2014 served to the live agent by the get_info custom tool (retell_tool_get_info) and injected into the agent's call-start dynamic variables \u2014 so the supplied source explicitly binds this portal operation to agent-consumed state, and the login/membership/role gate protects the agent's knowledge from unauthorized rewrite.",
+        "scope_limits": [
+          "Covers only the <slug:slug>/knowledge-base/ portal route; other KB writers visible in the supplied source (e.g., KB scaffolding at signup, views.py 3490-3491) are outside this contract.",
+          "portal_knowledge_base performs RestaurantKnowledgeBase.objects.get_or_create (views.py 4815) before the POST gate; this contract covers the substantive edit mutation, not that pre-gate existence check.",
+          "Rejection semantics differ by failure: unauthenticated -> redirect to portal_login; no active membership -> 404; authenticated active member without owner/can_edit_kb -> 403.",
+          "GET renders of the KB editor are not gated by can_edit; only the POST mutation path is protected.",
+          "The decorator's require_kb_edit parameter (decorators.py 37-38) is defined but unused by this route; the role gate lives in the view body.",
+          "The KB-edit entry point is a human portal session; no agent tool dispatch, lifecycle hook, or agent-generated input reaches the guarded write \u2014 the agent binding is downstream consumption only."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "_sync_retell_tools(request, restaurant, kb) at views.py 4847 (config-gated; daemon thread spawn at 4623), whose _do_retell_sync body commits the external effect via RetellClient.update_llm(restaurant.retell_llm_id, general_tools=tools, general_prompt=prompt, ...) followed by point_agent_to_llm_version, publish_agent, and pin_phone_to_agent_version.",
+        "contract_id": "ecological-contract:ddc416cf5cd4e4e8538f7b51f307d64c",
+        "declared_mechanism": "The @portal_view() wrapper (login_required + get_membership active-membership resolution) and the in-view can_edit 403 gate (views.py 4819-4821), which together precede the _sync_retell_tools call so the agent sync is enqueued only for gate-passing requests.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 42,
+            "line_start": 20,
+            "path": "backend/restaurants/decorators.py",
+            "role": "guard_registration",
+            "source_sha256": "dbbaef4babb3f62378316418f4532913c18328ceb0f1d1dfc7a8a0efc1822660"
+          },
+          {
+            "line_end": 21,
+            "line_start": 19,
+            "path": "backend/restaurants/portal_urls.py",
+            "role": "protected_operation",
+            "source_sha256": "74dadf9617edb466a8f73ebab73a77c3c6d1ab1aaf787820e4d73b6f8876705a"
+          },
+          {
+            "line_end": 4821,
+            "line_start": 4819,
+            "path": "backend/restaurants/views.py",
+            "role": "forbidden_condition",
+            "source_sha256": "da07159712509cdaeebda6f91f74ef16354962b6f4ca157cdfd50425d9ba0139"
+          },
+          {
+            "line_end": 4850,
+            "line_start": 4847,
+            "path": "backend/restaurants/views.py",
+            "role": "commit_point",
+            "source_sha256": "da07159712509cdaeebda6f91f74ef16354962b6f4ca157cdfd50425d9ba0139"
+          },
+          {
+            "line_end": 4628,
+            "line_start": 4613,
+            "path": "backend/restaurants/views.py",
+            "role": "commit_point",
+            "source_sha256": "da07159712509cdaeebda6f91f74ef16354962b6f4ca157cdfd50425d9ba0139"
+          },
+          {
+            "line_end": 4608,
+            "line_start": 4576,
+            "path": "backend/restaurants/views.py",
+            "role": "commit_point",
+            "source_sha256": "da07159712509cdaeebda6f91f74ef16354962b6f4ca157cdfd50425d9ba0139"
+          }
+        ],
+        "forbidden_condition": "A KB-edit POST from an unauthenticated client, a user without an active membership for the slug, or an active member lacking both 'owner' role and can_edit_kb reaching the _sync_retell_tools(request, restaurant, kb) call such that the Retell agent sync thread is started.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether rewriting a deployed agent's registered tool list and prompt via RetellClient.update_llm counts as direct_tool mediation for this study or remains not_established.",
+          "Source of build_tool_list and _build_agent_prompt needed to enumerate exactly which agent tools and prompt sections the guarded commit rewrites."
+        ],
+        "protected_operation": "Post-save Retell agent sync triggered from the authorized portal_knowledge_base POST path (_sync_retell_tools spawning the _do_retell_sync background thread).",
+        "protected_resource": "The restaurant's deployed Retell agent configuration: retell_llm_id prompt plus general_tools (build_tool_list fed with kb.escalation_transfer_number, kb.transfer_destinations, restaurant.enable_sms, primary_lang), the agent's LLM version pointer, the published agent version, and the phone-number-to-agent-version pin.",
+        "protection_obligation": "The same login + active-membership + owner/can_edit_kb gate must also reject under-privileged KB-edit POSTs before the Retell agent re-provisioning effect is enqueued: an authorized KB save triggers _sync_retell_tools -> _do_retell_sync, which rewrites the deployed voice agent's LLM configuration at Retell (update_llm with general_tools built from KB-derived arguments and an agent prompt, then re-pointing the agent, publishing, and re-pinning the phone number to the new agent version). Unauthorized edits must not reach this agent-configuration commit.",
+        "scope_limits": [
+          "The sync commits only when RETELL_WEBHOOK_BASE_URL, restaurant.retell_api_key, and restaurant.retell_llm_id are configured; otherwise a warning is shown and no agent effect occurs (views.py 4615-4621).",
+          "The Retell commit runs in a daemon thread after the HTTP redirect; the contract asserts only that the enqueue point (views.py 4847) is reachable exclusively past the login/membership/role gates.",
+          "build_tool_list (services/retell_tools) and _build_agent_prompt (admin) implementations are not in the supplied sources; KB-dependence is visible only through the arguments passed at views.py 4576-4583.",
+          "Only the sync triggered by the portal KB POST is covered; other potential callers of _sync_retell_tools/_do_retell_sync are not evidenced in the supplied source.",
+          "The entry point is a human portal session; the agent is the target of the effect, not its mediator."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Opinion 2 (fail-closed Stripe signature guard on POST /api/stripe/webhook/ protecting _handle_stripe_event Subscription mutations and Retell phone connect/disconnect, views.py 6507-6538 and 6541-6660) was not compiled: the guarded effect is reached by Stripe-originated webhook data with no agent tool, agent lifecycle hook, or agent-generated input in the pathway, and webhook signature verification is payment-infrastructure policy per the stated scope; additionally, the URL registration for /api/stripe/webhook/ is absent from the supplied sources (only decorators.py, portal_urls.py, and views.py were supplied), so entry-point registration evidence is unavailable.",
+      "Opinion 1's remaining slices were not compiled as out of scope: login_required redirects on restaurant-scoped portal routes, owner-only operator/billing/notifications/avg-cover views, and data-mutating call/SMS endpoints (e.g., portal_send_sms) are ordinary web authentication/authorization over human portal actions; the supplied source binds none of them to an agent tool, lifecycle hook, or agent-generated input. The agent-facing SMS path (retell_tool_send_sms, Retell-signature-guarded) is a distinct endpoint outside the portal_view wrapper and was not part of the reviewed obligation.",
+      "backend/restaurants/services/retell_tools.build_tool_list and restaurants.admin._build_agent_prompt are referenced (views.py 4577, 4586) but not supplied, so the exact agent tool set and prompt content rewritten by the guarded sync cannot be enumerated.",
+      "Whether any route outside the supplied portal_urls.py registers portal views with require_kb_edit=True or require_owner=True is unverifiable from the supplied sources."
+    ],
+    "repository": "elperroloc0/concierge",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:c13fec88c5f0d4a95daf9a2294c0cd8d"
+  },
+  "request_sha256": "489f53b708a25761a459036b671f858666ce8f9e2b62a90c8e4d4627df9857f9",
+  "response_sha256": "dca03aed4c03efd4bda53885646540cd338f44b08095f4d96662c9689844d7a9",
+  "state": "completed",
+  "tokens": 145038,
+  "unit": "v24-screen:c13fec88c5f0d4a95daf9a2294c0cd8d"
+}

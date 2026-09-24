@@ -1,0 +1,251 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Two database commit points on the same resource: trip-path db.commit() at routes_orders.py:69 (status REJECTED, followed by the blocked OrderCheckAndPlanResponse at lines 78-84) and normal-path status finalization db.commit() at routes_orders.py:179 (PLANNED at line 170 / REJECTED at line 172). Both are database stratum, so one contract covers them.",
+        "contract_id": "ecological-contract:24a5c6fc02548079dc891f9a91077dc8",
+        "declared_mechanism": "input_guardrails=[logistics_input_guardrail, logistics_bom_guardrail] on logistics_agent (logistics_agent.py:145-148); the trip surfaces as InputGuardrailTripwireTriggered from Runner.run and is caught at routes_orders.py:66, where status is set to REJECTED and committed before the reservation/finalization block.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 148,
+            "line_start": 145,
+            "path": "app/agent_list/logistics_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "c0e57799ddea8348b052953439878bc32553be8c1f18e8b4c7224b2ba1e23ffa"
+          },
+          {
+            "line_end": 60,
+            "line_start": 34,
+            "path": "app/guardrails_list/logistics_guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66ce58a8b7bfa2b31c2f35990a4fca16a51e82197d9bdadb7e8fc94a7c181f7"
+          },
+          {
+            "line_end": 105,
+            "line_start": 81,
+            "path": "app/guardrails_list/logistics_guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66ce58a8b7bfa2b31c2f35990a4fca16a51e82197d9bdadb7e8fc94a7c181f7"
+          },
+          {
+            "line_end": 65,
+            "line_start": 51,
+            "path": "app/api/routes_orders.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a5d619f7696ac624cb034ea9b32f5b7253d3cb5e8ff86e87143cac457d65222a"
+          },
+          {
+            "line_end": 20,
+            "line_start": 19,
+            "path": "app/api/routes_orders.py",
+            "role": "protected_operation",
+            "source_sha256": "a5d619f7696ac624cb034ea9b32f5b7253d3cb5e8ff86e87143cac457d65222a"
+          },
+          {
+            "line_end": 84,
+            "line_start": 66,
+            "path": "app/api/routes_orders.py",
+            "role": "commit_point",
+            "source_sha256": "a5d619f7696ac624cb034ea9b32f5b7253d3cb5e8ff86e87143cac457d65222a"
+          },
+          {
+            "line_end": 180,
+            "line_start": 168,
+            "path": "app/api/routes_orders.py",
+            "role": "commit_point",
+            "source_sha256": "a5d619f7696ac624cb034ea9b32f5b7253d3cb5e8ff86e87143cac457d65222a"
+          }
+        ],
+        "forbidden_condition": "The agent_input JSON built from the order request reaching the logistics_agent run and downstream planning when it (a) contains no logistics keyword or (b) carries 'products' SKUs lacking a BOM \u2014 i.e., the run not tripping logistics_input_guardrail / logistics_bom_guardrail so the order is finalized PLANNED at routes_orders.py:169-180 instead of the tripwire path committing status REJECTED at routes_orders.py:66-70.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "app/models.py is not supplied; Order persistence semantics and status values (NEW/REJECTED/PLANNED) are only observed at routes_orders.py:36, 67, 170, 172.",
+          "The exact point inside Runner.run where input guardrails execute relative to tool dispatch is agents-SDK behavior not in supplied source; enforcement here is evidenced only by the exception handlers at routes_chat.py:24-25 and routes_orders.py:66-70."
+        ],
+        "protected_operation": "The LogisticsAgent order-planning run at POST /api/orders and the order status lifecycle it feeds (NEW committed pre-run; REJECTED on trip; PLANNED only on an unblocked, inventory-ok run).",
+        "protected_resource": "The models.Order row (status field) created for the POST /api/orders request in the orders table.",
+        "protection_obligation": "Order-planning inputs to the LogisticsAgent at POST /api/orders must trip the registered input guardrails before planning proceeds, so that an input lacking logistics keywords or containing SKUs without a BOM is committed as REJECTED via the tripwire handler before any inventory reservation or planning finalization, instead of the order being finalized PLANNED (covers reviewer wording on order rejection/planning at the orders site).",
+        "scope_limits": [
+          "The pre-agent BOM/unknown-product validation at routes_orders.py:21-30 (HTTP 400 raised before insert) is generic application validation performed before any agent involvement and is not compiled as an agent-mediated contract; consequently the reviewer phrase 'missing-BOM orders never enter the orders table' holds only for that endpoint check, while guardrail-tripped requests already have an order row committed NEW before the run and REJECTED after the trip (routes_orders.py:33-49, 66-70).",
+          "production_ack/schedule acknowledgment (routes_orders.py:160-166) and any production-schedule persistence are downstream of supplied source; this contract asserts no commit point for schedule writes (see missing_information).",
+          "Whether the orders agent_input JSON (with keys such as 'order_id', 'products', 'components') can ever trip logistics_input_guardrail's substring filter is a runtime question, not decided here."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "db.commit() at routes_orders.py:159 after locked reads and quantity decrements at routes_orders.py:142-153 (rollback path at 157); the guardrail-trip path returns at routes_orders.py:78-84 without reaching this commit.",
+        "contract_id": "ecological-contract:530d5be2293c37bf171860a7e17b344f",
+        "declared_mechanism": "The registered input guardrails abort the run before tool outputs exist (InputGuardrailTripwireTriggered caught at routes_orders.py:66-84 returns before the reservation block); independently, the reservation gate inventory_ok is derived from the agent's check_inventory_for_order tool output (routes_orders.py:111-121, gate at 139).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 148,
+            "line_start": 145,
+            "path": "app/agent_list/logistics_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "c0e57799ddea8348b052953439878bc32553be8c1f18e8b4c7224b2ba1e23ffa"
+          },
+          {
+            "line_end": 60,
+            "line_start": 34,
+            "path": "app/guardrails_list/logistics_guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66ce58a8b7bfa2b31c2f35990a4fca16a51e82197d9bdadb7e8fc94a7c181f7"
+          },
+          {
+            "line_end": 105,
+            "line_start": 81,
+            "path": "app/guardrails_list/logistics_guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66ce58a8b7bfa2b31c2f35990a4fca16a51e82197d9bdadb7e8fc94a7c181f7"
+          },
+          {
+            "line_end": 121,
+            "line_start": 111,
+            "path": "app/api/routes_orders.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "a5d619f7696ac624cb034ea9b32f5b7253d3cb5e8ff86e87143cac457d65222a"
+          },
+          {
+            "line_end": 20,
+            "line_start": 19,
+            "path": "app/api/routes_orders.py",
+            "role": "protected_operation",
+            "source_sha256": "a5d619f7696ac624cb034ea9b32f5b7253d3cb5e8ff86e87143cac457d65222a"
+          },
+          {
+            "line_end": 159,
+            "line_start": 137,
+            "path": "app/api/routes_orders.py",
+            "role": "commit_point",
+            "source_sha256": "a5d619f7696ac624cb034ea9b32f5b7253d3cb5e8ff86e87143cac457d65222a"
+          },
+          {
+            "line_end": 84,
+            "line_start": 66,
+            "path": "app/api/routes_orders.py",
+            "role": "commit_point",
+            "source_sha256": "a5d619f7696ac624cb034ea9b32f5b7253d3cb5e8ff86e87143cac457d65222a"
+          }
+        ],
+        "forbidden_condition": "Component-level inventory decrement (inv.quantity -= comp['quantity']) being committed (db.commit() at routes_orders.py:159) for a POST /api/orders request whose agent input lacks logistics keywords or contains SKUs without a BOM \u2014 i.e., a run that should have raised InputGuardrailTripwireTriggered at routes_orders.py:62-66 instead flowing into the inventory_ok reservation block at routes_orders.py:139-159.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "models.InventoryItem schema, constraints, and transaction semantics are not supplied; reservation behavior is inferred solely from routes_orders.py:142-159.",
+          "Behavior of expand_order_items (app/bom.py), which produces components_list and missing_bom, is not in supplied source, so the exact component set subject to reservation is unresolved."
+        ],
+        "protected_operation": "Reservation of components against inventory stock, gated on the logistics_agent run's check_inventory_for_order tool output (inventory_ok) following the order-planning run at POST /api/orders.",
+        "protected_resource": "models.InventoryItem quantity rows (component-level stock) in the database.",
+        "protection_obligation": "Inventory reservation for an order must not be committed when the order's agent input should have tripped the registered input guardrails: the component-level stock decrement is reachable only through an unblocked logistics_agent run whose check_inventory_for_order tool output reports all_available (covers reviewer wording on 'no inventory reserved' at the orders site).",
+        "scope_limits": [
+          "The reservation loop consumes components_list computed from the raw request (routes_orders.py:22-23), not from agent output; only the inventory_ok go/no-go decision derives from agent tool output, so the mediated portion of this effect is the gating decision, not the reservation quantities.",
+          "If no check_inventory_for_order output is found, inventory_ok defaults to False (routes_orders.py:120-121), so absence of the tool call also blocks reservation; this fallback is application logic, not a guardrail.",
+          "Production-scheduling acknowledgment (routes_orders.py:160-166) and any schedule persistence remain outside supplied source (see missing_information)."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Runner.run(starting_agent=logistics_agent, input=req.message, session=session) at routes_chat.py:18-22; on trip the run aborts and the handler returns the blocked reply inside ChatResponse at routes_chat.py:24-30 (normal final_output path at line 23).",
+        "contract_id": "ecological-contract:81d204a2e9a4f978463cae4c829b1af2",
+        "declared_mechanism": "input_guardrails=[logistics_input_guardrail, logistics_bom_guardrail] registered on the Agent constructor (logistics_agent.py:145-148); @input_guardrail-decorated checks return GuardrailFunctionOutput with tripwire_triggered (logistics_guardrail.py:57-60, 103-106); the route catches InputGuardrailTripwireTriggered and substitutes the blocked reply (routes_chat.py:24-25).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 148,
+            "line_start": 145,
+            "path": "app/agent_list/logistics_agent.py",
+            "role": "guard_registration",
+            "source_sha256": "c0e57799ddea8348b052953439878bc32553be8c1f18e8b4c7224b2ba1e23ffa"
+          },
+          {
+            "line_end": 27,
+            "line_start": 25,
+            "path": "app/guardrails_list/logistics_guardrail.py",
+            "role": "guard_registration",
+            "source_sha256": "e66ce58a8b7bfa2b31c2f35990a4fca16a51e82197d9bdadb7e8fc94a7c181f7"
+          },
+          {
+            "line_end": 60,
+            "line_start": 34,
+            "path": "app/guardrails_list/logistics_guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66ce58a8b7bfa2b31c2f35990a4fca16a51e82197d9bdadb7e8fc94a7c181f7"
+          },
+          {
+            "line_end": 66,
+            "line_start": 63,
+            "path": "app/guardrails_list/logistics_guardrail.py",
+            "role": "guard_registration",
+            "source_sha256": "e66ce58a8b7bfa2b31c2f35990a4fca16a51e82197d9bdadb7e8fc94a7c181f7"
+          },
+          {
+            "line_end": 105,
+            "line_start": 81,
+            "path": "app/guardrails_list/logistics_guardrail.py",
+            "role": "forbidden_condition",
+            "source_sha256": "e66ce58a8b7bfa2b31c2f35990a4fca16a51e82197d9bdadb7e8fc94a7c181f7"
+          },
+          {
+            "line_end": 16,
+            "line_start": 13,
+            "path": "app/api/routes_chat.py",
+            "role": "protected_operation",
+            "source_sha256": "fb617bc49bb69c24e4e1012bc166fe4e84fad612586ae64babd97c44aa4a8392"
+          },
+          {
+            "line_end": 22,
+            "line_start": 17,
+            "path": "app/api/routes_chat.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "fb617bc49bb69c24e4e1012bc166fe4e84fad612586ae64babd97c44aa4a8392"
+          },
+          {
+            "line_end": 30,
+            "line_start": 23,
+            "path": "app/api/routes_chat.py",
+            "role": "commit_point",
+            "source_sha256": "fb617bc49bb69c24e4e1012bc166fe4e84fad612586ae64babd97c44aa4a8392"
+          }
+        ],
+        "forbidden_condition": "Runner.run on logistics_agent proceeding past the registered input guardrails for chat input that (a) contains none of the logistics keywords (logistics_input_guardrail sets tripwire_triggered=not is_logistics) or (b) parses to a dict whose 'products' list contains SKUs with no BOM (logistics_bom_guardrail sets tripwire_triggered=len(missing)>0), yielding a normal final_output reply instead of the InputGuardrailTripwireTriggered blocked reply.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The ChatRequest schema (app/schemas.py) is not supplied, so whether req.message can be a JSON string that engages logistics_bom_guardrail's dict-parsing branch (logistics_guardrail.py:70-82) on chat traffic is unresolved.",
+          "Guardrail execution order and short-circuit semantics between the two registered guardrails (only logistics_bom_guardrail declares run_in_parallel=False) are agents-SDK behavior absent from supplied source."
+        ],
+        "protected_operation": "The LogisticsAgent agent run serving POST /api/chat/logistics (including its tool calls and potential handoff) and the reply returned to the caller.",
+        "protected_resource": "The ChatResponse reply produced by the logistics_agent run at /api/chat/logistics.",
+        "protection_obligation": "Inputs to the LogisticsAgent at POST /api/chat/logistics must trip the registered input guardrails (logistics_input_guardrail, logistics_bom_guardrail) before the run proceeds, so that input lacking logistics keywords \u2014 or JSON input whose 'products' contain SKUs without a BOM \u2014 receives the blocked reply instead of a normal agent final_output reply (merges both reviewer obligations for the chat site).",
+        "scope_limits": [
+          "Compilation is limited to the four supplied views; repository enumeration is incomplete and behavior labels are unavailable.",
+          "Per supplied source, the logistics_agent tools (check_inventory_for_order, get_inventory_item, list_inventory, list_low_stock) perform read-only database queries, so no chat-path database mutation is asserted; the guarded effect is limited to the run/HTTP-reply boundary.",
+          "Handoff to production_planner_agent (logistics_agent.py:144) can occur on unblocked chat runs; its downstream effects are not in supplied source (see missing_information).",
+          "Whether any given chat payload actually trips either guardrail (e.g., free text vs JSON string with a 'products' list) is a runtime evaluation question and is not decided here."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "production_planner_agent (app/agent_list/production_agent.py) and any schedule_production tool are absent from supplied source; the commit point and effect stratum of production scheduling \u2014 named in both reviewer opinions as a protected effect ('no production schedule committed') \u2014 cannot be compiled into a contract. Only schedule_output parsing (routes_orders.py:124-135), production_ack formatting (routes_orders.py:160-166), and ProductionSchedule deletion on rejection (routes_orders.py:174-176) are visible, implying schedule writes located outside the supplied views.",
+      "app/bom.py (expand_order_items, get_bom_components, normalize_sku) is not supplied; the BOM-existence semantics that define the BOM guardrail's trip condition and the endpoint pre-check are unsupported.",
+      "app/models.py and app/db.py are not supplied; table definitions, constraints, and transaction semantics for Order, OrderItem, InventoryItem, and ProductionSchedule are inferred only from usage in routes_orders.py and the read-only tools.",
+      "app/schemas.py (ChatRequest, OrderCreate, response models) is not supplied; request field shapes that determine guardrail parsing branches (e.g., whether req.message can be a JSON string) are unresolved.",
+      "agents-SDK internals (Runner.run guardrail dispatch ordering, the raise point of InputGuardrailTripwireTriggered, session behavior via app/agent_list/session_utils.py) are not in supplied source; guardrail-to-tool-execution enforcement timing is evidenced only by the exception handlers at routes_chat.py:24-25 and routes_orders.py:66-70.",
+      "Behavior labels and prevalence data are unavailable per the supplied scope; no violation, safety, runtime-behavior, or prevalence determination is made anywhere in this compilation."
+    ],
+    "repository": "devmarkos/project-thesis-nebula",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:23b2cd6b9ebbb55f2ae72d2fc6947f10"
+  },
+  "request_sha256": "0eb257113b053328f92355786c27f3ca91c97192195b321d48f0636cda682bc7",
+  "response_sha256": "90776c0467b270c73edc2b8f174a1ef9ec4bfb43688470ba8fc022fff0e7660c",
+  "state": "completed",
+  "tokens": 26644,
+  "unit": "v24-screen:23b2cd6b9ebbb55f2ae72d2fc6947f10"
+}

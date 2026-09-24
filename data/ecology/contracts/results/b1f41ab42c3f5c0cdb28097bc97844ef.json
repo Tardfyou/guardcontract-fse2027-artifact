@@ -1,0 +1,210 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.search.search(...) at src/agent_lab/runtimes/graph.py lines 174-180 \u2014 the point where the retrieval tool is actually invoked.",
+        "contract_id": "ecological-contract:20d33a55822dd1461160fc42f599d720",
+        "declared_mechanism": "Graph wiring registers 'authorize' as the first node (builder.add_node(\"authorize\", self._authorize) and builder.add_edge(START, \"authorize\")) with conditional edges sending only status=='running' to 'retrieve' and otherwise to 'finalize' (graph.py lines 64-77); _authorize calls self.policy.authorize (graph.py lines 127-131) and on denial sets APPROVAL_REQUIRED/BLOCKED status with a policy-layer AgentError so the run routes to finalize instead of retrieve (graph.py lines 132-154); budget exhaustion is likewise blocked in the same node (graph.py lines 155-167).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 42,
+            "line_start": 27,
+            "path": "src/agent_lab/application/policies.py",
+            "role": "forbidden_condition",
+            "source_sha256": "17899a93d47a5cd30834a225d8499d735abbb092c0c881273515ed1c30ddc6e9"
+          },
+          {
+            "line_end": 43,
+            "line_start": 30,
+            "path": "src/agent_lab/capabilities/tools/contracts.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ef167e7e138967d63dd1430e76303a7e62c11c92361ce31b33c5c2bae3fe3186"
+          },
+          {
+            "line_end": 77,
+            "line_start": 64,
+            "path": "src/agent_lab/runtimes/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "f1d438e9c98a7c4ae880c2757ae1f7fb7120466172bb14dc48d048d7c933d6c6"
+          },
+          {
+            "line_end": 131,
+            "line_start": 121,
+            "path": "src/agent_lab/runtimes/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "f1d438e9c98a7c4ae880c2757ae1f7fb7120466172bb14dc48d048d7c933d6c6"
+          },
+          {
+            "line_end": 180,
+            "line_start": 170,
+            "path": "src/agent_lab/runtimes/graph.py",
+            "role": "protected_operation",
+            "source_sha256": "f1d438e9c98a7c4ae880c2757ae1f7fb7120466172bb14dc48d048d7c933d6c6"
+          },
+          {
+            "line_end": 180,
+            "line_start": 174,
+            "path": "src/agent_lab/runtimes/graph.py",
+            "role": "commit_point",
+            "source_sha256": "f1d438e9c98a7c4ae880c2757ae1f7fb7120466172bb14dc48d048d7c933d6c6"
+          }
+        ],
+        "forbidden_condition": "Executing self.search.search in the _retrieve node without a prior allow decision from ToolPolicy.authorize in the 'authorize' node \u2014 spec.capability not in request.allowed_capabilities, missing required_permissions, or spec.side_effect WRITE/EXTERNAL_WRITE (approval_required); additionally blocked when request.budget.max_tool_calls < 1 in the same node.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which caller(s) invoke LangGraphResearchRuntime.run / self.graph.invoke and whether any agent harness, tool dispatch, or lifecycle hook drives the graph \u2014 none is visible in the supplied source, so agent mediation is unbound.",
+          "Whether the checkpointer/thread_id usage corresponds to agent session or lifecycle state.",
+          "Provenance of runtime.context.permissions (RunContext definition is not supplied) consumed by _authorize."
+        ],
+        "protected_operation": "The retrieval tool invocation self.search.search(SearchQuery(query=request.goal, limit=...), call_id=...) inside the 'retrieve' node (_retrieve, graph.py lines 170-180).",
+        "protected_resource": "The injected SearchPort fixture-search tool (self.search) as declared by its ToolSpec (capability, required_permissions, side_effect).",
+        "protection_obligation": "LangGraphResearchRuntime must not invoke the fixture-search tool unless its 'authorize' graph node obtains an allow decision from ToolPolicy.authorize (capability in RunRequest.allowed_capabilities, caller permissions covering spec.required_permissions, WRITE/EXTERNAL_WRITE denied pending approval). The graph wires 'authorize' as the first node after START, and the 'retrieve' node is reachable only via the authorize node's continue route.",
+        "scope_limits": [
+          "Routing enforcement depends on the supplied wiring: the only visible edge into 'retrieve' originates from the 'authorize' conditional edge (graph.py lines 73-77); any reconfiguration or additional entry path would be outside the supported contract.",
+          "The budget gate (max_tool_calls < 1, graph.py lines 155-167) is enforced in the same 'authorize' node but is distinct from the capability/permission/side-effect policy denials.",
+          "The SearchPort implementation is not supplied; the module is described as an offline fixture contract (graph.py lines 1, 202), so no network, filesystem, or database effect is asserted for the guarded call.",
+          "Evidence quarantine (validate_evidence node) and citation validation (verify node) are separate post-retrieval checks and are not part of this pre-invocation guard."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self.search.search(...) at src/agent_lab/runtimes/workflow.py lines 118-124 \u2014 the point where the retrieval tool is actually invoked.",
+        "contract_id": "ecological-contract:21cc59c465ba2fdfe600c701ba4b18c6",
+        "declared_mechanism": "ToolPolicy.authorize(request=request, spec=self.search.spec, permissions=invocation_context.permissions) is invoked at the top of run() (workflow.py lines 68-72); on denial (allowed=False) run() short-circuits to a terminal RunResult with RunStatus.APPROVAL_REQUIRED or RunStatus.BLOCKED and never reaches the search call (workflow.py lines 73-95). ToolPolicy.authorize implements the three denial branches in policies.py lines 35-41; a budget gate (max_tool_calls < 1) is additionally enforced at the same site (workflow.py lines 97-112).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 42,
+            "line_start": 27,
+            "path": "src/agent_lab/application/policies.py",
+            "role": "forbidden_condition",
+            "source_sha256": "17899a93d47a5cd30834a225d8499d735abbb092c0c881273515ed1c30ddc6e9"
+          },
+          {
+            "line_end": 43,
+            "line_start": 30,
+            "path": "src/agent_lab/capabilities/tools/contracts.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ef167e7e138967d63dd1430e76303a7e62c11c92361ce31b33c5c2bae3fe3186"
+          },
+          {
+            "line_end": 95,
+            "line_start": 68,
+            "path": "src/agent_lab/runtimes/workflow.py",
+            "role": "guard_registration",
+            "source_sha256": "801eb7cf7fa962d229a9ebe6cb85350b8b3c4241b802c0f2388682122e9ec6ce"
+          },
+          {
+            "line_end": 124,
+            "line_start": 115,
+            "path": "src/agent_lab/runtimes/workflow.py",
+            "role": "protected_operation",
+            "source_sha256": "801eb7cf7fa962d229a9ebe6cb85350b8b3c4241b802c0f2388682122e9ec6ce"
+          },
+          {
+            "line_end": 124,
+            "line_start": 118,
+            "path": "src/agent_lab/runtimes/workflow.py",
+            "role": "commit_point",
+            "source_sha256": "801eb7cf7fa962d229a9ebe6cb85350b8b3c4241b802c0f2388682122e9ec6ce"
+          }
+        ],
+        "forbidden_condition": "Executing self.search.search in TrustedResearchWorkflow.run without a prior allow decision from ToolPolicy.authorize \u2014 i.e., when spec.capability is not in request.allowed_capabilities, when caller permissions lack any of spec.required_permissions, or when spec.side_effect is WRITE/EXTERNAL_WRITE (denied with approval_required=True).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which caller(s) construct RunRequest and invoke TrustedResearchWorkflow.run, and whether any such path is an agent tool dispatch, agent lifecycle hook, or delivers an agent-generated goal \u2014 the supplied source shows a direct run() method with no agent loop, so agent mediation is unbound.",
+          "The concrete SearchPort implementation behind self.search and whether search.search produces any effect beyond an invocation-only effect.",
+          "Provenance of RunContext.permissions (RunContext definition is not supplied) used as the authorize input."
+        ],
+        "protected_operation": "The retrieval tool invocation self.search.search(SearchQuery(query=request.goal, limit=...), call_id=...) performed inside TrustedResearchWorkflow.run.",
+        "protected_resource": "The injected SearchPort fixture-search tool (self.search) as declared by its ToolSpec (capability, required_permissions, side_effect).",
+        "protection_obligation": "TrustedResearchWorkflow must not invoke the fixture-search tool unless ToolPolicy.authorize has first returned an allow decision: the search spec's capability must be present in RunRequest.allowed_capabilities, the caller's permissions must cover spec.required_permissions, and tools whose side_effect is WRITE or EXTERNAL_WRITE are denied pending human approval (approval_required). The authorize gate executes before any retrieval call inside run().",
+        "scope_limits": [
+          "The guarded conditions are exactly the three ToolPolicy.authorize denials (capability membership, required_permissions coverage, WRITE/EXTERNAL_WRITE pending approval); the budget gate (max_tool_calls < 1, workflow.py lines 97-112) is an additional check at the same site and is not a capability/permission policy decision.",
+          "Post-retrieval checks (safe_evidence quarantine and validate_citations) are separate mechanisms applied after the commit point and are not part of this pre-invocation guard.",
+          "The SearchPort implementation is not in the supplied source; the runtime text describes the search as offline fixture retrieval (workflow.py lines 36-50), so no network, filesystem, or database effect is asserted for the guarded call.",
+          "The guard applies only to the single search invocation path in run(); no other tool invocation path exists in the supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "self._records[identity] = record at src/agent_lab/capabilities/memory/store.py line 86 \u2014 the point where the memory record is committed to the store.",
+        "contract_id": "ecological-contract:7e713f012c5a575d08e45e4c81ae7d67",
+        "declared_mechanism": "The require_approval constructor flag (default True, store.py lines 65-66) plus the approved_by check at the top of put, which returns MemoryWriteResult(status=APPROVAL_REQUIRED, message='Long-term memory writing requires approved_by') before any record construction (store.py lines 69-74).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 74,
+            "line_start": 65,
+            "path": "src/agent_lab/capabilities/memory/store.py",
+            "role": "guard_registration",
+            "source_sha256": "2a69ca9488410b651d83af3130fc088ee3f1fd69972b6ac187bbcb6fcb8686a9"
+          },
+          {
+            "line_end": 74,
+            "line_start": 70,
+            "path": "src/agent_lab/capabilities/memory/store.py",
+            "role": "forbidden_condition",
+            "source_sha256": "2a69ca9488410b651d83af3130fc088ee3f1fd69972b6ac187bbcb6fcb8686a9"
+          },
+          {
+            "line_end": 91,
+            "line_start": 75,
+            "path": "src/agent_lab/capabilities/memory/store.py",
+            "role": "protected_operation",
+            "source_sha256": "2a69ca9488410b651d83af3130fc088ee3f1fd69972b6ac187bbcb6fcb8686a9"
+          },
+          {
+            "line_end": 86,
+            "line_start": 86,
+            "path": "src/agent_lab/capabilities/memory/store.py",
+            "role": "commit_point",
+            "source_sha256": "2a69ca9488410b651d83af3130fc088ee3f1fd69972b6ac187bbcb6fcb8686a9"
+          }
+        ],
+        "forbidden_condition": "Committing a memory record via InMemoryStore.put while self.require_approval is True and request.approved_by is None (store.py line 70) \u2014 such writes must terminate with MemoryWriteResult(status=APPROVAL_REQUIRED) and no record committed.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which caller(s) invoke InMemoryStore.put and whether any agent lifecycle hook or agent-generated write reaches put \u2014 no caller is visible in the supplied source, so agent mediation is unbound.",
+          "Deployment instantiation of InMemoryStore (whether require_approval remains True in the studied configuration)."
+        ],
+        "protected_operation": "Memory record writes through InMemoryStore.put(request: MemoryWrite), which construct a versioned MemoryRecord and store it under the (namespace, key) identity.",
+        "protected_resource": "InMemoryStore._records \u2014 the process-local, namespace/key-addressed map of MemoryRecord entries (store.py lines 63-67).",
+        "protection_obligation": "InMemoryStore.put must not commit a memory record when require_approval is enabled and the MemoryWrite lacks approved_by; the write must be rejected with MemoryWriteStatus.APPROVAL_REQUIRED before any record is stored.",
+        "scope_limits": [
+          "The gate is conditional on the require_approval constructor flag (default True, store.py line 65); callers may disable it, so enforcement depends on instantiation wiring not present in the supplied source.",
+          "The store is explicitly process-local and 'not a production database' (store.py line 63); the guarded effect is an application-state mutation, and the reviewer's 'durable' characterization is not supported by the source.",
+          "MemoryStore is a Protocol; only InMemoryStore is supplied, so other implementations are out of scope."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The SearchPort implementation and retrieval models (src/agent_lab/capabilities/retrieval/models) are not supplied; the concrete side effects of search.search (network, file, or purely in-process fixture reads) cannot be confirmed, though the runtime text describes offline fixture retrieval (workflow.py lines 38, 47; graph.py lines 1, 202).",
+      "Domain models (RunRequest, RunContext, permissions) are not supplied; how allowed_capabilities and RunContext.permissions are populated is unknown.",
+      "No entrypoint or caller wiring (API routes, CLI, agent harness, tool registry) is supplied for TrustedResearchWorkflow.run, LangGraphResearchRuntime.run, or InMemoryStore.put, so agent mediation (direct_tool, agent_lifecycle_hook, or agent_generated_input_to_guarded_effect) cannot be established for any contract; repository topic and LangGraph framework metadata were not used to infer mediation.",
+      "Deployment configuration (custom ToolPolicy instances or overrides, InMemoryStore require_approval settings) is not supplied, so guard parameterization in the studied environment is unknown.",
+      "Behavior labels and runtime traces are unavailable (per scope note); enforcement behavior cannot be validated beyond the supplied code."
+    ],
+    "repository": "estelledc/langchain-langgraph-langsmith-tutorial",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b1f41ab42c3f5c0cdb28097bc97844ef"
+  },
+  "request_sha256": "c3320cd7257ab3136e5e02a70d808542b986bdabc0298d1a27f7f6da8db07246",
+  "response_sha256": "30101e6724424921b39bcf1d235d07067731a0cd53d9a1028e6b972d40ef86b1",
+  "state": "completed",
+  "tokens": 23804,
+  "unit": "v24-screen:b1f41ab42c3f5c0cdb28097bc97844ef"
+}

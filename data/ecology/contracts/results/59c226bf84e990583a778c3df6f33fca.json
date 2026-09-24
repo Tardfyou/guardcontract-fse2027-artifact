@@ -1,0 +1,247 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "op.drop_column(agents, has_code_interpreter) at line 162, the final statement of upgrade(), after which unconverted flags and the bindings they encode are irreversibly removed.",
+        "contract_id": "ecological-contract:081f82a54d0698e0e62464052846cad4",
+        "declared_mechanism": "Fail-closed precondition guard inside upgrade(): in the else-branch where env sandbox config is absent, the migration counts flagged agents (SELECT count(*) FROM agents WHERE has_code_interpreter = true) and raises RuntimeError naming the count and the remediation (set the SANDBOX_* env vars for this upgrade, or clear the flags first), aborting the migration transaction before the drop.",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 111,
+            "line_start": 109,
+            "path": "backend/alembic/versions/7c5a92e14b03_agent_sandbox_bindings.py",
+            "role": "guard_registration",
+            "source_sha256": "af2b0c06ac96bd76e799ed15ec10b8ed85dff51bebf62d2a2fa1659bebcbf264"
+          },
+          {
+            "line_end": 160,
+            "line_start": 147,
+            "path": "backend/alembic/versions/7c5a92e14b03_agent_sandbox_bindings.py",
+            "role": "guard_registration",
+            "source_sha256": "af2b0c06ac96bd76e799ed15ec10b8ed85dff51bebf62d2a2fa1659bebcbf264"
+          },
+          {
+            "line_end": 160,
+            "line_start": 148,
+            "path": "backend/alembic/versions/7c5a92e14b03_agent_sandbox_bindings.py",
+            "role": "forbidden_condition",
+            "source_sha256": "af2b0c06ac96bd76e799ed15ec10b8ed85dff51bebf62d2a2fa1659bebcbf264"
+          },
+          {
+            "line_end": 9,
+            "line_start": 2,
+            "path": "backend/alembic/versions/7c5a92e14b03_agent_sandbox_bindings.py",
+            "role": "protected_operation",
+            "source_sha256": "af2b0c06ac96bd76e799ed15ec10b8ed85dff51bebf62d2a2fa1659bebcbf264"
+          },
+          {
+            "line_end": 162,
+            "line_start": 162,
+            "path": "backend/alembic/versions/7c5a92e14b03_agent_sandbox_bindings.py",
+            "role": "commit_point",
+            "source_sha256": "af2b0c06ac96bd76e799ed15ec10b8ed85dff51bebf62d2a2fa1659bebcbf264"
+          }
+        ],
+        "forbidden_condition": "Executing upgrade() when _env_sandbox() returns None (no SANDBOX_* env configuration) and the count of agents with has_code_interpreter = true is non-zero, meaning op.drop_column would strip those agents of their sandbox binding with no trace.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool, agent lifecycle hook, or agent-generated input ever reaches this migration; none is shown in supplied source, which is required to raise agent_mediation above not_established.",
+          "Whether agents.has_code_interpreter / agent_sandboxes bindings gate runtime code-interpreter tool execution for agents (sandbox runtime validation code is referenced but not supplied).",
+          "Confirm Alembic transaction semantics assumed by the design (RuntimeError aborts the whole upgrade transaction including the table creation at lines 83-105); semantics are not shown in supplied source."
+        ],
+        "protected_operation": "The destructive, irreversible schema/data migration step op.drop_column on (agents, has_code_interpreter), which finalizes the env-to-registry sandbox conversion (migration step 4 in the file docstring).",
+        "protected_resource": "The agents.has_code_interpreter column values and the per-agent sandbox bindings they represent (agent_sandboxes rows created for flagged agents during conversion).",
+        "protection_obligation": "Migration 7c5a92e14b03 must refuse to drop the agents.has_code_interpreter column while any agent row still carries has_code_interpreter=true and no SANDBOX_* env configuration exists to convert those flags into agent_sandboxes bindings: upgrade() must raise RuntimeError and abort before the irreversible drop, so flagged agents never silently lose their sandbox binding once the database becomes the sole source of sandbox configuration (merged from first-phase and second-phase reviewer wording, which describe the same guard).",
+        "scope_limits": [
+          "Applies only to upgrade() of revision 7c5a92e14b03; the downgrade() path (lines 165-181) has no equivalent guard.",
+          "The guard fires only when _env_sandbox() returns None; when env config is present, conversion runs (lines 111-146) and the drop proceeds unconditionally.",
+          "Protects migration-time schema/data integrity only; no claim is made about runtime agent behavior or tool execution.",
+          "Guard selection depends on SandboxSettings being importable and enabled-check semantics at lines 37-78, which are only partially visible in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "repository.create at lines 146-150 (create) and repository.update at line 193 (update); both are database-stratum writes in the same stratum, so one contract covers them.",
+        "contract_id": "ecological-contract:1990470d0c80d9765b6f10c36da68279",
+        "declared_mechanism": "TriggerService._ensure_agent_usable delegating to AgentService.require_permission(agent_id, at_least=EffectivePermission.member, action=use this agent, user_id=owner.id, user_role=owner.role, user_team_id=owner.team_id) and re-raising PermissionDeniedError; called at line 138 in create and at line 191 in update, where the check is evaluated against the owner rather than the caller (lines 186-190).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 73,
+            "line_start": 56,
+            "path": "backend/app/triggers/service.py",
+            "role": "guard_registration",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 67,
+            "line_start": 60,
+            "path": "backend/app/triggers/service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 138,
+            "line_start": 131,
+            "path": "backend/app/triggers/service.py",
+            "role": "protected_operation",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 191,
+            "line_start": 185,
+            "path": "backend/app/triggers/service.py",
+            "role": "protected_operation",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 150,
+            "line_start": 146,
+            "path": "backend/app/triggers/service.py",
+            "role": "commit_point",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 193,
+            "line_start": 193,
+            "path": "backend/app/triggers/service.py",
+            "role": "commit_point",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          }
+        ],
+        "forbidden_condition": "Creating a trigger with data.agent_id (line 138) or updating trigger.agent_id to a different agent (lines 185-191) where the trigger's owner lacks EffectivePermission.member on that agent; _ensure_agent_usable converts the underlying denial into PermissionDeniedError (Trigger owner is not allowed to use this agent).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether agent-use permission is re-verified at run dispatch time (RunService.create internals are not supplied), which would be needed to bind this guard to an agent execution lifecycle.",
+          "Router wiring binding create/update to authenticated callers and the TriggerCreate/TriggerPatch payloads; not supplied.",
+          "Whether the owner-identity run execution described at lines 57-58 and 228-229 constitutes agent-lifecycle mediation of the guarded DB write; no tool dispatch or hook registration is shown."
+        ],
+        "protected_operation": "Persistence of the trigger-to-agent assignment: repository.create at lines 146-150 during create, and repository.update at line 193 when an update changes agent_id.",
+        "protected_resource": "The TriggerDB.agent_id assignment on trigger rows, which determines under whose identity and credentials future runs execute.",
+        "protection_obligation": "A trigger may only be created with, or re-pointed by update to, an agent its owner is permitted to use: create and agent_id-changing update must pass _ensure_agent_usable (AgentService.require_permission at_least=EffectivePermission.member evaluated for the owner) before the repository create/update commit, because runs execute with the owner's identity and MCP credentials (distinct obligation preserved from the second-phase reviewer wording).",
+        "scope_limits": [
+          "Enforced only at trigger create and when update carries an agent_id that differs from the stored one (line 185 condition); other update fields skip the agent gate.",
+          "run_now does not re-invoke _ensure_agent_usable; it validates agent existence/archival (lines 236-238) and the owner's MCP OAuth pre-flight (lines 248-254) instead, and claim_and_enqueue performs no permission check.",
+          "The gate checks the owner's permission, not the caller's: an admin may create or edit a trigger for another owner (comment at lines 186-187).",
+          "The permission threshold and semantics are only observable through the require_permission call at lines 60-67; the underlying model is not supplied."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "repository.update at line 193 (update), repository.delete at line 221 (delete), and the db.commit at line 256 in run_now that commits the fire thread before RunService.create dispatches the run. All observed commit points are in the database stratum, so a single contract covers them.",
+        "contract_id": "ecological-contract:2aa7e605c25cd2b536badf17bc65742c",
+        "declared_mechanism": "TriggerService._ensure_can_manage static guard: raises PermissionDeniedError unless trigger.owner_id == user.id or user.role == WorkspaceRole.admin; invoked at line 118 (get), line 126 (list_threads), line 157 (update), line 220 (delete), and line 235 (run_now).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 54,
+            "line_start": 51,
+            "path": "backend/app/triggers/service.py",
+            "role": "guard_registration",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 54,
+            "line_start": 53,
+            "path": "backend/app/triggers/service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 126,
+            "line_start": 116,
+            "path": "backend/app/triggers/service.py",
+            "role": "protected_operation",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 157,
+            "line_start": 153,
+            "path": "backend/app/triggers/service.py",
+            "role": "protected_operation",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 221,
+            "line_start": 218,
+            "path": "backend/app/triggers/service.py",
+            "role": "protected_operation",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 235,
+            "line_start": 223,
+            "path": "backend/app/triggers/service.py",
+            "role": "protected_operation",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 193,
+            "line_start": 193,
+            "path": "backend/app/triggers/service.py",
+            "role": "commit_point",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 221,
+            "line_start": 221,
+            "path": "backend/app/triggers/service.py",
+            "role": "commit_point",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          },
+          {
+            "line_end": 256,
+            "line_start": 255,
+            "path": "backend/app/triggers/service.py",
+            "role": "commit_point",
+            "source_sha256": "1c125e2cdc2888bffc59fb84ecd3f80f48b8e0a6a3f38c0ffc471723958fca3d"
+          }
+        ],
+        "forbidden_condition": "A caller whose id differs from trigger.owner_id and whose role is not WorkspaceRole.admin invoking get, list_threads, update, delete, or run_now on that trigger; _ensure_can_manage raises PermissionDeniedError (Not authorized to access this trigger).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which HTTP routes or other entrypoints invoke these service methods and how the authenticated user is bound (router files are not supplied).",
+          "Whether trigger firing via run_now or claim_and_enqueue is mediated by an agent lifecycle mechanism (RunService.create internals and worker/enqueue machinery are not supplied).",
+          "The nature and stratum of the enqueue performed by RunService.create after the line-256 commit (referenced in the docstring at lines 230-232 as commit-before-enqueue choreography, but not shown)."
+        ],
+        "protected_operation": "Trigger management operations on a TriggerDB row: get (lines 116-119), list_threads (lines 121-129), update via repository.update (line 193), delete via repository.delete (line 221), and run_now firing: _create_fire_thread (line 255) followed by db.commit (line 256) and the RunService.create dispatch (lines 257-261).",
+        "protected_resource": "TriggerDB rows identified by trigger_id, plus the fire threads committed and the run records dispatched by run_now.",
+        "protection_obligation": "Only the trigger's owner or a workspace admin may manage a trigger: TriggerService.get, list_threads, update, delete, and run_now must pass _ensure_can_manage before any per-trigger read, repository mutation, fire-thread creation, or the run-dispatch commit, so non-owner non-admin callers can never access or mutate a trigger or force one of its firings (merged from first-phase and second-phase reviewer wording).",
+        "scope_limits": [
+          "list() (lines 109-114) performs scoping (admins see all, owners see their own) and intentionally invokes no per-trigger _ensure_can_manage check.",
+          "claim_and_enqueue (lines 282-361), the scheduled scanner path, runs without a user context and invokes neither _ensure_can_manage nor any per-fire owner authorization.",
+          "get and list_threads are read-only; the guard precedes reads with no commit point; only update, delete, and run_now have observed commit points.",
+          "The guard is service-layer; no HTTP router, middleware, or agent tool registration wiring for these methods is supplied (only the get_trigger_service dependency at lines 364-365)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "No supplied source binds TriggerService.get/list_threads/update/delete/run_now to HTTP routes, agent tools, or agent lifecycle hooks; agent mediation for all trigger guard contracts cannot be established from the two supplied files, so all are recorded as not_established with no agent_entry_binding evidence.",
+      "RunService.create and the worker/enqueue machinery referenced in run_now (lines 230-232, 257-261) and claim_and_enqueue (lines 287-292, 346-360) are not supplied; the stratum of the run-dispatch effect beyond the observed db.commit calls is undetermined.",
+      "AgentService.require_permission and EffectivePermission definitions (imported at lines 10-11) are not supplied; only the call contract at lines 60-67 is observable.",
+      "SandboxSettings (app.sandbox.settings) and runtime sandbox validation referenced at migration lines 39-49 are not supplied; whether agent_sandboxes bindings gate agent code-interpreter tool execution at runtime is unverifiable.",
+      "Reviewer mention of admin-only user management in the user router cites a file not present in the supplied sources; that claim is excluded from the compiled contracts."
+    ],
+    "repository": "keurcien/auxilia",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:59c226bf84e990583a778c3df6f33fca"
+  },
+  "request_sha256": "f47ad3f6d734e3695f464a74c6184aff61e1cac83900b498f9e510fdc93b342d",
+  "response_sha256": "4c999a03c31f976f858160b962e40eb467bb3b6d94bf92e95f9ee4f89b1d91be",
+  "state": "completed",
+  "tokens": 22857,
+  "unit": "v24-screen:59c226bf84e990583a778c3df6f33fca"
+}

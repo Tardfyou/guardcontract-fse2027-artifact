@@ -1,0 +1,105 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "The lock-protected dedupe/append plus atomic_write_(self.path, rows) inside IntentStore.commit that durably writes committed-intents. (intent_store.py:47-56); all guards at intent_store.py:28-36 and dispatch_workflow.py:140-147 execute strictly before this point.",
+        "contract_id": "ecological-contract:22ebb7010fb3c35922f42fe081cd28a9",
+        "declared_mechanism": "Fail-closed, layered validation before the write: (1) MaspAdapter.validate_intent deterministically rejects stale/unspecified world revisions and classifies risk \u2014 BLOCK_RESOURCE is R3_HIGH with approval_required=True and unknown resource IDs are error issues (engine_adapter.py:815-835, 895-922), REPORT_VEHICLE_FAULT/REQUEST_RECOVERY are R3_HIGH with approval_required=True (engine_adapter.py:923-936); the IntentValidation result is returned at engine_adapter.py:938-945. (2) DispatchWorkflowService.commit raises ValueError for invalid validation, raises PermissionError when an approval-required intent has no approval_id, and delegates to IntentStore.commit passing current_world_revision=engine.world_revision(scenario_id) (dispatch_workflow.py:140-153). (3) IntentStore.commit raises ValueError for non-simulation environment, stale world revision, non-APPROVED approval status, or approval/intent ID mismatch before any write, then performs a lock-protected, idempotent atomic write (intent_store.py:28-56). The API layer maps PermissionError->403 and ValueError->409 (api.py:960-965).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 36,
+            "line_start": 28,
+            "path": "command_center/intent_store.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7408d4c5d35eae14d124383a043e763b78340ac2bf5e842ebc1decbea312bff6"
+          },
+          {
+            "line_end": 56,
+            "line_start": 47,
+            "path": "command_center/intent_store.py",
+            "role": "commit_point",
+            "source_sha256": "7408d4c5d35eae14d124383a043e763b78340ac2bf5e842ebc1decbea312bff6"
+          },
+          {
+            "line_end": 153,
+            "line_start": 133,
+            "path": "command_center/dispatch_workflow.py",
+            "role": "guard_registration",
+            "source_sha256": "5e77b0c154e4307c84aa1b995b6ae0a5a22a930164b45beacbaf4692215cfbce"
+          },
+          {
+            "line_end": 835,
+            "line_start": 815,
+            "path": "command_center/engine_adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "16d885807d9d1d820f06c7eeb41be9752be70e930ccb9d0a68f069af5c4514f4"
+          },
+          {
+            "line_end": 945,
+            "line_start": 895,
+            "path": "command_center/engine_adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "16d885807d9d1d820f06c7eeb41be9752be70e930ccb9d0a68f069af5c4514f4"
+          },
+          {
+            "line_end": 726,
+            "line_start": 721,
+            "path": "command_center/engine_adapter.py",
+            "role": "guard_registration",
+            "source_sha256": "16d885807d9d1d820f06c7eeb41be9752be70e930ccb9d0a68f069af5c4514f4"
+          },
+          {
+            "line_end": 965,
+            "line_start": 945,
+            "path": "command_center/api.py",
+            "role": "protected_operation",
+            "source_sha256": "e3c718704f7ddd1b92a1614e6521097a0c959a18fb3242abdd10e6a0c8711f87"
+          }
+        ],
+        "forbidden_condition": "Durably persisting (committing) any of the following: (a) an intent that fails engine.validate_intent (ValueError, dispatch_workflow.py:140-142); (b) an intent whose environment != 'simulation' (ValueError, intent_store.py:28-29); (c) an intent whose basedOnWorldRevision != the current world revision (ValueError, intent_store.py:30-31); (d) an approval-required intent submitted without approval_id (PermissionError, dispatch_workflow.py:145-146); or (e) an approval-required intent whose supplied approval status is not APPROVED or whose approval.intent.intent_id does not match intent.intent_id (ValueError, intent_store.py:32-36).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "AgentRunManager is constructed with workflow=dispatch_workflow (api.py:100-106), but agent_run_manager.py and orchestrator.py are not supplied, so no shown tool dispatch or agent run-loop invocation reaches DispatchWorkflowService.commit or IntentStore.commit; agent_mediation is therefore not_established.",
+          "orchestrator.tool_catalog() is exposed at GET /api/v1/agent/tools (api.py:588-590), but the catalog contents are not supplied; whether intent commit is registered as an agent tool is unknown.",
+          "Whether the configured agent runtime mode ('loop' or linear pipeline, settings.agent_runtime_mode wired at api.py:83) can generate DispatchIntents that flow into the commit endpoint or workflow.commit is not shown in the supplied source.",
+          "If agent mediation is later established, the applicable category (direct_tool vs agent_generated_input_to_guarded_effect) will depend on whether the agent invokes commit as a tool or supplies the intent body that an operator commits."
+        ],
+        "protected_operation": "Committing a DispatchIntent to the committed-intents store via DispatchWorkflowService.commit (dispatch_workflow.py:133-160) which delegates to IntentStore.commit (intent_store.py:20-56), entered from POST /api/v1/intents/{intent_id}/commit (api.py:945-965).",
+        "protected_resource": "The persistent committed-intents store at settings.data_dir / 'committed-intents.' (constructed at api.py:72), holding SIMULATION_COMMITTED records; per its class contract it 'stores simulation commitments only; it never writes to a field controller' (intent_store.py:12-13), and each record carries the notice that the commit writes only to the simulation environment (intent_store.py:45).",
+        "protection_obligation": "A dispatch intent must not be durably committed to the committed-intents store unless it passes deterministic MASP validation, targets the 'simulation' environment, is bound to the current world revision of the target scenario, and \u2014 when deterministic validation classifies it high-risk (R3_HIGH with approvalRequired=true, e.g. BLOCK_RESOURCE, REPORT_VEHICLE_FAULT, REQUEST_RECOVERY) \u2014 carries an approval record whose status is APPROVED and whose intentId matches the intent. The guard chain is DispatchWorkflowService.commit -> IntentStore.commit, reachable via POST /api/v1/intents/{intent_id}/commit. (Merged duplicate phase-1/phase-2 reviewer wording; single obligation, single commit point.)",
+        "scope_limits": [
+          "Simulation-only by construction: IntentStore records status 'SIMULATION_COMMITTED' with an explicit notice that no commands are sent to real vehicles (intent_store.py:37-46) and the class docstring states it never writes to a field controller (intent_store.py:13). No field/device or process effect is claimed or guarded by this contract.",
+          "Idempotent dedupe short-circuit: if a record with the same intentId already exists in the store, commit returns the existing record without appending (intent_store.py:51-53). The fail-closed guards still run first, but a previously committed intent is returned unchanged rather than re-validated against the new revision for record creation.",
+          "The APPROVED-status and intentId-match checks in IntentStore.commit execute only when approval is not None (intent_store.py:32-36); the requirement that approval-required intents supply an approval at all is enforced upstream by DispatchWorkflowService.commit raising PermissionError when approval_id is None (dispatch_workflow.py:144-147). DispatchWorkflowService.commit itself does not verify the fetched approval's identity; that match check lives only in IntentStore.commit:35-36.",
+          "engine_adapter.validate_intent treats basedOnWorldRevision == 0 as a warning ('unspecified'), not an error (engine_adapter.py:828-835); the strict equality requirement that binds the commit to the live revision is imposed at IntentStore.commit:30-31, not at validation time.",
+          "The Bearer-token middleware (api.py:177-192), CORSMiddleware registration (api.py:166-171), and server-side operator identity resolution on approval decisions (api.py:920-942) are ordinary web authentication/admission controls; they are not compiled as agent DEC contracts because no supplied source binds them to an agent tool, agent lifecycle hook, or agent-generated input reaching a guarded effect.",
+          "scenario_id is a caller-supplied query parameter on the commit route (api.py:949); the 'current world revision' the intent must match is derived from that scenario's file bytes plus the locked engine commit hash (engine_adapter.py:721-726), so revision binding is relative to the caller-chosen scenario."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "command_center/orchestrator.py and command_center/agent_run_manager.py are not supplied: the agent tool catalog contents and the run-loop dataflow from agent runs to DispatchWorkflowService.commit / IntentStore.commit cannot be confirmed, so agent mediation is recorded as not_established despite the workflow=dispatch_workflow wiring at api.py:100-106.",
+      "command_center/contracts.py is not supplied: DispatchIntent field semantics (default of the environment field used at intent_store.py:28-29, intent_id generation, and aliasing of basedOnWorldRevision -> based_on_world_revision) cannot be verified from source.",
+      "command_center/approvals.py is not supplied: how an approval reaches ApprovalStatus.APPROVED is not shown; DispatchWorkflowService.decide_approval records an 'authenticated' flag in the audit payload (dispatch_workflow.py:119-130) but no supplied source shows enforcement requiring authenticated decisions, and api.py:229-232 discloses that approver identity is only trusted when an API token is configured.",
+      "command_center/auth.py is not supplied: is_protected / token_matches / operator_dependency implementations are unverifiable; the Bearer-token middleware (api.py:177-192) was not compiled as a contract because it is ordinary web authentication with no supplied agent binding.",
+      "command_center/storage.py is not supplied: the atomic_write_ implementation (used at intent_store.py:55) is unverifiable, so atomicity/durability semantics of the commit point are assumed from its name only.",
+      "command_center/settings.py is not supplied: the relationship between settings.app_env and the intent-level 'simulation' environment check (intent_store.py:28-29) is not established; the simulation-only claim in the obligation rests on the IntentStore guard, docstring, and record notice (intent_store.py:13, 28-29, 45) plus the advertised safety block (api.py:225-233), not on a settings-level enforcement shown in source.",
+      "Behavior labels and prevalence data are unavailable per the stated scope; nothing in this unit asserts how often the commit path is exercised by agents versus human operators."
+    ],
+    "repository": "Yuzizhou999/MASP-CommandCenter",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:47ce320dc2db84a43b646fd7c371b240"
+  },
+  "request_sha256": "698e5082ad9b0d7d08323591f590274477dc01ae4b8bd54480e0a54728d1500c",
+  "response_sha256": "7f8338e8aa8c13afdbbe8795cf78d6bb1e01db319a07bf69eabf3ab3f0797ab9",
+  "state": "completed",
+  "tokens": 49689,
+  "unit": "v24-screen:47ce320dc2db84a43b646fd7c371b240"
+}

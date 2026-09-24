@@ -1,0 +1,91 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "handler(request) at AI/agent2.py:99-100 \u2014 the point where the middleware forwards the validated tool call for execution; a rejected call returns the ToolMessage at AI/agent2.py:81-84 and never reaches this point.",
+        "contract_id": "ecological-contract:bae203100b12ef9e7615633d5ff8849f",
+        "declared_mechanism": "tool_guard, decorated with @wrap_tool_call (AI/agent2.py:76-106) and registered via middleware=[tool_guard] in create_agent (AI/agent2.py:114-121); it reads request.tool_call[\"name\"], compares it against ALLOWED_TOOLS (built from TOOLS at AI/agent2.py:73), and on mismatch returns ToolMessage(content=f\"Tool '{tool_name}' khong hop le.\", tool_call_id=...) without invoking the handler.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 77,
+            "line_start": 76,
+            "path": "AI/agent2.py",
+            "role": "guard_registration",
+            "source_sha256": "8fa9207dd15cb3e2ee04c52cf125e155ee48881771c40e75368b2bcc04caa0bc"
+          },
+          {
+            "line_end": 118,
+            "line_start": 116,
+            "path": "AI/agent2.py",
+            "role": "guard_registration",
+            "source_sha256": "8fa9207dd15cb3e2ee04c52cf125e155ee48881771c40e75368b2bcc04caa0bc"
+          },
+          {
+            "line_end": 84,
+            "line_start": 78,
+            "path": "AI/agent2.py",
+            "role": "forbidden_condition",
+            "source_sha256": "8fa9207dd15cb3e2ee04c52cf125e155ee48881771c40e75368b2bcc04caa0bc"
+          },
+          {
+            "line_end": 73,
+            "line_start": 66,
+            "path": "AI/agent2.py",
+            "role": "protected_operation",
+            "source_sha256": "8fa9207dd15cb3e2ee04c52cf125e155ee48881771c40e75368b2bcc04caa0bc"
+          },
+          {
+            "line_end": 100,
+            "line_start": 99,
+            "path": "AI/agent2.py",
+            "role": "commit_point",
+            "source_sha256": "8fa9207dd15cb3e2ee04c52cf125e155ee48881771c40e75368b2bcc04caa0bc"
+          },
+          {
+            "line_end": 121,
+            "line_start": 114,
+            "path": "AI/agent2.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "8fa9207dd15cb3e2ee04c52cf125e155ee48881771c40e75368b2bcc04caa0bc"
+          }
+        ],
+        "forbidden_condition": "Execution of an agent tool call whose request.tool_call[\"name\"] is not in ALLOWED_TOOLS \u2014 i.e., control reaching the handler forward for an unregistered tool name, which the guard must instead convert into a rejection ToolMessage (AI/agent2.py:78-84).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether the four tools imported from testapi (AI/agent2.py:20-25) ultimately invoke call_api._call_api / requests.get (AI/call_api.py:6-9) is not shown in supplied source, so the downstream effect stratum of an allowed execution could not be fixed as http.",
+          "Whether the module named 'testapi' in the import at AI/agent2.py:20 corresponds to the supplied file AI/call_api.py is not established.",
+          "How external user input (e.g., FastAPI /chat messages) reaches agent2.chat / agent.invoke (AI/agent2.py:318-346) is not shown, so the guard cannot currently be tied to a concrete external entry point end to end."
+        ],
+        "protected_operation": "Agent tool-call dispatch/execution inside the agent runtime, as intercepted by the wrap_tool_call middleware reading request.tool_call (AI/agent2.py:76-78).",
+        "protected_resource": "The agent's tool execution path for TOOLS = [search_hotels, search_hotelsbyname, search_hotelsbyprovince, search_roomtypebyHotelID] (AI/agent2.py:66-71, registered as tools=TOOLS at AI/agent2.py:116) and whatever effects those executions commit.",
+        "protection_obligation": "Every tool invocation dispatched by the agent created at AI/agent2.py:114-121 must be rejected unless its tool name is in ALLOWED_TOOLS; the tool_guard middleware (registered via middleware=[tool_guard]) must intercept each agent tool call and return an invalid-tool ToolMessage instead of executing any tool outside the four registered travel-search tools (search_hotels, search_hotelsbyname, search_hotelsbyprovince, search_roomtypebyHotelID).",
+        "scope_limits": [
+          "Covers only tool invocations routed through the agent runtime built by create_agent with middleware=[tool_guard] (AI/agent2.py:114-121); direct in-process calls to the four tool functions outside the agent runtime are not shown to be guarded.",
+          "The allowlist is static and name-based only: ALLOWED_TOOLS is derived solely from the TOOLS list (AI/agent2.py:66-73); no argument-level, per-user, or per-thread restrictions appear in supplied source.",
+          "The guard's logging branch (AI/agent2.py:86-97) and its exception-to-ToolMessage conversion (AI/agent2.py:101-106) are auxiliary behavior, not part of the forbidden condition.",
+          "Downstream effects of an allowed tool execution (e.g., external HTTP requests) are outside this contract because the tool function bodies are not supplied.",
+          "FastAPI endpoint authentication via Depends(get_current_user) (AI/chat_controller.py) is ordinary web authentication and is excluded; supplied source does not bind those endpoints to the agent tool dispatch."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Bodies of search_hotels, search_hotelsbyname, search_hotelsbyprovince, and search_roomtypebyHotelID (imported from testapi at AI/agent2.py:20-25) are not supplied; whether an allowed tool execution commits an external HTTP effect via requests.get (AI/call_api.py:6-26) is unconfirmed, so the contract's effect_stratum was fixed as tool_execution (invocation-only) rather than http.",
+      "No supplied line maps the module name 'testapi' to the supplied file AI/call_api.py; the dataflow from the guarded tools to _call_api is unverified.",
+      "The chat_service module (imported at AI/chat_controller.py:6) and auth_jwt.get_current_user are not supplied; whether the authenticated /chat or /threads/{thread_id}/messages endpoints invoke agent2.chat / agent.invoke and thereby reach tool_guard is not established, so no end-to-end HTTP-entry-point contract could be compiled.",
+      "The first reviewer's bundling of JWT authentication (Depends(get_current_user), AI/chat_controller.py:88-148) into the same obligation as the tool allowlist is unsupported as an agent-mediated binding: supplied lines protect only the FastAPI handlers and do not connect them to agent tool dispatch, so that element was excluded from the contract rather than emitted as a separate obligation."
+    ],
+    "repository": "LWchesseway/AI-integrated-hotel-booking-app",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:78a664390fd68896703f2fc4942d3e25"
+  },
+  "request_sha256": "60b1d4e71f4cfa3cf4768b37c9636fa1908e093968e7f1a151fe3bfbe8b88a29",
+  "response_sha256": "fd2a1ba0003437d8818a1e39a3364fbf499ca98a7366105aedafbc93804f709a",
+  "state": "completed",
+  "tokens": 15573,
+  "unit": "v24-screen:78a664390fd68896703f2fc4942d3e25"
+}

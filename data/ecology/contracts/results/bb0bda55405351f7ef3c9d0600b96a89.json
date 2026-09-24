@@ -1,0 +1,597 @@
+{
+  "attempt": 1,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "runtime.py:616-620 - the pre_guardrail.allowed check immediately before executor dispatch; the executor invocation at runtime.py:639 is reachable only when the pre-step decision is allow.",
+        "contract_id": "ecological-contract:026392ba5506be17a7536a28598f8fda",
+        "declared_mechanism": "RuleBasedGuardrailService.evaluate(phase='pre_step') registered as services.guardrails in the PlatformServiceBundle (platform.py:109) and invoked in execute_step after building guardrail request metadata (_build_guardrail_request_metadata, runtime.py:592-607); a decision with allowed=False returns a non-retryable PermissionError failure state via _failure_state (runtime.py:616-620).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 120,
+            "line_start": 99,
+            "path": "agentic_harness/agentic_harness/agentic_os/platform.py",
+            "role": "guard_registration",
+            "source_sha256": "97a6da57fcda8758ede868a262723a53029d8376c340311d6a44900e4919065e"
+          },
+          {
+            "line_end": 124,
+            "line_start": 116,
+            "path": "agentic_harness/agentic_harness/agentic_os/guardrail_service.py",
+            "role": "guard_registration",
+            "source_sha256": "ecd276647c68c10809c5f3d1d0679282a7859872b8f3cef37a64a46006f8281d"
+          },
+          {
+            "line_end": 161,
+            "line_start": 140,
+            "path": "agentic_harness/agentic_harness/agentic_os/guardrail_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ecd276647c68c10809c5f3d1d0679282a7859872b8f3cef37a64a46006f8281d"
+          },
+          {
+            "line_end": 607,
+            "line_start": 592,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 651,
+            "line_start": 622,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "protected_operation",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 620,
+            "line_start": 616,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "commit_point",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 1041,
+            "line_start": 1030,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 1454,
+            "line_start": 1444,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 138,
+            "line_start": 126,
+            "path": "agentic_harness/agentic_harness/agentic_os/guardrail_service.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ecd276647c68c10809c5f3d1d0679282a7859872b8f3cef37a64a46006f8281d"
+          }
+        ],
+        "forbidden_condition": "Running a workflow step's executor when the pre-step guardrail decision is allowed=False, i.e., when the rendered input references a tool_id listed in policy blocked_tool_ids, exceeds policy max_input_chars (default 12000), or matches a policy block_pattern (guardrail_service.py:144-160).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether a given run reached execute_step via run_agent_workflow (agent definition supplying agent_metadata/allowed_tools) versus start_workflow with no agent definition is not fixed by source; the agent_metadata policy channel exists either way but is empty by default (runtime.py:1131)."
+        ],
+        "protected_operation": "Execution of the registered executor for the current workflow step inside execute_step (executor lookup and invocation, runtime.py:622-651), covering tool, prompt, collect, human_review, and note executors.",
+        "protected_resource": "Workflow step execution and the workflow graph state that a step executor would mutate (step_outputs, named_outputs, step_history, events).",
+        "protection_obligation": "Workflow step execution in the LangGraph agent-workflow runtime must be gated by a pre-step guardrail evaluation: before any step executor runs, the registered RuleBasedGuardrailService must evaluate the step's rendered input (tool_id, rendered tool arguments, collected payload, or rendered prompt), and a blocking decision must prevent the executor from running.",
+        "scope_limits": [
+          "Applies only to steps executed through the execute_step node of compile_workflow's LangGraph graph; custom executors passed via the executors argument are gated identically because the guard wraps the registry dispatch.",
+          "Policies are merged from defaults with state['agent_metadata']['guardrails'] and step.metadata['guardrails'] (guardrail_service.py:126-138); an absent or disabled phase policy allows everything (guardrail_service.py:120-121).",
+          "Enforcement converts a block into a failed/retrying step state inside the graph rather than an out-of-band exception; prevalence of blocked inputs is not determinable from supplied source.",
+          "This is workflow-step gating in an agent harness; no web authentication, CORS, or HTTP endpoint appears in supplied source for this obligation."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "runtime.py:686-733 - the post-decision branch immediately after output capture; the success-path state return at runtime.py:894-914 is reachable only when the post-step decision is allow or an approved guardrail/evaluation review short-circuits re-checking (runtime.py:552-578).",
+        "contract_id": "ecological-contract:144fe49a6858a5ed3e75facfc5c82261",
+        "declared_mechanism": "RuleBasedGuardrailService.evaluate(phase='post_step') over the stringified candidate output (guardrail_service.py:163-202), invoked in execute_step (runtime.py:669-677); block action yields a non-retryable PermissionError failure state (runtime.py:730-733); escalate action yields an awaiting_review checkpoint with a pending_review payload (runtime.py:687-729).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 109,
+            "line_start": 109,
+            "path": "agentic_harness/agentic_harness/agentic_os/platform.py",
+            "role": "guard_registration",
+            "source_sha256": "97a6da57fcda8758ede868a262723a53029d8376c340311d6a44900e4919065e"
+          },
+          {
+            "line_end": 202,
+            "line_start": 163,
+            "path": "agentic_harness/agentic_harness/agentic_os/guardrail_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ecd276647c68c10809c5f3d1d0679282a7859872b8f3cef37a64a46006f8281d"
+          },
+          {
+            "line_end": 81,
+            "line_start": 73,
+            "path": "agentic_harness/agentic_harness/agentic_os/guardrail_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "ecd276647c68c10809c5f3d1d0679282a7859872b8f3cef37a64a46006f8281d"
+          },
+          {
+            "line_end": 658,
+            "line_start": 653,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "protected_operation",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 266,
+            "line_start": 239,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 677,
+            "line_start": 669,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 733,
+            "line_start": 686,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "commit_point",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 914,
+            "line_start": 894,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "commit_point",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          }
+        ],
+        "forbidden_condition": "Committing a candidate output to step_outputs/named_outputs and advancing the workflow when the post-step decision is allowed=False: output size limit (guardrail_service.py:167-169), block patterns (170-173), secret signatures (174-177, pattern table 73-77), escalate patterns (178-181), and PII signatures including the Luhn card heuristic (182-187, pattern table 78-81).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether candidate outputs of non-prompt step types ever constitute agent-generated input cannot be established from supplied source."
+        ],
+        "protected_operation": "Commit of the executor result into step_outputs/named_outputs (runtime.py:653-658) and its propagation into the returned run state (runtime.py:896-914).",
+        "protected_resource": "Workflow run state (step_outputs, named_outputs, step_history) and downstream consumers of step outputs.",
+        "protection_obligation": "Candidate step outputs must pass a post-step guardrail evaluation before being committed to workflow step state: outputs exceeding max_output_chars, matching block patterns, or containing secrets must produce a blocking failure, and outputs matching escalate patterns or containing PII (including a payment-card heuristic) must be routed to human review instead of advancing the workflow.",
+        "scope_limits": [
+          "For prompt steps the candidate output is model-generated via services.cognitive.execute_prompt (runtime.py:256-258); for tool, collect, note, and human_review steps the candidate output is not established as agent-generated from supplied source.",
+          "An approved guardrail/evaluation review sets skip_post_guardrail/skip_evaluation (runtime.py:572-573), so outputs are not re-evaluated after human approval.",
+          "Secret regex literals are redacted in the sanitized source; only the presence and labels of the secret rules are verifiable.",
+          "Escalation defers to a human review checkpoint (status awaiting_review, output held in pending_review) rather than destroying the output."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "forecast_contract.py:78-79, within the core dict finalized and returned at forecast_contract.py:93-100.",
+        "contract_id": "ecological-contract:4379234a8715e1cd3a1f350cab990ebb",
+        "declared_mechanism": "Derived stamping: review_required computed from critic_review and alert_record (forecast_contract.py:69); decision_eligible = not review_required with conditional review_status (forecast_contract.py:78-79).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 69,
+            "line_start": 65,
+            "path": "agentic_vol_regime_app/forecast_contract.py",
+            "role": "guard_registration",
+            "source_sha256": "85681550ab0b9172b25e6d45f84603c85e7d1bc20c04e5bbaaebac2da59c2c68"
+          },
+          {
+            "line_end": 79,
+            "line_start": 78,
+            "path": "agentic_vol_regime_app/forecast_contract.py",
+            "role": "forbidden_condition",
+            "source_sha256": "85681550ab0b9172b25e6d45f84603c85e7d1bc20c04e5bbaaebac2da59c2c68"
+          },
+          {
+            "line_end": 84,
+            "line_start": 74,
+            "path": "agentic_vol_regime_app/forecast_contract.py",
+            "role": "protected_operation",
+            "source_sha256": "85681550ab0b9172b25e6d45f84603c85e7d1bc20c04e5bbaaebac2da59c2c68"
+          },
+          {
+            "line_end": 100,
+            "line_start": 93,
+            "path": "agentic_vol_regime_app/forecast_contract.py",
+            "role": "commit_point",
+            "source_sha256": "85681550ab0b9172b25e6d45f84603c85e7d1bc20c04e5bbaaebac2da59c2c68"
+          }
+        ],
+        "forbidden_condition": "Producing an artifact whose decision_eligible flag is true while review_required is true (forecast_contract.py:69 combined with the stamping at 78-79).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Which downstream system consumes decision_eligible and whether it independently re-checks review_required is not shown in supplied source."
+        ],
+        "protected_operation": "Construction of the forecast artifact's decision-eligibility and review-status fields within the core dict (forecast_contract.py:74-84).",
+        "protected_resource": "The decision_eligible / review_required / review_status fields of the published forecast artifact.",
+        "protection_obligation": "A Market Physics forecast artifact must be stamped decision_eligible=false (review_status='REQUIRED') whenever critic_review.requires_human_review or alert_record.requires_human_review is truthy; only artifacts with no required human review may be stamped decision-eligible.",
+        "scope_limits": [
+          "The mechanism deterministically derives the flags during construction; supplied source shows no downstream consumer enforcement, so any bypass would occur outside this module.",
+          "The publication/transport effect for the artifact is not in supplied source."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "runtime.py:303-313 - the services.tools.execute(ToolExecutionRequest(...)) dispatch, reachable only after the allowlist check at runtime.py:277-281 passes.",
+        "contract_id": "ecological-contract:4ba5832c891b896407dde385ac9af262",
+        "declared_mechanism": "Allowlist check in tool_executor comparing step metadata tool_id against state['allowed_tools'] and raising PermissionError before the trace span and the services.tools.execute call (runtime.py:268-313).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 117,
+            "line_start": 114,
+            "path": "agentic_harness/agentic_harness/agentic_os/platform.py",
+            "role": "guard_registration",
+            "source_sha256": "97a6da57fcda8758ede868a262723a53029d8376c340311d6a44900e4919065e"
+          },
+          {
+            "line_end": 281,
+            "line_start": 277,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "forbidden_condition",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 313,
+            "line_start": 283,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "protected_operation",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 313,
+            "line_start": 303,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "commit_point",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          },
+          {
+            "line_end": 1454,
+            "line_start": 1444,
+            "path": "agentic_harness/agentic_harness/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b87bebd596253c1c6c506027b4533cb9da44d928480616a8493f36ca242434ec"
+          }
+        ],
+        "forbidden_condition": "Invoking services.tools.execute for a tool_id not present in state['allowed_tools'] (runtime.py:277-281 raises PermissionError \"Agent is not allowed to use tool '<tool_id>'.\"); a missing/blank tool_id fails earlier at runtime.py:273-275.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Exact registered tool IDs (e.g., 'web_search', 'ibkr_data_pipeline') and the tool-internal effect strata of the RegisteredToolService implementations cannot be verified without tool_service.py, which is not supplied."
+        ],
+        "protected_operation": "Dispatch of ToolExecutionRequest to the registered tool service (services.tools.execute, runtime.py:303-313) for 'tool' steps, after argument-template rendering (runtime.py:283-290).",
+        "protected_resource": "Registered tools held by RegisteredToolService (constructed with web_search_client and ibkr_data_pipe at platform.py:114-117) and any external effects those tools perform.",
+        "protection_obligation": "Tool invocation through the runtime's tool executor must be allowlist-gated: a tool step whose tool_id is absent from the run state's allowed_tools must be rejected with PermissionError before services.tools.execute dispatches any registered tool.",
+        "scope_limits": [
+          "Guards only the harness-level dispatch through services.tools.execute; the internal effects of individual registered tools (web, market-data) are not shown in supplied source.",
+          "state['allowed_tools'] defaults to [] in _bootstrap_state (runtime.py:1134), so runs started without an agent definition block every tool step; the agent-definition allowlist binding is established for the run_agent_workflow path (runtime.py:1453).",
+          "The concrete tool identifiers registered by RegisteredToolService.with_defaults are not present in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "publisher.py:112-123 - the early-return gates precede the IBKR connection and all uploads; the downstream GCS commit points protected are the upload_bytes calls at publisher.py:36 and 98, reached only via publish_option_chain.",
+        "contract_id": "ecological-contract:60fe9a9254fcaba3cab2f7a1b8db972f",
+        "declared_mechanism": "latest_completed_option_session gate (contracts.py:80-96, using is_us_equity_market_session and EOD_CAPTURE_TIME 16:15 America/New_York) invoked at publisher.py:112, plus catalog dedupe via _catalog_has_session (publisher.py:41-58) at publisher.py:122; both produce early returns before any external effect.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 96,
+            "line_start": 80,
+            "path": "vol_surface_publisher/contracts.py",
+            "role": "guard_registration",
+            "source_sha256": "7c24c2788769cbc0c22c9f7f195ed85cbb5bef671cdb6eaa8d224bc36454119c"
+          },
+          {
+            "line_end": 58,
+            "line_start": 41,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "guard_registration",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 118,
+            "line_start": 113,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "forbidden_condition",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 123,
+            "line_start": 122,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "forbidden_condition",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 149,
+            "line_start": 124,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "protected_operation",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 123,
+            "line_start": 112,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "commit_point",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          }
+        ],
+        "forbidden_condition": "Initiating the IBKR fetch or any GCS upload when latest_completed_option_session returns None (pre-EOD, publisher.py:113-118), or when _catalog_has_session already lists the symbol/observation_date and neither dry_run nor force applies (publisher.py:122-123).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Agent mediation of collect_and_publish (whether it is invoked as an agent tool or from an agent workflow) is not established from supplied source."
+        ],
+        "protected_operation": "The collect-and-publish pipeline: IBKRDataPipe.fetch_market_snapshot (publisher.py:132-138), frame construction (publisher.py:139-146), and the publish_option_chain call (publisher.py:147-149).",
+        "protected_resource": "The GCS publication bucket/prefix (option-chain-iv datasets and catalog) and the IBKR market-data endpoint.",
+        "protection_obligation": "collect_and_publish must refuse to publish an option-IV surface before the current/nearest U.S. equity session has reached EOD capture (16:15 America/New_York) and must skip publication when the symbol/session is already cataloged unless force is set.",
+        "scope_limits": [
+          "The force flag bypasses the dedupe gate (replace_existing_session=True) but not the session-completeness gate; dry_run also skips the catalog dedupe check (publisher.py:122) while the session gate still applies.",
+          "Exceptional one-off exchange closures may not be covered by the recurring-holiday calendar (contracts.py:56-60 docstring)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "publisher.py:34-38 - the client.upload_bytes call at line 36 for new objects; for existing objects the conflict raise at line 38 prevents any upload commit.",
+        "contract_id": "ecological-contract:8f1339a656c13e1d074b9d7b4909dc6d",
+        "declared_mechanism": "_upload_immutable: get_object_metadata probe; if_generation_match=0 precondition for creation (publisher.py:36); SHA-256 comparison of the existing object against the payload with RuntimeError on divergence (publisher.py:37-38); post-publish parquet SHA verification (publisher.py:103).",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 38,
+            "line_start": 33,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "guard_registration",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 38,
+            "line_start": 37,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "forbidden_condition",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 82,
+            "line_start": 81,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "protected_operation",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 36,
+            "line_start": 34,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "commit_point",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 103,
+            "line_start": 103,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "guard_registration",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          }
+        ],
+        "forbidden_condition": "Overwriting an existing published object whose bytes differ from the new payload - RuntimeError \"Immutable GCS object conflict at `<object_name>`.\" (publisher.py:37-38); equivalently, any upload to an existing key that is not a byte-identical rewrite.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether publish_option_chain or collect_and_publish is ever registered as an agent tool or invoked from an agent workflow is not shown in supplied source (the agentic_harness RegisteredToolService registration list is not supplied)."
+        ],
+        "protected_operation": "Upload of the parquet dataset and metadata. objects via _upload_immutable (publisher.py:81-82).",
+        "protected_resource": "GCS objects under {prefix}/datasets/{dataset_id}/ (option_chain_iv.parquet, metadata.) in the publication bucket.",
+        "protection_obligation": "Option-IV surface objects published to GCS (parquet and metadata) must be immutable: a new object may only be created under a generation-0 precondition, and an existing published object must never be overwritten with different content.",
+        "scope_limits": [
+          "Applies to objects routed through _upload_immutable (parquet, metadata); catalog. is protected by the separate compare-and-swap mechanism (see the catalog CAS contract).",
+          "Byte-identical re-upload of an existing object is permitted by the guard.",
+          "GCS object-store writes are classified other_external; the underlying network API calls are not separately contracted here."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "forecast_contract.py:93-100 - identity digest, forecast_id stamping, final canonical serialization, and return of the artifact; the ValueError paths at lines 63-64 and via canonical__bytes (lines 20-27) preempt the return.",
+        "contract_id": "ecological-contract:b991fed244204efe0afa948ac1c73550",
+        "declared_mechanism": "Required-output presence check raising ValueError in build_forecast_artifact (forecast_contract.py:62-64) plus canonical__bytes non-finite rejection (explicit reject walk and allow_nan=False) invoked during identity digest and final validation (forecast_contract.py:95, 99).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 62,
+            "line_start": 56,
+            "path": "agentic_vol_regime_app/forecast_contract.py",
+            "role": "guard_registration",
+            "source_sha256": "85681550ab0b9172b25e6d45f84603c85e7d1bc20c04e5bbaaebac2da59c2c68"
+          },
+          {
+            "line_end": 64,
+            "line_start": 63,
+            "path": "agentic_vol_regime_app/forecast_contract.py",
+            "role": "forbidden_condition",
+            "source_sha256": "85681550ab0b9172b25e6d45f84603c85e7d1bc20c04e5bbaaebac2da59c2c68"
+          },
+          {
+            "line_end": 28,
+            "line_start": 18,
+            "path": "agentic_vol_regime_app/forecast_contract.py",
+            "role": "forbidden_condition",
+            "source_sha256": "85681550ab0b9172b25e6d45f84603c85e7d1bc20c04e5bbaaebac2da59c2c68"
+          },
+          {
+            "line_end": 89,
+            "line_start": 74,
+            "path": "agentic_vol_regime_app/forecast_contract.py",
+            "role": "protected_operation",
+            "source_sha256": "85681550ab0b9172b25e6d45f84603c85e7d1bc20c04e5bbaaebac2da59c2c68"
+          },
+          {
+            "line_end": 100,
+            "line_start": 93,
+            "path": "agentic_vol_regime_app/forecast_contract.py",
+            "role": "commit_point",
+            "source_sha256": "85681550ab0b9172b25e6d45f84603c85e7d1bc20c04e5bbaaebac2da59c2c68"
+          }
+        ],
+        "forbidden_condition": "Building the publishable artifact while any required named output is missing (ValueError \"Cannot publish incomplete forecast; missing finalized outputs: ...\", forecast_contract.py:60-64), or while the payload contains NaN/Infinity rejected by canonical__bytes (forecast_contract.py:18-28, invoked at lines 95 and 99).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "No supplied source shows the caller that invokes build_forecast_artifact or publishes its return value; whether named_outputs originate from an agent workflow run (the agent_id/agent_metadata/workflow_id parameters suggest a workflow caller) is not established."
+        ],
+        "protected_operation": "Construction, identity stamping, and return of the forecast artifact dict from build_forecast_artifact (forecast_contract.py:74-100), stamped forecast_status='PUBLISHED'.",
+        "protected_resource": "The Market Physics forecast artifact (schema market_physics_forecast.v1) and its derived forecast_id.",
+        "protection_obligation": "A Market Physics forecast artifact must not be built or returned for publication unless all eight required finalized structured outputs (daily_report, belief_state, transition_probabilities, alert_record, policy_recommendation, critic_review, data_quality, feature_record) are present as dicts, and the payload must serialize canonically without non-finite values.",
+        "scope_limits": [
+          "Supplied source covers artifact construction only; the transport/publication effect that consumes the returned artifact is not in supplied source, so no publication-effect stratum is asserted for this contract.",
+          "Required outputs must be dict instances (isinstance check at forecast_contract.py:62); any other type counts as missing."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "publisher.py:98 - client.upload_bytes(..., if_generation_match=0 if current is None else current.generation, ...), the only catalog commit; success breaks the loop at line 99.",
+        "contract_id": "ecological-contract:d7d919b14905c52ab8013c4f2ff6a8c9",
+        "declared_mechanism": "Retry loop (3 attempts) reading the current generation via get_object_metadata and uploading with if_generation_match=0 when absent, else current.generation (publisher.py:83-99); StorageManifestConflictError triggers retry (publisher.py:100-101); exhaustion raises RuntimeError (publisher.py:102).",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 102,
+            "line_start": 83,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "guard_registration",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 102,
+            "line_start": 100,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "forbidden_condition",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 96,
+            "line_start": 84,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "protected_operation",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 99,
+            "line_start": 97,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "commit_point",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          }
+        ],
+        "forbidden_condition": "Committing a catalog write against a generation other than the one observed (StorageManifestConflictError path, publisher.py:100-101) or proceeding after three conflicted attempts (RuntimeError \"Option-surface catalog changed concurrently; retry publication.\", publisher.py:102).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Whether any agent tool path dispatches publish_option_chain is not established from supplied source."
+        ],
+        "protected_operation": "Read-modify-write of the catalog. dataset entry list (publisher.py:84-96), including dedupe/replace logic and sorted ordering.",
+        "protected_resource": "The catalog object {prefix}/manifests/catalog. and its datasets listing.",
+        "protection_obligation": "Updates to the option-surface catalog. must use generation-matched compare-and-swap: a writer that observed a stale generation must not clobber a concurrently updated catalog; conflicts are retried and exhaustion fails closed.",
+        "scope_limits": [
+          "Guards only catalog.; dataset objects are protected by the separate immutability contract.",
+          "After a committed catalog write, the parquet object is re-downloaded and SHA-verified before success is returned (publisher.py:103)."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "publisher.py:81-82 - the _upload_immutable calls; the guard at publisher.py:65 executes before any bytes are produced or uploaded.",
+        "contract_id": "ecological-contract:f517fc80e205a1a208d9a0881a788af2",
+        "declared_mechanism": "validate_option_chain_frame invoked as the first statement of publish_option_chain (publisher.py:65), raising ValueError before dataset_id construction and any storage client interaction.",
+        "effect_stratum": "other_external",
+        "evidence": [
+          {
+            "line_end": 128,
+            "line_start": 123,
+            "path": "vol_surface_publisher/contracts.py",
+            "role": "guard_registration",
+            "source_sha256": "7c24c2788769cbc0c22c9f7f195ed85cbb5bef671cdb6eaa8d224bc36454119c"
+          },
+          {
+            "line_end": 128,
+            "line_start": 124,
+            "path": "vol_surface_publisher/contracts.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7c24c2788769cbc0c22c9f7f195ed85cbb5bef671cdb6eaa8d224bc36454119c"
+          },
+          {
+            "line_end": 65,
+            "line_start": 65,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "guard_registration",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 82,
+            "line_start": 66,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "protected_operation",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          },
+          {
+            "line_end": 82,
+            "line_start": 81,
+            "path": "vol_surface_publisher/publisher.py",
+            "role": "commit_point",
+            "source_sha256": "73623850ecc583f7d56c83a5598c924d9475d83dc96c9e3b0ebd6c6d73abfac5"
+          }
+        ],
+        "forbidden_condition": "Publishing a frame violating validate_option_chain_frame - missing required columns or empty frame (ValueError, contracts.py:124-126) or NaN/non-positive implied_vol or NaN/negative dte (ValueError, contracts.py:127-128).",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Agent mediation of the publication path is not established from supplied source."
+        ],
+        "protected_operation": "Parquet serialization and the immutable GCS uploads of the dataset and metadata (publisher.py:66-82), plus the subsequent catalog update (publisher.py:83-102).",
+        "protected_resource": "The published option-chain-IV dataset objects and the catalog entries derived from the frame.",
+        "protection_obligation": "publish_option_chain must refuse to publish any option-surface frame that is empty, missing required columns, or carries non-positive implied_vol or negative dte, before any serialization or GCS upload occurs.",
+        "scope_limits": [
+          "This is domain data-validity gating for the publication effect only; it does not cover authentication, transport security, or unrelated input validation.",
+          "Applies to frames passed directly to publish_option_chain; collect_and_publish builds frames via option_chain_frame, which already drops unusable quotes (contracts.py:106-119)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "The RegisteredToolService implementation (tool_service.py) is not supplied; concrete registered tool IDs and the external effects of the web_search/IBKR tools referenced at platform.py:114-117 cannot be verified.",
+      "BasicEvaluationService and PermissiveSecurityService implementations are not supplied; whether the wired evaluation and authorization gates in runtime.py (582-589, 734-819) ever produce blocking decisions cannot be established.",
+      "No caller for build_forecast_artifact is supplied; the downstream publication channel for the returned Market Physics artifact, and whether named_outputs flow from an agent workflow run, are unestablished.",
+      "Secret-pattern regex literals in guardrail_service.py (lines 74-77) are redacted in the sanitized source; only the presence and labels of the secret rules are verifiable.",
+      "Repository enumeration is incomplete per the stated scope; additional guard registrations outside the supplied views cannot be ruled in or out.",
+      "The generic human_review step mechanism (runtime.py:334-364) is wired in supplied source but was not proposed as a distinct reviewer obligation and its guard behavior beyond approved/rejected routing is not further specified here."
+    ],
+    "repository": "joy-bagchi/langchain_langgraph",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:bb0bda55405351f7ef3c9d0600b96a89"
+  },
+  "request_sha256": "054b0b4582852461e1e23f58ba7e5cbd8812ca266378f2bb422da99a82e6d719",
+  "response_sha256": "be6ca3df2e0d281e1ecfc6313c1ab821f0ba50eb6601e0ec04a2b0d73f5e229b",
+  "state": "completed",
+  "tokens": 58176,
+  "unit": "v24-screen:bb0bda55405351f7ef3c9d0600b96a89"
+}

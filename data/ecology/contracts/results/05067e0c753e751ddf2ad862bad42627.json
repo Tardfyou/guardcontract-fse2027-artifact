@@ -1,0 +1,244 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "dest_dir.mkdir(parents=True, exist_ok=True) at uploads.py line 77 followed by aiofiles.open(dest_path, 'wb') and the chunk write loop at uploads.py lines 81-87 in register_upload.",
+        "contract_id": "ecological-contract:8f94335a4d145fb8cb72d588eb13102b",
+        "declared_mechanism": "Basename-only sanitization applied before dest_path construction: raw_name = upload_file.filename or 'unnamed'; filename = Path(raw_name).name; raise ValueError('invalid filename') when the result is empty (uploads.py lines 67-71); the docstring declares this 'blocks path traversal attempts'.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 41,
+            "line_start": 32,
+            "path": "koan/web/uploads.py",
+            "role": "protected_operation",
+            "source_sha256": "3bef6faef9badc8b051a5353b13573ebb7d9bf401dd2999f554d43c8355185e3"
+          },
+          {
+            "line_end": 66,
+            "line_start": 59,
+            "path": "koan/web/uploads.py",
+            "role": "protected_operation",
+            "source_sha256": "3bef6faef9badc8b051a5353b13573ebb7d9bf401dd2999f554d43c8355185e3"
+          },
+          {
+            "line_end": 66,
+            "line_start": 62,
+            "path": "koan/web/uploads.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3bef6faef9badc8b051a5353b13573ebb7d9bf401dd2999f554d43c8355185e3"
+          },
+          {
+            "line_end": 71,
+            "line_start": 67,
+            "path": "koan/web/uploads.py",
+            "role": "guard_registration",
+            "source_sha256": "3bef6faef9badc8b051a5353b13573ebb7d9bf401dd2999f554d43c8355185e3"
+          },
+          {
+            "line_end": 87,
+            "line_start": 76,
+            "path": "koan/web/uploads.py",
+            "role": "commit_point",
+            "source_sha256": "3bef6faef9badc8b051a5353b13573ebb7d9bf401dd2999f554d43c8355185e3"
+          }
+        ],
+        "forbidden_condition": "A client-supplied multipart filename containing path components or traversal sequences (module comment example: Path('../../etc/passwd').name == 'passwd') such that dest_path would resolve outside the per-upload dest_dir; also an empty post-sanitization basename, which raises ValueError('invalid filename').",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "Caller wiring (app.py / route handlers) is not supplied; whether any agent tool, agent lifecycle hook, or agent-generated input reaches register_upload is not established by the supplied source.",
+          "Behavior of Path(...).name for edge-case inputs (e.g., a final '..' component, platform-specific separator handling) is not demonstrated in the supplied source."
+        ],
+        "protected_operation": "register_upload's streamed write of the Starlette UploadFile body (64 KiB chunks via aiofiles) to dest_path under the server-lifetime tempdir.",
+        "protected_resource": "The server-lifetime temporary directory created by init_upload_state (state.tempdir) and its per-upload subdirectories <tempdir>/<upload_id>/.",
+        "protection_obligation": "Multipart upload filenames must be reduced to basename-only (Path(raw_name).name, rejecting empty results with ValueError) in register_upload before the uploaded body is streamed into the server-lifetime tempdir, blocking path traversal that would make the write destination escape the per-upload directory <tempdir>/<upload_id>/. (Merges duplicate phase-1 and phase-2 reviewer wording for the same obligation.)",
+        "scope_limits": [
+          "Sanitization covers only the client-supplied filename; upload_id (uuid4 hex) and dest_dir are server-generated (uploads.py lines 73, 76-78).",
+          "The guard lives inside the storage primitive; the module header states app.py and the route handler do the wiring (uploads.py lines 1-2), and that wiring is not supplied.",
+          "commit_to_run later reuses the already-sanitized record.filename when building the run_dir destination (uploads.py line 141).",
+          "Supplied source shows uploads reaching runners only as a text notice and audit manifest via upload_ids_to_blocks (uploads.py lines 160-220), not as agent tool input to register_upload."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "write_tool: resolved.parent.mkdir(parents=True, exist_ok=True) followed by resolved.write_text(content, encoding='utf-8') at builtin_tools.py lines 213-214; edit_tool: resolved.write_text(updated, encoding='utf-8') at builtin_tools.py line 270. Both commits occur only after the guard call in the same function body.",
+        "contract_id": "ecological-contract:d1d29feeaca8e7b1bcc732a9ab603535",
+        "declared_mechanism": "_enforce_path_scope(deps, resolved_path): resolves the target path and run_dir via .resolve(), tests containment with resolved.relative_to(resolved_run), and raises ValueError('path-scope violation: role=... may only write inside run_dir=...') when a planning-role target escapes run_dir; the check is defined tool-internally (koan/lib/permissions.py was deleted in M1) and is invoked at the top of write_tool (lines 209-210) and edit_tool (lines 249-250) before any mutation.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 46,
+            "line_start": 41,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          },
+          {
+            "line_end": 92,
+            "line_start": 67,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          },
+          {
+            "line_end": 92,
+            "line_start": 89,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          },
+          {
+            "line_end": 205,
+            "line_start": 194,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          },
+          {
+            "line_end": 210,
+            "line_start": 209,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          },
+          {
+            "line_end": 214,
+            "line_start": 213,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "commit_point",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          },
+          {
+            "line_end": 245,
+            "line_start": 224,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "protected_operation",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          },
+          {
+            "line_end": 250,
+            "line_start": 249,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "guard_registration",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          },
+          {
+            "line_end": 270,
+            "line_start": 269,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "commit_point",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          },
+          {
+            "line_end": 559,
+            "line_start": 546,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          },
+          {
+            "line_end": 581,
+            "line_start": 562,
+            "path": "koan/tools/builtin_tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3a8a555df7b4d4ca32be53932b00e44b4177cdae113e9476cf9d094d36996eb6"
+          }
+        ],
+        "forbidden_condition": "A planning role (deps.agent.role in _PLANNING_ROLES) invoking write or edit with a target path whose resolved location is not contained within the resolved run_dir (per the Path.relative_to containment test), i.e., a path-scope violation.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether deps.agent.role is populated for every production run; the role is read via a getattr chain (line 78) and an empty/missing role bypasses the fence at lines 79-80.",
+          "Whether deps can be None on real tool invocations, since both guard calls are conditional on 'deps is not None' (lines 209, 249).",
+          "Whether toolset composition restricts tool availability per role (reviewer opinion references tool_policy.compose_toolset feeding build_koan_toolset in PydanticAIAgent.run; no supplied source lines cover this).",
+          "Whether run_dir is guaranteed non-empty in all real runs (asserted only in a comment at line 72)."
+        ],
+        "protected_operation": "The built-in write tool (write_tool create/overwrite of file content) and built-in edit tool (edit_tool read-modify-write replacing old_string with new_string) executed on behalf of an agent.",
+        "protected_resource": "Filesystem paths outside the agent's run_dir; run_dir containment is the boundary the fence enforces for planning roles.",
+        "protection_obligation": "Planning-role agents (intake, orchestrator, planner, scout) must not create, overwrite, or edit any file whose resolved path falls outside the agent's run_dir via the built-in write/edit tools; the _enforce_path_scope call-time fence must abort the operation with a ValueError ('path-scope violation') immediately before the filesystem mutation commits. (Merges duplicate phase-1 and phase-2 reviewer wording for the same obligation.)",
+        "scope_limits": [
+          "The fence applies only to the write and edit built-in tools; bash_tool executes shell commands with no path-scope check ('No sandbox is applied', builtin_tools.py lines 401 and 414-421), so it is not covered by this mechanism.",
+          "read/glob/grep tools perform no path-scope enforcement (read-only operations, builtin_tools.py lines 153-391).",
+          "The guard is skipped when deps is None (write_tool line 209; edit_tool line 249) and when run_dir is empty/unset (lines 81-83, documented 'permissive degradation').",
+          "Non-planning roles (e.g., executor) bypass the fence and may write anywhere in the project tree (lines 17, 71-72, 79-80, 197-198).",
+          "Relative paths are anchored to run_dir by _resolve_path (lines 52-64); absolute paths are checked as supplied after .resolve() (line 84).",
+          "The guard aborts by raising ValueError rather than returning a tool-error string; how PydanticAI surfaces that raise to the model is not shown in supplied source."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "os.rename(record.path, dest_path) at uploads.py line 143, preceded by dest_dir.mkdir(parents=True, exist_ok=True) at line 140.",
+        "contract_id": "ecological-contract:e823b7d2f4a283a9e0dc455cea6750c5",
+        "declared_mechanism": "Per-id record lookup via state.entries.get(uid) with silent skip plus WARNING log when record is None (uploads.py lines 132-134) or when record.committed is True (uploads.py lines 135-137), executed before dest_path construction and the os.rename call.",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 126,
+            "line_start": 110,
+            "path": "koan/web/uploads.py",
+            "role": "protected_operation",
+            "source_sha256": "3bef6faef9badc8b051a5353b13573ebb7d9bf401dd2999f554d43c8355185e3"
+          },
+          {
+            "line_end": 137,
+            "line_start": 130,
+            "path": "koan/web/uploads.py",
+            "role": "guard_registration",
+            "source_sha256": "3bef6faef9badc8b051a5353b13573ebb7d9bf401dd2999f554d43c8355185e3"
+          },
+          {
+            "line_end": 137,
+            "line_start": 135,
+            "path": "koan/web/uploads.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3bef6faef9badc8b051a5353b13573ebb7d9bf401dd2999f554d43c8355185e3"
+          },
+          {
+            "line_end": 143,
+            "line_start": 139,
+            "path": "koan/web/uploads.py",
+            "role": "commit_point",
+            "source_sha256": "3bef6faef9badc8b051a5353b13573ebb7d9bf401dd2999f554d43c8355185e3"
+          }
+        ],
+        "forbidden_condition": "Re-commitment of an already-committed upload record: reaching os.rename for a uid whose record.committed is True (or for an unknown uid), which would attempt a second move of an already-moved file.",
+        "missing_evidence_roles": [
+          "agent_entry_binding"
+        ],
+        "pending_binding_information": [
+          "The caller of commit_to_run is not supplied; the docstring in upload_ids_to_blocks references endpoints committing on HTTP submission (uploads.py lines 167-169), so agent mediation of the commit path is not established by the supplied source."
+        ],
+        "protected_operation": "The atomic same-filesystem move of a committed upload from the tempdir into <run_dir>/uploads/<uid>/<filename> via os.rename, followed by in-place record update (path, committed=True).",
+        "protected_resource": "Upload files stored in the server-lifetime tempdir and their commit destinations under <run_dir>/uploads/<uid>/.",
+        "protection_obligation": "commit_to_run must skip already-committed upload records (and unknown ids) before performing the os.rename move into <run_dir>/uploads/<id>/, preventing a double-commit move of a record whose committed flag is already True.",
+        "scope_limits": [
+          "Already-committed and unknown ids are skipped silently with a WARNING log rather than raising (uploads.py lines 125, 133, 136).",
+          "If tempdir and run_dir straddle filesystems, os.raises propagates OSError; the caller decides policy and there is no shutil.move fallback (uploads.py lines 117-119).",
+          "Records are updated in place (path, committed=True) and never deleted, so filenames/content_type remain lookable after commit (uploads.py lines 121-122, 152-153).",
+          "The empty source per-id directory removal after rename is best-effort and non-fatal (uploads.py lines 145-150)."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Phase-2 reviewer opinion additionally cites a construction-time tool-vocabulary fence (tool_policy.compose_toolset feeding build_koan_toolset in PydanticAIAgent.run) and phase-transition validation (apply_set_phase); no supplied source lines cover these functions/modules, so no contracts could be compiled for them.",
+      "koan/web/app.py and the route handlers that wire register_upload and commit_to_run are not supplied (referenced only by the module header at koan/web/uploads.py lines 1-2), so caller context for the upload guards is unavailable.",
+      "koan/tools/koan_tools.py (ToolDeps/AgentState) is not supplied; how deps.agent.role and deps.agent.run_dir are populated at runtime is unverified.",
+      "Per the unit scope note, repository enumeration is not complete and behavior labels are unavailable; prevalence or runtime behavior of these guards is not assessed here."
+    ],
+    "repository": "solatis/koan",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:05067e0c753e751ddf2ad862bad42627"
+  },
+  "request_sha256": "de745a1aeb4109047471d266dd38b6b0938295d12796d3225b1da0237fcad643",
+  "response_sha256": "9a0acb7542530085a2f924109b88eb60046276dc1622a729aecfa094d96147c0",
+  "state": "completed",
+  "tokens": 25037,
+  "unit": "v24-screen:05067e0c753e751ddf2ad862bad42627"
+}

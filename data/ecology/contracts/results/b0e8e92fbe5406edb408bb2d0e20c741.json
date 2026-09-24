@@ -1,0 +1,144 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tools.py:402-406 \u2014 the return of the success dict containing qr_code_data and expiration_date (preceded by logging and the mock expiration-date computation at tools.py:392-401).",
+        "contract_id": "ecological-contract:7ab6de8537d5618d725d7df605ac0b74",
+        "declared_mechanism": "Inline guardrail threshold checks at the top of generate_qr_code (tools.py:383-390), whose accompanying comment explicitly declares the intent: guardrails validating the discount amount is acceptable for an auto-approved discount, as defense-in-depth to prevent malicious prompts that could circumvent system instructions and obtain arbitrary discounts. The tool is registered directly in root_agent's tools list (agent.py:72), so the checks run inside the agent-dispatched tool call before any QR code generation logic.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 73,
+            "line_start": 60,
+            "path": ".starter-kit/templates/tool_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ec4a6d81dee5fdd388bd38f3d4d75886853b5cbb63e43c45c02ead7fb5785af5"
+          },
+          {
+            "line_end": 381,
+            "line_start": 360,
+            "path": ".starter-kit/templates/tool_agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "7c6359fe5855efaa9f1c5ba0ae9624c6cd9d5bbe2cbcbed053f477468f4447ff"
+          },
+          {
+            "line_end": 390,
+            "line_start": 383,
+            "path": ".starter-kit/templates/tool_agent/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "7c6359fe5855efaa9f1c5ba0ae9624c6cd9d5bbe2cbcbed053f477468f4447ff"
+          },
+          {
+            "line_end": 390,
+            "line_start": 386,
+            "path": ".starter-kit/templates/tool_agent/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7c6359fe5855efaa9f1c5ba0ae9624c6cd9d5bbe2cbcbed053f477468f4447ff"
+          },
+          {
+            "line_end": 406,
+            "line_start": 402,
+            "path": ".starter-kit/templates/tool_agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "7c6359fe5855efaa9f1c5ba0ae9624c6cd9d5bbe2cbcbed053f477468f4447ff"
+          }
+        ],
+        "forbidden_condition": "generate_qr_code dispatched as a root_agent tool with discount_value > 10 while discount_type is \"\" or \"percentage\" (tools.py:386-388), or discount_value > 20 while discount_type is \"fixed\" (tools.py:389-390), reaching the success commit at tools.py:402-406 that returns {\"status\": \"success\", \"qr_code_data\": ..., \"expiration_date\": ...}.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The real QR issuance/delivery mechanism that replaces the mock, to confirm guard precedence before any actual external issuance commit.",
+          "Whether discount_type strings outside \"\"/\"percentage\"/\"fixed\" are reachable from model-generated arguments and whether the guard needs an explicit fallback limit for them.",
+          "Implementations of before_tool/after_tool callbacks, to determine whether additional discount checks exist at tool dispatch."
+        ],
+        "protected_operation": "Issuance of a discount QR code through the generate_qr_code agent tool (tools.py:360-406).",
+        "protected_resource": "The success QR code payload {\"status\": \"success\", \"qr_code_data\": \"MOCK_QR_CODE_DATA\", \"expiration_date\": ...} returned from generate_qr_code to the agent runtime.",
+        "protection_obligation": "Agent-invoked discount QR code issuance via the generate_qr_code tool must never mint a QR code for an auto-approved discount exceeding policy limits: discount_value > 10 when discount_type is empty or \"percentage\", or discount_value > 20 when discount_type is \"fixed\"; the inline guard must reject the request before the QR code success payload is produced and returned.",
+        "scope_limits": [
+          "The QR code data is a template mock (tools.py:398 'MOCK API RESPONSE - Replace with actual QR code generation library'; tools.py:404 'MOCK_QR_CODE_DATA'), so the supplied commit point is the tool's in-process success return, not a verified external issuance effect.",
+          "Empty discount_type is treated as percentage (10-limit) per tools.py:386; a discount_type value other than \"\", \"percentage\", or \"fixed\" would bypass both checks since no fallback branch exists in the supplied guard.",
+          "Strict inequalities: discount_value == 10 (percentage/empty) or == 20 (fixed) passes the guard.",
+          "The before_tool/after_tool callbacks wired in agent.py:74-75 come from shared_libraries.callbacks whose implementations are not supplied; no dispatch-level guard behavior is claimed for them."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "tools.py:73 \u2014 `return {\"status\": \"ok\"}`, the success approval handed back through the ADK tool invocation.",
+        "contract_id": "ecological-contract:d2a07d5571643c7c4c880f8eeb79562e",
+        "declared_mechanism": "Inline threshold check inside the approve_discount function body: `if value > 10:` logs the denial and returns a rejection dict so the model can recover (tools.py:65-69). The function is registered directly in root_agent's tools list (agent.py:62), so the guard executes inside the agent-dispatched tool call itself, before the success return.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 73,
+            "line_start": 60,
+            "path": ".starter-kit/templates/tool_agent/agent.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "ec4a6d81dee5fdd388bd38f3d4d75886853b5cbb63e43c45c02ead7fb5785af5"
+          },
+          {
+            "line_end": 64,
+            "line_start": 49,
+            "path": ".starter-kit/templates/tool_agent/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "7c6359fe5855efaa9f1c5ba0ae9624c6cd9d5bbe2cbcbed053f477468f4447ff"
+          },
+          {
+            "line_end": 69,
+            "line_start": 65,
+            "path": ".starter-kit/templates/tool_agent/tools.py",
+            "role": "guard_registration",
+            "source_sha256": "7c6359fe5855efaa9f1c5ba0ae9624c6cd9d5bbe2cbcbed053f477468f4447ff"
+          },
+          {
+            "line_end": 65,
+            "line_start": 65,
+            "path": ".starter-kit/templates/tool_agent/tools.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7c6359fe5855efaa9f1c5ba0ae9624c6cd9d5bbe2cbcbed053f477468f4447ff"
+          },
+          {
+            "line_end": 73,
+            "line_start": 73,
+            "path": ".starter-kit/templates/tool_agent/tools.py",
+            "role": "commit_point",
+            "source_sha256": "7c6359fe5855efaa9f1c5ba0ae9624c6cd9d5bbe2cbcbed053f477468f4447ff"
+          }
+        ],
+        "forbidden_condition": "approve_discount dispatched as a root_agent tool with value > 10 reaching the success commit at tools.py:73 (return of {\"status\": \"ok\"}) instead of being short-circuited by the rejection return at tools.py:68-69 ({\"status\": \"rejected\", \"message\": \"discount too large. Must be 10 or less.\"}).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Where the deployed, non-mock approval commit occurs (the supplied body is a stub returning a status dict), to confirm the guard precedes any real external commit.",
+          "Implementations of before_tool/after_tool callbacks, to determine whether an additional guard layer exists at tool dispatch.",
+          "Whether sync_ask_for_approval is the sanctioned alternative for discounts above 10 and whether it requires its own threshold guard."
+        ],
+        "protected_operation": "Auto-approval of a percentage or flat discount performed through the approve_discount agent tool (tools.py:49-73).",
+        "protected_resource": "The success approval result {\"status\": \"ok\"} returned from approve_discount to the agent runtime.",
+        "protection_obligation": "Agent-invoked auto-approved discounts via the approve_discount tool must never be approved with a value greater than 10: the tool's inline threshold guard must reject any request with value > 10 before the tool returns its success approval status to the agent runtime.",
+        "scope_limits": [
+          "As supplied, the guarded effect is invocation-only: approve_discount performs no external call and simply returns a status dict; any real downstream discount-approval effect is not present in the supplied source, so tool_execution is asserted only for the supplied stub body.",
+          "The threshold is a strict inequality: value == 10 passes the guard (tools.py:65), and the single limit of 10 applies to both \"percentage\" and \"flat\" types with no distinct flat-rate limit in the supplied guard.",
+          "The before_tool/after_tool callbacks wired in agent.py:74-75 are imported from shared_libraries.callbacks whose implementations are not in the supplied views; no guard behavior is attributed to them.",
+          "sync_ask_for_approval (tools.py:76-98) performs an approval operation with no threshold check and always returns approved; whether it is an intended manager-approval path that legitimately bypasses the 10 limit is not established by the supplied source."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Implementations of shared_libraries.callbacks (before_tool, after_tool, before_agent, rate_limit_callback) imported in agent.py:26-31 and wired at agent.py:74-77 are not present in the supplied views, so any additional guard or bypass behavior at tool/agent dispatch cannot be confirmed.",
+      "Both guarded tools are template mocks (approve_discount returns a bare status dict; generate_qr_code returns MOCK_QR_CODE_DATA with 'Replace with actual...' comments), so the real external effects of discount approval and QR code issuance, and the strata of their true commit points, are not established by the supplied source.",
+      "Whether deployed instances of this template replace the mock tool bodies with real integrations, and with what effect strata, is not determinable from the supplied views.",
+      "The supplied source does not establish whether sync_ask_for_approval (tools.py:76-98, no threshold check, always returns approved) is the sanctioned manager-approval path for discounts above the auto-approval limits or an ungated bypass."
+    ],
+    "repository": "JustinAIDistuptors/universal-adk-agent-starter-kit",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:b0e8e92fbe5406edb408bb2d0e20c741"
+  },
+  "request_sha256": "35b6c997e7df36d4fbd76f7796b55fc56135d6c340b8558812a210af47e8997c",
+  "response_sha256": "76ccbec28113e5012c258d6f52150e62f1407159318ec6dc494bd7e0264fe94f",
+  "state": "completed",
+  "tokens": 14789,
+  "unit": "v24-screen:b0e8e92fbe5406edb408bb2d0e20c741"
+}

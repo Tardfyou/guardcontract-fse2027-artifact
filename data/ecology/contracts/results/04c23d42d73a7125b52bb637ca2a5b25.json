@@ -1,0 +1,122 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "conn.execute(guardrail_result.sql) inside the connection block of run_sql_query (backend/app/genai/query_executor.py:47).",
+        "contract_id": "ecological-contract:1f48b2f6bbc284d8336b98968df1e500",
+        "declared_mechanism": "run_sql_query invokes validate_query(sql) at query_executor.py:43 before execution. validate_query (sql_guardrails.py:121-149) rejects empty input (123-124), normalizes the text by stripping comments and collapsing whitespace (48-63), enforces a single statement via _ensure_single_statement (66-71), enforces SELECT-only start and blocks FORBIDDEN_KEYWORDS on literal-stripped text via _ensure_read_only (74-84, keyword list at 10-24), extracts FROM/JOIN table references via _extract_tables (87-91), rejects empty or non-whitelisted table sets via _ensure_only_allowed_tables using get_allowed_tables (94-102, 131-138), and injects or clamps LIMIT to settings.AI_SQL_MAX_LIMIT via _apply_or_clamp_limit (105-118, 140-143). Only the sanitized guardrail_result.sql is executed (query_executor.py:47) and returned (query_executor.py:56). On rejection, the agent tool converts ValueError/QueryExecutionError into ModelRetry so the model must correct the SQL (client.py:78-82).",
+        "effect_stratum": "database",
+        "evidence": [
+          {
+            "line_end": 82,
+            "line_start": 73,
+            "path": "backend/app/genai/client.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "e37f41c3c18d8eb9270bd8290198544811187c16679d908bd3c4fb2345f64dd5"
+          },
+          {
+            "line_end": 47,
+            "line_start": 41,
+            "path": "backend/app/genai/query_executor.py",
+            "role": "guard_registration",
+            "source_sha256": "5ccf45632e5e39aee869cd9510a4f8393b47dc6c0d166496c9cccd72074408f3"
+          },
+          {
+            "line_end": 149,
+            "line_start": 121,
+            "path": "backend/app/genai/sql_guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "0f6febb1dce6b790f00b17ecb64d09d65c718ec7402879084b98146638babdad"
+          },
+          {
+            "line_end": 24,
+            "line_start": 10,
+            "path": "backend/app/genai/sql_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0f6febb1dce6b790f00b17ecb64d09d65c718ec7402879084b98146638babdad"
+          },
+          {
+            "line_end": 84,
+            "line_start": 66,
+            "path": "backend/app/genai/sql_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0f6febb1dce6b790f00b17ecb64d09d65c718ec7402879084b98146638babdad"
+          },
+          {
+            "line_end": 102,
+            "line_start": 94,
+            "path": "backend/app/genai/sql_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0f6febb1dce6b790f00b17ecb64d09d65c718ec7402879084b98146638babdad"
+          },
+          {
+            "line_end": 118,
+            "line_start": 105,
+            "path": "backend/app/genai/sql_guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "0f6febb1dce6b790f00b17ecb64d09d65c718ec7402879084b98146638babdad"
+          },
+          {
+            "line_end": 33,
+            "line_start": 24,
+            "path": "backend/app/genai/query_executor.py",
+            "role": "protected_operation",
+            "source_sha256": "5ccf45632e5e39aee869cd9510a4f8393b47dc6c0d166496c9cccd72074408f3"
+          },
+          {
+            "line_end": 51,
+            "line_start": 41,
+            "path": "backend/app/genai/query_executor.py",
+            "role": "protected_operation",
+            "source_sha256": "5ccf45632e5e39aee869cd9510a4f8393b47dc6c0d166496c9cccd72074408f3"
+          },
+          {
+            "line_end": 48,
+            "line_start": 45,
+            "path": "backend/app/genai/query_executor.py",
+            "role": "commit_point",
+            "source_sha256": "5ccf45632e5e39aee869cd9510a4f8393b47dc6c0d166496c9cccd72074408f3"
+          }
+        ],
+        "forbidden_condition": "Reaching conn.execute against the analytics database with SQL that has not passed validate_query: a multi-statement query; a statement that does not start with SELECT or contains any FORBIDDEN_KEYWORDS token (insert, update, delete, drop, alter, truncate, attach, detach, replace, create, pragma, vacuum, reindex); a query with no explicit FROM/JOIN table or a table outside get_allowed_tables(); or a query whose LIMIT is absent or above settings.AI_SQL_MAX_LIMIT.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Concrete contents of the allowed analytics table whitelist returned by get_allowed_tables() (backend/app/genai/analytics_schema.py not supplied).",
+          "Value of settings.AI_SQL_MAX_LIMIT used for LIMIT injection/clamping.",
+          "Whether the production router/HTTP layer invokes this same build_agent()/get_agent() agent instance, since the router and service files are not in supplied sources.",
+          "Whether any other callers of run_sql_query or other conn.execute paths to the analytics database exist outside the supplied views.",
+          "Implementation and target location of get_analytics_db_path() (analytics_schema.py not supplied)."
+        ],
+        "protected_operation": "Execution of agent-tool-supplied SQL against the analytics SQLite database opened by _get_connection() inside run_sql_query.",
+        "protected_resource": "The analytics SQLite database file resolved by get_analytics_db_path(), accessed via sqlite3.connect in _get_connection (backend/app/genai/query_executor.py:24-33).",
+        "protection_obligation": "SQL supplied to the agent's execute_sql tool must pass validate_query guardrail validation \u2014 a single read-only SELECT statement free of write/DDL/PRAGMA forbidden keywords, referencing only explicitly named FROM/JOIN tables from the allowed analytics whitelist, with a LIMIT injected or clamped to settings.AI_SQL_MAX_LIMIT \u2014 before it is executed against the analytics SQLite database. (Merged from both reviewers, who describe the same obligation with identical guard, commit point, and effect path.)",
+        "scope_limits": [
+          "Covers only the execute_sql -> run_sql_query -> validate_query path present in the supplied views; repository enumeration is incomplete, so no claim is made that no other code path executes SQL against the analytics database.",
+          "No claim about runtime efficacy or bypass-resistance of the regex-based checks (comment stripping, keyword matching, FROM/JOIN table extraction, LIMIT regex); the contract asserts only that these checks are declared and invoked before the commit point.",
+          "The connection is opened with plain sqlite3.connect(db_path, timeout=5) with no read-only mode shown (query_executor.py:31); read-only enforcement rests entirely on validate_query, not on connection-level restrictions.",
+          "AnalystResult.validate_sql (client.py:35-44) is an output-field check on the final structured result, not part of the pre-execution guard, and is not relied upon by this contract.",
+          "The HTTP layer (routers/ai.py, ai_service, /ai/query endpoint) referenced in reviewer rationale is not present in supplied sources and is not asserted here; ordinary web authentication/CORS and generic application validation remain out of scope."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Contents of the allowed analytics table whitelist returned by get_allowed_tables() \u2014 backend/app/genai/analytics_schema.py is not among the supplied sources.",
+      "Value of settings.AI_SQL_MAX_LIMIT used for LIMIT injection/clamping (app/config.py not supplied).",
+      "Implementation and target path of get_analytics_db_path() used to open the analytics database (analytics_schema.py not supplied).",
+      "Reviewer-cited production wiring (routers/ai.py -> ai_service -> get_agent / execute_sql, /ai/query endpoint) is absent from supplied sources; the HTTP-to-agent invocation path is unverified and no agent-entry evidence is drawn from it.",
+      "Behavior labels and runtime evidence are unavailable; whether the ModelRetry feedback loop always triggers on guardrail rejection in production agent runs is supported only by the supplied tool code (client.py:78-82)."
+    ],
+    "repository": "Andreywid/ecommerce-management-system",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:04c23d42d73a7125b52bb637ca2a5b25"
+  },
+  "request_sha256": "3d0de2e40f21dc321cba402f2a71a556fe1c528b4adaa78f26bdca1a11ef1609",
+  "response_sha256": "b8167954bbfdbb825597a334e1504a9a40a802dd3601fbe2b9e7182726f48e71",
+  "state": "completed",
+  "tokens": 12921,
+  "unit": "v24-screen:04c23d42d73a7125b52bb637ca2a5b25"
+}

@@ -1,0 +1,392 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "subprocess.run executed via asyncio.to_thread inside LocalSubprocessSandbox.run_command (agentorch/sandbox/manager.py:151-162).",
+        "contract_id": "ecological-contract:016abba9ca8dddd5f34e242e0112615c",
+        "declared_mechanism": "SandboxPolicy.validate_command (agentorch/sandbox/manager.py:106-127) raises PermissionError for each forbidden shape; it is invoked as the first step of LocalSubprocessSandbox.run_command (manager.py:147) before any spawn.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 127,
+            "line_start": 106,
+            "path": "agentorch/sandbox/manager.py",
+            "role": "guard_registration",
+            "source_sha256": "f2ac15d3938453ac3f9541573a3d7ddb19dd662a37259bebe5a84ecb5be259ea"
+          },
+          {
+            "line_end": 148,
+            "line_start": 146,
+            "path": "agentorch/sandbox/manager.py",
+            "role": "guard_registration",
+            "source_sha256": "f2ac15d3938453ac3f9541573a3d7ddb19dd662a37259bebe5a84ecb5be259ea"
+          },
+          {
+            "line_end": 162,
+            "line_start": 151,
+            "path": "agentorch/sandbox/manager.py",
+            "role": "commit_point",
+            "source_sha256": "f2ac15d3938453ac3f9541573a3d7ddb19dd662a37259bebe5a84ecb5be259ea"
+          },
+          {
+            "line_end": 487,
+            "line_start": 481,
+            "path": "agentorch/config/settings.py",
+            "role": "forbidden_condition",
+            "source_sha256": "dbb071a0402e583e68e97331e3fa683af47b1fa8a8a76d23e0bc969f84fc2980"
+          },
+          {
+            "line_end": 1303,
+            "line_start": 1294,
+            "path": "agentorch/runtime/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d933dd667cfdaff402a47cc35b69f6ef2ce74a155541a8f4febc77b18f48cb8"
+          }
+        ],
+        "forbidden_condition": "Spawning an OS subprocess via LocalSubprocessSandbox.run_command whose ExecutionRequest fails validate_command: empty argv, shell requested while allow_shell is false, executable disjoint from a non-empty allowlist, or executable present in the blocklist.",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Which registered agent tools declare spec.needs_sandbox=True (bundle wiring not supplied).",
+          "Whether any agent-facing tool dispatch invokes SandboxManager.execute with mode='shell' or use_shell=True."
+        ],
+        "protected_operation": "OS command execution through LocalSubprocessSandbox.run_command, reached via SandboxManager.execute / LocalSubprocessSandbox.run_python.",
+        "protected_resource": "Host operating system process-spawn capability (subprocess.run).",
+        "protection_obligation": "OS subprocess commands executed through the sandbox must pass SandboxPolicy.validate_command before the process is spawned: argv must be non-empty, shell invocation must be refused unless allow_shell is enabled, the executable must be in command_allowlist when an allowlist is configured, and the executable must not be in command_blocklist.",
+        "scope_limits": [
+          "validate_command inspects only argv[0]/logical-executable candidates against the allow/block lists; command arguments are not validated.",
+          "Default SandboxPolicy ships with empty allowlist and blocklist (manager.py:89-90), so unconfigured deployments are bound only by the empty-argv and shell checks.",
+          "The supplied agent dispatch path invokes sandbox.execute only in 'python' mode (runtime.py:1299-1303); agent reachability of shell-mode execution (use_shell=True) is not shown."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The sandbox.execute dispatch of agent-supplied code that the guard prevents (agentorch/runtime/runtime.py:1299-1306).",
+        "contract_id": "ecological-contract:50183b62790852310ebd738c5e18a345",
+        "declared_mechanism": "Runtime._execute_tool raises ToolError when tool.spec.needs_sandbox and self.sandbox is None (agentorch/runtime/runtime.py:1296-1298), prior to the sandbox.execute dispatch.",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 1298,
+            "line_start": 1279,
+            "path": "agentorch/runtime/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d933dd667cfdaff402a47cc35b69f6ef2ce74a155541a8f4febc77b18f48cb8"
+          },
+          {
+            "line_end": 1298,
+            "line_start": 1296,
+            "path": "agentorch/runtime/runtime.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3d933dd667cfdaff402a47cc35b69f6ef2ce74a155541a8f4febc77b18f48cb8"
+          },
+          {
+            "line_end": 1306,
+            "line_start": 1299,
+            "path": "agentorch/runtime/runtime.py",
+            "role": "commit_point",
+            "source_sha256": "3d933dd667cfdaff402a47cc35b69f6ef2ce74a155541a8f4febc77b18f48cb8"
+          }
+        ],
+        "forbidden_condition": "Executing a tool with spec.needs_sandbox=True while Runtime.sandbox is None.",
+        "missing_evidence_roles": [
+          "guard_registration",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Tool bundle definitions (agentorch/tools/bundles.py not supplied) that set needs_sandbox=True."
+        ],
+        "protected_operation": "Execution of sandbox-requiring agent tools dispatched through Runtime._execute_tool.",
+        "protected_resource": "Sandboxed code-execution capability attached to agent tools.",
+        "protection_obligation": "Agent tools whose spec marks them needs_sandbox must be refused at tool dispatch when no SandboxManager is attached to the runtime, before any sandboxed execution is attempted.",
+        "scope_limits": [
+          "Refusal depends on tools truthfully declaring needs_sandbox; the supplied views do not show which tools set the flag.",
+          "The guard covers only dispatch through Runtime._execute_tool; direct calls into SandboxManager or ToolRegistry are not gated here."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "subprocess.run via asyncio.to_thread in run_command with cwd=safe_workdir (agentorch/sandbox/manager.py:151-162), and subprocess.Popen in create_python_session after workdir validation (agentorch/sandbox/manager.py:179, 184-195).",
+        "contract_id": "ecological-contract:6352cb059b3e657cdbc3e7fbe082e6f2",
+        "declared_mechanism": "SandboxPolicy.validate_workdir (agentorch/sandbox/manager.py:93-104) raises PermissionError; invoked in run_command (line 148), create_python_session (line 179), reset_python_session (line 274), run_python_session (line 247, only when a workdir is supplied), and SandboxManager.create_session (line 325).",
+        "effect_stratum": "process",
+        "evidence": [
+          {
+            "line_end": 104,
+            "line_start": 93,
+            "path": "agentorch/sandbox/manager.py",
+            "role": "guard_registration",
+            "source_sha256": "f2ac15d3938453ac3f9541573a3d7ddb19dd662a37259bebe5a84ecb5be259ea"
+          },
+          {
+            "line_end": 148,
+            "line_start": 146,
+            "path": "agentorch/sandbox/manager.py",
+            "role": "guard_registration",
+            "source_sha256": "f2ac15d3938453ac3f9541573a3d7ddb19dd662a37259bebe5a84ecb5be259ea"
+          },
+          {
+            "line_end": 162,
+            "line_start": 151,
+            "path": "agentorch/sandbox/manager.py",
+            "role": "commit_point",
+            "source_sha256": "f2ac15d3938453ac3f9541573a3d7ddb19dd662a37259bebe5a84ecb5be259ea"
+          },
+          {
+            "line_end": 195,
+            "line_start": 178,
+            "path": "agentorch/sandbox/manager.py",
+            "role": "commit_point",
+            "source_sha256": "f2ac15d3938453ac3f9541573a3d7ddb19dd662a37259bebe5a84ecb5be259ea"
+          },
+          {
+            "line_end": 1303,
+            "line_start": 1294,
+            "path": "agentorch/runtime/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d933dd667cfdaff402a47cc35b69f6ef2ce74a155541a8f4febc77b18f48cb8"
+          }
+        ],
+        "forbidden_condition": "Spawning a subprocess or creating/using a persistent python session with a workdir that resolves outside every configured allowed_path, or selecting any workdir when allowed_paths is empty.",
+        "missing_evidence_roles": [
+          "forbidden_condition",
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Which agent-facing tools supply the workdir argument that reaches sandbox.execute."
+        ],
+        "protected_operation": "Working-directory selection for LocalSubprocessSandbox.run_command and the persistent python session lifecycle (LocalSubprocessSandbox.create_python_session, run_python_session, reset_python_session, SandboxManager.create_session).",
+        "protected_resource": "Host filesystem locations usable as subprocess working directories.",
+        "protection_obligation": "Subprocess working directories used by the sandbox must resolve inside SandboxPolicy.allowed_paths (and allowed_paths must be configured) before any OS process is spawned, including persistent python session creation and use.",
+        "scope_limits": [
+          "Default SandboxPolicy has empty allowed_paths, so validate_workdir refuses every workdir until roots are configured (manager.py:94-95).",
+          "run_python_session validates the workdir only when a new workdir argument is supplied (manager.py:247); a None workdir bypasses re-validation for that call."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "atomic_write_text / target.write_text in write_file (agentorch/tools/filesystem/write_file.py:33-36); model.synthesize_speech write (agentorch/tools/media.py:75-82); model.generate_image write (media.py:116-122); write_video_analysis_outputs and source read in analyze_video (media.py:146-178), each after resolve_workspace_path.",
+        "contract_id": "ecological-contract:761679142b6556838a8ddd230ef2f109",
+        "declared_mechanism": "resolve_workspace_path raising ToolError when the resolved candidate escapes the resolved root (agentorch/tools/common/paths.py:8-15), wired into each tool at construction via workspace_root (agentorch/tools/filesystem/register.py:16-25; write_file.py:22-25; media tools resolve output_path/video_path before effects).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 15,
+            "line_start": 8,
+            "path": "agentorch/tools/common/paths.py",
+            "role": "guard_registration",
+            "source_sha256": "1e7d048e0206c256e6d4bdb7f3a3f5e69de558dd7fe52d7f87831b55c1246e94"
+          },
+          {
+            "line_end": 25,
+            "line_start": 16,
+            "path": "agentorch/tools/filesystem/register.py",
+            "role": "guard_registration",
+            "source_sha256": "7967f127cacfd7309406a329c55ded9b0abbdabbeb94b7564db9d14f3f8c7e64"
+          },
+          {
+            "line_end": 26,
+            "line_start": 24,
+            "path": "agentorch/tools/filesystem/write_file.py",
+            "role": "guard_registration",
+            "source_sha256": "5e001c6e2eff16346c55064ba1f2c9b57d026aef40bea73952a1fb5560b2fb9f"
+          },
+          {
+            "line_end": 36,
+            "line_start": 33,
+            "path": "agentorch/tools/filesystem/write_file.py",
+            "role": "commit_point",
+            "source_sha256": "5e001c6e2eff16346c55064ba1f2c9b57d026aef40bea73952a1fb5560b2fb9f"
+          },
+          {
+            "line_end": 83,
+            "line_start": 66,
+            "path": "agentorch/tools/media.py",
+            "role": "commit_point",
+            "source_sha256": "0f7e37a53087d85efde63ba586ea7e5eac914c1f5252a82d5c1fe63f20e7f446"
+          },
+          {
+            "line_end": 123,
+            "line_start": 110,
+            "path": "agentorch/tools/media.py",
+            "role": "commit_point",
+            "source_sha256": "0f7e37a53087d85efde63ba586ea7e5eac914c1f5252a82d5c1fe63f20e7f446"
+          },
+          {
+            "line_end": 178,
+            "line_start": 146,
+            "path": "agentorch/tools/media.py",
+            "role": "commit_point",
+            "source_sha256": "0f7e37a53087d85efde63ba586ea7e5eac914c1f5252a82d5c1fe63f20e7f446"
+          },
+          {
+            "line_end": 1307,
+            "line_start": 1279,
+            "path": "agentorch/runtime/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d933dd667cfdaff402a47cc35b69f6ef2ce74a155541a8f4febc77b18f48cb8"
+          },
+          {
+            "line_end": 85,
+            "line_start": 79,
+            "path": "agentorch/tools/registry.py",
+            "role": "protected_operation",
+            "source_sha256": "d7fe0f636c72b10eef2b24ea1dcac2650a19c7e50e309769ded88255efada9f7"
+          }
+        ],
+        "forbidden_condition": "A tool input path that resolves outside the configured workspace root being used for a file effect (write, append, replace, directory creation, search, read, or media artifact output).",
+        "missing_evidence_roles": [
+          "forbidden_condition"
+        ],
+        "pending_binding_information": [
+          "Confirmation that read_file, append_file, replace_in_file, make_directory, search_text, list_directory, find_files, and get_file_info invoke resolve_workspace_path before their commit points (source bodies not supplied)."
+        ],
+        "protected_operation": "File and media artifact effects of workspace-scoped tools: write_file (demonstrated), the other filesystem tools registered with the same root (read_file, append_file, replace_in_file, make_directory, search_text, list_directory, find_files, get_file_info), and media tools text_to_speech, generate_image, analyze_video.",
+        "protected_resource": "Files under the configured workspace root and the workspace containment boundary.",
+        "protection_obligation": "Every registered filesystem and media tool must resolve each user-supplied path argument through resolve_workspace_path and refuse (ToolError) any path resolving outside the configured workspace root before performing its file read/write effect.",
+        "scope_limits": [
+          "Supplied tool bodies demonstrate the guard only for write_file and the three media tools; the bodies of the other registered filesystem tools are not in the supplied views.",
+          "Containment is computed with Path.resolve against the resolved root; behavior under symlinks follows Path.resolve semantics as implemented.",
+          "ToolRegistry.execute validates arguments against each tool's input model before running the tool (registry.py:79-85); it does not itself enforce workspace containment."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "not_established",
+        "commit_point": "final_fcpxml_path.write_text (editing_export_service.py:218-228) and final_fcpxml_path.unlink (editing_export_service.py:238-239).",
+        "contract_id": "ecological-contract:8ad590e89b65044fc393967f0293fe66",
+        "declared_mechanism": "final_status gate: 'ready' only if all(shot.has_media); the FCPXML write executes only when final_status == 'ready', and final_fcpxml_path.unlink removes stale copies when final_status == 'blocked' (projects/ai_short_drama/backend/app/services/editing_export_service.py:191, 217-240).",
+        "effect_stratum": "file",
+        "evidence": [
+          {
+            "line_end": 191,
+            "line_start": 191,
+            "path": "projects/ai_short_drama/backend/app/services/editing_export_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f8e72e0206268e715c3996fca1b19ec995fcb5d0633e8d552bed079159ae29cb"
+          },
+          {
+            "line_end": 228,
+            "line_start": 217,
+            "path": "projects/ai_short_drama/backend/app/services/editing_export_service.py",
+            "role": "commit_point",
+            "source_sha256": "f8e72e0206268e715c3996fca1b19ec995fcb5d0633e8d552bed079159ae29cb"
+          },
+          {
+            "line_end": 240,
+            "line_start": 237,
+            "path": "projects/ai_short_drama/backend/app/services/editing_export_service.py",
+            "role": "commit_point",
+            "source_sha256": "f8e72e0206268e715c3996fca1b19ec995fcb5d0633e8d552bed079159ae29cb"
+          },
+          {
+            "line_end": 324,
+            "line_start": 306,
+            "path": "projects/ai_short_drama/backend/app/services/editing_export_service.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f8e72e0206268e715c3996fca1b19ec995fcb5d0633e8d552bed079159ae29cb"
+          },
+          {
+            "line_end": 386,
+            "line_start": 377,
+            "path": "projects/ai_short_drama/backend/app/services/drama_pipeline_service.py",
+            "role": "protected_operation",
+            "source_sha256": "fef9ef1e412493a7ad35e981d2a4598510454a3a873474e76c6f49a1c6c45b87"
+          }
+        ],
+        "forbidden_condition": "A final export package shipping timeline_final.fcpxml (freshly written or stale from a prior run) while any timeline shot has has_media=False (final_status == 'blocked').",
+        "missing_evidence_roles": [
+          "agent_entry_binding",
+          "guard_registration"
+        ],
+        "pending_binding_information": [
+          "Whether build_export_bundle is ever exposed through an agent tool, skill, or agent lifecycle hook, which would establish agent mediation."
+        ],
+        "protected_operation": "Final-mode FCPXML emission and cleanup in EditingExportService.build_export_bundle, invoked by DramaPipelineService.run.",
+        "protected_resource": "exports/final/timeline_final.fcpxml (final editing timeline artifact).",
+        "protection_obligation": "EditingExportService must not write exports/final/timeline_final.fcpxml unless every timeline shot has existing media, and must delete any stale final FCPXML when the final package is blocked, so the final export package can never reference nonexistent media.",
+        "scope_limits": [
+          "The guard is a data-completeness gate inside a plain service invoked directly by DramaPipelineService.run; no agent tool dispatch, skill, or agent lifecycle hook is shown for it.",
+          "has_media is derived from the shot_video_paths argument and media_path.is_file() (editing_export_service.py:306-324); the guard does not verify media beyond file existence."
+        ],
+        "verification_ready": false
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Handoff construction (agentorch/runtime/runtime.py:1878-1884) and the subsequent registered.agent.run invocation (runtime.py:1956-1982).",
+        "contract_id": "ecological-contract:93443c4754ef447aa0fe14c1a6de79ad",
+        "declared_mechanism": "coordinator.permission_manager.ensure_knowledge_scope and permission_manager.can_delegate invoked at the top of _run_supervisor_invocation, raising on violation (agentorch/runtime/runtime.py:1867-1876).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 1871,
+            "line_start": 1867,
+            "path": "agentorch/runtime/runtime.py",
+            "role": "guard_registration",
+            "source_sha256": "3d933dd667cfdaff402a47cc35b69f6ef2ce74a155541a8f4febc77b18f48cb8"
+          },
+          {
+            "line_end": 1876,
+            "line_start": 1872,
+            "path": "agentorch/runtime/runtime.py",
+            "role": "forbidden_condition",
+            "source_sha256": "3d933dd667cfdaff402a47cc35b69f6ef2ce74a155541a8f4febc77b18f48cb8"
+          },
+          {
+            "line_end": 1884,
+            "line_start": 1878,
+            "path": "agentorch/runtime/runtime.py",
+            "role": "commit_point",
+            "source_sha256": "3d933dd667cfdaff402a47cc35b69f6ef2ce74a155541a8f4febc77b18f48cb8"
+          },
+          {
+            "line_end": 2147,
+            "line_start": 2116,
+            "path": "agentorch/runtime/runtime.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "3d933dd667cfdaff402a47cc35b69f6ef2ce74a155541a8f4febc77b18f48cb8"
+          }
+        ],
+        "forbidden_condition": "Delegating a task whose knowledge_scope is not within registered.spec.allowed_knowledge_scopes, or delegating when coordinator.permission_manager.can_delegate(current_depth, allowed_depth) returns false (RuntimeError 'Delegation depth exceeded').",
+        "missing_evidence_roles": [
+          "protected_operation"
+        ],
+        "pending_binding_information": [
+          "Implementation of Coordinator.permission_manager.ensure_knowledge_scope and can_delegate (agentorch/agents coordinator source not supplied)."
+        ],
+        "protected_operation": "Supervisor-to-agent handoff and child agent run performed in Runtime._run_supervisor_invocation.",
+        "protected_resource": "Agent delegation/handoff capability (child agent execution within the multi-agent run).",
+        "protection_obligation": "Supervisor delegation to a registered agent must be refused when the delegated task's knowledge_scope exceeds the agent's allowed_knowledge_scopes or when the delegation depth exceeds the allowed depth, before the Handoff is created and the child agent run starts.",
+        "scope_limits": [
+          "The internal semantics of PermissionManager.ensure_knowledge_scope and can_delegate are not in the supplied source; only their call sites are shown.",
+          "The guard covers supervisor-initiated delegation shown here; other handoff entry points are not evidenced.",
+          "The guard bounds delegation/handoff only; downstream effects committed by the child agent run are governed by the child's own guards."
+        ],
+        "verification_ready": false
+      }
+    ],
+    "missing_information": [
+      "Implementation of Coordinator.permission_manager (ensure_knowledge_scope, can_delegate) is not supplied; only runtime.py call sites at lines 1867-1876 are visible.",
+      "Tool bundle wiring (agentorch/tools/bundles.py, register_default_agent_tools) is not supplied, so which tools declare spec.needs_sandbox=True and how execution tools register is unverified.",
+      "Bodies of read_file, append_file, replace_in_file, make_directory, search_text, list_directory, find_files, and get_file_info are not supplied to confirm each invokes resolve_workspace_path before its commit point.",
+      "No supplied source shows how SandboxConfig (agentorch/config/settings.py:481-487) is propagated into SandboxPolicy/SandboxManager instances at runtime construction.",
+      "No supplied source shows an agent tool, skill, or lifecycle hook exposing EditingExportService.build_export_bundle, so agent mediation for the final-FCPXML guard is unestablished.",
+      "Agent reachability of SandboxManager shell-mode execution (use_shell=True) is not evidenced; the shown runtime dispatch uses python mode only."
+    ],
+    "repository": "Akun-python/agentorch",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:89009063e162afda102286f12066326f"
+  },
+  "request_sha256": "aa5b1c2a8c7697d036f48b05a0cd197dd2889112b6db79bc3f47be00bde86f8e",
+  "response_sha256": "3661e32a154530ee13ecf9f5503b634a327dd00c3eafa2fa8a92486425f3817f",
+  "state": "completed",
+  "tokens": 82106,
+  "unit": "v24-screen:89009063e162afda102286f12066326f"
+}

@@ -1,0 +1,254 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "exec(code, exec_globals) at executor.py:768-771 and the guarded main() invocation at executor.py:777-778 \u2014 sentinel calls raise at invocation time while the model-written script executes.",
+        "contract_id": "ecological-contract:5bf252aa51736967c3d37a1d9cd4cfca",
+        "declared_mechanism": "_make_determinism_globals() (executor.py:499-518) binds time/random/datetime to _ForbiddenModule sentinels (executor.py:472-496) whose call/attribute access raises _ForbiddenCall via _forbidden (executor.py:453-469); merged into exec_globals at executor.py:752; run_workflow_script re-raises _ForbiddenCall as ScriptError (executor.py:781-785).",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 449,
+            "line_start": 439,
+            "path": "workflow_middleware/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 496,
+            "line_start": 453,
+            "path": "workflow_middleware/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 518,
+            "line_start": 499,
+            "path": "workflow_middleware/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 753,
+            "line_start": 749,
+            "path": "workflow_middleware/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 785,
+            "line_start": 781,
+            "path": "workflow_middleware/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 715,
+            "line_start": 703,
+            "path": "workflow_middleware/executor.py",
+            "role": "protected_operation",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 778,
+            "line_start": 764,
+            "path": "workflow_middleware/executor.py",
+            "role": "commit_point",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 719,
+            "line_start": 717,
+            "path": "workflow_middleware/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          }
+        ],
+        "forbidden_condition": "Invocation, by name, of the nondeterministic entry points from the exec'd script (module body or main()): time.time, random.random, datetime.now()/today(), the no-arg datetime/date constructor, or any attribute of the bound time/random/datetime sentinels.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether any OS-sandbox enforcement exists behind sandbox.run_in_sandbox today \u2014 sandbox.py is not supplied.",
+          "Which host component invokes run_workflow_script with the model-written script \u2014 no caller appears in the supplied source."
+        ],
+        "protected_operation": "Deterministic execution of the model-written script: the exec of its body and the subsequent async main() run by run_workflow_script, whose determinism underpins memoized checkpoint/resume.",
+        "protected_resource": "Determinism of the exec'd workflow run (checkpoint/replay equivalence for interrupt->resume), per the source: blocking accidental nondeterminism that would break deterministic resume.",
+        "protection_obligation": "When exec'd/run by run_workflow_script, the model-written workflow script must not reach the nondeterministic primitives (clock reader, RNG, no-arg date/datetime constructor and their attribute surfaces) by name; the executor binds _ForbiddenModule sentinels for time/random/datetime into the exec globals and surfaces _ForbiddenCall as ScriptError. Preserved from reviewer 2's clause; source explicitly labels this guard best-effort determinism protection, not a security boundary.",
+        "scope_limits": [
+          "Source explicitly labels this guard 'BEST-EFFORT, NOT A SECURITY BOUNDARY': it intercepts nondeterministic entry points BY NAME only, and a deliberately crafted script can bypass it via object introspection; hard guarantees require the OS sandbox (executor.py:9-17, 439-449, 472-482, 499-513).",
+          "Documented purpose is deterministic resume (checkpoint replay), not a security property.",
+          "Under the FALLBACK engine (RESUME_SUPPORTED=False) the interrupt primitive is not injected (executor.py:761-762); the determinism sentinels are still bound."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "exec(code, exec_globals) inside sandbox.run_in_sandbox(...) at executor.py:768-771; the guard fires earlier, at the pre-compile rejection point executor.py:739, so violating scripts never reach it.",
+        "contract_id": "ecological-contract:761d22fc78409629b990d848df44cf8a",
+        "declared_mechanism": "_reject_introspection(script) (executor.py:277-325): an ast.walk pass raising SecurityError on any ast.Attribute with attr.startswith('_') or ast.Name with id.startswith('__'); SecurityError subclasses ScriptError (executor.py:269-274); the pass is invoked at executor.py:739, before _compile_script at executor.py:764.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 307,
+            "line_start": 277,
+            "path": "workflow_middleware/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 325,
+            "line_start": 308,
+            "path": "workflow_middleware/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 274,
+            "line_start": 269,
+            "path": "workflow_middleware/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 739,
+            "line_start": 736,
+            "path": "workflow_middleware/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 715,
+            "line_start": 705,
+            "path": "workflow_middleware/executor.py",
+            "role": "protected_operation",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 771,
+            "line_start": 764,
+            "path": "workflow_middleware/executor.py",
+            "role": "commit_point",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 719,
+            "line_start": 717,
+            "path": "workflow_middleware/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          }
+        ],
+        "forbidden_condition": "A model-authored script containing any ast.Attribute whose attribute name starts with '_' (dunder traversal chains such as ().__class__.__bases__[0].__subclasses__(), __globals__/__builtins__/__code__/__mro__, and private members of injected objects like budget._total / budget._add) or any ast.Name whose identifier starts with '__' (e.g. __builtins__, __import__).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Whether sandbox.run_in_sandbox applies any real enforcement at the exec commit point today \u2014 sandbox.py is not supplied; the no-op characterization rests on comments in executor.py.",
+          "Which host component invokes run_workflow_script with the model-written script (agent tool registration, API route, CLI) \u2014 no caller appears in the supplied source.",
+          "Whether the injected objects (e.g. budget) truly expose no leading-underscore public members as claimed (executor.py:290-291) \u2014 runtime.py is not supplied."
+        ],
+        "protected_operation": "run_workflow_script compiling and exec'ing the model-written orchestration script body in-process (with injected primitives, reduced builtins, and determinism sentinels), routed through sandbox.run_in_sandbox.",
+        "protected_resource": "The host Python interpreter state reachable from the exec'd script via dunder traversal, and the integrity of the injected runtime objects (e.g. the token budget) whose private members could otherwise be mutated to defeat controls.",
+        "protection_obligation": "Before compiling or exec'ing a model-written workflow script, run_workflow_script must statically reject private/dunder attribute access and dunder bare-name access via the _reject_introspection AST pass, raising SecurityError, so that no violating script reaches the exec commit point. (Merges both reviewers' AST-guard wording.)",
+        "scope_limits": [
+          "Guard is static/textual only: underscores inside string/byte literals are not inspected; only real attribute/name nodes are checked (executor.py:292-294).",
+          "Source states the AST guard plus reduced builtins are 'still NOT a substitute for the OS sandbox against resource exhaustion' \u2014 they remove the trivial/common breakout chains, not all escapes (executor.py:296-299).",
+          "sandbox.run_in_sandbox is described as a no-op passthrough today; OS isolation is deferred to a Phase 4 stub (executor.py:15-17, 766-767).",
+          "Supplied source is limited to executor.py; callers of run_workflow_script and the contents of runtime.injected_globals() are not in the supplied views."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_generated_input_to_guarded_effect",
+        "commit_point": "exec(code, exec_globals) inside sandbox.run_in_sandbox(...) at executor.py:768-771, where the reduced __builtins__ bound at executor.py:751 takes effect for the executing script.",
+        "contract_id": "ecological-contract:a08ac3488f2bde0df11b08031de9fdfd",
+        "declared_mechanism": "build_reduced_builtins() (executor.py:240-261) constructs the exec __builtins__ strictly from _ALLOWED_BUILTINS (executor.py:160-211), deliberately omitting everything in _FORBIDDEN_BUILTINS (executor.py:213-234); bound as exec_globals['__builtins__'] at executor.py:751 before the exec at 768-771.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 234,
+            "line_start": 213,
+            "path": "workflow_middleware/executor.py",
+            "role": "forbidden_condition",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 211,
+            "line_start": 160,
+            "path": "workflow_middleware/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 261,
+            "line_start": 240,
+            "path": "workflow_middleware/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 753,
+            "line_start": 749,
+            "path": "workflow_middleware/executor.py",
+            "role": "guard_registration",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 715,
+            "line_start": 705,
+            "path": "workflow_middleware/executor.py",
+            "role": "protected_operation",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 771,
+            "line_start": 764,
+            "path": "workflow_middleware/executor.py",
+            "role": "commit_point",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          },
+          {
+            "line_end": 719,
+            "line_start": 717,
+            "path": "workflow_middleware/executor.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "94afcb8fde83135a41811db37d7c176d5d9ba138fbc98de6f96cca59691be56f"
+          }
+        ],
+        "forbidden_condition": "The exec'd script's environment exposing \u2014 or the script reaching \u2014 the _FORBIDDEN_BUILTINS names (__import__/open/eval/exec/compile/input/globals/locals/vars/dir/help/breakpoint/memoryview/getattr/setattr/type), i.e. the import machinery, filesystem, dynamic code execution, dynamic introspection (the runtime half of the dunder-traversal escape), or process/runtime state being reachable from the exec'd script.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Contents and capabilities of runtime.injected_globals() merged into exec_globals (executor.py:753) \u2014 runtime.py is not supplied.",
+          "Behavior of sandbox.run_in_sandbox and WorkflowConfig.sandbox at the commit point \u2014 neither module is supplied.",
+          "Which host component invokes run_workflow_script with the model-written script \u2014 no caller appears in the supplied source."
+        ],
+        "protected_operation": "In-process exec of the model-written workflow script body by run_workflow_script, with the supplied globals dict (including its __builtins__ entry) governing what the script can name.",
+        "protected_resource": "Host interpreter capabilities exposed through builtins: the import machinery (__import__), filesystem access (open), dynamic code execution (eval/exec/compile), dynamic attribute manipulation (getattr/setattr/type), and process/runtime state (globals/locals/vars/dir/breakpoint, stdin via input).",
+        "protection_obligation": "run_workflow_script must restrict the exec environment for the model-written workflow script to the reduced __builtins__ allow-list produced by build_reduced_builtins(), with the forbidden builtins (__import__, open, eval, exec, compile, input, globals, locals, vars, dir, help, breakpoint, memoryview, getattr, setattr, type) absent, bound as exec_globals['__builtins__'] at the exec commit point. (Merges both reviewers' reduced-builtins wording.)",
+        "scope_limits": [
+          "Enforcement is by omission from the exec globals' __builtins__ mapping in-process; per source it is a reduced environment, not an OS-level sandbox (executor.py:156-159, 244-251, 766-767).",
+          "Injected primitives from runtime.injected_globals() (executor.py:753) and the langgraph interrupt primitive (executor.py:761-762) enter exec_globals outside the builtins allow-list; their capabilities are defined in unsupplied modules.",
+          "getattr/setattr/type absence is documented as the dynamic half complementing the dunder-access AST guard (executor.py:190-193, 230-233); the two guards are co-dependent.",
+          "sandbox.run_in_sandbox is described as a no-op passthrough seam today (executor.py:766-767)."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "workflow_middleware/sandbox.py (the run_in_sandbox implementation) and workflow_middleware/config.py (WorkflowConfig / config.sandbox) are not among the supplied sources; the 'no-op passthrough / Phase 4 stub' characterization of the sandbox seam rests solely on comments in executor.py (lines 15-17, 766-767).",
+      "workflow_middleware/runtime.py is not supplied: the contents and capabilities of Runtime.injected_globals() merged into exec_globals (executor.py:753), Runtime.agent, and injected objects such as the budget are not shown.",
+      "workflow_middleware/leaves.py (LeafBackend.run \u2014 the effect of each agent() leaf call) is not supplied; any effects of leaf calls cannot be classified.",
+      "No caller of run_workflow_script (agent tool registration, server route, CLI, lifecycle hook) appears in the supplied source; how the model-written script is delivered to the executor beyond the documented 'model-written' provenance (executor.py:1, 383, 718) is not shown.",
+      "tests/test_executor_security.py, referenced as the regression anchor for the allow-list (executor.py:159, 213-215), is not supplied.",
+      "Whether the injected primitives' public API truly has no leading-underscore members (claimed at executor.py:290-291) is unverifiable from the supplied source."
+    ],
+    "repository": "emanueleielo/workflow-middleware",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:deaac0e4ffa70ae73ecf53fecd6817bf"
+  },
+  "request_sha256": "8959274ef252f11adb6d6b3a08703ad9a0c11487f12468dacd3c6a8e01d730a0",
+  "response_sha256": "8746a102e98aaa700a793d60d6f69536cf629beda3c14afec204e2d9eedec4f8",
+  "state": "completed",
+  "tokens": 29385,
+  "unit": "v24-screen:deaac0e4ffa70ae73ecf53fecd6817bf"
+}

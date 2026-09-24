@@ -1,0 +1,106 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "The external LLM invocation performed by the agent's model node \u2014 the model=get_model() binding handed to create_agent at app/rag/graph.py:233-239; the guard commits at the abefore_model hook by returning jump_to='end', which skips this invocation for GUARDRAIL-classified messages.",
+        "contract_id": "ecological-contract:c693b8f7e888cc28cd1394f42f6948ef",
+        "declared_mechanism": "IntentMiddleware (AgentMiddleware subclass) declares an abefore_model pre-model hook decorated with @hook_config(can_jump_to=[\"end\"]) (app/rag/graph.py:173-177). The hook reads state['pending_message'], classifies it via classify() (which returns Intent.GUARDRAIL on any _GUARDRAIL_PATTERNS match, classifier.py:93-95), and when the intent is GUARDRAIL (grouped with GREETING/OFF_TOPIC at lines 192-197) appends an AIMessage containing a canned refusal from reply_for(intent) and returns jump_to='end', terminating the run before the model node executes. IntentMiddleware is instantiated in build_agent()'s middleware list and passed to create_agent (graph.py:223-239), which is invoked during application startup in the FastAPI lifespan handler (app/main.py:24).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 31,
+            "line_start": 23,
+            "path": "app/intent/classifier.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f102a1f2928a9c8da1efc63c742df1ddf80776091e05f476befab9797413a622"
+          },
+          {
+            "line_end": 95,
+            "line_start": 88,
+            "path": "app/intent/classifier.py",
+            "role": "forbidden_condition",
+            "source_sha256": "f102a1f2928a9c8da1efc63c742df1ddf80776091e05f476befab9797413a622"
+          },
+          {
+            "line_end": 198,
+            "line_start": 169,
+            "path": "app/rag/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "dba58f03fe910dda30e07020207f11bc0a77dbf00a03590a2bb2d4a7a6e2076e"
+          },
+          {
+            "line_end": 240,
+            "line_start": 221,
+            "path": "app/rag/graph.py",
+            "role": "guard_registration",
+            "source_sha256": "dba58f03fe910dda30e07020207f11bc0a77dbf00a03590a2bb2d4a7a6e2076e"
+          },
+          {
+            "line_end": 30,
+            "line_start": 17,
+            "path": "app/main.py",
+            "role": "guard_registration",
+            "source_sha256": "07d69bfb482eadf7c6b90ab54daf6c2d447ad82c9d989ee667c40bfc0a11335b"
+          },
+          {
+            "line_end": 177,
+            "line_start": 173,
+            "path": "app/rag/graph.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "dba58f03fe910dda30e07020207f11bc0a77dbf00a03590a2bb2d4a7a6e2076e"
+          },
+          {
+            "line_end": 239,
+            "line_start": 233,
+            "path": "app/rag/graph.py",
+            "role": "protected_operation",
+            "source_sha256": "dba58f03fe910dda30e07020207f11bc0a77dbf00a03590a2bb2d4a7a6e2076e"
+          },
+          {
+            "line_end": 239,
+            "line_start": 233,
+            "path": "app/rag/graph.py",
+            "role": "commit_point",
+            "source_sha256": "dba58f03fe910dda30e07020207f11bc0a77dbf00a03590a2bb2d4a7a6e2076e"
+          }
+        ],
+        "forbidden_condition": "The agent's LLM model invocation executing on a message classified as Intent.GUARDRAIL \u2014 i.e., input matching a _GUARDRAIL_PATTERNS regex (e.g., r\"system\\s+prompt\", r\"ignore\\s+(all\\s+)?(previous|prior)\\s+instructions?\", r\"reveal\\s+(your|the)\\s+(prompt|instructions)\", r\"jailbreak\") reaching the external model call.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Confirm the /chat route (app/api/routes/chat.py, referenced at main.py:9 and included at main.py:42 but not supplied) actually dispatches requests to default_agent() so HTTP traffic reaches the registered middleware.",
+          "Confirm get_model() (app/core/llm.py, not supplied) performs an external network/API model call to sustain the http effect stratum.",
+          "Confirm langchain/langgraph create_agent and AgentMiddleware semantics guarantee that jump_to='end' returned from abefore_model skips the model invocation entirely (framework source not supplied).",
+          "Clarify whether GUARDRAIL detection via the cosine prototype path (_cosine_intent, classifier.py:138-159, threshold-gated) is intended to be covered alongside the explicit regex patterns."
+        ],
+        "protected_operation": "The agent's LLM model invocation (the model step of the create_agent graph, invoked with the conversation including state['pending_message']).",
+        "protected_resource": "The external LLM model obtained via get_model() and bound into the agent at create_agent(model=get_model(), ...) in build_agent() (app/rag/graph.py:233-239).",
+        "protection_obligation": "The production chat agent must not forward prompt-injection/jailbreak inputs to the LLM model invocation: when classify() labels the pending user message as Intent.GUARDRAIL (matched by _GUARDRAIL_PATTERNS such as 'ignore previous instructions' or 'reveal your system prompt', or via the prototype-similarity path), IntentMiddleware.abefore_model must short-circuit the agent run with a canned refusal (jump_to='end') so the manipulative input never reaches the agent's model node. (Merges the phase-one and phase-two reviewer wordings of the same obligation.)",
+        "scope_limits": [
+          "Only inputs classified as Intent.GUARDRAIL are covered by this contract; the same hook also short-circuits GREETING and OFF_TOPIC intents with canned replies (graph.py:192-197), which are separate behaviors not claimed here.",
+          "Detection is regex-based over lowercased text plus an optional cosine-prototype path; paraphrased or obfuscated injection phrasing not matching _GUARDRAIL_PATTERNS and not scoring above the prototype threshold is outside the declared guard.",
+          "The guard operates inside the agent run lifecycle; HTTP-level /chat request handling is not itself evidenced because app/api/routes/chat.py was not supplied.",
+          "This is a compiled hypothesis only: it does not decide whether a DEC violation, bypass, or safety failure actually occurs, nor runtime behavior or prevalence."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "app/api/routes/chat.py is referenced (main.py:9, included at main.py:42) but not supplied; the binding from HTTP /chat requests to default_agent()/the guarded agent is unverified, so the reviewer phrase 'wired to /chat routes' is only partially supported.",
+      "app/core/llm.py (get_model) is not supplied; whether the model invocation is an external network HTTP call is assumed for the http stratum but unverified.",
+      "Framework source for langchain.agents.create_agent / AgentMiddleware / hook_config (jump_to='end' semantics, hook ordering, model-node execution) is not supplied; the claim that the guard precedes and blocks the model call depends on unverified framework behavior.",
+      "PIIMiddleware redaction guards are registered (graph.py:228-230) and mentioned in the phase-two rationale, but no distinct operational obligation or behavioral source for them was supplied, so no separate contract is compiled.",
+      "Behavior labels and prevalence data are unavailable per the unit scope; no claims about actual enforcement rates or bypass frequency can be compiled."
+    ],
+    "repository": "Rishav-Upadhaya/Booking-RAG",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:a847c6513e197911b26a716d3af7bc4e"
+  },
+  "request_sha256": "887a38b747176bc2eb787ecbf33dfe66545a3ae15f74d5c8202d9acdf3135294",
+  "response_sha256": "579d5ed16d159be308c736af959565e8b1eb9cc0beb63fe96651ddeeffb9eae3",
+  "state": "completed",
+  "tokens": 13169,
+  "unit": "v24-screen:a847c6513e197911b26a716d3af7bc4e"
+}

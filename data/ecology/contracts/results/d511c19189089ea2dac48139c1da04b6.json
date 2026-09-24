@@ -1,0 +1,180 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Execution of tool_context.state[\"escalation_required\"] = True and tool_context.state[\"escalation_reason\"] = reason inside escalate_to_human (tools.py:34-35); the guard's error return preempts this commit.",
+        "contract_id": "ecological-contract:05587cb327db2862853f78572ff52cad",
+        "declared_mechanism": "ADK before_tool_callback lifecycle hook defined at guardrails.py:130-150 and registered as before_tool_callback=before_tool_callback on all six specialist agents (agents.py:64), the compliance agent (agents.py:81), and the root orchestrator (agents.py:93). For escalate_to_human without identity it returns {\"status\":\"error\",\"error_message\":\"No se puede escalar sin RUT o n\u00famero de p\u00f3liza en la denuncia.\"} instead of None, aborting the tool invocation; when identity is present in args it persists insured_rut/policy_id into tool state (guardrails.py:142-144).",
+        "effect_stratum": "state",
+        "evidence": [
+          {
+            "line_end": 144,
+            "line_start": 130,
+            "path": "backend/business/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "693ca110adebce9b4c6fe6d2ff48d890274e7eb245c5085703fa91c864fa8bf2"
+          },
+          {
+            "line_end": 67,
+            "line_start": 57,
+            "path": "backend/business/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "693ca110adebce9b4c6fe6d2ff48d890274e7eb245c5085703fa91c864fa8bf2"
+          },
+          {
+            "line_end": 40,
+            "line_start": 32,
+            "path": "backend/business/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "951766941ec85f1bad00551d5546faf72999ee934e10c48d4b73ed7fa72687e2"
+          },
+          {
+            "line_end": 35,
+            "line_start": 34,
+            "path": "backend/business/tools.py",
+            "role": "commit_point",
+            "source_sha256": "951766941ec85f1bad00551d5546faf72999ee934e10c48d4b73ed7fa72687e2"
+          },
+          {
+            "line_end": 65,
+            "line_start": 61,
+            "path": "backend/business/agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2e1df499cdba4e256e2146690dbd24d30b59e0f6bde1daaba1a3f5902a05334"
+          },
+          {
+            "line_end": 82,
+            "line_start": 78,
+            "path": "backend/business/agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2e1df499cdba4e256e2146690dbd24d30b59e0f6bde1daaba1a3f5902a05334"
+          },
+          {
+            "line_end": 95,
+            "line_start": 89,
+            "path": "backend/business/agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2e1df499cdba4e256e2146690dbd24d30b59e0f6bde1daaba1a3f5902a05334"
+          },
+          {
+            "line_end": 78,
+            "line_start": 72,
+            "path": "backend/business/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "951766941ec85f1bad00551d5546faf72999ee934e10c48d4b73ed7fa72687e2"
+          }
+        ],
+        "forbidden_condition": "before_tool_callback observes tool.name == \"escalate_to_human\" while _has_identity(state, args) is False \u2014 i.e., no insured_rut/policy_id in session state, no insured_rut/policy_id/rut among the tool args, and no RUT_IN_TEXT_RE/POLICY_IN_TEXT_RE match in state['last_user_message'] (guardrails.py:57-67, 134-141).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Supplied views do not include ADK runtime source confirming that a non-None dict return from before_tool_callback skips the underlying tool execution; the abort semantics is framework behavior asserted by reviewers, not shown in source.",
+          "Whether tool_context.state in the callback aliases the same state object that escalate_to_human later mutates via its ToolContext is framework behavior not demonstrated in the supplied source.",
+          "Whether escalate_to_human can be reached through any invocation path other than the registered agent tool sets (HARNESS_TOOLS / compliance tool list) is not establishable; repository enumeration is incomplete per scope."
+        ],
+        "protected_operation": "Agent-dispatched execution of the escalate_to_human ADK tool (function-calling invocation routed through the agents' before_tool_callback).",
+        "protected_resource": "Session-state escalation markers escalation_required and escalation_reason written inside escalate_to_human, representing the session's hand-off to a human liquidator (tools.py:34-35).",
+        "protection_obligation": "The agent must not execute the escalate_to_human tool unless an insured identity is present: insured_rut or policy_id in session state, or insured_rut/policy_id/rut in the tool arguments, or a RUT/policy-number pattern matched in the last user message; otherwise the registered before_tool_callback intercepts the invocation and returns an error that aborts the tool call before the escalation mark is written to session state.",
+        "scope_limits": [
+          "Gate applies only to the escalate_to_human branch of before_tool_callback; all other tools fall through to return None (guardrails.py:134, 146, 150).",
+          "Identity is satisfied by a syntactic regex match (RUT_IN_TEXT_RE / POLICY_IN_TEXT_RE) against last_user_message, not by verified ownership of the identifier (guardrails.py:57-58, 66-67).",
+          "The guarded effect evidenced in source is limited to the session-state mutation of escalation_required/escalation_reason; no external notification, ticketing, or message-delivery effect is visible in the supplied views.",
+          "The callback is bound only to the Agent objects constructed in agents.py; any code path invoking escalate_to_human outside ADK agent tool dispatch is outside the supplied evidence and this contract."
+        ],
+        "verification_ready": true
+      },
+      {
+        "agent_mediation": "agent_lifecycle_hook",
+        "commit_point": "Invocation of repository.lookup_policy(rut=..., policy_id=...) inside the lookup_policy tool (tools.py:16-19), which the guard's error return preempts.",
+        "contract_id": "ecological-contract:76bb9111830670e9b3885e8f923d6c85",
+        "declared_mechanism": "The same ADK before_tool_callback lifecycle hook (guardrails.py:130-150), lookup_policy branch at lines 146-149, registered as before_tool_callback=before_tool_callback on all specialist agents (agents.py:64) and the root orchestrator (agents.py:93), returning {\"status\":\"error\",\"error_message\":\"RUT inv\u00e1lido: <rut>\"} in place of None.",
+        "effect_stratum": "tool_execution",
+        "evidence": [
+          {
+            "line_end": 149,
+            "line_start": 146,
+            "path": "backend/business/guardrails.py",
+            "role": "guard_registration",
+            "source_sha256": "693ca110adebce9b4c6fe6d2ff48d890274e7eb245c5085703fa91c864fa8bf2"
+          },
+          {
+            "line_end": 148,
+            "line_start": 147,
+            "path": "backend/business/guardrails.py",
+            "role": "forbidden_condition",
+            "source_sha256": "693ca110adebce9b4c6fe6d2ff48d890274e7eb245c5085703fa91c864fa8bf2"
+          },
+          {
+            "line_end": 19,
+            "line_start": 14,
+            "path": "backend/business/tools.py",
+            "role": "protected_operation",
+            "source_sha256": "951766941ec85f1bad00551d5546faf72999ee934e10c48d4b73ed7fa72687e2"
+          },
+          {
+            "line_end": 17,
+            "line_start": 16,
+            "path": "backend/business/tools.py",
+            "role": "commit_point",
+            "source_sha256": "951766941ec85f1bad00551d5546faf72999ee934e10c48d4b73ed7fa72687e2"
+          },
+          {
+            "line_end": 65,
+            "line_start": 61,
+            "path": "backend/business/agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2e1df499cdba4e256e2146690dbd24d30b59e0f6bde1daaba1a3f5902a05334"
+          },
+          {
+            "line_end": 95,
+            "line_start": 89,
+            "path": "backend/business/agents.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "b2e1df499cdba4e256e2146690dbd24d30b59e0f6bde1daaba1a3f5902a05334"
+          },
+          {
+            "line_end": 78,
+            "line_start": 72,
+            "path": "backend/business/tools.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "951766941ec85f1bad00551d5546faf72999ee934e10c48d4b73ed7fa72687e2"
+          }
+        ],
+        "forbidden_condition": "before_tool_callback observes tool.name == \"lookup_policy\" with a truthy args[\"rut\"] for which validate_rut(str(rut)) returns falsy (guardrails.py:146-149).",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "Implementation of validate_rut (backend.data.repository) is not supplied; checksum semantics cannot be verified from source.",
+          "The downstream effect of repository.lookup_policy (read-only vs. persistent mutation, and its stratum) is not established by the supplied views.",
+          "ADK runtime semantics for aborting tool execution on a non-None before_tool_callback return are not demonstrated in the supplied source."
+        ],
+        "protected_operation": "Agent-dispatched execution of the lookup_policy ADK tool that forwards the RUT to repository.lookup_policy (backend/business/tools.py:14-19).",
+        "protected_resource": "The repository policy-lookup path (repository.lookup_policy) reachable from the lookup_policy tool with a checksum-invalid RUT.",
+        "protection_obligation": "The agent must not execute the lookup_policy tool with a non-empty rut argument that fails validate_rut checksum validation; before_tool_callback must reject such invocations with a 'RUT inv\u00e1lido' error before the repository lookup executes.",
+        "scope_limits": [
+          "Only non-empty args[\"rut\"] values are validated; an empty-string rut bypasses the checksum check and proceeds to the lookup (guardrails.py:147-148).",
+          "The check validates RUT checksum format only; it does not confirm the RUT corresponds to a real insured or matches the session identity.",
+          "Applies only where before_tool_callback is registered (specialists and root orchestrator); the compliance agent's tool list is [calculate_cmf_deadline, escalate_to_human] and does not include lookup_policy (agents.py:78).",
+          "Post-tool behavior \u2014 after_tool_callback copying found-policy identity into state (guardrails.py:159-164) \u2014 is downstream of this gate and outside this contract.",
+          "effect_stratum is recorded as tool_execution because the supplied views show only the tool invocation; the downstream repository effect is not evidenced."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "backend/data/repository.py (validate_rut and lookup_policy implementations) is not among the supplied views; checksum semantics and lookup effects are unverifiable.",
+      "ADK framework runtime (google.adk) source is not supplied; the claims that a non-None before_tool_callback return aborts tool execution, and that callback tool_context.state aliases the tool's state, are framework behaviors not verifiable from the provided source.",
+      "Repository enumeration is incomplete and behavior labels are unavailable (per scope), so no statement can be made about alternate invocation paths for escalate_to_human or lookup_policy outside the registered ADK agent tool dispatch.",
+      "The narrative-based identity path in _has_identity (regex match on last_user_message, guardrails.py:66-67) is a weaker identity signal than state/args identifiers; whether this satisfies the intended 'verified identity' standard is a policy determination not decidable from source."
+    ],
+    "repository": "MyEducationalRepos/clase03-agent",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:d511c19189089ea2dac48139c1da04b6"
+  },
+  "request_sha256": "f321e42a79bdf6dd87cb17e336293df447a4534cd87fc49507db3b12440a8c71",
+  "response_sha256": "ac1c0987978be208b2b8f57f068251359105cbacfba44f3eae4f3a8717bff7f9",
+  "state": "completed",
+  "tokens": 13949,
+  "unit": "v24-screen:d511c19189089ea2dac48139c1da04b6"
+}

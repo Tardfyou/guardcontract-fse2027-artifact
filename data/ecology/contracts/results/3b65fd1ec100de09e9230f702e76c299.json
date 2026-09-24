@@ -1,0 +1,89 @@
+{
+  "attempt": 0,
+  "compiled": {
+    "behavior_label": null,
+    "contracts": [
+      {
+        "agent_mediation": "direct_tool",
+        "commit_point": "The tavily_client.search(...) call inside internet_search (lines 32-37), i.e., the outbound Tavily HTTP request, which is reachable only after agent.astream is resumed with Command(resume=...) carrying an approve or edited decision; a reject resume (lines 96-99) continues without executing the tool.",
+        "contract_id": "ecological-contract:0ad5ae9b4e10018d139c167b1135f25c",
+        "declared_mechanism": "HumanInTheLoopMiddleware(interrupt_on={'internet_search': True}, description_prefix='Tool execution pending approval') assigned to middleware_human_in_the_loop and passed to create_agent alongside tools=[internet_search] and checkpointer=InMemorySaver(); the astream loop detects '__interrupt__', captures an operator decision (approve/reject/edit), and resumes the graph with Command(resume={'decisions': [...]}).",
+        "effect_stratum": "http",
+        "evidence": [
+          {
+            "line_end": 44,
+            "line_start": 41,
+            "path": "HumanInTheLoop/human_in_the_loop_fixed.py",
+            "role": "guard_registration",
+            "source_sha256": "7966436716dd33297ec74983ad98b2efa50191ab38da62e5e9fab095c84dc071"
+          },
+          {
+            "line_end": 52,
+            "line_start": 46,
+            "path": "HumanInTheLoop/human_in_the_loop_fixed.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7966436716dd33297ec74983ad98b2efa50191ab38da62e5e9fab095c84dc071"
+          },
+          {
+            "line_end": 30,
+            "line_start": 25,
+            "path": "HumanInTheLoop/human_in_the_loop_fixed.py",
+            "role": "agent_entry_binding",
+            "source_sha256": "7966436716dd33297ec74983ad98b2efa50191ab38da62e5e9fab095c84dc071"
+          },
+          {
+            "line_end": 38,
+            "line_start": 25,
+            "path": "HumanInTheLoop/human_in_the_loop_fixed.py",
+            "role": "protected_operation",
+            "source_sha256": "7966436716dd33297ec74983ad98b2efa50191ab38da62e5e9fab095c84dc071"
+          },
+          {
+            "line_end": 38,
+            "line_start": 32,
+            "path": "HumanInTheLoop/human_in_the_loop_fixed.py",
+            "role": "commit_point",
+            "source_sha256": "7966436716dd33297ec74983ad98b2efa50191ab38da62e5e9fab095c84dc071"
+          },
+          {
+            "line_end": 99,
+            "line_start": 76,
+            "path": "HumanInTheLoop/human_in_the_loop_fixed.py",
+            "role": "forbidden_condition",
+            "source_sha256": "7966436716dd33297ec74983ad98b2efa50191ab38da62e5e9fab095c84dc071"
+          }
+        ],
+        "forbidden_condition": "Invocation of tavily_client.search via the internet_search tool proceeding without a preceding human approve/reject/edit decision resumed through Command(resume=...) after the HumanInTheLoopMiddleware __interrupt__ pause \u2014 i.e., unapproved tool execution reaching the outbound Tavily search request.",
+        "missing_evidence_roles": [],
+        "pending_binding_information": [
+          "The HumanInTheLoopMiddleware implementation is absent from the supplied source, so the exact suspension point relative to tool dispatch (that tavily_client.search is halted before the HTTP request is sent) cannot be confirmed from source alone.",
+          "Whether the edit-decision resume path (lines 106-154) actually re-dispatches internet_search with the edited arguments is unresolved; the source comment (lines 15-16) reports edited decisions as not working.",
+          "Whether any runtime outside this script (e.g., a production agent harness) relies on this registration is not established by the supplied views."
+        ],
+        "protected_operation": "Execution of the internet_search agent tool, whose body performs tavily_client.search(query, max_results, topic, include_raw_content) against the external Tavily web-search API.",
+        "protected_resource": "The external Tavily search service reached through the TavilyClient instance constructed with TAVILY_API_KEY (human_in_the_loop_fixed.py line 23) and called at lines 32-37.",
+        "protection_obligation": "The internet_search tool's external Tavily web-search must not execute until the HumanInTheLoopMiddleware, registered on the agent at create_agent with interrupt_on={'internet_search': True}, has raised its __interrupt__ and a human approve/reject/edit decision has been supplied via Command(resume=...); the external search effect may commit only after such a resumed human decision. (Merged from the two duplicate reviewer obligations, which name the same guard, tool, and commit point.)",
+        "scope_limits": [
+          "The guard covers only tools named in interrupt_on \u2014 here solely 'internet_search'; no other tool or effect in this script is gated.",
+          "Decision capture is implemented in this demo's CLI stream loop (single thread_id '1', InMemorySaver) via input(); the contract does not assert enforcement by any deployment harness beyond this script.",
+          "Source comment at lines 15-16 states the middleware works for accepted and rejected decisions but not for edited decisions, so the guard is only source-supported for approve and reject resume paths.",
+          "Framework middleware internals are not part of the supplied source; the gate is evidenced by its registration in this file, not by library code."
+        ],
+        "verification_ready": true
+      }
+    ],
+    "missing_information": [
+      "Supplied source does not include the HumanInTheLoopMiddleware library implementation, so the guarantee that the interrupt suspends execution before the Tavily HTTP request is dispatched cannot be verified from source.",
+      "No non-demo deployment context (server, scheduler, multi-user harness) is supplied; enforcement currently rests on this script's interactive input() loop.",
+      "The edit-resume path (lines 106-154) is declared in code but flagged as non-working by the source comment at lines 15-16; its actual runtime effect on tool re-execution is undetermined from the supplied source."
+    ],
+    "repository": "rwuniard/langchain_v1",
+    "source_enumeration_complete": false,
+    "unit_id": "v24-screen:3b65fd1ec100de09e9230f702e76c299"
+  },
+  "request_sha256": "0f59eb804ab87bf9b32a271f618974f68ff6e0253fb6575e577ae5469efec802",
+  "response_sha256": "e43a1b1516eb8706866e7e937736c2e03eec675b6f215e0b302f271603ce795a",
+  "state": "completed",
+  "tokens": 10445,
+  "unit": "v24-screen:3b65fd1ec100de09e9230f702e76c299"
+}
