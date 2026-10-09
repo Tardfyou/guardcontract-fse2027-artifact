@@ -87,8 +87,7 @@ def run_config(config):
         config["framework"], material, backend, backend_identity=backend.identity,
         routing_options=routing_options, sdk_contract_directory=config.get("sdk_contract_sources", config.get("sdk_contract_directory")),
         analysis_contract=config.get("analysis_contract"), analysis_mode=config.get("analysis_mode", "finding"),
-        generate_repair=config.get("generate_repair", False),
-        repair_strategy=config.get("repair_strategy", "default"), **run_options)
+        **run_options)
     result["materialization_sha256"] = hashlib.sha256(material_path.read_bytes()).hexdigest()
     result["development_split_sha256"] = split_hash
     result["effect_attestations_sha256"] = attestation_hash
@@ -114,20 +113,12 @@ def main():
 
 def run_registration_repository(root, repository_id, framework, materialization, backend, *,
                                 backend_identity, routing_options=None, sdk_contract_directory=None,
-                                analysis_contract=None, analysis_mode="finding", generate_repair=False,
-                                repair_strategy="default", **run_options):
+                                analysis_contract=None, analysis_mode="finding", **run_options):
     """Route registered candidates through the existing model/evidence pipeline."""
     from guardcontract.discovery.registration_router import route_registration_repository
 
-    if repair_strategy not in {"default", "immutable_input_short_circuit"}:
-        raise ValueError("unknown_repair_strategy")
     if analysis_mode not in {"finding", "predicate_contract"}:
         raise ValueError("unknown_analysis_mode")
-    if repair_strategy != "default" and framework != "openai-agents":
-        raise ValueError("repair_strategy_framework_mismatch")
-
-    if generate_repair and (framework not in {"google-adk", "pydantic-ai", "langchain", "openai-agents", "crewai"} or sdk_contract_directory is None):
-        raise ValueError("repair_requires_adk_sdk_certificate")
 
     repository = _repository_name(repository_id)
     revision = repository_id.rsplit("@", 1)[1]
@@ -148,25 +139,18 @@ def run_registration_repository(root, repository_id, framework, materialization,
         if framework == "google-adk":
             from guardcontract.evidence.adk_sdk_contract import enroll
             from guardcontract.analysis.adk_paths import analyze as analyze_paths
-            from guardcontract.repair.adk_placement import propose
         elif framework == "pydantic-ai":
             from guardcontract.evidence.pydantic_sdk_contract import enroll
             from guardcontract.analysis.pydantic_paths import analyze as analyze_paths
-            from guardcontract.repair.pydantic_deferral import propose
         elif framework == "langchain":
             from guardcontract.evidence.langchain_sdk_contract import enroll
             from guardcontract.analysis.langchain_paths import analyze as analyze_paths
-            from guardcontract.repair.langchain_deferral import propose
         elif framework == "openai-agents":
             from guardcontract.evidence.openai_sdk_contract import enroll
             from guardcontract.analysis.openai_paths_v2 import analyze as analyze_paths
-            from guardcontract.repair.openai_race_sync import propose
-            if repair_strategy == "immutable_input_short_circuit":
-                from guardcontract.repair.openai_race_sync import propose_input_short_circuit as propose
         else:
             from guardcontract.evidence.crewai_sdk_contract import enroll
             from guardcontract.analysis.crewai_paths import analyze as analyze_paths
-            from guardcontract.repair.crewai_task_deferral import propose
         contract = enroll(**sdk_contract_directory) if isinstance(sdk_contract_directory, Mapping) else enroll(sdk_contract_directory)
         application = Path(root) / "app.py"
         helper = Path(root) / "deferred_effects.py"
@@ -180,16 +164,6 @@ def run_registration_repository(root, repository_id, framework, materialization,
                 *source_args, contract, repository_id=repository_id)
         else:
             routing["static_path_certificate"] = {"status": "unknown", "gaps": ["app_source_unavailable"]}
-        if generate_repair:
-            certificate = routing["static_path_certificate"]
-            routing["repair"] = {"status": "not_generated", "runtime_verified": False}
-            if certificate.get("status") == "supported" and certificate.get("issue_prediction") is True:
-                try:
-                    routing["repair"] = {"status": "generated", **propose(
-                        *source_args, certificate, contract)}
-                except (ValueError, SyntaxError) as exc:
-                    routing["repair"] = {"status": "generation_failed", "generated_patch": False,
-                                         "runtime_verified": False, "error": _safe_error(exc)}
         certificate = routing.get("static_path_certificate", {})
         routing["evidence_gate"] = {
             "policy_scope_status": routing.get("policy_scope_status", "unknown"),
@@ -269,8 +243,6 @@ def run_registration_repository(root, repository_id, framework, materialization,
         "model_execution": result["execution_health"],
     }
     result["stage_execution_health"] = stages
-    if generate_repair:
-        stages["repair_generation"] = "error" if routing.get("repair", {}).get("status") == "generation_failed" else "completed"
     if result["execution_health"] == "completed" and any(s != "completed" for s in stages.values()):
         result["execution_health"] = "partial"
     return result
@@ -561,7 +533,7 @@ def run_jobs(
             "cost_usd": None,
         },
         "records": records,
-        "claim_boundary": "Decidability does not imply actual mediation. Model-supported issue hypotheses and patch proposals still require independent DENY/effect and ALLOW verification.",
+        "claim_boundary": "Decidability does not imply actual mediation. Model-supported issue hypotheses still require independent DENY/effect and ALLOW verification.",
     }
 
 

@@ -1,8 +1,7 @@
-"""Bounded LLM augmentation for GuardContract auditing and patch proposals."""
+"""Bounded LLM augmentation for GuardContract auditing."""
 
 from guardcontract.backends.base import BackendError, DeterministicUnknownBackend, FakeBackend, OpenAICompatibleBackend
-from guardcontract.core.schemas import EvidenceJob, FindingEnvelope, PatchEnvelope, RepairJob, SchemaError
-from guardcontract.evidence.artifacts import write_patch_bundle
+from guardcontract.core.schemas import EvidenceJob, FindingEnvelope, SchemaError
 from guardcontract.pipeline.merge import hypothesis_record
 
 __all__ = [
@@ -12,9 +11,6 @@ __all__ = [
     "FakeBackend",
     "FindingEnvelope",
     "OpenAICompatibleBackend",
-    "PatchEnvelope",
-    "RepairJob",
     "SchemaError",
     "hypothesis_record",
-    "write_patch_bundle",
 ]

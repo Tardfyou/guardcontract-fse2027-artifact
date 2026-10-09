@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Framework-neutral GuardContract trace audit and repair planning."""
+"""Framework-neutral GuardContract trace audit."""
 
 from __future__ import annotations
 
@@ -97,31 +97,3 @@ def validate_effect_observation(value: Any) -> dict[str, Any]:
         raise ValueError("effect_observation_collected_count")
     return {"valid": True, "attempt_event_count": len(events), "marker_count": marker_count,
             "marker_observation": marker_status, "semantic_proof": False}
-
-
-def synthesize_repair(framework: str, guard_mode: str) -> dict[str, Any]:
-    """Select the smallest public pre-effect adapter for a known lifecycle gap."""
-    catalog = {
-        ("openai-agents", "parallel-input"): {
-            "repair_id": "openai-function-tool-input-guardrail",
-            "public_api": "function_tool(tool_input_guardrails=[...])",
-            "placement": "immediate pre-dispatch gate on the protected function tool",
-        },
-        ("crewai", "task-output"): {
-            "repair_id": "crewai-before-tool-call-hook",
-            "public_api": "register_before_tool_call_hook(...) ",
-            "placement": "framework pre-tool hook on the protected tool",
-        },
-    }
-    try:
-        selected = catalog[(framework, guard_mode)]
-    except KeyError as exc:
-        raise ValueError(f"no repair adapter for {framework}/{guard_mode}") from exc
-    return {
-        **selected,
-        "selection_rule": "nearest public interception point that dominates the protected effect",
-        "proof_obligations": [
-            "deny verdict prevents the protected effect",
-            "allow verdict preserves the protected effect",
-        ],
-    }

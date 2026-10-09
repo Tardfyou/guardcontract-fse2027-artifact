@@ -23,7 +23,6 @@ def rebuild(root: Path, layout="artifact"):
         "risk":root/"data/ecology/risk-candidates/RESULT.json",
         "dec":root/"data/ecology/dec/RESULT.json",
         "strict":root/"data/ecology/dec/STRICT_STATISTICS.json",
-        "repair":root/"data/repair/real-repositories/RESULT.json",
     } if layout == "artifact" else {
         "verdict":root/"experiments/p0-verdict-only-counterfactual-round157-n1994/VERDICT_ONLY.json",
         "baselines":root/"experiments/p0-heldout-fair-baselines-round164-n2035/RESULT.json",
@@ -35,7 +34,6 @@ def rebuild(root: Path, layout="artifact"):
         "risk":root/"experiments/p0-ecological-risk-candidates-round163-n2028/RESULT.json",
         "dec":root/"experiments/p0-ecological-witness-only-dec-v2-round164-n2030/RESULT.json",
         "strict":root/"experiments/p0-ecological-strict-statistics-round164-n2031/RESULT.json",
-        "repair":root/"experiments/p0-real-repository-repair-closure-round164-n2036/RESULT.json",
     }
     missing=[str(path.relative_to(root)) for path in paths.values() if not path.is_file()]
     if missing:raise ValueError("missing_table_inputs:"+",".join(missing))
@@ -54,8 +52,7 @@ def rebuild(root: Path, layout="artifact"):
                    "risk_candidate_counts":values["risk"]["counts"],
                    "strict_counts":values["strict"]["counts"],
                    "strict_contract_metrics":values["strict"]["contract_metrics"],
-                   "strict_repository_metrics":values["strict"]["repository_metrics"],
-                   "repair_closure":values["repair"]["counts"]},
+                   "strict_repository_metrics":values["strict"]["repository_metrics"]},
             "inputs":{str(path.relative_to(root)):sha(path) for path in paths.values()},
             "claim_boundary":"Table data only; controlled and ecological denominators remain separate."}
 

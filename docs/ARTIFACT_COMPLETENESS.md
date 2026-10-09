@@ -18,8 +18,6 @@ Package root: this repository. The collection design was frozen September 19, 20
 | Strict witness-only DEC | Completed with zero decided coverage | `data/ecology/dec/`; 190 eligible `UNKNOWN`, zero VP/CWS; 107 legacy `EXCLUDED` |
 | Bidirectional canaries | Populated for eligible held-out cases | `data/confirmation/bidirectional-canaries/`; 24 programs, 6 VP / 18 CWS; no strict real-repository queue |
 | Independent async cases | Populated | `data/transfer/async/`; 5 owned cases, 3 VP / 2 CWS |
-| Controlled repair | Development evidence | `data/repair/controlled/`; five-framework feasibility, not a public-repository repair rate |
-| Real-repository repair | Closed empty queue | `data/repair/real-repositories/`; no strict independently confirmed VP, so repair rate is `null` |
 | Prompts and model provenance | Partial | `environment/` and `scripts/`; embedded prompts can be tied to code hashes; complete provider revision/parameters/digests may be unavailable |
 | Environment locks | Populated R2 inputs | `environment/requirements/` and `environment/locks/`; eight environments recorded, without an R3 provider-replay claim |
 | Per-item output and aggregation | Populated | `data/` and `scripts/rebuild_guardcontract_final_tables.py`; R1 rebuilds RQ1--RQ3 table data offline |

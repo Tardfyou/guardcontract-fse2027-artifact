@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import hashlib
-import re
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Iterable
 
-from guardcontract.core.schemas import EvidenceJob, EvidenceSpan, FindingEnvelope, PatchEnvelope, RepairJob
+from guardcontract.core.schemas import EvidenceJob, EvidenceSpan, FindingEnvelope
 
 
 @dataclass(frozen=True)
@@ -80,39 +79,3 @@ def validate_finding(repo: Path, job: EvidenceJob, finding: FindingEnvelope) -> 
         errors.append("supported effect claim lacks effect evidence")
     return ValidationResult(not errors, finding.verdict if not errors else "unknown", tuple(dict.fromkeys(errors)))
 
-
-_DIFF_HEADER = re.compile(r"^diff --git a/(\S+) b/(\S+)$")
-
-
-def validate_patch(job: RepairJob, patch: PatchEnvelope) -> ValidationResult:
-    errors: list[str] = []
-    if patch.job_id != job.job_id or patch.base_revision != job.base_revision:
-        errors.append("patch identity does not match repair job")
-    allowed = set(job.allowed_paths)
-    headers: list[str] = []
-    changed_lines = 0
-    for line in patch.unified_diff.splitlines():
-        match = _DIFF_HEADER.match(line)
-        if match:
-            left, right = match.groups()
-            if left != right:
-                errors.append("renames and cross-path diffs are not allowed")
-            try:
-                safe_relative_path(right)
-            except ValueError as exc:
-                errors.append(str(exc))
-            headers.append(right)
-        elif (line.startswith("+") and not line.startswith("+++")) or (line.startswith("-") and not line.startswith("---")):
-            changed_lines += 1
-    if not headers:
-        errors.append("patch has no file diff headers")
-    if len(set(headers)) > job.max_files:
-        errors.append("patch exceeds file-count budget")
-    if changed_lines > job.max_changed_lines:
-        errors.append("patch exceeds changed-line budget")
-    if set(headers) != set(patch.touched_paths):
-        errors.append("touched_paths does not match diff headers")
-    forbidden = set(headers) - allowed
-    if forbidden:
-        errors.append(f"patch touches unapproved paths: {sorted(forbidden)}")
-    return ValidationResult(not errors, "supported" if not errors else "unknown", tuple(dict.fromkeys(errors)))

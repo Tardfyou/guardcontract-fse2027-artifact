@@ -1,4 +1,4 @@
-"""Path recovery including synchronized OpenAI Agents race repairs."""
+"""Path recovery for synchronized OpenAI Agents guard races."""
 import ast,hashlib
 from guardcontract.analysis.langchain_paths import Unsupported,calls,dotted,function,provenance,unique
 from guardcontract.discovery.router import stable_node_id

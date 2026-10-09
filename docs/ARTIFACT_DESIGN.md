@@ -6,7 +6,7 @@ Status: completed derived-data snapshot, September 24, 2026. The collection plan
 
 R0 verifies file hashes, the manifest, and denominators. R1 rebuilds final table data from per-item outputs without calling a model or accessing the network. The package also includes inputs and environment locks for deterministic stages. It does not promise full R3 replay of commercial endpoints, mutable upstream repositories, or source code that cannot be redistributed.
 
-The breadth census, depth screening, risk candidates, strict DEC outcomes, controlled behavior labels, and real-repository repair queue have different units and must not be pooled.
+The breadth census, depth screening, risk candidates, strict DEC outcomes, and controlled behavior labels have different units and must not be pooled.
 
 | Dataset | Unit | Frozen result |
 | --- | --- | --- |
@@ -19,7 +19,6 @@ The breadth census, depth screening, risk candidates, strict DEC outcomes, contr
 | Strict witness-only DEC | eligible contract | 190 `UNKNOWN`, zero VP, zero CWS; 107 legacy contracts `EXCLUDED` |
 | Independent confirmation | owned held-out program | 24 bidirectionally eligible: 6 VP, 18 CWS; no eligible real-repository queue |
 | Async extension | owned async case | Five cases: 3 VP, 2 CWS |
-| Real-repository repair | independently confirmed real VP | Empty eligible queue; repair rate is `null` |
 
 `MANIFEST.json` records each release path, size, SHA-256, source file, and artifact class. `SHA256SUMS` provides a direct integrity check. Data are under `data/`, scripts under `scripts/`, and dependency records under `environment/`.
 

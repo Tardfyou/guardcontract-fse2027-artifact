@@ -44,50 +44,14 @@ def score(predictions, references, verification=None, *, execution_states=None):
     return result
 
 
-def score_repairs(predictions, references, repairs):
-    """Count supplied independently verified outcomes; never authenticate them here."""
-    score(predictions, references)
-    if set(repairs) != set(references):
-        raise ValueError("repair_inventory")
-    fields = {"proposed", "generated", "deny_zero_effect", "allow_preserved"}
-    for row in repairs.values():
-        if set(row) != fields or any(type(row[key]) is not bool for key in ("proposed", "generated")):
-            raise ValueError("repair_domain")
-        if any(row[key] is not None and type(row[key]) is not bool
-               for key in ("deny_zero_effect", "allow_preserved")):
-            raise ValueError("repair_domain")
-        if row["generated"] and not row["proposed"]:
-            raise ValueError("repair_generation_without_proposal")
-        if not row["generated"] and any(row[key] is not None for key in ("deny_zero_effect", "allow_preserved")):
-            raise ValueError("repair_verification_without_patch")
-    positives = {sid for sid, value in references.items() if value}
-    proposed = {sid for sid, row in repairs.items() if row["proposed"]}
-    generated = {sid for sid, row in repairs.items() if row["generated"]}
-    effective = {sid for sid, row in repairs.items()
-                 if row["generated"] and row["deny_zero_effect"] is True and row["allow_preserved"] is True}
-    detected = {sid for sid, value in predictions.items() if value is True}
-    return {
-        "proposal_coverage": ratio(len(proposed & positives), len(positives)),
-        "patch_generation_coverage": ratio(len(generated & positives), len(positives)),
-        "effective_repair_coverage": ratio(len(effective & positives), len(positives)),
-        "detected_and_effectively_repaired": ratio(len(detected & effective & positives), len(positives)),
-        "effective_given_generated_positive": ratio(len(effective & positives), len(generated & positives)),
-        "allow_preservation_all_generated": ratio(sum(repairs[sid]["allow_preserved"] is True for sid in generated), len(generated)),
-        "generated_on_negative": len(generated - positives),
-        "unverified_generated": sum(repairs[sid]["deny_zero_effect"] is None or repairs[sid]["allow_preserved"] is None for sid in generated),
-        "boundary": "All oracle-positive cases remain in coverage denominators. Behavior fields require independent source-bound runtime evidence; this arithmetic does not authenticate it or establish holdout eligibility.",
-    }
-
-
 def compare_arms(arms, references, *, comparability=None):
-    """Score a fixed inventory without filtering failed or unrepaired cases."""
+    """Score a fixed inventory without filtering failed or abstained cases."""
     if set(arms) != ARMS:
         raise ValueError("four_arm_inventory")
     result = {}
     for name, arm in arms.items():
         result[name] = {
             "detection": score(arm["predictions"], references, execution_states=arm["execution_states"]),
-            "repair": score_repairs(arm["predictions"], references, arm["repairs"]),
         }
     reasons = []
     budget_verified = holdout_verified = source_family_verified = oracle_manifest_verified = False
